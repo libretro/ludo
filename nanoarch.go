@@ -10,7 +10,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"unsafe"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
@@ -22,6 +21,7 @@ import (
 #include <stdlib.h>
 #include <stdio.h>
 #include <dlfcn.h>
+void my_retro_init(void *f) { ((void(*)(void))f)(); }
 */
 import "C"
 
@@ -34,12 +34,13 @@ func main() {
 	var corePath = flag.String("L", "", "Path to the libretro core")
 	flag.Parse()
 
-	cstr := C.CString(*corePath)
-	defer C.free(unsafe.Pointer(cstr))
-	h := C.dlopen(cstr, C.RTLD_NOW)
+	h := C.dlopen(C.CString(*corePath), C.RTLD_NOW)
 	if h == nil {
-		log.Fatalf("error loading %s\n", C.GoString(cstr))
+		log.Fatalf("error loading %s\n", *corePath)
 	}
+
+	retroInit := C.dlsym(h, C.CString("retro_init"))
+	C.my_retro_init(retroInit)
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
