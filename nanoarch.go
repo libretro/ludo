@@ -1,13 +1,7 @@
-// Copyright 2014 The go-gl Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-// Renders a textured spinning cube using GLFW 3 and OpenGL 4.1 core forward-compatible profile.
-package main // import "github.com/go-gl/example/gl41core-cube"
+package main
 
 import (
 	"fmt"
-	"go/build"
 	"image"
 	"image/draw"
 	_ "image/png"
@@ -19,9 +13,6 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
-
-const windowWidth = 800
-const windowHeight = 600
 
 func init() {
 	// GLFW event handling must run on the main OS thread
@@ -39,7 +30,7 @@ func main() {
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-	window, err := glfw.CreateWindow(windowWidth, windowHeight, "Cube", nil, nil)
+	window, err := glfw.CreateWindow(800, 600, "nanorarch", nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -244,27 +235,4 @@ var vertices = []float32{
 	1.0, -1.0, 0.0, 0.0,
 	1.0, 1.0, 0.0, 1.0,
 	-1.0, 1.0, 1.0, 1.0,
-}
-
-// Set the working directory to the root of Go package, so that its assets can be accessed.
-func init() {
-	dir, err := importPathToDir("github.com/go-gl/example/gl41core-cube")
-	if err != nil {
-		log.Fatalln("Unable to find Go package in your GOPATH, it's needed to load assets:", err)
-	}
-	err = os.Chdir(dir)
-	if err != nil {
-		log.Panicln("os.Chdir:", err)
-	}
-}
-
-// importPathToDir resolves the absolute path from importPath.
-// There doesn't need to be a valid Go package inside that import path,
-// but the directory must exist.
-func importPathToDir(importPath string) (string, error) {
-	p, err := build.Import(importPath, "", build.FindOnly)
-	if err != nil {
-		return "", err
-	}
-	return p.Dir, nil
 }
