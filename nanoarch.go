@@ -9,10 +9,20 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"unsafe"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
+
+/*
+#include "libretro.h"
+#cgo LDFLAGS: -ldl
+#include <stdlib.h>
+#include <stdio.h>
+#include <dlfcn.h>
+*/
+import "C"
 
 func init() {
 	// GLFW event handling must run on the main OS thread
@@ -20,6 +30,14 @@ func init() {
 }
 
 func main() {
+
+	cstr := C.CString("snes9x_libretro.dylib")
+	defer C.free(unsafe.Pointer(cstr))
+	h := C.dlopen(cstr, C.RTLD_NOW)
+	if h == nil {
+		log.Fatalf("error loading %s\n", C.GoString(cstr))
+	}
+
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
 	}
