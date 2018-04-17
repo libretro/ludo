@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"image"
 	"image/draw"
@@ -30,8 +31,10 @@ func init() {
 }
 
 func main() {
+	var corePath = flag.String("L", "", "Path to the libretro core")
+	flag.Parse()
 
-	cstr := C.CString("snes9x_libretro.dylib")
+	cstr := C.CString(*corePath)
 	defer C.free(unsafe.Pointer(cstr))
 	h := C.dlopen(cstr, C.RTLD_NOW)
 	if h == nil {
