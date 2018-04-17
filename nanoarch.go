@@ -18,7 +18,6 @@ import (
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 const windowWidth = 800
@@ -61,10 +60,6 @@ func main() {
 	}
 
 	gl.UseProgram(program)
-
-	camera := mgl32.LookAtV(mgl32.Vec3{0, 0, 1}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
-	cameraUniform := gl.GetUniformLocation(program, gl.Str("camera\x00"))
-	gl.UniformMatrix4fv(cameraUniform, 1, false, &camera[0])
 
 	textureUniform := gl.GetUniformLocation(program, gl.Str("tex\x00"))
 	gl.Uniform1i(textureUniform, 0)
@@ -216,8 +211,6 @@ func newTexture(file string) (uint32, error) {
 var vertexShader = `
 #version 330
 
-uniform mat4 camera;
-
 in vec2 vert;
 in vec2 vertTexCoord;
 
@@ -225,7 +218,7 @@ out vec2 fragTexCoord;
 
 void main() {
     fragTexCoord = vertTexCoord;
-    gl_Position = camera * vec4(vert, 0, 1);
+    gl_Position = vec4(vert, 0, 1);
 }
 ` + "\x00"
 
