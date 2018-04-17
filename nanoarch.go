@@ -89,11 +89,11 @@ func main() {
 
 	vertAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vert\x00")))
 	gl.EnableVertexAttribArray(vertAttrib)
-	gl.VertexAttribPointer(vertAttrib, 3, gl.FLOAT, false, 5*4, gl.PtrOffset(0))
+	gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
 
 	texCoordAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vertTexCoord\x00")))
 	gl.EnableVertexAttribArray(texCoordAttrib)
-	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 5*4, gl.PtrOffset(3*4))
+	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
 	// Configure global settings
 	gl.ClearColor(1, 0, 0, 1.0)
@@ -218,14 +218,14 @@ var vertexShader = `
 
 uniform mat4 camera;
 
-in vec3 vert;
+in vec2 vert;
 in vec2 vertTexCoord;
 
 out vec2 fragTexCoord;
 
 void main() {
     fragTexCoord = vertTexCoord;
-    gl_Position = camera * vec4(vert, 1);
+    gl_Position = camera * vec4(vert, 0, 1);
 }
 ` + "\x00"
 
@@ -245,12 +245,12 @@ void main() {
 
 var vertices = []float32{
 	//  X, Y, Z, U, V
-	-1.0, -1.0, 0.0, 1.0, 0.0,
-	1.0, -1.0, 0.0, 0.0, 0.0,
-	-1.0, 1.0, 0.0, 1.0, 1.0,
-	1.0, -1.0, 0.0, 0.0, 0.0,
-	1.0, 1.0, 0.0, 0.0, 1.0,
-	-1.0, 1.0, 0.0, 1.0, 1.0,
+	-1.0, -1.0, 1.0, 0.0,
+	1.0, -1.0, 0.0, 0.0,
+	-1.0, 1.0, 1.0, 1.0,
+	1.0, -1.0, 0.0, 0.0,
+	1.0, 1.0, 0.0, 1.0,
+	-1.0, 1.0, 1.0, 1.0,
 }
 
 // Set the working directory to the root of Go package, so that its assets can be accessed.
