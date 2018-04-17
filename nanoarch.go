@@ -62,10 +62,6 @@ func main() {
 
 	gl.UseProgram(program)
 
-	projection := mgl32.Perspective(mgl32.DegToRad(90.0), 1.0, 0.1, 10.0)
-	projectionUniform := gl.GetUniformLocation(program, gl.Str("projection\x00"))
-	gl.UniformMatrix4fv(projectionUniform, 1, false, &projection[0])
-
 	camera := mgl32.LookAtV(mgl32.Vec3{0, 0, 1}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
 	cameraUniform := gl.GetUniformLocation(program, gl.Str("camera\x00"))
 	gl.UniformMatrix4fv(cameraUniform, 1, false, &camera[0])
@@ -100,8 +96,6 @@ func main() {
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 5*4, gl.PtrOffset(3*4))
 
 	// Configure global settings
-	gl.Enable(gl.DEPTH_TEST)
-	gl.DepthFunc(gl.LESS)
 	gl.ClearColor(1, 0, 0, 1.0)
 
 	for !window.ShouldClose() {
@@ -222,7 +216,6 @@ func newTexture(file string) (uint32, error) {
 var vertexShader = `
 #version 330
 
-uniform mat4 projection;
 uniform mat4 camera;
 
 in vec3 vert;
@@ -232,7 +225,7 @@ out vec2 fragTexCoord;
 
 void main() {
     fragTexCoord = vertTexCoord;
-    gl_Position = projection * camera * vec4(vert, 1);
+    gl_Position = camera * vec4(vert, 1);
 }
 ` + "\x00"
 
