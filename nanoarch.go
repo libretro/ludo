@@ -10,6 +10,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"unsafe"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
@@ -17,12 +18,21 @@ import (
 )
 
 /*
+#include <stdio.h>
 #include "libretro.h"
-bool core_environment(unsigned cmd, void *data) {
-	return true;
+bool coreEnvironment_cgo(unsigned cmd, void *data) {
+	printf("C.coreEnvironment_cgo(): called\n");
+	bool coreEnvironment(unsigned cmd, void *data);
+	return coreEnvironment(cmd, data);
 }
 */
 import "C"
+
+//export coreEnvironment
+func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
+	fmt.Printf("Go.coreEnvironment(): called\n")
+	return true
+}
 
 func init() {
 	// GLFW event handling must run on the main OS thread
@@ -50,7 +60,7 @@ func main() {
 
 	fmt.Println(retroAPIVersion())
 
-	retroSetEnvironment(C.retro_environment_t(C.core_environment))
+	retroSetEnvironment((C.retro_environment_t)(unsafe.Pointer(C.coreEnvironment_cgo)))
 
 	retroInit()
 
