@@ -55,11 +55,8 @@ func init() {
 	runtime.LockOSThread()
 }
 
-func main() {
-	var corePath = flag.String("L", "", "Path to the libretro core")
-	flag.Parse()
-
-	lib, err := dl.Open(*corePath, 0)
+func coreLoad(sofile string) {
+	lib, err := dl.Open(sofile, dl.RTLD_NOW)
 	if err != nil {
 		panic(err)
 	}
@@ -79,6 +76,13 @@ func main() {
 	retroSetEnvironment((C.retro_environment_t)(unsafe.Pointer(C.coreEnvironment_cgo)))
 
 	retroInit()
+}
+
+func main() {
+	var corePath = flag.String("L", "", "Path to the libretro core")
+	flag.Parse()
+
+	coreLoad(*corePath)
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
