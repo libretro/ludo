@@ -78,11 +78,29 @@ func coreLoad(sofile string) {
 	retroInit()
 }
 
+func coreLoadGame(filename string) {
+	file, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	fi, err := file.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	size := fi.Size()
+
+	fmt.Println(size)
+}
+
 func main() {
 	var corePath = flag.String("L", "", "Path to the libretro core")
+	var gamePath = flag.String("G", "", "Path to the game")
 	flag.Parse()
 
 	coreLoad(*corePath)
+	coreLoadGame(*gamePath)
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
