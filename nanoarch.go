@@ -10,25 +10,19 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"sync"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/gonuts/ffi"
+	"github.com/rainycape/dl"
 )
 
 /*
 #include "libretro.h"
-#cgo LDFLAGS: -ldl
-#include <stdlib.h>
-#include <stdio.h>
-#include <dlfcn.h>
-typedef void(*ri)(void);
-void bridge_retro_init(void* f) { ((ri)f)(); }
+bool core_environment(unsigned cmd, void *data) {
+	return true;
+}
 */
 import "C"
-
-var mu sync.Mutex
 
 func init() {
 	// GLFW event handling must run on the main OS thread
@@ -39,21 +33,25 @@ func main() {
 	var corePath = flag.String("L", "", "Path to the libretro core")
 	flag.Parse()
 
-	// mu.Lock()
-	// h := C.dlopen(C.CString(*corePath), C.RTLD_NOW)
-	// if h == nil {
-	// 	log.Fatalf("error loading %s\n", *corePath)
-	// }
-
-	// retroInit := C.dlsym(h, C.CString("retro_init"))
-	// C.bridge_retro_init(retroInit)
-	// mu.Unlock()
-
-	lib, _ := ffi.NewLibrary(*corePath)
-	retroInit, err := lib.Fct("retro_init", ffi.C_void, []ffi.Type{})
+	lib, err := dl.Open(*corePath, 0)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
+	defer lib.Close()
+	var retroInit func()
+	lib.Sym("retro_init", &retroInit)
+	var retroDeinit func()
+	lib.Sym("retro_deinit", &retroDeinit)
+	var retroAPIVersion func() uint
+	lib.Sym("retro_api_version", &retroAPIVersion)
+
+	var retroSetEnvironment func(C.retro_environment_t)
+	lib.Sym("retro_set_environment", &retroSetEnvironment)
+
+	fmt.Println(retroAPIVersion())
+
+	retroSetEnvironment(C.retro_environment_t(C.core_environment))
+
 	retroInit()
 
 	if err := glfw.Init(); err != nil {
