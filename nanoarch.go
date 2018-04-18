@@ -27,6 +27,26 @@ import "C"
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 	fmt.Printf("Go.coreEnvironment(): called\n")
+
+	switch cmd {
+	case C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
+		// TODO
+		break
+	case C.RETRO_ENVIRONMENT_GET_CAN_DUPE:
+		bval := (*C.bool)(data)
+		*bval = C.bool(true)
+		break
+	case C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT:
+		// TODO
+		break
+	case C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY:
+	case C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:
+		// TODO
+		break
+	default:
+		fmt.Println("Unhandled env", cmd)
+		return false
+	}
 	return true
 }
 
