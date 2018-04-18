@@ -18,13 +18,9 @@ import (
 )
 
 /*
-#include <stdio.h>
 #include "libretro.h"
-bool coreEnvironment_cgo(unsigned cmd, void *data) {
-	printf("C.coreEnvironment_cgo(): called\n");
-	bool coreEnvironment(unsigned cmd, void *data);
-	return coreEnvironment(cmd, data);
-}
+
+bool coreEnvironment_cgo(unsigned cmd, void *data);
 */
 import "C"
 
