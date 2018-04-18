@@ -55,25 +55,28 @@ func init() {
 	runtime.LockOSThread()
 }
 
+var retroInit func()
+var retroDeinit func()
+var retroAPIVersion func() uint
+var retroSetEnvironment func(C.retro_environment_t)
+var retroLoadGame func(*C.struct_retro_game_info) C.bool
+
 func coreLoad(sofile string) {
 	lib, err := dl.Open(sofile, dl.RTLD_NOW)
 	if err != nil {
 		panic(err)
 	}
 	defer lib.Close()
-	var retroInit func()
+
 	lib.Sym("retro_init", &retroInit)
-	var retroDeinit func()
 	lib.Sym("retro_deinit", &retroDeinit)
-	var retroAPIVersion func() uint
 	lib.Sym("retro_api_version", &retroAPIVersion)
-
-	var retroSetEnvironment func(C.retro_environment_t)
 	lib.Sym("retro_set_environment", &retroSetEnvironment)
-
-	fmt.Println(retroAPIVersion())
+	lib.Sym("retro_load_game", &retroLoadGame)
 
 	retroSetEnvironment((C.retro_environment_t)(unsafe.Pointer(C.coreEnvironment_cgo)))
+
+	fmt.Println("libretro API version:", retroAPIVersion())
 
 	retroInit()
 }
@@ -92,6 +95,13 @@ func coreLoadGame(filename string) {
 	size := fi.Size()
 
 	fmt.Println(size)
+
+	gi := C.struct_retro_game_info{
+		path: C.CString(filename),
+		size: C.size_t(size),
+	}
+
+	retroLoadGame(&gi)
 }
 
 func main() {
