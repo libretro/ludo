@@ -41,6 +41,7 @@ void coreInputPoll_cgo();
 void coreAudioSample_cgo(int16_t left, int16_t right);
 size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames);
 int16_t coreInputState_cgo(unsigned port, unsigned device, unsigned index, unsigned id);
+void coreLog_cgo(enum retro_log_level level, const char *fmt);
 */
 import "C"
 
@@ -106,13 +107,20 @@ func coreAudioSampleBatch(data unsafe.Pointer, frames C.size_t) C.size_t {
 	return 0
 }
 
+//export coreLog
+func coreLog(level C.enum_retro_log_level, format *C.char) {
+	//TODO
+	fmt.Printf("coreLog\n")
+}
+
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 	fmt.Printf("coreEnvironment: %v\n", cmd)
 
 	switch cmd {
 	case C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
-		// TODO
+		cb := (*C.struct_retro_log_callback)(data)
+		cb.log = (C.retro_log_printf_t)(C.coreLog_cgo)
 		break
 	case C.RETRO_ENVIRONMENT_GET_CAN_DUPE:
 		bval := (*C.bool)(data)
@@ -126,7 +134,7 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		return videoSetPixelFormat(*format)
 	case C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY:
 	case C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:
-		// TODO
+		fmt.Println("Please implement RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY or RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY")
 		break
 	default:
 		fmt.Println("Unhandled env:", cmd)

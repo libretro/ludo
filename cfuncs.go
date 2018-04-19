@@ -74,5 +74,10 @@ size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames) {
 	return coreAudioSampleBatch(data, frames);
 }
 
+void coreLog_cgo(enum retro_log_level level, const char *fmt) {
+	void coreLog(enum retro_log_level level, const char *fmt);
+	coreLog(level, fmt);
+}
+
 */
 import "C"
