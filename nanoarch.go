@@ -71,11 +71,13 @@ func videoSetPixelFormat(format uint32) C.bool {
 //export coreVideoRefresh
 func coreVideoRefresh(data unsafe.Pointer, width C.unsigned, height C.unsigned, pitch C.size_t) {
 	//TODO
+	fmt.Printf("coreVideoRefresh: %v %v\n", width, height)
 }
 
 //export coreInputPoll
 func coreInputPoll() {
 	//TODO
+	fmt.Printf("coreInputPoll\n")
 }
 
 //export coreEnvironment
