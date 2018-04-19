@@ -70,8 +70,8 @@ void coreAudioSample_cgo(int16_t left, int16_t right) {
 }
 
 size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames) {
-	void coreAudioSampleBatch(const int16_t*, size_t);
-	coreAudioSampleBatch(data, frames);
+	size_t coreAudioSampleBatch(const int16_t*, size_t);
+	return coreAudioSampleBatch(data, frames);
 }
 
 */
