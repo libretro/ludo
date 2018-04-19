@@ -36,9 +36,36 @@ import "C"
 
 var mu sync.Mutex
 
+func videoSetPixelFormat(format uint32) C.bool {
+	// if (g_video.tex_id)
+	// 	die("Tried to change pixel format after initialization.");
+
+	switch format {
+	case C.RETRO_PIXEL_FORMAT_0RGB1555:
+		// g_video.pixfmt = C.GL_UNSIGNED_SHORT_5_5_5_1
+		// g_video.pixtype = C.GL_BGRA
+		// g_video.bpp = sizeof(uint16_t)
+		break
+	case C.RETRO_PIXEL_FORMAT_XRGB8888:
+		// g_video.pixfmt = C.GL_UNSIGNED_INT_8_8_8_8_REV
+		// g_video.pixtype = C.GL_BGRA
+		// g_video.bpp = sizeof(uint32_t)
+		break
+	case C.RETRO_PIXEL_FORMAT_RGB565:
+		// g_video.pixfmt = C.GL_UNSIGNED_SHORT_5_6_5
+		// g_video.pixtype = C.GL_RGB
+		// g_video.bpp = sizeof(uint16_t)
+		break
+	default:
+		log.Fatalf("Unknown pixel type %v", format)
+	}
+
+	return true
+}
+
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
-	fmt.Printf("Go.coreEnvironment(): called\n")
+	fmt.Printf("Go.coreEnvironment(): called with %v\n", cmd)
 
 	switch cmd {
 	case C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
@@ -49,7 +76,13 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		*bval = C.bool(true)
 		break
 	case C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT:
-		// TODO
+		format := (*C.enum_retro_pixel_format)(data)
+
+		if *format > C.RETRO_PIXEL_FORMAT_RGB565 {
+			return false
+		}
+
+		return videoSetPixelFormat(*format)
 		break
 	case C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY:
 	case C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:
