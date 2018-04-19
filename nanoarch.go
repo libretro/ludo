@@ -28,9 +28,11 @@ void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
 unsigned bridge_retro_api_version(void *f);
 bool bridge_retro_set_environment(void *f, void *callback);
+void bridge_retro_set_video_refresh(void *f, void *callback);
 bool bridge_retro_load_game(void *f, struct retro_game_info *gi);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
+void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
 */
 import "C"
 
@@ -62,6 +64,11 @@ func videoSetPixelFormat(format uint32) C.bool {
 	}
 
 	return true
+}
+
+//export coreVideoRefresh
+func coreVideoRefresh(data unsafe.Pointer, width C.unsigned, height C.unsigned, pitch C.size_t) {
+	//TODO
 }
 
 //export coreEnvironment
@@ -102,6 +109,7 @@ var retroInit unsafe.Pointer
 var retroDeinit unsafe.Pointer
 var retroAPIVersion unsafe.Pointer
 var retroSetEnvironment unsafe.Pointer
+var retroSetVideoRefresh unsafe.Pointer
 var retroLoadGame unsafe.Pointer
 
 func coreLoad(sofile string) {
@@ -116,10 +124,12 @@ func coreLoad(sofile string) {
 	retroDeinit = C.dlsym(h, C.CString("retro_deinit"))
 	retroAPIVersion = C.dlsym(h, C.CString("retro_api_version"))
 	retroSetEnvironment = C.dlsym(h, C.CString("retro_set_environment"))
+	retroSetVideoRefresh = C.dlsym(h, C.CString("retro_set_video_refresh"))
 	retroLoadGame = C.dlsym(h, C.CString("retro_load_game"))
 	mu.Unlock()
 
 	C.bridge_retro_set_environment(retroSetEnvironment, C.coreEnvironment_cgo)
+	C.bridge_retro_set_video_refresh(retroSetVideoRefresh, C.coreVideoRefresh_cgo)
 
 	C.bridge_retro_init(retroInit)
 
