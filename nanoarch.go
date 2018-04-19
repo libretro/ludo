@@ -37,6 +37,7 @@ import "C"
 var mu sync.Mutex
 
 func videoSetPixelFormat(format uint32) C.bool {
+	fmt.Printf("videoSetPixelFormat: %v\n", format)
 	// if (g_video.tex_id)
 	// 	die("Tried to change pixel format after initialization.");
 
@@ -65,7 +66,7 @@ func videoSetPixelFormat(format uint32) C.bool {
 
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
-	fmt.Printf("Go.coreEnvironment(): called with %v\n", cmd)
+	fmt.Printf("coreEnvironment: %v\n", cmd)
 
 	switch cmd {
 	case C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
@@ -77,19 +78,16 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		break
 	case C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT:
 		format := (*C.enum_retro_pixel_format)(data)
-
 		if *format > C.RETRO_PIXEL_FORMAT_RGB565 {
 			return false
 		}
-
 		return videoSetPixelFormat(*format)
-		break
 	case C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY:
 	case C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:
 		// TODO
 		break
 	default:
-		fmt.Println("Unhandled env", cmd)
+		fmt.Println("Unhandled env:", cmd)
 		return false
 	}
 	return true
@@ -126,7 +124,7 @@ func coreLoad(sofile string) {
 	C.bridge_retro_init(retroInit)
 
 	v := C.bridge_retro_api_version(retroAPIVersion)
-	fmt.Println(v)
+	fmt.Println("Libretro API version:", v)
 }
 
 func coreLoadGame(filename string) {
@@ -142,7 +140,7 @@ func coreLoadGame(filename string) {
 
 	size := fi.Size()
 
-	fmt.Println(size)
+	fmt.Println("ROM size:", size)
 
 	gi := C.struct_retro_game_info{
 		path: C.CString(filename),
