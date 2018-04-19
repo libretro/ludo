@@ -10,19 +10,31 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 	"unsafe"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/rainycape/dl"
 )
 
 /*
 #include "libretro.h"
+#cgo LDFLAGS: -ldl
+#include <stdlib.h>
+#include <stdio.h>
+#include <dlfcn.h>
+
+void bridge_retro_init(void *f);
+void bridge_retro_deinit(void *f);
+unsigned bridge_retro_api_version(void *f);
+bool bridge_retro_set_environment(void *f, void *callback);
+bool bridge_retro_load_game(void *f, struct retro_game_info *gi);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 */
 import "C"
+
+var mu sync.Mutex
 
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
@@ -55,30 +67,33 @@ func init() {
 	runtime.LockOSThread()
 }
 
-var retroInit func()
-var retroDeinit func()
-var retroAPIVersion func() uint
-var retroSetEnvironment func(C.retro_environment_t)
-var retroLoadGame func(*C.struct_retro_game_info) C.bool
+var retroInit unsafe.Pointer
+var retroDeinit unsafe.Pointer
+var retroAPIVersion unsafe.Pointer
+var retroSetEnvironment unsafe.Pointer
+var retroLoadGame unsafe.Pointer
 
 func coreLoad(sofile string) {
-	lib, err := dl.Open(sofile, dl.RTLD_NOW)
-	if err != nil {
-		panic(err)
+
+	mu.Lock()
+	h := C.dlopen(C.CString(sofile), C.RTLD_NOW)
+	if h == nil {
+		log.Fatalf("error loading %s\n", sofile)
 	}
-	defer lib.Close()
 
-	lib.Sym("retro_init", &retroInit)
-	lib.Sym("retro_deinit", &retroDeinit)
-	lib.Sym("retro_api_version", &retroAPIVersion)
-	lib.Sym("retro_set_environment", &retroSetEnvironment)
-	lib.Sym("retro_load_game", &retroLoadGame)
+	retroInit = C.dlsym(h, C.CString("retro_init"))
+	retroDeinit = C.dlsym(h, C.CString("retro_deinit"))
+	retroAPIVersion = C.dlsym(h, C.CString("retro_api_version"))
+	retroSetEnvironment = C.dlsym(h, C.CString("retro_set_environment"))
+	retroLoadGame = C.dlsym(h, C.CString("retro_load_game"))
+	mu.Unlock()
 
-	retroSetEnvironment((C.retro_environment_t)(unsafe.Pointer(C.coreEnvironment_cgo)))
+	C.bridge_retro_set_environment(retroSetEnvironment, C.coreEnvironment_cgo)
 
-	fmt.Println("libretro API version:", retroAPIVersion())
+	C.bridge_retro_init(retroInit)
 
-	retroInit()
+	v := C.bridge_retro_api_version(retroAPIVersion)
+	fmt.Println(v)
 }
 
 func coreLoadGame(filename string) {
@@ -101,7 +116,7 @@ func coreLoadGame(filename string) {
 		size: C.size_t(size),
 	}
 
-	retroLoadGame(&gi)
+	C.bridge_retro_load_game(retroLoadGame, &gi)
 }
 
 func main() {
