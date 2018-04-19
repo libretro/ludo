@@ -32,6 +32,14 @@ void bridge_retro_set_input_state(void *f, void *callback) {
 	((bool (*)(retro_input_state_t))f)((retro_input_state_t)callback);
 }
 
+void bridge_retro_set_audio_sample(void *f, void *callback) {
+	((bool (*)(retro_audio_sample_t))f)((retro_audio_sample_t)callback);
+}
+
+void bridge_retro_set_audio_sample_batch(void *f, void *callback) {
+	((bool (*)(retro_audio_sample_batch_t))f)((retro_audio_sample_batch_t)callback);
+}
+
 bool bridge_retro_load_game(void *f, struct retro_game_info *gi) {
   return ((bool (*)(struct retro_game_info *))f)(gi);
 }
@@ -54,6 +62,16 @@ void coreInputPoll_cgo() {
 int16_t coreInputState_cgo(unsigned port, unsigned device, unsigned index, unsigned id) {
 	int16_t coreInputState(unsigned, unsigned, unsigned, unsigned);
 	return coreInputState(port, device, index, id);
+}
+
+void coreAudioSample_cgo(int16_t left, int16_t right) {
+	void coreAudioSample(int16_t, int16_t);
+	coreAudioSample(left, right);
+}
+
+size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames) {
+	void coreAudioSampleBatch(const int16_t*, size_t);
+	coreAudioSampleBatch(data, frames);
 }
 
 */

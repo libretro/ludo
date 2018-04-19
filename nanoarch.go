@@ -31,11 +31,15 @@ bool bridge_retro_set_environment(void *f, void *callback);
 void bridge_retro_set_video_refresh(void *f, void *callback);
 void bridge_retro_set_input_poll(void *f, void *callback);
 void bridge_retro_set_input_state(void *f, void *callback);
+void bridge_retro_set_audio_sample(void *f, void *callback);
+void bridge_retro_set_audio_sample_batch(void *f, void *callback);
 bool bridge_retro_load_game(void *f, struct retro_game_info *gi);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
 void coreInputPoll_cgo();
+void coreAudioSample_cgo(int16_t left, int16_t right);
+size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames);
 int16_t coreInputState_cgo(unsigned port, unsigned device, unsigned index, unsigned id);
 */
 import "C"
@@ -89,6 +93,19 @@ func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.u
 	return 0
 }
 
+//export coreAudioSample
+func coreAudioSample(left C.int16_t, right C.int16_t) {
+	//TODO
+	fmt.Printf("coreAudioSample\n")
+}
+
+//export coreAudioSampleBatch
+func coreAudioSampleBatch(data unsafe.Pointer, frames C.size_t) C.size_t {
+	//TODO
+	fmt.Printf("coreAudioSampleBatch\n")
+	return 0
+}
+
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 	fmt.Printf("coreEnvironment: %v\n", cmd)
@@ -130,6 +147,8 @@ var retroSetEnvironment unsafe.Pointer
 var retroSetVideoRefresh unsafe.Pointer
 var retroSetInputPoll unsafe.Pointer
 var retroSetInputState unsafe.Pointer
+var retroSetAudioSample unsafe.Pointer
+var retroSetAudioSampleBatch unsafe.Pointer
 var retroLoadGame unsafe.Pointer
 
 func coreLoad(sofile string) {
@@ -147,6 +166,8 @@ func coreLoad(sofile string) {
 	retroSetVideoRefresh = C.dlsym(h, C.CString("retro_set_video_refresh"))
 	retroSetInputPoll = C.dlsym(h, C.CString("retro_set_input_poll"))
 	retroSetInputState = C.dlsym(h, C.CString("retro_set_input_state"))
+	retroSetAudioSample = C.dlsym(h, C.CString("retro_set_audio_sample"))
+	retroSetAudioSampleBatch = C.dlsym(h, C.CString("retro_set_audio_sample_batch"))
 	retroLoadGame = C.dlsym(h, C.CString("retro_load_game"))
 	mu.Unlock()
 
@@ -154,6 +175,8 @@ func coreLoad(sofile string) {
 	C.bridge_retro_set_video_refresh(retroSetVideoRefresh, C.coreVideoRefresh_cgo)
 	C.bridge_retro_set_input_poll(retroSetInputPoll, C.coreInputPoll_cgo)
 	C.bridge_retro_set_input_state(retroSetInputState, C.coreInputState_cgo)
+	C.bridge_retro_set_audio_sample(retroSetAudioSample, C.coreAudioSample_cgo)
+	C.bridge_retro_set_audio_sample_batch(retroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
 
 	C.bridge_retro_init(retroInit)
 
