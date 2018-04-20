@@ -87,33 +87,33 @@ func videoSetPixelFormat(format uint32) C.bool {
 
 //export coreVideoRefresh
 func coreVideoRefresh(data unsafe.Pointer, width C.unsigned, height C.unsigned, pitch C.size_t) {
-	//TODO
-	fmt.Printf("coreVideoRefresh: %v %v\n", width, height)
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+
+	if uint32(pitch) != video.pitch {
+		video.pitch = uint32(pitch)
+		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, int32(video.pitch/video.bpp))
+	}
+
+	if data != nil {
+		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, int32(width), int32(height), video.pixType, video.pixFmt, data)
+	}
 }
 
 //export coreInputPoll
 func coreInputPoll() {
-	//TODO
-	fmt.Printf("coreInputPoll\n")
 }
 
 //export coreInputState
 func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.unsigned) C.int16_t {
-	//TODO
-	fmt.Printf("coreInputState\n")
 	return 0
 }
 
 //export coreAudioSample
 func coreAudioSample(left C.int16_t, right C.int16_t) {
-	//TODO
-	fmt.Printf("coreAudioSample\n")
 }
 
 //export coreAudioSampleBatch
 func coreAudioSampleBatch(data unsafe.Pointer, frames C.size_t) C.size_t {
-	//TODO
-	fmt.Printf("coreAudioSampleBatch\n")
 	return 0
 }
 
@@ -124,8 +124,6 @@ func coreLog(level C.enum_retro_log_level, format *C.char) {
 
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
-	fmt.Printf("coreEnvironment: %v\n", cmd)
-
 	switch cmd {
 	case C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
 		cb := (*C.struct_retro_log_callback)(data)
@@ -147,7 +145,6 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		*path = C.CString(".")
 		return true
 	default:
-		fmt.Println("  Unhandled env:", cmd)
 		return false
 	}
 	return true
@@ -313,12 +310,6 @@ func main() {
 
 	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
 
-	// Load the texture
-	// texture, err = newTexture("square.png")
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
-
 	if video.texID != 0 {
 		gl.DeleteTextures(1, &video.texID)
 	}
@@ -436,44 +427,6 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 
 	return shader, nil
 }
-
-// func newTexture(file string) (uint32, error) {
-// 	imgFile, err := os.Open(file)
-// 	if err != nil {
-// 		return 0, fmt.Errorf("texture %q not found on disk: %v", file, err)
-// 	}
-// 	img, _, err := image.Decode(imgFile)
-// 	if err != nil {
-// 		return 0, err
-// 	}
-
-// 	rgba := image.NewRGBA(img.Bounds())
-// 	if rgba.Stride != rgba.Rect.Size().X*4 {
-// 		return 0, fmt.Errorf("unsupported stride")
-// 	}
-// 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-
-// 	var texture uint32
-// 	gl.GenTextures(1, &texture)
-// 	gl.ActiveTexture(gl.TEXTURE0)
-// 	gl.BindTexture(gl.TEXTURE_2D, texture)
-// 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-// 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-// 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-// 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-// 	gl.TexImage2D(
-// 		gl.TEXTURE_2D,
-// 		0,
-// 		gl.RGBA,
-// 		int32(rgba.Rect.Size().X),
-// 		int32(rgba.Rect.Size().Y),
-// 		0,
-// 		gl.RGBA,
-// 		gl.UNSIGNED_BYTE,
-// 		gl.Ptr(rgba.Pix))
-
-// 	return texture, nil
-// }
 
 var vertexShader = `
 #version 330
