@@ -27,6 +27,7 @@ import (
 void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
 unsigned bridge_retro_api_version(void *f);
+void bridge_retro_get_system_info(void *f, struct retro_system_info *si);
 bool bridge_retro_set_environment(void *f, void *callback);
 void bridge_retro_set_video_refresh(void *f, void *callback);
 void bridge_retro_set_input_poll(void *f, void *callback);
@@ -151,6 +152,7 @@ func init() {
 var retroInit unsafe.Pointer
 var retroDeinit unsafe.Pointer
 var retroAPIVersion unsafe.Pointer
+var retroGetSystemInfo unsafe.Pointer
 var retroSetEnvironment unsafe.Pointer
 var retroSetVideoRefresh unsafe.Pointer
 var retroSetInputPoll unsafe.Pointer
@@ -170,6 +172,7 @@ func coreLoad(sofile string) {
 	retroInit = C.dlsym(h, C.CString("retro_init"))
 	retroDeinit = C.dlsym(h, C.CString("retro_deinit"))
 	retroAPIVersion = C.dlsym(h, C.CString("retro_api_version"))
+	retroGetSystemInfo = C.dlsym(h, C.CString("retro_get_system_info"))
 	retroSetEnvironment = C.dlsym(h, C.CString("retro_set_environment"))
 	retroSetVideoRefresh = C.dlsym(h, C.CString("retro_set_video_refresh"))
 	retroSetInputPoll = C.dlsym(h, C.CString("retro_set_input_poll"))
@@ -207,12 +210,25 @@ func coreLoadGame(filename string) {
 
 	fmt.Println("ROM size:", size)
 
+	si := C.struct_retro_system_info{}
+
+	C.bridge_retro_get_system_info(retroGetSystemInfo, &si)
+
+	fmt.Println("  library_name:", C.GoString(si.library_name))
+	fmt.Println("  library_version:", C.GoString(si.library_version))
+	fmt.Println("  valid_extensions:", C.GoString(si.valid_extensions))
+	fmt.Println("  need_fullpath:", si.need_fullpath)
+	fmt.Println("  block_extract:", si.block_extract)
+
 	gi := C.struct_retro_game_info{
 		path: C.CString(filename),
 		size: C.size_t(size),
 	}
 
-	C.bridge_retro_load_game(retroLoadGame, &gi)
+	ok := C.bridge_retro_load_game(retroLoadGame, &gi)
+	if !ok {
+		fmt.Println("The core failed to load the content.")
+	}
 }
 
 func main() {
