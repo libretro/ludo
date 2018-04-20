@@ -47,6 +47,8 @@ void coreLog_cgo(enum retro_log_level level, const char *fmt);
 */
 import "C"
 
+var window *glfw.Window
+
 var mu sync.Mutex
 
 var video struct {
@@ -88,7 +90,66 @@ func videoSetPixelFormat(format uint32) C.bool {
 	return true
 }
 
+func createWindow(width int, height int) {
+	fmt.Println("Create window")
+
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.ContextVersionMajor, 4)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+	var err error
+	window, err = glfw.CreateWindow(width, height, "nanorarch", nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	window.MakeContextCurrent()
+
+	// Initialize Glow
+	if err := gl.Init(); err != nil {
+		panic(err)
+	}
+
+	version := gl.GoStr(gl.GetString(gl.VERSION))
+	fmt.Println("OpenGL version", version)
+
+	// Configure the vertex and fragment shaders
+	video.program, err = newProgram(vertexShader, fragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	gl.UseProgram(video.program)
+
+	textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
+	gl.Uniform1i(textureUniform, 0)
+
+	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
+
+	// Configure the vertex data
+	gl.GenVertexArrays(1, &video.vao)
+	gl.BindVertexArray(video.vao)
+
+	var vbo uint32
+	gl.GenBuffers(1, &vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
+
+	vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
+	gl.EnableVertexAttribArray(vertAttrib)
+	gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
+
+	texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
+	gl.EnableVertexAttribArray(texCoordAttrib)
+	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
+}
+
 func videoConfigure(geom *C.struct_retro_game_geometry) {
+
+	if window == nil {
+		createWindow(int(geom.base_width), int(geom.base_height))
+	}
+
 	if video.texID != 0 {
 		gl.DeleteTextures(1, &video.texID)
 	}
@@ -296,7 +357,7 @@ func coreLoadGame(filename string) {
 
 	C.bridge_retro_get_system_av_info(retroGetSystemAVInfo, &avi)
 
-	//videoConfigure(&avi.geometry)
+	videoConfigure(&avi.geometry)
 }
 
 func videoRender() {
@@ -313,71 +374,13 @@ func main() {
 	var gamePath = flag.String("G", "", "Path to the game")
 	flag.Parse()
 
-	coreLoad(*corePath)
-	coreLoadGame(*gamePath)
-
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
 	}
 	defer glfw.Terminate()
 
-	glfw.WindowHint(glfw.Resizable, glfw.False)
-	glfw.WindowHint(glfw.ContextVersionMajor, 4)
-	glfw.WindowHint(glfw.ContextVersionMinor, 1)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-	window, err := glfw.CreateWindow(800, 600, "nanorarch", nil, nil)
-	if err != nil {
-		panic(err)
-	}
-	window.MakeContextCurrent()
-
-	// Initialize Glow
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
-
-	// Configure the vertex and fragment shaders
-	video.program, err = newProgram(vertexShader, fragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	gl.UseProgram(video.program)
-
-	textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
-	gl.Uniform1i(textureUniform, 0)
-
-	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
-
-	avi := C.struct_retro_system_av_info{}
-	avi.geometry = C.struct_retro_game_geometry{}
-	avi.geometry.base_width = 256
-	avi.geometry.base_height = 240
-	videoConfigure(&avi.geometry)
-
-	// Configure the vertex data
-	gl.GenVertexArrays(1, &video.vao)
-	gl.BindVertexArray(video.vao)
-
-	var vbo uint32
-	gl.GenBuffers(1, &vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
-
-	vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
-	gl.EnableVertexAttribArray(vertAttrib)
-	gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
-
-	texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
-	gl.EnableVertexAttribArray(texCoordAttrib)
-	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
-
-	// Configure global settings
-	gl.ClearColor(1, 0, 0, 1.0)
+	coreLoad(*corePath)
+	coreLoadGame(*gamePath)
 
 	for !window.ShouldClose() {
 		glfw.PollEvents()
