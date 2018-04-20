@@ -63,6 +63,21 @@ var video struct {
 
 var scale = 3.0
 
+var binds = map[glfw.Key]C.int{
+	glfw.KeyX:         C.RETRO_DEVICE_ID_JOYPAD_A,
+	glfw.KeyZ:         C.RETRO_DEVICE_ID_JOYPAD_B,
+	glfw.KeyA:         C.RETRO_DEVICE_ID_JOYPAD_Y,
+	glfw.KeyS:         C.RETRO_DEVICE_ID_JOYPAD_X,
+	glfw.KeyUp:        C.RETRO_DEVICE_ID_JOYPAD_UP,
+	glfw.KeyDown:      C.RETRO_DEVICE_ID_JOYPAD_DOWN,
+	glfw.KeyLeft:      C.RETRO_DEVICE_ID_JOYPAD_LEFT,
+	glfw.KeyRight:     C.RETRO_DEVICE_ID_JOYPAD_RIGHT,
+	glfw.KeyEnter:     C.RETRO_DEVICE_ID_JOYPAD_START,
+	glfw.KeyBackspace: C.RETRO_DEVICE_ID_JOYPAD_SELECT,
+}
+
+var joy [C.RETRO_DEVICE_ID_JOYPAD_R3 + 1]bool
+
 func videoSetPixelFormat(format uint32) C.bool {
 	fmt.Printf("videoSetPixelFormat: %v\n", format)
 	if video.texID != 0 {
@@ -218,10 +233,20 @@ func coreVideoRefresh(data unsafe.Pointer, width C.unsigned, height C.unsigned, 
 
 //export coreInputPoll
 func coreInputPoll() {
+	for k, v := range binds {
+		joy[v] = (window.GetKey(k) == glfw.Press)
+	}
 }
 
 //export coreInputState
 func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.unsigned) C.int16_t {
+	if port > 0 || index > 0 || device != C.RETRO_DEVICE_JOYPAD {
+		return 0
+	}
+
+	if joy[id] {
+		return 1
+	}
 	return 0
 }
 
