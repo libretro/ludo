@@ -48,6 +48,10 @@ bool bridge_retro_load_game(void *f, struct retro_game_info *gi) {
   return ((bool (*)(struct retro_game_info *))f)(gi);
 }
 
+void bridge_retro_run(void *f) {
+	return ((void (*)(void))f)();
+}
+
 bool coreEnvironment_cgo(unsigned cmd, void *data) {
 	bool coreEnvironment(unsigned, void*);
 	return coreEnvironment(cmd, data);

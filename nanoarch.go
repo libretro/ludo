@@ -36,6 +36,7 @@ void bridge_retro_set_input_state(void *f, void *callback);
 void bridge_retro_set_audio_sample(void *f, void *callback);
 void bridge_retro_set_audio_sample_batch(void *f, void *callback);
 bool bridge_retro_load_game(void *f, struct retro_game_info *gi);
+void bridge_retro_run(void *f);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -160,6 +161,7 @@ var retroSetInputPoll unsafe.Pointer
 var retroSetInputState unsafe.Pointer
 var retroSetAudioSample unsafe.Pointer
 var retroSetAudioSampleBatch unsafe.Pointer
+var retroRun unsafe.Pointer
 var retroLoadGame unsafe.Pointer
 
 func coreLoad(sofile string) {
@@ -180,6 +182,7 @@ func coreLoad(sofile string) {
 	retroSetInputState = C.dlsym(h, C.CString("retro_set_input_state"))
 	retroSetAudioSample = C.dlsym(h, C.CString("retro_set_audio_sample"))
 	retroSetAudioSampleBatch = C.dlsym(h, C.CString("retro_set_audio_sample_batch"))
+	retroRun = C.dlsym(h, C.CString("retro_run"))
 	retroLoadGame = C.dlsym(h, C.CString("retro_load_game"))
 	mu.Unlock()
 
@@ -319,6 +322,8 @@ func main() {
 	gl.ClearColor(1, 0, 0, 1.0)
 
 	for !window.ShouldClose() {
+		C.bridge_retro_run(retroRun)
+
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		// Render
