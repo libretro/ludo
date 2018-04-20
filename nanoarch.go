@@ -109,8 +109,7 @@ func coreAudioSampleBatch(data unsafe.Pointer, frames C.size_t) C.size_t {
 
 //export coreLog
 func coreLog(level C.enum_retro_log_level, format *C.char) {
-	//TODO
-	fmt.Printf("coreLog\n")
+	fmt.Printf("coreLog: " + C.GoString(format))
 }
 
 //export coreEnvironment
@@ -137,7 +136,7 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		fmt.Println("Please implement RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY or RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY")
 		break
 	default:
-		fmt.Println("Unhandled env:", cmd)
+		fmt.Println("  Unhandled env:", cmd)
 		return false
 	}
 	return true
