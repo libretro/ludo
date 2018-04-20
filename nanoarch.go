@@ -91,8 +91,6 @@ func videoSetPixelFormat(format uint32) C.bool {
 }
 
 func createWindow(width int, height int) {
-	fmt.Println("Create window")
-
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
@@ -145,7 +143,6 @@ func createWindow(width int, height int) {
 }
 
 func videoConfigure(geom *C.struct_retro_game_geometry) {
-
 	if window == nil {
 		createWindow(int(geom.base_width), int(geom.base_height))
 	}
@@ -178,7 +175,6 @@ func videoConfigure(geom *C.struct_retro_game_geometry) {
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(geom.base_width), int32(geom.base_height), 0, video.pixType, video.pixFmt, nil)
 
 	gl.BindTexture(gl.TEXTURE_2D, 0)
-
 }
 
 //export coreVideoRefresh
@@ -189,9 +185,6 @@ func coreVideoRefresh(data unsafe.Pointer, width C.unsigned, height C.unsigned, 
 		video.pitch = uint32(pitch)
 		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, int32(video.pitch/video.bpp))
 	}
-
-	// ba := *(*[]byte)(data)
-	// fmt.Println(len(ba))
 
 	if data != nil {
 		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, int32(width), int32(height), video.pixType, video.pixFmt, data)
