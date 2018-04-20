@@ -49,6 +49,8 @@ import "C"
 var mu sync.Mutex
 
 var video struct {
+	program uint32
+	vao     uint32
 	texID   uint32
 	pitch   uint32
 	pixFmt  uint32
@@ -253,11 +255,8 @@ func coreLoadGame(filename string) {
 	}
 }
 
-var program uint32
-var vao uint32
-
 func videoRender() {
-	gl.BindVertexArray(vao)
+	gl.BindVertexArray(video.vao)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
@@ -298,17 +297,17 @@ func main() {
 	fmt.Println("OpenGL version", version)
 
 	// Configure the vertex and fragment shaders
-	program, err = newProgram(vertexShader, fragmentShader)
+	video.program, err = newProgram(vertexShader, fragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	gl.UseProgram(program)
+	gl.UseProgram(video.program)
 
-	textureUniform := gl.GetUniformLocation(program, gl.Str("tex\x00"))
+	textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
 	gl.Uniform1i(textureUniform, 0)
 
-	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
+	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
 
 	if video.texID != 0 {
 		gl.DeleteTextures(1, &video.texID)
@@ -320,6 +319,7 @@ func main() {
 	}
 
 	gl.GenTextures(1, &video.texID)
+	gl.ActiveTexture(gl.TEXTURE0)
 	if video.texID == 0 {
 		fmt.Println("Failed to create the video texture")
 	}
@@ -335,22 +335,22 @@ func main() {
 
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 256, 224, 0, video.pixType, video.pixFmt, nil)
 
-	gl.BindTexture(gl.TEXTURE_2D, 0)
+	//gl.BindTexture(gl.TEXTURE_2D, 0)
 
 	// Configure the vertex data
-	gl.GenVertexArrays(1, &vao)
-	gl.BindVertexArray(vao)
+	gl.GenVertexArrays(1, &video.vao)
+	gl.BindVertexArray(video.vao)
 
 	var vbo uint32
 	gl.GenBuffers(1, &vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
 
-	vertAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vert\x00")))
+	vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
 	gl.EnableVertexAttribArray(vertAttrib)
 	gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
 
-	texCoordAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vertTexCoord\x00")))
+	texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
 	gl.EnableVertexAttribArray(texCoordAttrib)
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
