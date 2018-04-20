@@ -27,6 +27,7 @@ void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
 unsigned bridge_retro_api_version(void *f);
 void bridge_retro_get_system_info(void *f, struct retro_system_info *si);
+void bridge_retro_get_system_av_info(void *f, struct retro_system_av_info *si);
 bool bridge_retro_set_environment(void *f, void *callback);
 void bridge_retro_set_video_refresh(void *f, void *callback);
 void bridge_retro_set_input_poll(void *f, void *callback);
@@ -68,23 +69,55 @@ func videoSetPixelFormat(format uint32) C.bool {
 	case C.RETRO_PIXEL_FORMAT_0RGB1555:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 		video.pixType = gl.BGRA
-		video.bpp = 16
+		video.bpp = 2
 		break
 	case C.RETRO_PIXEL_FORMAT_XRGB8888:
 		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
 		video.pixType = gl.BGRA
-		video.bpp = 32
+		video.bpp = 4
 		break
 	case C.RETRO_PIXEL_FORMAT_RGB565:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_6_5
 		video.pixType = gl.RGB
-		video.bpp = 16
+		video.bpp = 2
 		break
 	default:
 		log.Fatalf("Unknown pixel type %v", format)
 	}
 
 	return true
+}
+
+func videoConfigure(geom *C.struct_retro_game_geometry) {
+	if video.texID != 0 {
+		gl.DeleteTextures(1, &video.texID)
+	}
+	video.texID = 0
+
+	if video.pixFmt != 0 {
+		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+	}
+
+	gl.GenTextures(1, &video.texID)
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	if video.texID == 0 {
+		fmt.Println("Failed to create the video texture")
+	}
+
+	video.pitch = uint32(geom.base_width) * video.bpp
+
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(geom.base_width), int32(geom.base_height), 0, video.pixType, video.pixFmt, nil)
+
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+
 }
 
 //export coreVideoRefresh
@@ -95,6 +128,9 @@ func coreVideoRefresh(data unsafe.Pointer, width C.unsigned, height C.unsigned, 
 		video.pitch = uint32(pitch)
 		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, int32(video.pitch/video.bpp))
 	}
+
+	// ba := *(*[]byte)(data)
+	// fmt.Println(len(ba))
 
 	if data != nil {
 		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, int32(width), int32(height), video.pixType, video.pixFmt, data)
@@ -161,6 +197,7 @@ var retroInit unsafe.Pointer
 var retroDeinit unsafe.Pointer
 var retroAPIVersion unsafe.Pointer
 var retroGetSystemInfo unsafe.Pointer
+var retroGetSystemAVInfo unsafe.Pointer
 var retroSetEnvironment unsafe.Pointer
 var retroSetVideoRefresh unsafe.Pointer
 var retroSetInputPoll unsafe.Pointer
@@ -182,6 +219,7 @@ func coreLoad(sofile string) {
 	retroDeinit = C.dlsym(h, C.CString("retro_deinit"))
 	retroAPIVersion = C.dlsym(h, C.CString("retro_api_version"))
 	retroGetSystemInfo = C.dlsym(h, C.CString("retro_get_system_info"))
+	retroGetSystemAVInfo = C.dlsym(h, C.CString("retro_get_system_av_info"))
 	retroSetEnvironment = C.dlsym(h, C.CString("retro_set_environment"))
 	retroSetVideoRefresh = C.dlsym(h, C.CString("retro_set_video_refresh"))
 	retroSetInputPoll = C.dlsym(h, C.CString("retro_set_input_poll"))
@@ -253,6 +291,12 @@ func coreLoadGame(filename string) {
 	if !ok {
 		fmt.Println("The core failed to load the content.")
 	}
+
+	avi := C.struct_retro_system_av_info{}
+
+	C.bridge_retro_get_system_av_info(retroGetSystemAVInfo, &avi)
+
+	//videoConfigure(&avi.geometry)
 }
 
 func videoRender() {
@@ -309,33 +353,11 @@ func main() {
 
 	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
 
-	if video.texID != 0 {
-		gl.DeleteTextures(1, &video.texID)
-	}
-	video.texID = 0
-
-	if video.pixFmt != 0 {
-		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-	}
-
-	gl.GenTextures(1, &video.texID)
-	gl.ActiveTexture(gl.TEXTURE0)
-	if video.texID == 0 {
-		fmt.Println("Failed to create the video texture")
-	}
-
-	video.pitch = 256 * video.bpp
-
-	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 256, 224, 0, video.pixType, video.pixFmt, nil)
-
-	//gl.BindTexture(gl.TEXTURE_2D, 0)
+	avi := C.struct_retro_system_av_info{}
+	avi.geometry = C.struct_retro_game_geometry{}
+	avi.geometry.base_width = 256
+	avi.geometry.base_height = 240
+	videoConfigure(&avi.geometry)
 
 	// Configure the vertex data
 	gl.GenVertexArrays(1, &video.vao)
