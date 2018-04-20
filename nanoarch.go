@@ -133,8 +133,9 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		return videoSetPixelFormat(*format)
 	case C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY:
 	case C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:
-		fmt.Println("Please implement RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY or RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY")
-		break
+		path := (**C.char)(data)
+		*path = C.CString(".")
+		return true
 	default:
 		fmt.Println("  Unhandled env:", cmd)
 		return false
