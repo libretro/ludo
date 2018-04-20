@@ -61,6 +61,8 @@ var video struct {
 	bpp     uint32
 }
 
+var scale = 3.0
+
 func videoSetPixelFormat(format uint32) C.bool {
 	fmt.Printf("videoSetPixelFormat: %v\n", format)
 	if video.texID != 0 {
@@ -143,8 +145,12 @@ func createWindow(width int, height int) {
 }
 
 func videoConfigure(geom *C.struct_retro_game_geometry) {
+
+	nwidth := float64(geom.base_width) * scale
+	nheight := float64(geom.base_height) * scale
+
 	if window == nil {
-		createWindow(int(geom.base_width), int(geom.base_height))
+		createWindow(int(nwidth), int(nheight))
 	}
 
 	if video.texID != 0 {
