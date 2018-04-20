@@ -144,10 +144,27 @@ func createWindow(width int, height int) {
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 }
 
+func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float64) {
+	if ratio <= 0 {
+		ratio = sw / sh
+	}
+
+	if sw/sh < 1.0 {
+		dw = dh * ratio
+		dh = sh
+	} else {
+		dw = sw
+		dh = dw / ratio
+	}
+	return
+}
+
 func videoConfigure(geom *C.struct_retro_game_geometry) {
 
-	nwidth := float64(geom.base_width) * scale
-	nheight := float64(geom.base_height) * scale
+	nwidth, nheight := resizeToAspect(float64(geom.aspect_ratio), float64(geom.base_width), float64(geom.base_height))
+
+	nwidth = nwidth * scale
+	nheight = nheight * scale
 
 	if window == nil {
 		createWindow(int(nwidth), int(nheight))
