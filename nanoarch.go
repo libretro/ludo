@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"image"
@@ -210,6 +211,11 @@ func coreLoadGame(filename string) {
 
 	fmt.Println("ROM size:", size)
 
+	gi := C.struct_retro_game_info{
+		path: C.CString(filename),
+		size: C.size_t(size),
+	}
+
 	si := C.struct_retro_system_info{}
 
 	C.bridge_retro_get_system_info(retroGetSystemInfo, &si)
@@ -220,9 +226,18 @@ func coreLoadGame(filename string) {
 	fmt.Println("  need_fullpath:", si.need_fullpath)
 	fmt.Println("  block_extract:", si.block_extract)
 
-	gi := C.struct_retro_game_info{
-		path: C.CString(filename),
-		size: C.size_t(size),
+	if !si.need_fullpath {
+		f, err := os.Open(filename)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer f.Close()
+		bytes := make([]byte, gi.size)
+		bufr := bufio.NewReader(file)
+		_, err = bufr.Read(bytes)
+		cstr := C.CString(string(bytes[:]))
+		gi.data = unsafe.Pointer(cstr)
 	}
 
 	ok := C.bridge_retro_load_game(retroLoadGame, &gi)
