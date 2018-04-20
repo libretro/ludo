@@ -249,6 +249,19 @@ func coreLoadGame(filename string) {
 	}
 }
 
+var program uint32
+var vao uint32
+var texture uint32
+
+func videoRender() {
+	gl.BindVertexArray(vao)
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+
+	gl.DrawArrays(gl.TRIANGLES, 0, 1*2*3)
+}
+
 func main() {
 	var corePath = flag.String("L", "", "Path to the libretro core")
 	var gamePath = flag.String("G", "", "Path to the game")
@@ -282,7 +295,7 @@ func main() {
 	fmt.Println("OpenGL version", version)
 
 	// Configure the vertex and fragment shaders
-	program, err := newProgram(vertexShader, fragmentShader)
+	program, err = newProgram(vertexShader, fragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -295,13 +308,12 @@ func main() {
 	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
 
 	// Load the texture
-	texture, err := newTexture("square.png")
+	texture, err = newTexture("square.png")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// Configure the vertex data
-	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	gl.BindVertexArray(vao)
 
@@ -322,23 +334,15 @@ func main() {
 	gl.ClearColor(1, 0, 0, 1.0)
 
 	for !window.ShouldClose() {
+		glfw.PollEvents()
+
 		C.bridge_retro_run(retroRun)
 
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		// Render
-		gl.UseProgram(program)
+		videoRender()
 
-		gl.BindVertexArray(vao)
-
-		gl.ActiveTexture(gl.TEXTURE0)
-		gl.BindTexture(gl.TEXTURE_2D, texture)
-
-		gl.DrawArrays(gl.TRIANGLES, 0, 1*2*3)
-
-		// Maintenance
 		window.SwapBuffers()
-		glfw.PollEvents()
 	}
 }
 
