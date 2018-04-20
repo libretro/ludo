@@ -153,7 +153,9 @@ func videoConfigure(geom *C.struct_retro_game_geometry) {
 	video.texID = 0
 
 	if video.pixFmt != 0 {
-		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+		// FIXME default should be UNSIGNED_SHORT_5_5_5_1
+		//video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
 	}
 
 	gl.GenTextures(1, &video.texID)
@@ -359,7 +361,7 @@ func videoRender() {
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
-	gl.DrawArrays(gl.TRIANGLES, 0, 1*2*3)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 }
 
 func main() {
@@ -476,10 +478,8 @@ void main() {
 
 var vertices = []float32{
 	//  X, Y, U, V
-	-1.0, -1.0, 1.0, 0.0,
-	1.0, -1.0, 0.0, 0.0,
-	-1.0, 1.0, 1.0, 1.0,
-	1.0, -1.0, 0.0, 0.0,
-	1.0, 1.0, 0.0, 1.0,
-	-1.0, 1.0, 1.0, 1.0,
+	-1.0, -1.0, 0.0, 1.0, // left-bottom
+	-1.0, 1.0, 0.0, 0.0, // left-top
+	1.0, -1.0, 1.0, 1.0, // right-bottom
+	1.0, 1.0, 1.0, 0.0, // right-top
 }
