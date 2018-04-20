@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"image"
-	"image/draw"
 	_ "image/png"
 	"log"
 	"os"
@@ -50,26 +48,35 @@ import "C"
 
 var mu sync.Mutex
 
+var video struct {
+	texID   uint32
+	pitch   uint32
+	pixFmt  uint32
+	pixType uint32
+	bpp     uint32
+}
+
 func videoSetPixelFormat(format uint32) C.bool {
 	fmt.Printf("videoSetPixelFormat: %v\n", format)
-	// if (g_video.tex_id)
-	// 	die("Tried to change pixel format after initialization.");
+	if video.texID != 0 {
+		log.Fatal("Tried to change pixel format after initialization.")
+	}
 
 	switch format {
 	case C.RETRO_PIXEL_FORMAT_0RGB1555:
-		// g_video.pixfmt = C.GL_UNSIGNED_SHORT_5_5_5_1
-		// g_video.pixtype = C.GL_BGRA
-		// g_video.bpp = sizeof(uint16_t)
+		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+		video.pixType = gl.BGRA
+		video.bpp = 16
 		break
 	case C.RETRO_PIXEL_FORMAT_XRGB8888:
-		// g_video.pixfmt = C.GL_UNSIGNED_INT_8_8_8_8_REV
-		// g_video.pixtype = C.GL_BGRA
-		// g_video.bpp = sizeof(uint32_t)
+		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
+		video.pixType = gl.BGRA
+		video.bpp = 32
 		break
 	case C.RETRO_PIXEL_FORMAT_RGB565:
-		// g_video.pixfmt = C.GL_UNSIGNED_SHORT_5_6_5
-		// g_video.pixtype = C.GL_RGB
-		// g_video.bpp = sizeof(uint16_t)
+		video.pixFmt = gl.UNSIGNED_SHORT_5_6_5
+		video.pixType = gl.RGB
+		video.bpp = 16
 		break
 	default:
 		log.Fatalf("Unknown pixel type %v", format)
@@ -251,13 +258,12 @@ func coreLoadGame(filename string) {
 
 var program uint32
 var vao uint32
-var texture uint32
 
 func videoRender() {
 	gl.BindVertexArray(vao)
 
 	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, texture)
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
 	gl.DrawArrays(gl.TRIANGLES, 0, 1*2*3)
 }
@@ -308,10 +314,37 @@ func main() {
 	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
 
 	// Load the texture
-	texture, err = newTexture("square.png")
-	if err != nil {
-		log.Fatalln(err)
+	// texture, err = newTexture("square.png")
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	if video.texID != 0 {
+		gl.DeleteTextures(1, &video.texID)
 	}
+	video.texID = 0
+
+	if video.pixFmt != 0 {
+		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+	}
+
+	gl.GenTextures(1, &video.texID)
+	if video.texID == 0 {
+		fmt.Println("Failed to create the video texture")
+	}
+
+	video.pitch = 256 * video.bpp
+
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 256, 224, 0, video.pixType, video.pixFmt, nil)
+
+	gl.BindTexture(gl.TEXTURE_2D, 0)
 
 	// Configure the vertex data
 	gl.GenVertexArrays(1, &vao)
@@ -404,43 +437,43 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 	return shader, nil
 }
 
-func newTexture(file string) (uint32, error) {
-	imgFile, err := os.Open(file)
-	if err != nil {
-		return 0, fmt.Errorf("texture %q not found on disk: %v", file, err)
-	}
-	img, _, err := image.Decode(imgFile)
-	if err != nil {
-		return 0, err
-	}
+// func newTexture(file string) (uint32, error) {
+// 	imgFile, err := os.Open(file)
+// 	if err != nil {
+// 		return 0, fmt.Errorf("texture %q not found on disk: %v", file, err)
+// 	}
+// 	img, _, err := image.Decode(imgFile)
+// 	if err != nil {
+// 		return 0, err
+// 	}
 
-	rgba := image.NewRGBA(img.Bounds())
-	if rgba.Stride != rgba.Rect.Size().X*4 {
-		return 0, fmt.Errorf("unsupported stride")
-	}
-	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+// 	rgba := image.NewRGBA(img.Bounds())
+// 	if rgba.Stride != rgba.Rect.Size().X*4 {
+// 		return 0, fmt.Errorf("unsupported stride")
+// 	}
+// 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
-	var texture uint32
-	gl.GenTextures(1, &texture)
-	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, texture)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(
-		gl.TEXTURE_2D,
-		0,
-		gl.RGBA,
-		int32(rgba.Rect.Size().X),
-		int32(rgba.Rect.Size().Y),
-		0,
-		gl.RGBA,
-		gl.UNSIGNED_BYTE,
-		gl.Ptr(rgba.Pix))
+// 	var texture uint32
+// 	gl.GenTextures(1, &texture)
+// 	gl.ActiveTexture(gl.TEXTURE0)
+// 	gl.BindTexture(gl.TEXTURE_2D, texture)
+// 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+// 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+// 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+// 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+// 	gl.TexImage2D(
+// 		gl.TEXTURE_2D,
+// 		0,
+// 		gl.RGBA,
+// 		int32(rgba.Rect.Size().X),
+// 		int32(rgba.Rect.Size().Y),
+// 		0,
+// 		gl.RGBA,
+// 		gl.UNSIGNED_BYTE,
+// 		gl.Ptr(rgba.Pix))
 
-	return texture, nil
-}
+// 	return texture, nil
+// }
 
 var vertexShader = `
 #version 330
