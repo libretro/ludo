@@ -14,6 +14,10 @@ It is tested on OSX and Linux.
  * OpenGL 4.1
  * OpenAL
 
+On OSX you can execute the following command and follow the instructions about exporting PKG_CONFIG
+
+    brew install glfw openal-soft
+
 ## Building
 
     go-get github.com/kivutar/go-nanoarch
