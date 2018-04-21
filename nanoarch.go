@@ -441,13 +441,15 @@ func coreLoadGame(filename string) {
 	if !si.need_fullpath {
 		f, err := os.Open(filename)
 		if err != nil {
-			fmt.Println(err)
-			return
+			panic(err)
 		}
 		defer f.Close()
 		bytes := make([]byte, gi.size)
-		bufr := bufio.NewReader(file)
-		_, err = bufr.Read(bytes)
+		buffer := bufio.NewReader(file)
+		_, err = buffer.Read(bytes)
+		if err != nil {
+			panic(err)
+		}
 		cstr := C.CString(string(bytes[:]))
 		gi.data = unsafe.Pointer(cstr)
 	}
