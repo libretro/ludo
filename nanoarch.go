@@ -12,6 +12,8 @@ import (
 	"sync"
 	"unsafe"
 
+	"golang.org/x/mobile/exp/audio/al"
+
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
@@ -250,13 +252,48 @@ func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.u
 	return 0
 }
 
+func alFillInternalBuf(data unsafe.Pointer, frames C.size_t) C.size_t {
+	var readSize C.size_t
+	// readSize = MIN(BUFSIZE - al->tmpbuf_ptr, size);
+	// memcpy(al->tmpbuf + al->tmpbuf_ptr, buf, read_size);
+	// al->tmpbuf_ptr += read_size;
+	return readSize
+}
+
+func audioWrite(data unsafe.Pointer, frames C.size_t) C.size_t {
+	written := C.size_t(0)
+
+	//buf := *(*[]byte)(data)
+
+	//fmt.Println((*[]C.int16_t)(data))
+
+	// for frames > 0 {
+	// 	rc := alFillInternalBuf(data, frames)
+
+	// 	//tmpbuf := []byte{} //*(*string)(data)
+
+	// 	//audio.buffers[0].BufferData(al.FormatStereo16, buf, 44100)
+
+	// 	audio.sources[0].QueueBuffers(audio.buffers[0])
+
+	// 	al.PlaySources(audio.sources[0])
+
+	// 	written += rc
+	// 	frames -= rc
+	// }
+
+	return written
+}
+
 //export coreAudioSample
 func coreAudioSample(left C.int16_t, right C.int16_t) {
+	buf := []C.int16_t{left, right}
+	audioWrite(unsafe.Pointer(&buf), 1)
 }
 
 //export coreAudioSampleBatch
 func coreAudioSampleBatch(data unsafe.Pointer, frames C.size_t) C.size_t {
-	return 0
+	return audioWrite(data, frames)
 }
 
 //export coreLog
@@ -290,6 +327,21 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		return false
 	}
 	return true
+}
+
+var audio struct {
+	sources []al.Source
+	buffers []al.Buffer
+}
+
+func audioInit() {
+	err := al.OpenDevice()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	audio.sources = al.GenSources(1)
+	audio.buffers = al.GenBuffers(1)
 }
 
 func init() {
@@ -401,6 +453,7 @@ func coreLoadGame(filename string) {
 	C.bridge_retro_get_system_av_info(retroGetSystemAVInfo, &avi)
 
 	videoConfigure(&avi.geometry)
+	audioInit()
 }
 
 func videoRender() {
