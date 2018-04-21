@@ -65,6 +65,16 @@ var video struct {
 
 var scale = 3.0
 
+const bufSize = 1024
+
+var audio struct {
+	sources    []al.Source
+	buffers    []al.Buffer
+	rate       int
+	numBuffers uint
+	tmpBuf     [bufSize]C.uint8_t
+}
+
 var binds = map[glfw.Key]C.int{
 	glfw.KeyX:         C.RETRO_DEVICE_ID_JOYPAD_A,
 	glfw.KeyZ:         C.RETRO_DEVICE_ID_JOYPAD_B,
@@ -327,11 +337,6 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		return false
 	}
 	return true
-}
-
-var audio struct {
-	sources []al.Source
-	buffers []al.Buffer
 }
 
 func audioInit() {
