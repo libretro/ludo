@@ -247,6 +247,11 @@ func coreInputPoll() {
 	for k, v := range binds {
 		joy[v] = (window.GetKey(k) == glfw.Press)
 	}
+
+	// Close the window when the user hits the Escape key.
+	if (window.GetKey(glfw.KeyEscape) == glfw.Press) {
+		window.SetShouldClose(true)
+	}
 }
 
 //export coreInputState
