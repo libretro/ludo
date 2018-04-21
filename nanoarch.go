@@ -69,7 +69,7 @@ const bufSize = 1024
 var audio struct {
 	sources    []al.Source
 	buffers    []al.Buffer
-	rate       int
+	rate       int32
 	numBuffers uint
 	tmpBuf     [bufSize]C.uint8_t
 }
@@ -266,37 +266,31 @@ func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.u
 	return 0
 }
 
-func alFillInternalBuf(data unsafe.Pointer, frames C.size_t) C.size_t {
-	var readSize C.size_t
-	// readSize = MIN(BUFSIZE - al->tmpbuf_ptr, size);
-	// memcpy(al->tmpbuf + al->tmpbuf_ptr, buf, read_size);
-	// al->tmpbuf_ptr += read_size;
-	return readSize
+func audioInit(rate C.double) {
+	err := al.OpenDevice()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	audio.rate = int32(rate)
+	audio.numBuffers = 1
+
+	fmt.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
+
+	audio.sources = al.GenSources(1)
+	audio.sources[0].SetGain(0.5)
+	audio.buffers = al.GenBuffers(int(audio.numBuffers))
 }
 
 func audioWrite(data unsafe.Pointer, frames C.size_t) C.size_t {
-	written := C.size_t(0)
 
-	//buf := *(*[]byte)(data)
+	s := C.int(frames)
 
-	//fmt.Println((*[]C.int16_t)(data))
+	//audio.buffers[0].BufferData(al.FormatStereo16, C.GoBytes(data, 1024*s), audio.rate)
+	audio.sources[0].QueueBuffers(audio.buffers[0])
+	al.PlaySources(audio.sources[0])
 
-	// for frames > 0 {
-	// 	rc := alFillInternalBuf(data, frames)
-
-	// 	//tmpbuf := []byte{} //*(*string)(data)
-
-	// 	//audio.buffers[0].BufferData(al.FormatStereo16, buf, audio.rate)
-
-	// 	audio.sources[0].QueueBuffers(audio.buffers[0])
-
-	// 	al.PlaySources(audio.sources[0])
-
-	// 	written += rc
-	// 	frames -= rc
-	// }
-
-	return written
+	return C.size_t(1024 * s)
 }
 
 //export coreAudioSample
@@ -341,28 +335,6 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		return false
 	}
 	return true
-}
-
-func audioInit(rate C.double) {
-	err := al.OpenDevice()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	latency := 64
-	audio.rate = int(rate)
-	// rate * 2 * sizeof(int16_t)
-	// -1 because we use 1 buffer for tmpBuf
-	audio.numBuffers = uint(latency*audio.rate*2*2/(1000*bufSize) - 1)
-
-	if audio.numBuffers < 2 {
-		audio.numBuffers = 2
-	}
-
-	fmt.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
-
-	audio.sources = al.GenSources(1)
-	audio.buffers = al.GenBuffers(int(audio.numBuffers))
 }
 
 func init() {
