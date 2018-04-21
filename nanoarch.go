@@ -249,7 +249,7 @@ func coreInputPoll() {
 	}
 
 	// Close the window when the user hits the Escape key.
-	if (window.GetKey(glfw.KeyEscape) == glfw.Press) {
+	if window.GetKey(glfw.KeyEscape) == glfw.Press {
 		window.SetShouldClose(true)
 	}
 }
@@ -286,7 +286,7 @@ func audioWrite(data unsafe.Pointer, frames C.size_t) C.size_t {
 
 	// 	//tmpbuf := []byte{} //*(*string)(data)
 
-	// 	//audio.buffers[0].BufferData(al.FormatStereo16, buf, 44100)
+	// 	//audio.buffers[0].BufferData(al.FormatStereo16, buf, audio.rate)
 
 	// 	audio.sources[0].QueueBuffers(audio.buffers[0])
 
@@ -343,14 +343,26 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 	return true
 }
 
-func audioInit() {
+func audioInit(rate C.double) {
 	err := al.OpenDevice()
 	if err != nil {
 		fmt.Println(err)
 	}
 
+	latency := 64
+	audio.rate = int(rate)
+	// rate * 2 * sizeof(int16_t)
+	// -1 because we use 1 buffer for tmpBuf
+	audio.numBuffers = uint(latency*audio.rate*2*2/(1000*bufSize) - 1)
+
+	if audio.numBuffers < 2 {
+		audio.numBuffers = 2
+	}
+
+	fmt.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
+
 	audio.sources = al.GenSources(1)
-	audio.buffers = al.GenBuffers(1)
+	audio.buffers = al.GenBuffers(int(audio.numBuffers))
 }
 
 func init() {
@@ -464,7 +476,7 @@ func coreLoadGame(filename string) {
 	C.bridge_retro_get_system_av_info(retroGetSystemAVInfo, &avi)
 
 	videoConfigure(&avi.geometry)
-	audioInit()
+	audioInit(avi.timing.sample_rate)
 }
 
 func videoRender() {
