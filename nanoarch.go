@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	_ "image/png"
 	"log"
 	"os"
 	"runtime"
