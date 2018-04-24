@@ -38,6 +38,7 @@ void bridge_retro_set_input_state(void *f, void *callback);
 void bridge_retro_set_audio_sample(void *f, void *callback);
 void bridge_retro_set_audio_sample_batch(void *f, void *callback);
 bool bridge_retro_load_game(void *f, struct retro_game_info *gi);
+void bridge_retro_unload_game(void *f);
 void bridge_retro_run(void *f);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
@@ -400,6 +401,7 @@ var retroSetAudioSample unsafe.Pointer
 var retroSetAudioSampleBatch unsafe.Pointer
 var retroRun unsafe.Pointer
 var retroLoadGame unsafe.Pointer
+var retroUnloadGame unsafe.Pointer
 
 func coreLoad(sofile string) {
 
@@ -422,6 +424,7 @@ func coreLoad(sofile string) {
 	retroSetAudioSampleBatch = C.dlsym(h, C.CString("retro_set_audio_sample_batch"))
 	retroRun = C.dlsym(h, C.CString("retro_run"))
 	retroLoadGame = C.dlsym(h, C.CString("retro_load_game"))
+	retroUnloadGame = C.dlsym(h, C.CString("retro_unload_game"))
 	mu.Unlock()
 
 	C.bridge_retro_set_environment(retroSetEnvironment, C.coreEnvironment_cgo)
@@ -529,6 +532,10 @@ func main() {
 
 		window.SwapBuffers()
 	}
+
+	// Unload and deinit in the core.
+	C.bridge_retro_unload_game(retroUnloadGame)
+	C.bridge_retro_deinit(retroDeinit)
 }
 
 func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
