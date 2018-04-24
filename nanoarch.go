@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/user"
 	"runtime"
 	"strings"
 	"sync"
@@ -312,6 +313,15 @@ func coreLog(level C.enum_retro_log_level, format *C.char) {
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 	switch cmd {
+	case C.RETRO_ENVIRONMENT_GET_USERNAME:
+		username := (**C.char)(data)
+		currentUser, err := user.Current()
+		if err != nil {
+			*username = C.CString("")
+		} else {
+			*username = C.CString(currentUser.Username)
+		}
+		break
 	case C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
 		cb := (*C.struct_retro_log_callback)(data)
 		cb.log = (C.retro_log_printf_t)(C.coreLog_cgo)
