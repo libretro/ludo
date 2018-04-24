@@ -24,6 +24,7 @@ import (
 #include <stdlib.h>
 #include <stdio.h>
 #include <dlfcn.h>
+#include <string.h>
 
 void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
@@ -65,14 +66,16 @@ var video struct {
 
 var scale = 3.0
 
-const bufSize = 1024
+const bufSize = 1024 * 4
 
 var audio struct {
 	sources    []al.Source
 	buffers    []al.Buffer
 	rate       int32
 	numBuffers uint
-	tmpBuf     [bufSize]C.uint8_t
+	tmpBuf     [bufSize]byte
+	tmpBufPtr  C.size_t
+	bufPtr     C.size_t
 }
 
 var binds = map[glfw.Key]C.int{
@@ -202,10 +205,8 @@ func videoConfigure(geom *C.struct_retro_game_geometry) {
 	}
 	video.texID = 0
 
-	if video.pixFmt != 0 {
-		// FIXME default should be UNSIGNED_SHORT_5_5_5_1
-		//video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
+	if video.pixFmt == 0 {
+		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 	}
 
 	gl.GenTextures(1, &video.texID)
@@ -283,15 +284,46 @@ func audioInit(rate C.double) {
 	audio.buffers = al.GenBuffers(int(audio.numBuffers))
 }
 
-func audioWrite(data unsafe.Pointer, frames C.size_t) C.size_t {
+func min(a, b C.size_t) C.size_t {
+	if a < b {
+		return a
+	}
+	return b
+}
 
-	s := C.int(frames)
+func fillInternalBuf(buf unsafe.Pointer, size C.size_t) C.size_t {
+	readSize := min(bufSize-audio.tmpBufPtr, size)
+	//memcpy(audio.tmpBuf+audio.tmpBufPtr, buf, readSize)
+	copy(audio.tmpBuf[audio.tmpBufPtr:], C.GoBytes(buf, bufSize)[audio.bufPtr:audio.bufPtr+readSize])
+	audio.tmpBufPtr += readSize
+	return readSize
+}
 
-	//audio.buffers[0].BufferData(al.FormatStereo16, C.GoBytes(data, 1024*s), audio.rate)
-	audio.sources[0].QueueBuffers(audio.buffers[0])
-	al.PlaySources(audio.sources[0])
+func audioWrite(buf unsafe.Pointer, size C.size_t) C.size_t {
+	written := C.size_t(0)
 
-	return C.size_t(1024 * s)
+	for size > 0 {
+
+		rc := fillInternalBuf(buf, size)
+
+		written += rc
+		audio.bufPtr += rc //buf += rc
+		size -= rc
+
+		if audio.tmpBufPtr != bufSize {
+			break
+		}
+
+		audio.buffers[0].BufferData(al.FormatStereo16, audio.tmpBuf[:], audio.rate)
+		audio.tmpBufPtr = 0
+		audio.sources[0].QueueBuffers(audio.buffers[0])
+		al.PlaySources(audio.sources[0])
+	}
+
+	audio.sources[0].UnqueueBuffers(audio.buffers[0])
+	audio.bufPtr = 0
+
+	return written
 }
 
 //export coreAudioSample
