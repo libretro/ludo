@@ -331,6 +331,9 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		path := (**C.char)(data)
 		*path = C.CString(".")
 		return true
+	case C.RETRO_ENVIRONMENT_SHUTDOWN:
+		window.SetShouldClose(true)
+		return true
 	default:
 		return false
 	}
