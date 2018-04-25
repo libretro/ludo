@@ -263,7 +263,7 @@ func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.u
 		return 0
 	}
 
-	if joy[id] {
+	if id < 255 && joy[id] {
 		return 1
 	}
 	return 0
@@ -488,7 +488,7 @@ func coreLoadGame(filename string) {
 
 	ok := C.bridge_retro_load_game(retroLoadGame, &gi)
 	if !ok {
-		fmt.Println("The core failed to load the content.")
+		log.Fatal("The core failed to load the content.")
 	}
 
 	avi := C.struct_retro_system_av_info{}
