@@ -321,7 +321,9 @@ func audioWrite(buf unsafe.Pointer, size C.size_t) C.size_t {
 		al.PlaySources(audio.sources[0])
 	}
 
-	audio.sources[0].UnqueueBuffers(audio.buffers[0])
+	if audio.sources[0].BuffersProcessed() != 0 {
+		audio.sources[0].UnqueueBuffers(audio.buffers[0])
+	}
 	audio.bufPtr = 0
 
 	return written
