@@ -481,7 +481,8 @@ func coreLoadGame(filename string) {
 
 	C.bridge_retro_get_system_info(retroGetSystemInfo, &si)
 
-	fmt.Println("  library_name:", C.GoString(si.library_name))
+	var libName = C.GoString(si.library_name)
+	fmt.Println("  library_name:", libName)
 	fmt.Println("  library_version:", C.GoString(si.library_version))
 	fmt.Println("  valid_extensions:", C.GoString(si.valid_extensions))
 	fmt.Println("  need_fullpath:", si.need_fullpath)
@@ -507,6 +508,10 @@ func coreLoadGame(filename string) {
 	C.bridge_retro_get_system_av_info(retroGetSystemAVInfo, &avi)
 
 	videoConfigure(&avi.geometry)
+	// Append the library name to the window title.
+	if len(libName) > 0 {
+		window.SetTitle("nanoarch - " + libName)
+	}
 	audioInit(avi.timing.sample_rate)
 }
 
