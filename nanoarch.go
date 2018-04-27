@@ -444,6 +444,21 @@ func coreLoad(sofile string) {
 	fmt.Println("Libretro API version:", v)
 }
 
+func slurp(path string, size int64) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	bytes := make([]byte, size)
+	buffer := bufio.NewReader(f)
+	_, err = buffer.Read(bytes)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 func coreLoadGame(filename string) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -475,19 +490,13 @@ func coreLoadGame(filename string) {
 	fmt.Println("  block_extract:", si.block_extract)
 
 	if !si.need_fullpath {
-		f, err := os.Open(filename)
+		bytes, err := slurp(filename, size)
 		if err != nil {
 			panic(err)
 		}
-		defer f.Close()
-		bytes := make([]byte, gi.size)
-		buffer := bufio.NewReader(file)
-		_, err = buffer.Read(bytes)
-		if err != nil {
-			panic(err)
-		}
-		cstr := C.CString(string(bytes[:]))
+		cstr := C.CString(string(bytes))
 		gi.data = unsafe.Pointer(cstr)
+
 	}
 
 	ok := C.bridge_retro_load_game(retroLoadGame, &gi)
