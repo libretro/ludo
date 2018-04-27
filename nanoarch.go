@@ -123,10 +123,28 @@ func videoSetPixelFormat(format uint32) C.bool {
 	return true
 }
 
+// func refreshVertexData() {
+// 	assert(g_video.tex_w)
+// 	assert(g_video.tex_h)
+// 	assert(g_video.clip_w)
+// 	assert(g_video.clip_h)
+
+// 	GLfloat *coords = g_texcoords;
+// 	coords[1] = coords[5] = (float)g_video.clip_h / g_video.tex_h;
+// 	coords[4] = coords[6] = (float)g_video.clip_w / g_video.tex_w;
+// }
+
+// //func resizeCallback(window *glfw.Window, w int, h int) {
+// func refreshFBSize(window *glfw.Window) {
+// 	w, h := window.GetFramebufferSize()
+// 	gl.Viewport(0, 0, int32(w), int32(h))
+// }
+
 func createWindow(width int, height int) {
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.Resizable, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	var err error
@@ -134,6 +152,9 @@ func createWindow(width int, height int) {
 	if err != nil {
 		panic(err)
 	}
+
+	//window.SetFramebufferSizeCallback(resizeCallback)
+
 	window.MakeContextCurrent()
 
 	// Initialize Glow
@@ -173,6 +194,8 @@ func createWindow(width int, height int) {
 	texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
 	gl.EnableVertexAttribArray(texCoordAttrib)
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
+
+	//refreshFBSize(window)
 }
 
 func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float64) {
