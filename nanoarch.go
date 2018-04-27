@@ -374,7 +374,12 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 	case C.RETRO_ENVIRONMENT_SHUTDOWN:
 		window.SetShouldClose(true)
 		return true
+	case C.RETRO_ENVIRONMENT_GET_VARIABLE:
+		variable := (*C.struct_retro_variable)(data)
+		fmt.Println("[Env] get variable:", C.GoString(variable.key))
+		return false
 	default:
+		//fmt.Println("[Env]: command not implemented", cmd)
 		return false
 	}
 	return true
