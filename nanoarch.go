@@ -123,6 +123,13 @@ func videoSetPixelFormat(format uint32) C.bool {
 	return true
 }
 
+/**
+ * When resizing the window, resize the content.
+ */
+func resizedFramebuffer(w *glfw.Window, width int, height int) {
+	gl.Viewport(0, 0, int32(width), int32(height));
+}
+
 func createWindow(width int, height int) {
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
@@ -137,6 +144,12 @@ func createWindow(width int, height int) {
 	}
 
 	window.MakeContextCurrent()
+
+	// Force the same aspect ratio.
+	window.SetAspectRatio(width, height)
+
+	// When resizing the window, also resize the content.
+	window.SetFramebufferSizeCallback(resizedFramebuffer)
 
 	// Initialize Glow
 	if err := gl.Init(); err != nil {
