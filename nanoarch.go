@@ -203,11 +203,6 @@ func videoConfigure(geom *C.struct_retro_game_geometry) {
 		createWindow(int(nwidth), int(nheight))
 	}
 
-	if video.texID != 0 {
-		gl.DeleteTextures(1, &video.texID)
-	}
-	video.texID = 0
-
 	if video.pixFmt == 0 {
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 	}
@@ -225,12 +220,6 @@ func videoConfigure(geom *C.struct_retro_game_geometry) {
 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(geom.base_width), int32(geom.base_height), 0, video.pixType, video.pixFmt, nil)
-
-	gl.BindTexture(gl.TEXTURE_2D, 0)
 }
 
 //export coreVideoRefresh
