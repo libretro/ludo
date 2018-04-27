@@ -47,7 +47,7 @@ void coreInputPoll_cgo();
 void coreAudioSample_cgo(int16_t left, int16_t right);
 size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames);
 int16_t coreInputState_cgo(unsigned port, unsigned device, unsigned index, unsigned id);
-void coreLog_cgo(enum retro_log_level level, const char *fmt);
+void coreLog_cgo(enum retro_log_level level, const char *msg);
 */
 import "C"
 
@@ -336,8 +336,8 @@ func coreAudioSampleBatch(data unsafe.Pointer, frames C.size_t) C.size_t {
 }
 
 //export coreLog
-func coreLog(level C.enum_retro_log_level, format *C.char) {
-	fmt.Printf("coreLog: " + C.GoString(format))
+func coreLog(level C.enum_retro_log_level, msg *C.char) {
+	fmt.Print("[Log]: ", C.GoString(msg))
 }
 
 //export coreEnvironment
@@ -376,7 +376,7 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
 		return true
 	case C.RETRO_ENVIRONMENT_GET_VARIABLE:
 		variable := (*C.struct_retro_variable)(data)
-		fmt.Println("[Env] get variable:", C.GoString(variable.key))
+		fmt.Println("[Env]: get variable:", C.GoString(variable.key))
 		return false
 	default:
 		//fmt.Println("[Env]: command not implemented", cmd)

@@ -3,6 +3,8 @@ package main
 /*
 #include "libretro.h"
 #include <stdbool.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 void bridge_retro_init(void *f) {
 	return ((void (*)(void))f)();
@@ -90,9 +92,15 @@ size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames) {
 	return coreAudioSampleBatch(data, frames);
 }
 
-void coreLog_cgo(enum retro_log_level level, const char *fmt) {
-	void coreLog(enum retro_log_level level, const char *fmt);
-	coreLog(level, fmt);
+void coreLog_cgo(enum retro_log_level level, const char *fmt, ...) {
+	char msg[4096] = {0};
+	va_list va;
+	va_start(va, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, va);
+	va_end(va);
+
+	void coreLog(enum retro_log_level level, const char *msg);
+	coreLog(level, msg);
 }
 
 */
