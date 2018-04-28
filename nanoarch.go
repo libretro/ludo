@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 	"unsafe"
 
 	"golang.org/x/mobile/exp/audio/al"
@@ -67,16 +68,17 @@ var video struct {
 
 var scale = 3.0
 
-const bufSize = 1024 * 4
+const bufSize = 1024
 
 var audio struct {
-	sources    []al.Source
+	source     al.Source
 	buffers    []al.Buffer
 	rate       int32
-	numBuffers uint
+	numBuffers int32
 	tmpBuf     [bufSize]byte
 	tmpBufPtr  C.size_t
 	bufPtr     C.size_t
+	resPtr     int32
 }
 
 var binds = map[glfw.Key]C.int{
@@ -127,7 +129,7 @@ func videoSetPixelFormat(format uint32) C.bool {
  * When resizing the window, resize the content.
  */
 func resizedFramebuffer(w *glfw.Window, width int, height int) {
-	gl.Viewport(0, 0, int32(width), int32(height));
+	gl.Viewport(0, 0, int32(width), int32(height))
 }
 
 func createWindow(width int, height int) {
@@ -282,13 +284,13 @@ func audioInit(rate C.double) {
 	}
 
 	audio.rate = int32(rate)
-	audio.numBuffers = 1
+	audio.numBuffers = 4
 
 	fmt.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
 
-	audio.sources = al.GenSources(1)
-	audio.sources[0].SetGain(0.5)
+	audio.source = al.GenSources(1)[0]
 	audio.buffers = al.GenBuffers(int(audio.numBuffers))
+	audio.resPtr = audio.numBuffers
 }
 
 func min(a, b C.size_t) C.size_t {
@@ -296,6 +298,37 @@ func min(a, b C.size_t) C.size_t {
 		return a
 	}
 	return b
+}
+
+func alUnqueueBuffers() bool {
+	val := audio.source.BuffersProcessed()
+
+	if val <= 0 {
+		return false
+	}
+
+	audio.source.UnqueueBuffers(audio.buffers[audio.resPtr:val]...)
+	audio.resPtr += val
+	return true
+}
+
+func alGetBuffer() (al.Buffer, error) {
+	if audio.resPtr == 0 {
+		for {
+			if alUnqueueBuffers() {
+				break
+			}
+
+			// if audio.nonblock
+			//   return nil, true
+
+			/* Must sleep as there is no proper blocking method. */
+			time.Sleep(1)
+		}
+	}
+
+	audio.resPtr--
+	return audio.buffers[audio.resPtr], nil
 }
 
 func fillInternalBuf(buf unsafe.Pointer, size C.size_t) C.size_t {
@@ -314,24 +347,27 @@ func audioWrite(buf unsafe.Pointer, size C.size_t) C.size_t {
 		rc := fillInternalBuf(buf, size)
 
 		written += rc
-		audio.bufPtr += rc //buf += rc
+		audio.bufPtr += rc
 		size -= rc
 
 		if audio.tmpBufPtr != bufSize {
 			break
 		}
 
-		audio.buffers[0].BufferData(al.FormatStereo16, audio.tmpBuf[:], audio.rate)
+		buffer, err := alGetBuffer()
+		if err != nil {
+			break
+		}
+
+		buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], audio.rate)
 		audio.tmpBufPtr = 0
-		audio.sources[0].QueueBuffers(audio.buffers[0])
-		if audio.sources[0].State() != al.Playing {
-			al.PlaySources(audio.sources[0])
+		audio.source.QueueBuffers(buffer)
+
+		if audio.source.State() != al.Playing {
+			al.PlaySources(audio.source)
 		}
 	}
 
-	if audio.sources[0].BuffersProcessed() != 0 {
-		audio.sources[0].UnqueueBuffers(audio.buffers[0])
-	}
 	audio.bufPtr = 0
 
 	return written
