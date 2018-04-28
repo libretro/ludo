@@ -323,7 +323,7 @@ func alGetBuffer() (al.Buffer, error) {
 			//   return nil, true
 
 			/* Must sleep as there is no proper blocking method. */
-			time.Sleep(1)
+			time.Sleep(time.Millisecond)
 		}
 	}
 
