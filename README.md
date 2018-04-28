@@ -18,6 +18,10 @@ On OSX you can execute the following command and follow the instructions about e
 
     brew install glfw openal-soft
 
+On Debian or Ubuntu:
+
+    sudo apt-get install libglfw3-dev libopenal-dev xorg-dev
+
 ## Building
 
     go-get github.com/kivutar/go-nanoarch
