@@ -68,7 +68,7 @@ var video struct {
 
 var scale = 3.0
 
-const bufSize = 1024
+const bufSize = 1024 * 4
 
 var audio struct {
 	source     al.Source
@@ -381,7 +381,7 @@ func coreAudioSample(left C.int16_t, right C.int16_t) {
 
 //export coreAudioSampleBatch
 func coreAudioSampleBatch(data unsafe.Pointer, frames C.size_t) C.size_t {
-	return audioWrite(data, frames)
+	return audioWrite(data, frames*4)
 }
 
 //export coreLog
