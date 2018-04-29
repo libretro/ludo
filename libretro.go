@@ -48,6 +48,14 @@ type retroGameInfo struct {
 	data unsafe.Pointer
 }
 
+type retroSystemInfo struct {
+	libraryName     string
+	libraryVersion  string
+	validExtensions string
+	needFullpath    bool
+	blockExtract    bool
+}
+
 var (
 	retroPixelFormat0RGB1555 = uint32(C.RETRO_PIXEL_FORMAT_0RGB1555)
 	retroPixelFormatXRGB8888 = uint32(C.RETRO_PIXEL_FORMAT_XRGB8888)
@@ -116,10 +124,16 @@ func retroRun() {
 	C.bridge_retro_run(symRetroRun)
 }
 
-func retroGetSystemInfo() C.struct_retro_system_info {
-	si := C.struct_retro_system_info{}
-	C.bridge_retro_get_system_info(symRetroGetSystemInfo, &si)
-	return si
+func retroGetSystemInfo() retroSystemInfo {
+	rsi := C.struct_retro_system_info{}
+	C.bridge_retro_get_system_info(symRetroGetSystemInfo, &rsi)
+	return retroSystemInfo{
+		libraryName:     C.GoString(rsi.library_name),
+		libraryVersion:  C.GoString(rsi.library_version),
+		validExtensions: C.GoString(rsi.valid_extensions),
+		needFullpath:    bool(rsi.need_fullpath),
+		blockExtract:    bool(rsi.block_extract),
+	}
 }
 
 func retroGetSystemAVInfo() C.struct_retro_system_av_info {

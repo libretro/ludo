@@ -106,14 +106,13 @@ func coreLoadGame(filename string) {
 
 	si := retroGetSystemInfo()
 
-	var libName = C.GoString(si.library_name)
-	fmt.Println("  library_name:", libName)
-	fmt.Println("  library_version:", C.GoString(si.library_version))
-	fmt.Println("  valid_extensions:", C.GoString(si.valid_extensions))
-	fmt.Println("  need_fullpath:", si.need_fullpath)
-	fmt.Println("  block_extract:", si.block_extract)
+	fmt.Println("  library_name:", si.libraryName)
+	fmt.Println("  library_version:", si.libraryVersion)
+	fmt.Println("  valid_extensions:", si.validExtensions)
+	fmt.Println("  need_fullpath:", si.needFullpath)
+	fmt.Println("  block_extract:", si.blockExtract)
 
-	if !si.need_fullpath {
+	if !si.needFullpath {
 		bytes, err := slurp(filename, size)
 		if err != nil {
 			panic(err)
@@ -138,8 +137,8 @@ func coreLoadGame(filename string) {
 
 	videoConfigure(geom)
 	// Append the library name to the window title.
-	if len(libName) > 0 {
-		window.SetTitle("nanoarch - " + libName)
+	if len(si.libraryName) > 0 {
+		window.SetTitle("nanoarch - " + si.libraryName)
 	}
 	audioInit(int32(avi.timing.sample_rate))
 }
@@ -175,11 +174,8 @@ func main() {
 
 	for !window.ShouldClose() {
 		glfw.PollEvents()
-
 		retroRun()
-
 		videoRender()
-
 		window.SwapBuffers()
 	}
 
