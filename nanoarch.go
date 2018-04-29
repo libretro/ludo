@@ -79,13 +79,9 @@ func init() {
 }
 
 func coreLoad(sofile string) {
-
 	retroLoad(sofile)
-
 	retroInit()
-
-	v := retroAPIVersion()
-	fmt.Println("Libretro API version:", v)
+	fmt.Println("Libretro API version:", retroAPIVersion())
 }
 
 func coreLoadGame(filename string) {
@@ -103,9 +99,9 @@ func coreLoadGame(filename string) {
 
 	fmt.Println("ROM size:", size)
 
-	gi := C.struct_retro_game_info{
-		path: C.CString(filename),
-		size: C.size_t(size),
+	gi := retroGameInfo{
+		path: filename,
+		size: size,
 	}
 
 	si := retroGetSystemInfo()

@@ -42,6 +42,12 @@ type retroGameGeometry struct {
 	baseHeight  int
 }
 
+type retroGameInfo struct {
+	path string
+	size int64
+	data unsafe.Pointer
+}
+
 var (
 	retroPixelFormat0RGB1555 = uint32(C.RETRO_PIXEL_FORMAT_0RGB1555)
 	retroPixelFormatXRGB8888 = uint32(C.RETRO_PIXEL_FORMAT_XRGB8888)
@@ -122,8 +128,12 @@ func retroGetSystemAVInfo() C.struct_retro_system_av_info {
 	return si
 }
 
-func retroLoadGame(gi C.struct_retro_game_info) bool {
-	return bool(C.bridge_retro_load_game(symRetroLoadGame, &gi))
+func retroLoadGame(gi retroGameInfo) bool {
+	rgi := C.struct_retro_game_info{}
+	rgi.path = C.CString(gi.path)
+	rgi.size = C.size_t(gi.size)
+	rgi.data = gi.data
+	return bool(C.bridge_retro_load_game(symRetroLoadGame, &rgi))
 }
 
 func retroUnloadGame() {
