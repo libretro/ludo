@@ -376,7 +376,7 @@ func audioWrite(buf unsafe.Pointer, size C.size_t) C.size_t {
 //export coreAudioSample
 func coreAudioSample(left C.int16_t, right C.int16_t) {
 	buf := []C.int16_t{left, right}
-	audioWrite(unsafe.Pointer(&buf), 1)
+	audioWrite(unsafe.Pointer(&buf), 4)
 }
 
 //export coreAudioSampleBatch
