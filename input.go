@@ -11,17 +11,17 @@ import (
 */
 import "C"
 
-var binds = map[glfw.Key]C.int{
-	glfw.KeyX:         C.RETRO_DEVICE_ID_JOYPAD_A,
-	glfw.KeyZ:         C.RETRO_DEVICE_ID_JOYPAD_B,
-	glfw.KeyA:         C.RETRO_DEVICE_ID_JOYPAD_Y,
-	glfw.KeyS:         C.RETRO_DEVICE_ID_JOYPAD_X,
-	glfw.KeyUp:        C.RETRO_DEVICE_ID_JOYPAD_UP,
-	glfw.KeyDown:      C.RETRO_DEVICE_ID_JOYPAD_DOWN,
-	glfw.KeyLeft:      C.RETRO_DEVICE_ID_JOYPAD_LEFT,
-	glfw.KeyRight:     C.RETRO_DEVICE_ID_JOYPAD_RIGHT,
-	glfw.KeyEnter:     C.RETRO_DEVICE_ID_JOYPAD_START,
-	glfw.KeyBackspace: C.RETRO_DEVICE_ID_JOYPAD_SELECT,
+var binds = map[glfw.Key]uint32{
+	glfw.KeyX:         retroDeviceIDJoypadA,
+	glfw.KeyZ:         retroDeviceIDJoypadB,
+	glfw.KeyA:         retroDeviceIDJoypadY,
+	glfw.KeyS:         retroDeviceIDJoypadX,
+	glfw.KeyUp:        retroDeviceIDJoypadUp,
+	glfw.KeyDown:      retroDeviceIDJoypadDown,
+	glfw.KeyLeft:      retroDeviceIDJoypadLeft,
+	glfw.KeyRight:     retroDeviceIDJoypadRight,
+	glfw.KeyEnter:     retroDeviceIDJoypadStart,
+	glfw.KeyBackspace: retroDeviceIDJoypadSelect,
 }
 
 var joy [C.RETRO_DEVICE_ID_JOYPAD_R3 + 1]bool

@@ -63,6 +63,25 @@ var (
 	retroPixelFormatRGB565   = uint32(C.RETRO_PIXEL_FORMAT_RGB565)
 )
 
+var (
+	retroDeviceIDJoypadB      = uint32(C.RETRO_DEVICE_ID_JOYPAD_B)
+	retroDeviceIDJoypadY      = uint32(C.RETRO_DEVICE_ID_JOYPAD_Y)
+	retroDeviceIDJoypadSelect = uint32(C.RETRO_DEVICE_ID_JOYPAD_SELECT)
+	retroDeviceIDJoypadStart  = uint32(C.RETRO_DEVICE_ID_JOYPAD_START)
+	retroDeviceIDJoypadUp     = uint32(C.RETRO_DEVICE_ID_JOYPAD_UP)
+	retroDeviceIDJoypadDown   = uint32(C.RETRO_DEVICE_ID_JOYPAD_DOWN)
+	retroDeviceIDJoypadLeft   = uint32(C.RETRO_DEVICE_ID_JOYPAD_LEFT)
+	retroDeviceIDJoypadRight  = uint32(C.RETRO_DEVICE_ID_JOYPAD_RIGHT)
+	retroDeviceIDJoypadA      = uint32(C.RETRO_DEVICE_ID_JOYPAD_A)
+	retroDeviceIDJoypadX      = uint32(C.RETRO_DEVICE_ID_JOYPAD_X)
+	retroDeviceIDJoypadL      = uint32(C.RETRO_DEVICE_ID_JOYPAD_L)
+	retroDeviceIDJoypadR      = uint32(C.RETRO_DEVICE_ID_JOYPAD_R)
+	retroDeviceIDJoypadL2     = uint32(C.RETRO_DEVICE_ID_JOYPAD_L2)
+	retroDeviceIDJoypadR2     = uint32(C.RETRO_DEVICE_ID_JOYPAD_R2)
+	retroDeviceIDJoypadL3     = uint32(C.RETRO_DEVICE_ID_JOYPAD_L3)
+	retroDeviceIDJoypadR3     = uint32(C.RETRO_DEVICE_ID_JOYPAD_R3)
+)
+
 var symRetroInit unsafe.Pointer
 var symRetroDeinit unsafe.Pointer
 var symRetroAPIVersion unsafe.Pointer
