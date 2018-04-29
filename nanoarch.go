@@ -21,8 +21,6 @@ import (
 #include <dlfcn.h>
 #include <string.h>
 
-void bridge_retro_deinit(void *f);
-unsigned bridge_retro_api_version(void *f);
 void bridge_retro_get_system_info(void *f, struct retro_system_info *si);
 void bridge_retro_get_system_av_info(void *f, struct retro_system_av_info *si);
 bool bridge_retro_set_environment(void *f, void *callback);
@@ -134,7 +132,7 @@ func coreLoad(sofile string) {
 
 	retroInit()
 
-	v := C.bridge_retro_api_version(symRetroAPIVersion)
+	v := retroAPIVersion()
 	fmt.Println("Libretro API version:", v)
 }
 
@@ -243,5 +241,5 @@ func main() {
 
 	// Unload and deinit in the core.
 	C.bridge_retro_unload_game(symRetroUnloadGame)
-	C.bridge_retro_deinit(symRetroDeinit)
+	retroDeinit()
 }

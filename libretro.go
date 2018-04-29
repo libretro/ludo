@@ -4,6 +4,9 @@ package main
 #include "libretro.h"
 
 void bridge_retro_init(void *f);
+void bridge_retro_deinit(void *f);
+unsigned bridge_retro_api_version(void *f);
+
 void bridge_retro_run(void *f);
 */
 import "C"
@@ -38,6 +41,14 @@ var symRetroUnloadGame unsafe.Pointer
 
 func retroInit() {
 	C.bridge_retro_init(symRetroInit)
+}
+
+func retroAPIVersion() uint {
+	return uint(C.bridge_retro_api_version(symRetroAPIVersion))
+}
+
+func retroDeinit() {
+	C.bridge_retro_deinit(symRetroDeinit)
 }
 
 func retroRun() {
