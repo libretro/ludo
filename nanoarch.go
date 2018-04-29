@@ -21,7 +21,6 @@ import (
 #include <dlfcn.h>
 #include <string.h>
 
-void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
 unsigned bridge_retro_api_version(void *f);
 void bridge_retro_get_system_info(void *f, struct retro_system_info *si);
@@ -103,21 +102,6 @@ func init() {
 	runtime.LockOSThread()
 }
 
-var retroInit unsafe.Pointer
-var retroDeinit unsafe.Pointer
-var retroAPIVersion unsafe.Pointer
-var retroGetSystemInfo unsafe.Pointer
-var retroGetSystemAVInfo unsafe.Pointer
-var retroSetEnvironment unsafe.Pointer
-var retroSetVideoRefresh unsafe.Pointer
-var retroSetInputPoll unsafe.Pointer
-var retroSetInputState unsafe.Pointer
-var retroSetAudioSample unsafe.Pointer
-var retroSetAudioSampleBatch unsafe.Pointer
-var retroRun unsafe.Pointer
-var retroLoadGame unsafe.Pointer
-var retroUnloadGame unsafe.Pointer
-
 func coreLoad(sofile string) {
 
 	mu.Lock()
@@ -126,32 +110,32 @@ func coreLoad(sofile string) {
 		log.Fatalf("error loading %s\n", sofile)
 	}
 
-	retroInit = C.dlsym(h, C.CString("retro_init"))
-	retroDeinit = C.dlsym(h, C.CString("retro_deinit"))
-	retroAPIVersion = C.dlsym(h, C.CString("retro_api_version"))
-	retroGetSystemInfo = C.dlsym(h, C.CString("retro_get_system_info"))
-	retroGetSystemAVInfo = C.dlsym(h, C.CString("retro_get_system_av_info"))
-	retroSetEnvironment = C.dlsym(h, C.CString("retro_set_environment"))
-	retroSetVideoRefresh = C.dlsym(h, C.CString("retro_set_video_refresh"))
-	retroSetInputPoll = C.dlsym(h, C.CString("retro_set_input_poll"))
-	retroSetInputState = C.dlsym(h, C.CString("retro_set_input_state"))
-	retroSetAudioSample = C.dlsym(h, C.CString("retro_set_audio_sample"))
-	retroSetAudioSampleBatch = C.dlsym(h, C.CString("retro_set_audio_sample_batch"))
-	retroRun = C.dlsym(h, C.CString("retro_run"))
-	retroLoadGame = C.dlsym(h, C.CString("retro_load_game"))
-	retroUnloadGame = C.dlsym(h, C.CString("retro_unload_game"))
+	symRetroInit = C.dlsym(h, C.CString("retro_init"))
+	symRetroDeinit = C.dlsym(h, C.CString("retro_deinit"))
+	symRetroAPIVersion = C.dlsym(h, C.CString("retro_api_version"))
+	symRetroGetSystemInfo = C.dlsym(h, C.CString("retro_get_system_info"))
+	symRetroGetSystemAVInfo = C.dlsym(h, C.CString("retro_get_system_av_info"))
+	symRetroSetEnvironment = C.dlsym(h, C.CString("retro_set_environment"))
+	symRetroSetVideoRefresh = C.dlsym(h, C.CString("retro_set_video_refresh"))
+	symRetroSetInputPoll = C.dlsym(h, C.CString("retro_set_input_poll"))
+	symRetroSetInputState = C.dlsym(h, C.CString("retro_set_input_state"))
+	symRetroSetAudioSample = C.dlsym(h, C.CString("retro_set_audio_sample"))
+	symRetroSetAudioSampleBatch = C.dlsym(h, C.CString("retro_set_audio_sample_batch"))
+	symRetroRun = C.dlsym(h, C.CString("retro_run"))
+	symRetroLoadGame = C.dlsym(h, C.CString("retro_load_game"))
+	symRetroUnloadGame = C.dlsym(h, C.CString("retro_unload_game"))
 	mu.Unlock()
 
-	C.bridge_retro_set_environment(retroSetEnvironment, C.coreEnvironment_cgo)
-	C.bridge_retro_set_video_refresh(retroSetVideoRefresh, C.coreVideoRefresh_cgo)
-	C.bridge_retro_set_input_poll(retroSetInputPoll, C.coreInputPoll_cgo)
-	C.bridge_retro_set_input_state(retroSetInputState, C.coreInputState_cgo)
-	C.bridge_retro_set_audio_sample(retroSetAudioSample, C.coreAudioSample_cgo)
-	C.bridge_retro_set_audio_sample_batch(retroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
+	C.bridge_retro_set_environment(symRetroSetEnvironment, C.coreEnvironment_cgo)
+	C.bridge_retro_set_video_refresh(symRetroSetVideoRefresh, C.coreVideoRefresh_cgo)
+	C.bridge_retro_set_input_poll(symRetroSetInputPoll, C.coreInputPoll_cgo)
+	C.bridge_retro_set_input_state(symRetroSetInputState, C.coreInputState_cgo)
+	C.bridge_retro_set_audio_sample(symRetroSetAudioSample, C.coreAudioSample_cgo)
+	C.bridge_retro_set_audio_sample_batch(symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
 
-	C.bridge_retro_init(retroInit)
+	retroInit()
 
-	v := C.bridge_retro_api_version(retroAPIVersion)
+	v := C.bridge_retro_api_version(symRetroAPIVersion)
 	fmt.Println("Libretro API version:", v)
 }
 
@@ -177,7 +161,7 @@ func coreLoadGame(filename string) {
 
 	si := C.struct_retro_system_info{}
 
-	C.bridge_retro_get_system_info(retroGetSystemInfo, &si)
+	C.bridge_retro_get_system_info(symRetroGetSystemInfo, &si)
 
 	var libName = C.GoString(si.library_name)
 	fmt.Println("  library_name:", libName)
@@ -196,14 +180,14 @@ func coreLoadGame(filename string) {
 
 	}
 
-	ok := C.bridge_retro_load_game(retroLoadGame, &gi)
+	ok := C.bridge_retro_load_game(symRetroLoadGame, &gi)
 	if !ok {
 		log.Fatal("The core failed to load the content.")
 	}
 
 	avi := C.struct_retro_system_av_info{}
 
-	C.bridge_retro_get_system_av_info(retroGetSystemAVInfo, &avi)
+	C.bridge_retro_get_system_av_info(symRetroGetSystemAVInfo, &avi)
 
 	geom := retroGameGeometry{
 		aspectRatio: float64(avi.geometry.aspect_ratio),
@@ -251,7 +235,7 @@ func main() {
 	for !window.ShouldClose() {
 		glfw.PollEvents()
 
-		C.bridge_retro_run(retroRun)
+		C.bridge_retro_run(symRetroRun)
 
 		videoRender()
 
@@ -259,6 +243,6 @@ func main() {
 	}
 
 	// Unload and deinit in the core.
-	C.bridge_retro_unload_game(retroUnloadGame)
-	C.bridge_retro_deinit(retroDeinit)
+	C.bridge_retro_unload_game(symRetroUnloadGame)
+	C.bridge_retro_deinit(symRetroDeinit)
 }
