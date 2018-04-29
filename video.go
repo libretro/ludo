@@ -1,7 +1,6 @@
 package main
 
 import (
-	"C"
 	"fmt"
 	"log"
 
@@ -12,11 +11,6 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
-/*
-#include "libretro.h"
-*/
-import "C"
-
 var window *glfw.Window
 
 var scale = 3.0
@@ -25,30 +19,30 @@ var video struct {
 	program uint32
 	vao     uint32
 	texID   uint32
-	pitch   uint32
+	pitch   int32
 	pixFmt  uint32
 	pixType uint32
-	bpp     uint32
+	bpp     int32
 }
 
-func videoSetPixelFormat(format uint32) C.bool {
+func videoSetPixelFormat(format uint32) bool {
 	fmt.Printf("videoSetPixelFormat: %v\n", format)
 	if video.texID != 0 {
 		log.Fatal("Tried to change pixel format after initialization.")
 	}
 
 	switch format {
-	case C.RETRO_PIXEL_FORMAT_0RGB1555:
+	case retroPixelFormat0RGB1555:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 		video.pixType = gl.BGRA
 		video.bpp = 2
 		break
-	case C.RETRO_PIXEL_FORMAT_XRGB8888:
+	case retroPixelFormatXRGB8888:
 		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
 		video.pixType = gl.BGRA
 		video.bpp = 4
 		break
-	case C.RETRO_PIXEL_FORMAT_RGB565:
+	case retroPixelFormatRGB565:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_6_5
 		video.pixType = gl.RGB
 		video.bpp = 2
@@ -140,9 +134,8 @@ func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float
 	return
 }
 
-func videoConfigure(geom *C.struct_retro_game_geometry) {
-
-	nwidth, nheight := resizeToAspect(float64(geom.aspect_ratio), float64(geom.base_width), float64(geom.base_height))
+func videoConfigure(geom retroGameGeometry) {
+	nwidth, nheight := resizeToAspect(geom.aspectRatio, float64(geom.baseWidth), float64(geom.baseHeight))
 
 	nwidth = nwidth * scale
 	nheight = nheight * scale
@@ -162,7 +155,7 @@ func videoConfigure(geom *C.struct_retro_game_geometry) {
 		fmt.Println("Failed to create the video texture")
 	}
 
-	video.pitch = uint32(geom.base_width) * video.bpp
+	video.pitch = int32(geom.baseWidth) * video.bpp
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
@@ -181,19 +174,18 @@ func videoRender() {
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 }
 
-//export coreVideoRefresh
-func coreVideoRefresh(data unsafe.Pointer, width C.unsigned, height C.unsigned, pitch C.size_t) {
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(width), int32(height), 0, video.pixType, video.pixFmt, nil)
+func videoRefresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
-	if uint32(pitch) != video.pitch {
-		video.pitch = uint32(pitch)
-		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, int32(video.pitch/video.bpp))
+	if pitch != video.pitch {
+		video.pitch = pitch
+		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 	}
 
 	if data != nil {
-		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, int32(width), int32(height), video.pixType, video.pixFmt, data)
+		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
 	}
 }
 

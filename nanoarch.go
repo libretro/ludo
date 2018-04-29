@@ -54,7 +54,7 @@ func coreLog(level C.enum_retro_log_level, msg *C.char) {
 }
 
 //export coreEnvironment
-func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) C.bool {
+func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
 	switch cmd {
 	case C.RETRO_ENVIRONMENT_GET_USERNAME:
 		username := (**C.char)(data)
@@ -205,12 +205,23 @@ func coreLoadGame(filename string) {
 
 	C.bridge_retro_get_system_av_info(retroGetSystemAVInfo, &avi)
 
-	videoConfigure(&avi.geometry)
+	geom := retroGameGeometry{
+		aspectRatio: float64(avi.geometry.aspect_ratio),
+		baseWidth:   int(avi.geometry.base_width),
+		baseHeight:  int(avi.geometry.base_height),
+	}
+
+	videoConfigure(geom)
 	// Append the library name to the window title.
 	if len(libName) > 0 {
 		window.SetTitle("nanoarch - " + libName)
 	}
 	audioInit(int32(avi.timing.sample_rate))
+}
+
+//export coreVideoRefresh
+func coreVideoRefresh(data unsafe.Pointer, width C.unsigned, height C.unsigned, pitch C.size_t) {
+	videoRefresh(data, int32(width), int32(height), int32(pitch))
 }
 
 //export coreAudioSample
