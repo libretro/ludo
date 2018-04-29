@@ -210,7 +210,18 @@ func coreLoadGame(filename string) {
 	if len(libName) > 0 {
 		window.SetTitle("nanoarch - " + libName)
 	}
-	audioInit(avi.timing.sample_rate)
+	audioInit(int32(avi.timing.sample_rate))
+}
+
+//export coreAudioSample
+func coreAudioSample(left C.int16_t, right C.int16_t) {
+	buf := []byte{byte(left), byte(right)}
+	audioWrite(buf, 4)
+}
+
+//export coreAudioSampleBatch
+func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
+	return C.size_t(audioWrite(C.GoBytes(buf, C.int(bufSize)), int32(frames)*4))
 }
 
 func main() {
