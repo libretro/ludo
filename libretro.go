@@ -4,6 +4,7 @@ package main
 #include "libretro.h"
 
 void bridge_retro_init(void *f);
+void bridge_retro_run(void *f);
 */
 import "C"
 import "unsafe"
@@ -37,4 +38,8 @@ var symRetroUnloadGame unsafe.Pointer
 
 func retroInit() {
 	C.bridge_retro_init(symRetroInit)
+}
+
+func retroRun() {
+	C.bridge_retro_run(symRetroRun)
 }

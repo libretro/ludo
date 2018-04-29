@@ -33,7 +33,6 @@ void bridge_retro_set_audio_sample(void *f, void *callback);
 void bridge_retro_set_audio_sample_batch(void *f, void *callback);
 bool bridge_retro_load_game(void *f, struct retro_game_info *gi);
 void bridge_retro_unload_game(void *f);
-void bridge_retro_run(void *f);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -235,7 +234,7 @@ func main() {
 	for !window.ShouldClose() {
 		glfw.PollEvents()
 
-		C.bridge_retro_run(symRetroRun)
+		retroRun()
 
 		videoRender()
 
