@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/user"
 	"runtime"
-	"sync"
 	"unsafe"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
@@ -20,8 +19,6 @@ import (
 void coreLog_cgo(enum retro_log_level level, const char *msg);
 */
 import "C"
-
-var mu sync.Mutex
 
 //export coreLog
 func coreLog(level C.enum_retro_log_level, msg *C.char) {
@@ -119,7 +116,6 @@ func coreLoadGame(filename string) {
 		}
 		cstr := C.CString(string(bytes))
 		gi.data = unsafe.Pointer(cstr)
-
 	}
 
 	ok := retroLoadGame(gi)
@@ -157,6 +153,16 @@ func coreAudioSample(left C.int16_t, right C.int16_t) {
 //export coreAudioSampleBatch
 func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
 	return C.size_t(audioWrite(C.GoBytes(buf, C.int(bufSize)), int32(frames)*4))
+}
+
+//export coreInputPoll
+func coreInputPoll() {
+	inputPoll()
+}
+
+//export coreInputState
+func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.unsigned) C.int16_t {
+	return inputState(port, device, index, id)
 }
 
 func main() {

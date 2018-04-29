@@ -33,6 +33,7 @@ void coreLog_cgo(enum retro_log_level level, const char *msg);
 import "C"
 import (
 	"log"
+	"sync"
 	"unsafe"
 )
 
@@ -76,6 +77,8 @@ var symRetroSetAudioSampleBatch unsafe.Pointer
 var symRetroRun unsafe.Pointer
 var symRetroLoadGame unsafe.Pointer
 var symRetroUnloadGame unsafe.Pointer
+
+var mu sync.Mutex
 
 func retroLoad(sofile string) {
 	mu.Lock()

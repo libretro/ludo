@@ -26,8 +26,7 @@ var binds = map[glfw.Key]C.int{
 
 var joy [C.RETRO_DEVICE_ID_JOYPAD_R3 + 1]bool
 
-//export coreInputPoll
-func coreInputPoll() {
+func inputPoll() {
 	for k, v := range binds {
 		joy[v] = (window.GetKey(k) == glfw.Press)
 	}
@@ -38,8 +37,7 @@ func coreInputPoll() {
 	}
 }
 
-//export coreInputState
-func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.unsigned) C.int16_t {
+func inputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.unsigned) C.int16_t {
 	if port > 0 || index > 0 || device != C.RETRO_DEVICE_JOYPAD {
 		return 0
 	}
