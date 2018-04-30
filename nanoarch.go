@@ -1,14 +1,12 @@
 package main
 
 import (
-	"C"
 	"flag"
 	"fmt"
 	"libretro"
 	"log"
 	"os"
 	"runtime"
-	"unsafe"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
@@ -65,8 +63,7 @@ func coreLoadGame(filename string) {
 		if err != nil {
 			panic(err)
 		}
-		cstr := C.CString(string(bytes))
-		gi.Data = unsafe.Pointer(cstr)
+		gi.SetData(bytes)
 	}
 
 	ok := core.LoadGame(gi)

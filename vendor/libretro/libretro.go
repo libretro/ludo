@@ -171,23 +171,23 @@ func Load(sofile string) Core {
 	return core
 }
 
-func (core Core) Init() {
+func (core *Core) Init() {
 	C.bridge_retro_init(core.symRetroInit)
 }
 
-func (core Core) APIVersion() uint {
+func (core *Core) APIVersion() uint {
 	return uint(C.bridge_retro_api_version(core.symRetroAPIVersion))
 }
 
-func (core Core) Deinit() {
+func (core *Core) Deinit() {
 	C.bridge_retro_deinit(core.symRetroDeinit)
 }
 
-func (core Core) Run() {
+func (core *Core) Run() {
 	C.bridge_retro_run(core.symRetroRun)
 }
 
-func (core Core) GetSystemInfo() SystemInfo {
+func (core *Core) GetSystemInfo() SystemInfo {
 	rsi := C.struct_retro_system_info{}
 	C.bridge_retro_get_system_info(core.symRetroGetSystemInfo, &rsi)
 	return SystemInfo{
@@ -199,7 +199,7 @@ func (core Core) GetSystemInfo() SystemInfo {
 	}
 }
 
-func (core Core) GetSystemAVInfo() SystemAVInfo {
+func (core *Core) GetSystemAVInfo() SystemAVInfo {
 	avi := C.struct_retro_system_av_info{}
 	C.bridge_retro_get_system_av_info(core.symRetroGetSystemAVInfo, &avi)
 	return SystemAVInfo{
@@ -215,7 +215,7 @@ func (core Core) GetSystemAVInfo() SystemAVInfo {
 	}
 }
 
-func (core Core) LoadGame(gi GameInfo) bool {
+func (core *Core) LoadGame(gi GameInfo) bool {
 	rgi := C.struct_retro_game_info{}
 	rgi.path = C.CString(gi.Path)
 	rgi.size = C.size_t(gi.Size)
@@ -223,31 +223,31 @@ func (core Core) LoadGame(gi GameInfo) bool {
 	return bool(C.bridge_retro_load_game(core.symRetroLoadGame, &rgi))
 }
 
-func (core Core) UnloadGame() {
+func (core *Core) UnloadGame() {
 	C.bridge_retro_unload_game(core.symRetroUnloadGame)
 }
 
-func (core Core) SetEnvironment(f environmentFunc) {
+func (core *Core) SetEnvironment(f environmentFunc) {
 	environment = f
 }
 
-func (core Core) SetVideoRefresh(f videoRefreshFunc) {
+func (core *Core) SetVideoRefresh(f videoRefreshFunc) {
 	videoRefresh = f
 }
 
-func (core Core) SetAudioSample(f audioSampleFunc) {
+func (core *Core) SetAudioSample(f audioSampleFunc) {
 	audioSample = f
 }
 
-func (core Core) SetAudioSampleBatch(f audioSampleBatchFunc) {
+func (core *Core) SetAudioSampleBatch(f audioSampleBatchFunc) {
 	audioSampleBatch = f
 }
 
-func (core Core) SetInputPoll(f inputPollFunc) {
+func (core *Core) SetInputPoll(f inputPollFunc) {
 	inputPoll = f
 }
 
-func (core Core) SetInputState(f inputStateFunc) {
+func (core *Core) SetInputState(f inputStateFunc) {
 	inputState = f
 }
 
@@ -302,4 +302,9 @@ func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
 //export coreLog
 func coreLog(level C.enum_retro_log_level, msg *C.char) {
 	fmt.Print("[Log]: ", C.GoString(msg))
+}
+
+func (gi *GameInfo) SetData(bytes []byte) {
+	cstr := C.CString(string(bytes))
+	gi.Data = unsafe.Pointer(cstr)
 }
