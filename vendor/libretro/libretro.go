@@ -32,8 +32,7 @@ void coreLog_cgo(enum retro_log_level level, const char *msg);
 */
 import "C"
 import (
-	"fmt"
-	"log"
+	"errors"
 	"sync"
 	"unsafe"
 )
@@ -132,6 +131,14 @@ const (
 	EnvironmentGetVariable        = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
 )
 
+const (
+	LogLevelDebug = uint32(C.RETRO_LOG_DEBUG)
+	LogLevelInfo  = uint32(C.RETRO_LOG_INFO)
+	LogLevelWarn  = uint32(C.RETRO_LOG_WARN)
+	LogLevelError = uint32(C.RETRO_LOG_ERROR)
+	LogLevelDummy = uint32(C.RETRO_LOG_DUMMY)
+)
+
 type (
 	environmentFunc      func(uint32, unsafe.Pointer) bool
 	videoRefreshFunc     func(unsafe.Pointer, int32, int32, int32)
@@ -139,6 +146,7 @@ type (
 	audioSampleBatchFunc func([]byte, int32) int32
 	inputPollFunc        func()
 	inputStateFunc       func(uint, uint32, uint, uint) int16
+	logFunc              func(uint32, string)
 )
 
 var (
@@ -148,17 +156,18 @@ var (
 	audioSampleBatch audioSampleBatchFunc
 	inputPoll        inputPollFunc
 	inputState       inputStateFunc
+	log              logFunc
 )
 
 var mu sync.Mutex
 
-func Load(sofile string) Core {
+func Load(sofile string) (Core, error) {
 	core := Core{}
 
 	mu.Lock()
 	core.handle = C.dlopen(C.CString(sofile), C.RTLD_NOW)
 	if core.handle == nil {
-		log.Fatalf("error loading %s\n", sofile)
+		return core, errors.New("dlopen failed")
 	}
 
 	core.symRetroInit = C.dlsym(core.handle, C.CString("retro_init"))
@@ -184,7 +193,7 @@ func Load(sofile string) Core {
 	C.bridge_retro_set_audio_sample(core.symRetroSetAudioSample, C.coreAudioSample_cgo)
 	C.bridge_retro_set_audio_sample_batch(core.symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
 
-	return core
+	return core, nil
 }
 
 func (core *Core) Init() {
@@ -267,6 +276,12 @@ func (core *Core) SetInputState(f inputStateFunc) {
 	inputState = f
 }
 
+func (core *Core) BindLogCallback(data unsafe.Pointer, f logFunc) {
+	log = f
+	cb := (*C.struct_retro_log_callback)(data)
+	cb.log = (C.retro_log_printf_t)(C.coreLog_cgo)
+}
+
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
 	if environment == nil {
@@ -317,7 +332,7 @@ func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
 
 //export coreLog
 func coreLog(level C.enum_retro_log_level, msg *C.char) {
-	fmt.Print("[Log]: ", C.GoString(msg))
+	log(uint32(level), C.GoString(msg))
 }
 
 func (gi *GameInfo) SetData(bytes []byte) {

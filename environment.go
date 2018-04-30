@@ -17,10 +17,9 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 			libretro.SetString(data, currentUser.Username)
 		}
 		break
-	//case libretro.EnvironmentGetLogInterface:
-	// 	cb := (*C.struct_retro_log_callback)(data)
-	// 	cb.log = (C.retro_log_printf_t)(C.coreLog_cgo)
-	// 	break
+	case libretro.EnvironmentGetLogInterface:
+		core.BindLogCallback(data, nanoLog)
+		break
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 		break
