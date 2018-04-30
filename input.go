@@ -1,14 +1,10 @@
 package main
 
 import (
-	"C"
-
 	"libretro"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
-
-import "C"
 
 var binds = map[glfw.Key]uint32{
 	glfw.KeyX:         libretro.DeviceIDJoypadA,
