@@ -116,8 +116,19 @@ const (
 	DeviceIDJoypadR3     = uint32(C.RETRO_DEVICE_ID_JOYPAD_R3)
 )
 
+const (
+	EnvironmentGetUsername        = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
+	EnvironmentGetLogInterface    = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
+	EnvironmentGetCanDupe         = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
+	EnvironmentSetPixelFormat     = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
+	EnvironmentGetSystemDirectory = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
+	EnvironmentGetSaveDirectory   = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
+	EnvironmentShutdown           = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
+	EnvironmentGetVariable        = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
+)
+
 type (
-	environmentFunc      func(uint, unsafe.Pointer) bool
+	environmentFunc      func(uint32, unsafe.Pointer) bool
 	videoRefreshFunc     func(unsafe.Pointer, int32, int32, int32)
 	audioSampleFunc      func(int16, int16)
 	audioSampleBatchFunc func([]byte, int32) int32
@@ -256,7 +267,7 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
 	if environment == nil {
 		return false
 	}
-	return environment(uint(cmd), data)
+	return environment(uint32(cmd), data)
 }
 
 //export coreVideoRefresh

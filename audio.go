@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"golang.org/x/mobile/exp/audio/al"
-
-	"time"
 )
 
 const bufSize = 1024 * 4
