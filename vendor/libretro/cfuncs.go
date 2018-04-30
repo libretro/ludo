@@ -1,4 +1,4 @@
-package main
+package libretro
 
 /*
 #include "libretro.h"

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"libretro"
 	"log"
 	"os"
 	"os/user"
@@ -13,22 +14,22 @@ import (
 )
 
 /*
-#include "libretro.h"
+#include "vendor/libretro/libretro.h"
+#include <stdbool.h>
+#include <stdarg.h>
+#include <stdio.h>
 #cgo LDFLAGS: -ldl
-
-void coreLog_cgo(enum retro_log_level level, const char *msg);
 */
 import "C"
 
-var r retro
+var core libretro.Core
 
-//export coreLog
-func coreLog(level C.enum_retro_log_level, msg *C.char) {
-	fmt.Print("[Log]: ", C.GoString(msg))
+func init() {
+	// GLFW event handling must run on the main OS thread
+	runtime.LockOSThread()
 }
 
-//export coreEnvironment
-func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
+func environment(cmd uint, data unsafe.Pointer) bool {
 	switch cmd {
 	case C.RETRO_ENVIRONMENT_GET_USERNAME:
 		username := (**C.char)(data)
@@ -39,10 +40,10 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
 			*username = C.CString(currentUser.Username)
 		}
 		break
-	case C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
-		cb := (*C.struct_retro_log_callback)(data)
-		cb.log = (C.retro_log_printf_t)(C.coreLog_cgo)
-		break
+	// case C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
+	// 	cb := (*C.struct_retro_log_callback)(data)
+	// 	cb.log = (C.retro_log_printf_t)(C.coreLog_cgo)
+	// 	break
 	case C.RETRO_ENVIRONMENT_GET_CAN_DUPE:
 		bval := (*C.bool)(data)
 		*bval = C.bool(true)
@@ -72,15 +73,16 @@ func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
 	return true
 }
 
-func init() {
-	// GLFW event handling must run on the main OS thread
-	runtime.LockOSThread()
-}
-
 func coreLoad(sofile string) {
-	r = retroLoad(sofile)
-	r.Init()
-	fmt.Println("Libretro API version:", r.APIVersion())
+	core = libretro.Load(sofile)
+	core.SetEnvironment(environment)
+	core.SetVideoRefresh(videoRefresh)
+	core.SetInputPoll(inputPoll)
+	core.SetInputState(inputState)
+	core.SetAudioSample(audioSample)
+	core.SetAudioSampleBatch(audioSampleBatch)
+	core.Init()
+	fmt.Println("Libretro API version:", core.APIVersion())
 }
 
 func coreLoadGame(filename string) {
@@ -98,73 +100,41 @@ func coreLoadGame(filename string) {
 
 	fmt.Println("ROM size:", size)
 
-	gi := retroGameInfo{
-		path: filename,
-		size: size,
+	gi := libretro.GameInfo{
+		Path: filename,
+		Size: size,
 	}
 
-	si := r.GetSystemInfo()
+	si := core.GetSystemInfo()
 
-	fmt.Println("  library_name:", si.libraryName)
-	fmt.Println("  library_version:", si.libraryVersion)
-	fmt.Println("  valid_extensions:", si.validExtensions)
-	fmt.Println("  need_fullpath:", si.needFullpath)
-	fmt.Println("  block_extract:", si.blockExtract)
+	fmt.Println("  library_name:", si.LibraryName)
+	fmt.Println("  library_version:", si.LibraryVersion)
+	fmt.Println("  valid_extensions:", si.ValidExtensions)
+	fmt.Println("  need_fullpath:", si.NeedFullpath)
+	fmt.Println("  block_extract:", si.BlockExtract)
 
-	if !si.needFullpath {
+	if !si.NeedFullpath {
 		bytes, err := slurp(filename, size)
 		if err != nil {
 			panic(err)
 		}
 		cstr := C.CString(string(bytes))
-		gi.data = unsafe.Pointer(cstr)
+		gi.Data = unsafe.Pointer(cstr)
 	}
 
-	ok := r.LoadGame(gi)
+	ok := core.LoadGame(gi)
 	if !ok {
 		log.Fatal("The core failed to load the content.")
 	}
 
-	avi := r.GetSystemAVInfo()
+	avi := core.GetSystemAVInfo()
 
-	geom := retroGameGeometry{
-		aspectRatio: float64(avi.geometry.aspect_ratio),
-		baseWidth:   int(avi.geometry.base_width),
-		baseHeight:  int(avi.geometry.base_height),
-	}
-
-	videoConfigure(geom)
+	videoConfigure(avi.Geometry)
 	// Append the library name to the window title.
-	if len(si.libraryName) > 0 {
-		window.SetTitle("nanoarch - " + si.libraryName)
+	if len(si.LibraryName) > 0 {
+		window.SetTitle("nanoarch - " + si.LibraryName)
 	}
-	audioInit(int32(avi.timing.sample_rate))
-}
-
-//export coreVideoRefresh
-func coreVideoRefresh(data unsafe.Pointer, width C.unsigned, height C.unsigned, pitch C.size_t) {
-	videoRefresh(data, int32(width), int32(height), int32(pitch))
-}
-
-//export coreAudioSample
-func coreAudioSample(left C.int16_t, right C.int16_t) {
-	buf := []byte{byte(left), byte(right)}
-	audioWrite(buf, 4)
-}
-
-//export coreAudioSampleBatch
-func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
-	return C.size_t(audioWrite(C.GoBytes(buf, C.int(bufSize)), int32(frames)*4))
-}
-
-//export coreInputPoll
-func coreInputPoll() {
-	inputPoll()
-}
-
-//export coreInputState
-func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.unsigned) C.int16_t {
-	return inputState(port, device, index, id)
+	audioInit(int32(avi.Timing.SampleRate))
 }
 
 func main() {
@@ -182,12 +152,12 @@ func main() {
 
 	for !window.ShouldClose() {
 		glfw.PollEvents()
-		r.Run()
+		core.Run()
 		videoRender()
 		window.SwapBuffers()
 	}
 
 	// Unload and deinit in the core.
-	r.UnloadGame()
-	r.Deinit()
+	core.UnloadGame()
+	core.Deinit()
 }

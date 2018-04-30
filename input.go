@@ -3,28 +3,27 @@ package main
 import (
 	"C"
 
+	"libretro"
+
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
-/*
-#include "libretro.h"
-*/
 import "C"
 
 var binds = map[glfw.Key]uint32{
-	glfw.KeyX:         retroDeviceIDJoypadA,
-	glfw.KeyZ:         retroDeviceIDJoypadB,
-	glfw.KeyA:         retroDeviceIDJoypadY,
-	glfw.KeyS:         retroDeviceIDJoypadX,
-	glfw.KeyUp:        retroDeviceIDJoypadUp,
-	glfw.KeyDown:      retroDeviceIDJoypadDown,
-	glfw.KeyLeft:      retroDeviceIDJoypadLeft,
-	glfw.KeyRight:     retroDeviceIDJoypadRight,
-	glfw.KeyEnter:     retroDeviceIDJoypadStart,
-	glfw.KeyBackspace: retroDeviceIDJoypadSelect,
+	glfw.KeyX:         libretro.DeviceIDJoypadA,
+	glfw.KeyZ:         libretro.DeviceIDJoypadB,
+	glfw.KeyA:         libretro.DeviceIDJoypadY,
+	glfw.KeyS:         libretro.DeviceIDJoypadX,
+	glfw.KeyUp:        libretro.DeviceIDJoypadUp,
+	glfw.KeyDown:      libretro.DeviceIDJoypadDown,
+	glfw.KeyLeft:      libretro.DeviceIDJoypadLeft,
+	glfw.KeyRight:     libretro.DeviceIDJoypadRight,
+	glfw.KeyEnter:     libretro.DeviceIDJoypadStart,
+	glfw.KeyBackspace: libretro.DeviceIDJoypadSelect,
 }
 
-var joy [C.RETRO_DEVICE_ID_JOYPAD_R3 + 1]bool
+var joy [libretro.DeviceIDJoypadR3 + 1]bool
 
 func inputPoll() {
 	for k, v := range binds {
@@ -37,8 +36,8 @@ func inputPoll() {
 	}
 }
 
-func inputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.unsigned) C.int16_t {
-	if port > 0 || index > 0 || device != C.RETRO_DEVICE_JOYPAD {
+func inputState(port uint, device uint32, index uint, id uint) int16 {
+	if port > 0 || index > 0 || device != libretro.DeviceJoypad {
 		return 0
 	}
 

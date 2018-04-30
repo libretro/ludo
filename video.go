@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"libretro"
 	"log"
 
 	"strings"
@@ -32,17 +33,17 @@ func videoSetPixelFormat(format uint32) bool {
 	}
 
 	switch format {
-	case retroPixelFormat0RGB1555:
+	case libretro.PixelFormat0RGB1555:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 		video.pixType = gl.BGRA
 		video.bpp = 2
 		break
-	case retroPixelFormatXRGB8888:
+	case libretro.PixelFormatXRGB8888:
 		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
 		video.pixType = gl.BGRA
 		video.bpp = 4
 		break
-	case retroPixelFormatRGB565:
+	case libretro.PixelFormatRGB565:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_6_5
 		video.pixType = gl.RGB
 		video.bpp = 2
@@ -134,8 +135,8 @@ func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float
 	return
 }
 
-func videoConfigure(geom retroGameGeometry) {
-	nwidth, nheight := resizeToAspect(geom.aspectRatio, float64(geom.baseWidth), float64(geom.baseHeight))
+func videoConfigure(geom libretro.GameGeometry) {
+	nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
 
 	nwidth = nwidth * scale
 	nheight = nheight * scale
@@ -155,7 +156,7 @@ func videoConfigure(geom retroGameGeometry) {
 		fmt.Println("Failed to create the video texture")
 	}
 
-	video.pitch = int32(geom.baseWidth) * video.bpp
+	video.pitch = int32(geom.BaseWidth) * video.bpp
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 

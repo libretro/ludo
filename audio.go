@@ -108,3 +108,12 @@ func audioWrite(buf []byte, size int32) int32 {
 
 	return written
 }
+
+func audioSample(left int16, right int16) {
+	buf := []byte{byte(left), byte(right)}
+	audioWrite(buf, 4)
+}
+
+func audioSampleBatch(buf []byte, size int32) int32 {
+	return audioWrite(buf, size*4)
+}
