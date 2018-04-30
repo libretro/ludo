@@ -89,6 +89,11 @@ type SystemAVInfo struct {
 	Timing   SystemTiming
 }
 
+type Variable struct {
+	Key   string
+	Value string
+}
+
 const (
 	PixelFormat0RGB1555 = uint32(C.RETRO_PIXEL_FORMAT_0RGB1555)
 	PixelFormatXRGB8888 = uint32(C.RETRO_PIXEL_FORMAT_XRGB8888)
@@ -318,4 +323,28 @@ func coreLog(level C.enum_retro_log_level, msg *C.char) {
 func (gi *GameInfo) SetData(bytes []byte) {
 	cstr := C.CString(string(bytes))
 	gi.Data = unsafe.Pointer(cstr)
+}
+
+// Environment helpers
+
+func GetPixelFormat(data unsafe.Pointer) uint32 {
+	return *(*C.enum_retro_pixel_format)(data)
+}
+
+func GetVariable(data unsafe.Pointer) Variable {
+	variable := (*C.struct_retro_variable)(data)
+	return Variable{
+		Key:   C.GoString(variable.key),
+		Value: C.GoString(variable.value),
+	}
+}
+
+func SetBool(data unsafe.Pointer, val bool) {
+	b := (*C.bool)(data)
+	*b = C.bool(val)
+}
+
+func SetString(data unsafe.Pointer, val string) {
+	s := (**C.char)(data)
+	*s = C.CString(val)
 }

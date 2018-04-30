@@ -7,20 +7,14 @@ import (
 	"unsafe"
 )
 
-/*
-#include "vendor/libretro/libretro.h"
-*/
-import "C"
-
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
 	case libretro.EnvironmentGetUsername:
-		username := (**C.char)(data)
 		currentUser, err := user.Current()
 		if err != nil {
-			*username = C.CString("")
+			libretro.SetString(data, "")
 		} else {
-			*username = C.CString(currentUser.Username)
+			libretro.SetString(data, currentUser.Username)
 		}
 		break
 	//case libretro.EnvironmentGetLogInterface:
@@ -28,26 +22,24 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	// 	cb.log = (C.retro_log_printf_t)(C.coreLog_cgo)
 	// 	break
 	case libretro.EnvironmentGetCanDupe:
-		bval := (*C.bool)(data)
-		*bval = C.bool(true)
+		libretro.SetBool(data, true)
 		break
 	case libretro.EnvironmentSetPixelFormat:
-		format := (*C.enum_retro_pixel_format)(data)
-		if *format > C.RETRO_PIXEL_FORMAT_RGB565 {
+		format := libretro.GetPixelFormat(data)
+		if format > libretro.PixelFormatRGB565 {
 			return false
 		}
-		return videoSetPixelFormat(*format)
+		return videoSetPixelFormat(format)
 	case libretro.EnvironmentGetSystemDirectory:
 	case libretro.EnvironmentGetSaveDirectory:
-		path := (**C.char)(data)
-		*path = C.CString(".")
+		libretro.SetString(data, ".")
 		return true
 	case libretro.EnvironmentShutdown:
 		window.SetShouldClose(true)
 		return true
 	case libretro.EnvironmentGetVariable:
-		variable := (*C.struct_retro_variable)(data)
-		fmt.Println("[Env]: get variable:", C.GoString(variable.key))
+		variable := libretro.GetVariable(data)
+		fmt.Println("[Env]: get variable:", variable.Key)
 		return false
 	default:
 		//fmt.Println("[Env]: command not implemented", cmd)
