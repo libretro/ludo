@@ -37,6 +37,24 @@ import (
 	"unsafe"
 )
 
+type retro struct {
+	handle                      unsafe.Pointer
+	symRetroInit                unsafe.Pointer
+	symRetroDeinit              unsafe.Pointer
+	symRetroAPIVersion          unsafe.Pointer
+	symRetroGetSystemInfo       unsafe.Pointer
+	symRetroGetSystemAVInfo     unsafe.Pointer
+	symRetroSetEnvironment      unsafe.Pointer
+	symRetroSetVideoRefresh     unsafe.Pointer
+	symRetroSetInputPoll        unsafe.Pointer
+	symRetroSetInputState       unsafe.Pointer
+	symRetroSetAudioSample      unsafe.Pointer
+	symRetroSetAudioSampleBatch unsafe.Pointer
+	symRetroRun                 unsafe.Pointer
+	symRetroLoadGame            unsafe.Pointer
+	symRetroUnloadGame          unsafe.Pointer
+}
+
 type retroGameGeometry struct {
 	aspectRatio float64
 	baseWidth   int
@@ -82,73 +100,62 @@ var (
 	retroDeviceIDJoypadR3     = uint32(C.RETRO_DEVICE_ID_JOYPAD_R3)
 )
 
-var symRetroInit unsafe.Pointer
-var symRetroDeinit unsafe.Pointer
-var symRetroAPIVersion unsafe.Pointer
-var symRetroGetSystemInfo unsafe.Pointer
-var symRetroGetSystemAVInfo unsafe.Pointer
-var symRetroSetEnvironment unsafe.Pointer
-var symRetroSetVideoRefresh unsafe.Pointer
-var symRetroSetInputPoll unsafe.Pointer
-var symRetroSetInputState unsafe.Pointer
-var symRetroSetAudioSample unsafe.Pointer
-var symRetroSetAudioSampleBatch unsafe.Pointer
-var symRetroRun unsafe.Pointer
-var symRetroLoadGame unsafe.Pointer
-var symRetroUnloadGame unsafe.Pointer
-
 var mu sync.Mutex
 
-func retroLoad(sofile string) {
+func retroLoad(sofile string) retro {
+	r := retro{}
+
 	mu.Lock()
-	h := C.dlopen(C.CString(sofile), C.RTLD_NOW)
-	if h == nil {
+	r.handle = C.dlopen(C.CString(sofile), C.RTLD_NOW)
+	if r.handle == nil {
 		log.Fatalf("error loading %s\n", sofile)
 	}
 
-	symRetroInit = C.dlsym(h, C.CString("retro_init"))
-	symRetroDeinit = C.dlsym(h, C.CString("retro_deinit"))
-	symRetroAPIVersion = C.dlsym(h, C.CString("retro_api_version"))
-	symRetroGetSystemInfo = C.dlsym(h, C.CString("retro_get_system_info"))
-	symRetroGetSystemAVInfo = C.dlsym(h, C.CString("retro_get_system_av_info"))
-	symRetroSetEnvironment = C.dlsym(h, C.CString("retro_set_environment"))
-	symRetroSetVideoRefresh = C.dlsym(h, C.CString("retro_set_video_refresh"))
-	symRetroSetInputPoll = C.dlsym(h, C.CString("retro_set_input_poll"))
-	symRetroSetInputState = C.dlsym(h, C.CString("retro_set_input_state"))
-	symRetroSetAudioSample = C.dlsym(h, C.CString("retro_set_audio_sample"))
-	symRetroSetAudioSampleBatch = C.dlsym(h, C.CString("retro_set_audio_sample_batch"))
-	symRetroRun = C.dlsym(h, C.CString("retro_run"))
-	symRetroLoadGame = C.dlsym(h, C.CString("retro_load_game"))
-	symRetroUnloadGame = C.dlsym(h, C.CString("retro_unload_game"))
+	r.symRetroInit = C.dlsym(r.handle, C.CString("retro_init"))
+	r.symRetroDeinit = C.dlsym(r.handle, C.CString("retro_deinit"))
+	r.symRetroAPIVersion = C.dlsym(r.handle, C.CString("retro_api_version"))
+	r.symRetroGetSystemInfo = C.dlsym(r.handle, C.CString("retro_get_system_info"))
+	r.symRetroGetSystemAVInfo = C.dlsym(r.handle, C.CString("retro_get_system_av_info"))
+	r.symRetroSetEnvironment = C.dlsym(r.handle, C.CString("retro_set_environment"))
+	r.symRetroSetVideoRefresh = C.dlsym(r.handle, C.CString("retro_set_video_refresh"))
+	r.symRetroSetInputPoll = C.dlsym(r.handle, C.CString("retro_set_input_poll"))
+	r.symRetroSetInputState = C.dlsym(r.handle, C.CString("retro_set_input_state"))
+	r.symRetroSetAudioSample = C.dlsym(r.handle, C.CString("retro_set_audio_sample"))
+	r.symRetroSetAudioSampleBatch = C.dlsym(r.handle, C.CString("retro_set_audio_sample_batch"))
+	r.symRetroRun = C.dlsym(r.handle, C.CString("retro_run"))
+	r.symRetroLoadGame = C.dlsym(r.handle, C.CString("retro_load_game"))
+	r.symRetroUnloadGame = C.dlsym(r.handle, C.CString("retro_unload_game"))
 	mu.Unlock()
 
-	C.bridge_retro_set_environment(symRetroSetEnvironment, C.coreEnvironment_cgo)
-	C.bridge_retro_set_video_refresh(symRetroSetVideoRefresh, C.coreVideoRefresh_cgo)
-	C.bridge_retro_set_input_poll(symRetroSetInputPoll, C.coreInputPoll_cgo)
-	C.bridge_retro_set_input_state(symRetroSetInputState, C.coreInputState_cgo)
-	C.bridge_retro_set_audio_sample(symRetroSetAudioSample, C.coreAudioSample_cgo)
-	C.bridge_retro_set_audio_sample_batch(symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
+	C.bridge_retro_set_environment(r.symRetroSetEnvironment, C.coreEnvironment_cgo)
+	C.bridge_retro_set_video_refresh(r.symRetroSetVideoRefresh, C.coreVideoRefresh_cgo)
+	C.bridge_retro_set_input_poll(r.symRetroSetInputPoll, C.coreInputPoll_cgo)
+	C.bridge_retro_set_input_state(r.symRetroSetInputState, C.coreInputState_cgo)
+	C.bridge_retro_set_audio_sample(r.symRetroSetAudioSample, C.coreAudioSample_cgo)
+	C.bridge_retro_set_audio_sample_batch(r.symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
+
+	return r
 }
 
-func retroInit() {
-	C.bridge_retro_init(symRetroInit)
+func (r retro) Init() {
+	C.bridge_retro_init(r.symRetroInit)
 }
 
-func retroAPIVersion() uint {
-	return uint(C.bridge_retro_api_version(symRetroAPIVersion))
+func (r retro) APIVersion() uint {
+	return uint(C.bridge_retro_api_version(r.symRetroAPIVersion))
 }
 
-func retroDeinit() {
-	C.bridge_retro_deinit(symRetroDeinit)
+func (r retro) Deinit() {
+	C.bridge_retro_deinit(r.symRetroDeinit)
 }
 
-func retroRun() {
-	C.bridge_retro_run(symRetroRun)
+func (r retro) Run() {
+	C.bridge_retro_run(r.symRetroRun)
 }
 
-func retroGetSystemInfo() retroSystemInfo {
+func (r retro) GetSystemInfo() retroSystemInfo {
 	rsi := C.struct_retro_system_info{}
-	C.bridge_retro_get_system_info(symRetroGetSystemInfo, &rsi)
+	C.bridge_retro_get_system_info(r.symRetroGetSystemInfo, &rsi)
 	return retroSystemInfo{
 		libraryName:     C.GoString(rsi.library_name),
 		libraryVersion:  C.GoString(rsi.library_version),
@@ -158,20 +165,20 @@ func retroGetSystemInfo() retroSystemInfo {
 	}
 }
 
-func retroGetSystemAVInfo() C.struct_retro_system_av_info {
+func (r retro) GetSystemAVInfo() C.struct_retro_system_av_info {
 	si := C.struct_retro_system_av_info{}
-	C.bridge_retro_get_system_av_info(symRetroGetSystemAVInfo, &si)
+	C.bridge_retro_get_system_av_info(r.symRetroGetSystemAVInfo, &si)
 	return si
 }
 
-func retroLoadGame(gi retroGameInfo) bool {
+func (r retro) LoadGame(gi retroGameInfo) bool {
 	rgi := C.struct_retro_game_info{}
 	rgi.path = C.CString(gi.path)
 	rgi.size = C.size_t(gi.size)
 	rgi.data = gi.data
-	return bool(C.bridge_retro_load_game(symRetroLoadGame, &rgi))
+	return bool(C.bridge_retro_load_game(r.symRetroLoadGame, &rgi))
 }
 
-func retroUnloadGame() {
-	C.bridge_retro_unload_game(symRetroUnloadGame)
+func (r retro) UnloadGame() {
+	C.bridge_retro_unload_game(r.symRetroUnloadGame)
 }

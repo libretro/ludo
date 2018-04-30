@@ -20,6 +20,8 @@ void coreLog_cgo(enum retro_log_level level, const char *msg);
 */
 import "C"
 
+var r retro
+
 //export coreLog
 func coreLog(level C.enum_retro_log_level, msg *C.char) {
 	fmt.Print("[Log]: ", C.GoString(msg))
@@ -76,9 +78,9 @@ func init() {
 }
 
 func coreLoad(sofile string) {
-	retroLoad(sofile)
-	retroInit()
-	fmt.Println("Libretro API version:", retroAPIVersion())
+	r = retroLoad(sofile)
+	r.Init()
+	fmt.Println("Libretro API version:", r.APIVersion())
 }
 
 func coreLoadGame(filename string) {
@@ -101,7 +103,7 @@ func coreLoadGame(filename string) {
 		size: size,
 	}
 
-	si := retroGetSystemInfo()
+	si := r.GetSystemInfo()
 
 	fmt.Println("  library_name:", si.libraryName)
 	fmt.Println("  library_version:", si.libraryVersion)
@@ -118,12 +120,12 @@ func coreLoadGame(filename string) {
 		gi.data = unsafe.Pointer(cstr)
 	}
 
-	ok := retroLoadGame(gi)
+	ok := r.LoadGame(gi)
 	if !ok {
 		log.Fatal("The core failed to load the content.")
 	}
 
-	avi := retroGetSystemAVInfo()
+	avi := r.GetSystemAVInfo()
 
 	geom := retroGameGeometry{
 		aspectRatio: float64(avi.geometry.aspect_ratio),
@@ -180,12 +182,12 @@ func main() {
 
 	for !window.ShouldClose() {
 		glfw.PollEvents()
-		retroRun()
+		r.Run()
 		videoRender()
 		window.SwapBuffers()
 	}
 
 	// Unload and deinit in the core.
-	retroUnloadGame()
-	retroDeinit()
+	r.UnloadGame()
+	r.Deinit()
 }
