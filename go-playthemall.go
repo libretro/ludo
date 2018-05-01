@@ -108,15 +108,19 @@ func main() {
 
 	coreLoad(*corePath)
 	coreLoadGame(*gamePath)
+	menuInit()
 
 	for !window.ShouldClose() {
 		glfw.PollEvents()
 		if !menuActive {
 			core.Run()
+			videoRender()
 		} else {
 			inputPoll()
+			menuInput()
+			videoRender()
+			renderMenuList()
 		}
-		videoRender()
 		window.SwapBuffers()
 	}
 

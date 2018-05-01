@@ -102,7 +102,7 @@ func createWindow() {
 	}
 
 	//load font (fontfile, font scale, window width, window height
-	video.font, err = glfont.LoadFont("font.ttf", int32(32), video.width, video.height)
+	video.font, err = glfont.LoadFont("font.ttf", int32(64), video.width, video.height)
 	if err != nil {
 		panic(err)
 	}
@@ -187,12 +187,13 @@ func videoConfigure(geom libretro.GameGeometry) {
 func renderNotifications() {
 	for i, n := range notifications {
 		video.font.SetColor(0.5, 0.5, 0.0, 1.0)
-		video.font.Printf(30+1, float32(video.height-30*(i+1)+1), 0.5, n.message)
+		video.font.Printf(30+1, float32(video.height-30*(i+1)+1), 0.25, n.message)
 		video.font.SetColor(1.0, 1.0, 0.0, 1.0)
-		video.font.Printf(30, float32(video.height-30*(i+1)), 0.5, n.message)
+		video.font.Printf(30, float32(video.height-30*(i+1)), 0.25, n.message)
 	}
 }
 
+// Render the current frame
 func videoRender() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
@@ -211,6 +212,7 @@ func videoRender() {
 	renderNotifications()
 }
 
+// Refresh the texture framebuffer
 func videoRefresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
 
