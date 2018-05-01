@@ -8,8 +8,9 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
+	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/nullboundary/glfont"
 )
 
 var window *glfw.Window
@@ -17,6 +18,8 @@ var window *glfw.Window
 var scale = 3.0
 
 var video struct {
+	width   int
+	height  int
 	program uint32
 	vao     uint32
 	texID   uint32
@@ -24,6 +27,7 @@ var video struct {
 	pixFmt  uint32
 	pixType uint32
 	bpp     int32
+	font    *glfont.Font
 }
 
 func videoSetPixelFormat(format uint32) bool {
@@ -69,7 +73,7 @@ func updateMaskUniform() {
 	}
 }
 
-func createWindow(width int, height int) {
+func createWindow() {
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
@@ -77,7 +81,7 @@ func createWindow(width int, height int) {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	var err error
-	window, err = glfw.CreateWindow(width, height, "nanorarch", nil, nil)
+	window, err = glfw.CreateWindow(video.width, video.height, "nanorarch", nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -85,7 +89,7 @@ func createWindow(width int, height int) {
 	window.MakeContextCurrent()
 
 	// Force the same aspect ratio.
-	window.SetAspectRatio(width, height)
+	window.SetAspectRatio(video.width, video.height)
 
 	// When resizing the window, also resize the content.
 	window.SetFramebufferSizeCallback(resizedFramebuffer)
@@ -95,8 +99,16 @@ func createWindow(width int, height int) {
 		panic(err)
 	}
 
+	//load font (fontfile, font scale, window width, window height
+	video.font, err = glfont.LoadFont("font.ttf", int32(24), video.width, video.height)
+	if err != nil {
+		panic(err)
+	}
+	gl.Enable(gl.DEPTH_TEST)
+	gl.DepthFunc(gl.LESS)
+
 	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
+	fmt.Println("[Video] OpenGL version: ", version)
 
 	// Configure the vertex and fragment shaders
 	video.program, err = newProgram(vertexShader, fragmentShader)
@@ -147,11 +159,11 @@ func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float
 func videoConfigure(geom libretro.GameGeometry) {
 	nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
 
-	nwidth = nwidth * scale
-	nheight = nheight * scale
+	video.width = int(nwidth * scale)
+	video.height = int(nheight * scale)
 
 	if window == nil {
-		createWindow(int(nwidth), int(nheight))
+		createWindow()
 	}
 
 	if video.pixFmt == 0 {
@@ -174,7 +186,12 @@ func videoConfigure(geom libretro.GameGeometry) {
 }
 
 func videoRender() {
-	gl.Clear(gl.COLOR_BUFFER_BIT)
+	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+	video.font.SetColor(1.0, 1.0, 1.0, 1.0)
+	video.font.Printf(50, float32(video.height-50), 1.0, "Go Play Them All!")
+
+	gl.UseProgram(video.program)
 
 	gl.BindVertexArray(video.vao)
 
