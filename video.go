@@ -22,6 +22,7 @@ var video struct {
 	height  int
 	program uint32
 	vao     uint32
+	vbo     uint32
 	texID   uint32
 	pitch   int32
 	pixFmt  uint32
@@ -104,8 +105,6 @@ func createWindow() {
 	if err != nil {
 		panic(err)
 	}
-	gl.Enable(gl.DEPTH_TEST)
-	gl.DepthFunc(gl.LESS)
 
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("[Video] OpenGL version: ", version)
@@ -127,9 +126,8 @@ func createWindow() {
 	gl.GenVertexArrays(1, &video.vao)
 	gl.BindVertexArray(video.vao)
 
-	var vbo uint32
-	gl.GenBuffers(1, &vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.GenBuffers(1, &video.vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
 
 	vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
@@ -186,21 +184,23 @@ func videoConfigure(geom libretro.GameGeometry) {
 }
 
 func videoRender() {
-	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-	video.font.SetColor(1.0, 1.0, 1.0, 1.0)
-	video.font.Printf(50, float32(video.height-50), 1.0, "Go Play Them All!")
+	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	gl.UseProgram(video.program)
-
-	gl.BindVertexArray(video.vao)
-
-	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-
 	updateMaskUniform()
 
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindVertexArray(video.vao)
+
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+
+	video.font.SetColor(0.5, 0.5, 0.0, 1.0)
+	video.font.Printf(51, float32(video.height-49), 1.0, "Go Play Them All!")
+	video.font.SetColor(1.0, 1.0, 0.0, 1.0)
+	video.font.Printf(50, float32(video.height-50), 1.0, "Go Play Them All!")
 }
 
 func videoRefresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
