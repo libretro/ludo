@@ -38,7 +38,7 @@ var buttonBinds = map[byte]uint32{
 	14: libretro.DeviceIDJoypadX,
 }
 
-var retroPad [libretro.DeviceIDJoypadR3 + 1]bool
+var retroPads [5][libretro.DeviceIDJoypadR3 + 1]bool
 
 func joystickCallback(joy int, event int) {
 	switch event {
@@ -58,23 +58,23 @@ func inputInit() {
 }
 
 func inputPoll() {
-	for i := range retroPad {
-		retroPad[i] = false
-	}
-
-	buttonState := glfw.GetJoystickButtons(glfw.Joystick1)
-
-	if len(buttonState) > 0 {
-		for k, v := range buttonBinds {
-			if glfw.Action(buttonState[k]) == glfw.Press {
-				retroPad[v] = true
+	for p := range retroPads {
+		for k := range retroPads[p] {
+			retroPads[p][k] = false
+		}
+		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
+		if len(buttonState) > 0 {
+			for k, v := range buttonBinds {
+				if glfw.Action(buttonState[k]) == glfw.Press {
+					retroPads[p][v] = true
+				}
 			}
 		}
 	}
 
 	for k, v := range keyBinds {
 		if window.GetKey(k) == glfw.Press {
-			retroPad[v] = true
+			retroPads[0][v] = true
 		}
 	}
 
@@ -85,11 +85,11 @@ func inputPoll() {
 }
 
 func inputState(port uint, device uint32, index uint, id uint) int16 {
-	if port > 0 || index > 0 || device != libretro.DeviceJoypad {
+	if index > 0 || device != libretro.DeviceJoypad {
 		return 0
 	}
 
-	if id < 255 && retroPad[id] {
+	if id < 255 && retroPads[port][id] {
 		return 1
 	}
 	return 0
