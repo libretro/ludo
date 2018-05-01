@@ -88,7 +88,7 @@ func coreLoadGame(filename string) {
 	videoConfigure(avi.Geometry)
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
-		window.SetTitle("nanoarch - " + si.LibraryName)
+		window.SetTitle("playthemall - " + si.LibraryName)
 	}
 	audioInit(int32(avi.Timing.SampleRate))
 }

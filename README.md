@@ -1,10 +1,8 @@
-# go-nanoarch
+# go-playthemall
 
-go-nanoarch is an attempt to write a minimal libretro frontend in go. It is a port of https://github.com/heuripedes/nanoarch
+go-playthemall is an attempt to write a libretro frontend in go.
 
-As the C version:
-
-> nanoarch is a small libretro frontend (nanoarch.c has less than 1000 lines of code) created for educational purposes. It only provides the required (video, audio and basic input) features to run most non-libretro-gl cores and there's no UI or configuration support.
+It is able to launch most non GL libretro cores.
 
 It is tested on OSX and Linux.
 
@@ -24,9 +22,9 @@ On Debian or Ubuntu:
 
 ## Building
 
-    go-get github.com/kivutar/go-nanoarch
-    go-build github.com/kivutar/go-nanoarch
+    go-get github.com/kivutar/go-playthemall
+    go-build github.com/kivutar/go-playthemall
 
 ## Running
 
-    go-nanoarch -L nestopia_libretro.so -G mario3.nes
+    go-playthemall -L nestopia_libretro.so -G mario3.nes
