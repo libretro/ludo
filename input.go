@@ -45,6 +45,7 @@ var buttonBinds = map[byte]uint32{
 var newState [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
 var oldState [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
 var released [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
+var pressed [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
 
 func joystickCallback(joy int, event int) {
 	switch event {
@@ -100,15 +101,16 @@ func inputPoll() {
 		newState[0][DeviceIDJoypadMenuToggle] = true
 	}
 
-	// Compute the keys released during this frame
+	// Compute the keys pressed or released during this frame
 	for p := range newState {
 		for k := range newState[p] {
+			pressed[p][k] = newState[p][k] && !oldState[p][k]
 			released[p][k] = !newState[p][k] && oldState[p][k]
 		}
 	}
 
-	// Toggle the menu if DeviceIDJoypadMenuToggle is released
-	if released[0][DeviceIDJoypadMenuToggle] {
+	// Toggle the menu if DeviceIDJoypadMenuToggle is pressed
+	if pressed[0][DeviceIDJoypadMenuToggle] {
 		menuActive = !menuActive
 	}
 
