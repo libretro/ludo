@@ -13,6 +13,8 @@ import (
 
 var core libretro.Core
 
+var menuActive bool
+
 func init() {
 	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
@@ -109,7 +111,11 @@ func main() {
 
 	for !window.ShouldClose() {
 		glfw.PollEvents()
-		core.Run()
+		if !menuActive {
+			core.Run()
+		} else {
+			inputPoll()
+		}
 		videoRender()
 		window.SwapBuffers()
 	}

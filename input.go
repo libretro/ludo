@@ -7,6 +7,9 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
+const numPlayers = 5
+const MenuToggle uint32 = 16
+
 var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyX:         libretro.DeviceIDJoypadA,
 	glfw.KeyZ:         libretro.DeviceIDJoypadB,
@@ -21,24 +24,27 @@ var keyBinds = map[glfw.Key]uint32{
 }
 
 var buttonBinds = map[byte]uint32{
-	0: libretro.DeviceIDJoypadUp,
-	1: libretro.DeviceIDJoypadDown,
-	2: libretro.DeviceIDJoypadLeft,
-	3: libretro.DeviceIDJoypadRight,
-	4: libretro.DeviceIDJoypadStart,
-	5: libretro.DeviceIDJoypadSelect,
-	6: libretro.DeviceIDJoypadL3,
-	7: libretro.DeviceIDJoypadR3,
-	8: libretro.DeviceIDJoypadL,
-	9: libretro.DeviceIDJoypadR,
-	//10: libretro.DeviceIDJoypadGuide,
+	0:  libretro.DeviceIDJoypadUp,
+	1:  libretro.DeviceIDJoypadDown,
+	2:  libretro.DeviceIDJoypadLeft,
+	3:  libretro.DeviceIDJoypadRight,
+	4:  libretro.DeviceIDJoypadStart,
+	5:  libretro.DeviceIDJoypadSelect,
+	6:  libretro.DeviceIDJoypadL3,
+	7:  libretro.DeviceIDJoypadR3,
+	8:  libretro.DeviceIDJoypadL,
+	9:  libretro.DeviceIDJoypadR,
+	10: MenuToggle, // Special case
 	11: libretro.DeviceIDJoypadB,
 	12: libretro.DeviceIDJoypadA,
 	13: libretro.DeviceIDJoypadY,
 	14: libretro.DeviceIDJoypadX,
 }
 
-var retroPads [5][libretro.DeviceIDJoypadR3 + 1]bool
+// Input state for all the players
+var newState [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
+var oldState [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
+var released [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
 
 func joystickCallback(joy int, event int) {
 	switch event {
@@ -58,38 +64,64 @@ func inputInit() {
 }
 
 func inputPoll() {
-	for p := range retroPads {
-		for k := range retroPads[p] {
-			retroPads[p][k] = false
+	// Reset all retropad buttons to false
+	for p := range newState {
+		for k := range newState[p] {
+			newState[p][k] = false
 		}
+	}
+
+	// Process joypads of all players
+	for p := range newState {
 		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
 		if len(buttonState) > 0 {
 			for k, v := range buttonBinds {
 				if glfw.Action(buttonState[k]) == glfw.Press {
-					retroPads[p][v] = true
+					newState[p][v] = true
 				}
 			}
 		}
 	}
 
+	// Process keyboard keys
 	for k, v := range keyBinds {
 		if window.GetKey(k) == glfw.Press {
-			retroPads[0][v] = true
+			newState[0][v] = true
 		}
 	}
 
-	// Close the window when the user hits the Escape key.
+	// Close on escape
 	if window.GetKey(glfw.KeyEscape) == glfw.Press {
 		window.SetShouldClose(true)
 	}
+
+	// Toggle menu when P is pressed
+	if window.GetKey(glfw.KeyP) == glfw.Press {
+		newState[0][MenuToggle] = true
+	}
+
+	// Compute the keys released during this frame
+	for p := range newState {
+		for k := range newState[p] {
+			released[p][k] = !newState[p][k] && oldState[p][k]
+		}
+	}
+
+	// Toggle the menu if MenuToggle is released
+	if released[0][MenuToggle] {
+		menuActive = !menuActive
+	}
+
+	// Store the old input state for comparisions
+	oldState = newState
 }
 
 func inputState(port uint, device uint32, index uint, id uint) int16 {
-	if index > 0 || device != libretro.DeviceJoypad {
+	if id >= 255 || index > 0 || device != libretro.DeviceJoypad {
 		return 0
 	}
 
-	if id < 255 && retroPads[port][id] {
+	if newState[port][id] {
 		return 1
 	}
 	return 0
