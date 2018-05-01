@@ -60,6 +60,15 @@ func resizedFramebuffer(w *glfw.Window, width int, height int) {
 	gl.Viewport(0, 0, int32(width), int32(height))
 }
 
+func updateMaskUniform() {
+	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
+	if menuActive {
+		gl.Uniform1f(maskUniform, 1.0)
+	} else {
+		gl.Uniform1f(maskUniform, 0.0)
+	}
+}
+
 func createWindow(width int, height int) {
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
@@ -172,6 +181,8 @@ func videoRender() {
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
+	updateMaskUniform()
+
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 }
 
@@ -266,13 +277,28 @@ var fragmentShader = `
 #version 330
 
 uniform sampler2D tex;
+uniform float mask;
 
 in vec2 fragTexCoord;
 
 out vec4 outputColor;
 
+vec4 toGrayscale(in vec4 color)
+{
+  float average = (color.r + color.g + color.b) / 3.0;
+  return vec4(average, average, average, 1.0);
+}
+
+vec4 colorize(in vec4 grayscale, in vec4 color)
+{
+	return (grayscale * color);
+}
+
 void main() {
-    outputColor = texture(tex, fragTexCoord);
+	vec4 c = vec4(0.2, 0.2, 0.4, 1.0);
+	vec4 color = texture(tex, fragTexCoord);
+  vec4 grayscale = toGrayscale(color);
+	outputColor = mix(color, colorize(grayscale, c), mask);
 }
 ` + "\x00"
 

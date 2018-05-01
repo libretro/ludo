@@ -8,7 +8,7 @@ import (
 )
 
 const numPlayers = 5
-const MenuToggle uint32 = 16
+const DeviceIDJoypadMenuToggle uint32 = 16
 
 var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyX:         libretro.DeviceIDJoypadA,
@@ -34,7 +34,7 @@ var buttonBinds = map[byte]uint32{
 	7:  libretro.DeviceIDJoypadR3,
 	8:  libretro.DeviceIDJoypadL,
 	9:  libretro.DeviceIDJoypadR,
-	10: MenuToggle, // Special case
+	10: DeviceIDJoypadMenuToggle, // Special case
 	11: libretro.DeviceIDJoypadB,
 	12: libretro.DeviceIDJoypadA,
 	13: libretro.DeviceIDJoypadY,
@@ -97,7 +97,7 @@ func inputPoll() {
 
 	// Toggle menu when P is pressed
 	if window.GetKey(glfw.KeyP) == glfw.Press {
-		newState[0][MenuToggle] = true
+		newState[0][DeviceIDJoypadMenuToggle] = true
 	}
 
 	// Compute the keys released during this frame
@@ -107,8 +107,8 @@ func inputPoll() {
 		}
 	}
 
-	// Toggle the menu if MenuToggle is released
-	if released[0][MenuToggle] {
+	// Toggle the menu if DeviceIDJoypadMenuToggle is released
+	if released[0][DeviceIDJoypadMenuToggle] {
 		menuActive = !menuActive
 	}
 
