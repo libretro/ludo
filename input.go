@@ -43,7 +43,7 @@ var retroPad [libretro.DeviceIDJoypadR3 + 1]bool
 func joystickCallback(joy int, event int) {
 	switch event {
 	case 262145:
-		fmt.Printf("[Input]: Joystick #%d plugged.\n", joy)
+		fmt.Printf("[Input]: Joystick #%d plugged: %s\n", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
 		break
 	case 262146:
 		fmt.Printf("[Input]: Joystick #%d unplugged.\n", joy)
