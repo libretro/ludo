@@ -48,16 +48,19 @@ var released [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
 var pressed [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
 
 func joystickCallback(joy int, event int) {
+	var message string
 	switch event {
 	case 262145:
-		fmt.Printf("[Input]: Joystick #%d plugged: %s\n", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
+		message = fmt.Sprintf("Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
 		break
 	case 262146:
-		fmt.Printf("[Input]: Joystick #%d unplugged.\n", joy)
+		message = fmt.Sprintf("Joystick #%d unplugged.", joy)
 		break
 	default:
-		fmt.Printf("[Input]: Joystick #%d unhandled event: %d.\n", joy, event)
+		message = fmt.Sprintf("Joystick #%d unhandled event: %d.", joy, event)
 	}
+	fmt.Printf("[Input]: %s\n", message)
+	notify(message, 120)
 }
 
 func inputInit() {

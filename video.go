@@ -184,6 +184,15 @@ func videoConfigure(geom libretro.GameGeometry) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 }
 
+func renderNotifications() {
+	for i, n := range notifications {
+		video.font.SetColor(0.5, 0.5, 0.0, 1.0)
+		video.font.Printf(50+1, float32(video.height-50*(i+1)-1), 1.0, n.message)
+		video.font.SetColor(1.0, 1.0, 0.0, 1.0)
+		video.font.Printf(50, float32(video.height-50*(i+1)), 1.0, n.message)
+	}
+}
+
 func videoRender() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
@@ -198,10 +207,8 @@ func videoRender() {
 
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 
-	video.font.SetColor(0.5, 0.5, 0.0, 1.0)
-	video.font.Printf(51, float32(video.height-49), 1.0, "Go Play Them All!")
-	video.font.SetColor(1.0, 1.0, 0.0, 1.0)
-	video.font.Printf(50, float32(video.height-50), 1.0, "Go Play Them All!")
+	processNotifications()
+	renderNotifications()
 }
 
 func videoRefresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
