@@ -1,12 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"libretro"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
-var binds = map[glfw.Key]uint32{
+var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyX:         libretro.DeviceIDJoypadA,
 	glfw.KeyZ:         libretro.DeviceIDJoypadB,
 	glfw.KeyA:         libretro.DeviceIDJoypadY,
@@ -21,8 +22,25 @@ var binds = map[glfw.Key]uint32{
 
 var joy [libretro.DeviceIDJoypadR3 + 1]bool
 
+func joystickCallback(joy int, event int) {
+	switch event {
+	case 262145:
+		fmt.Printf("[Input]: Joystick #%d plugged.\n", joy)
+		break
+	case 262146:
+		fmt.Printf("[Input]: Joystick #%d unplugged.\n", joy)
+		break
+	default:
+		fmt.Printf("[Input]: Joystick #%d unhandled event: %d.\n", joy, event)
+	}
+}
+
+func inputInit() {
+	glfw.SetJoystickCallback(joystickCallback)
+}
+
 func inputPoll() {
-	for k, v := range binds {
+	for k, v := range keyBinds {
 		joy[v] = (window.GetKey(k) == glfw.Press)
 	}
 

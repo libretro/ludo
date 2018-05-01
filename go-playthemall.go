@@ -90,6 +90,7 @@ func coreLoadGame(filename string) {
 	if len(si.LibraryName) > 0 {
 		window.SetTitle("playthemall - " + si.LibraryName)
 	}
+	inputInit()
 	audioInit(int32(avi.Timing.SampleRate))
 }
 
