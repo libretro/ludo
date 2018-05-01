@@ -102,7 +102,7 @@ func createWindow() {
 	}
 
 	//load font (fontfile, font scale, window width, window height
-	video.font, err = glfont.LoadFont("font.ttf", int32(24), video.width, video.height)
+	video.font, err = glfont.LoadFont("font.ttf", int32(48), video.width, video.height)
 	if err != nil {
 		panic(err)
 	}
@@ -187,9 +187,9 @@ func videoConfigure(geom libretro.GameGeometry) {
 func renderNotifications() {
 	for i, n := range notifications {
 		video.font.SetColor(0.5, 0.5, 0.0, 1.0)
-		video.font.Printf(50+1, float32(video.height-50*(i+1)-1), 1.0, n.message)
+		video.font.Printf(50+1, float32(video.height-50*(i+1)+1), 0.5, n.message)
 		video.font.SetColor(1.0, 1.0, 0.0, 1.0)
-		video.font.Printf(50, float32(video.height-50*(i+1)), 1.0, n.message)
+		video.font.Printf(50, float32(video.height-50*(i+1)), 0.5, n.message)
 	}
 }
 
