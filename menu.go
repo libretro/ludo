@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"libretro"
 )
 
@@ -15,6 +16,32 @@ type entry struct {
 }
 
 var currentMenu entry
+
+func buildExplorer(path string) entry {
+	var menu entry
+	menu.label = "Explorer"
+
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		notify(err.Error(), 120)
+		fmt.Println(err)
+	}
+
+	for _, f := range files {
+		f := f
+		menu.children = append(menu.children, entry{
+			label: f.Name(),
+			callback: func() {
+				if f.IsDir() {
+					fmt.Println(path + "/" + f.Name())
+					currentMenu = buildExplorer(path + "/" + f.Name() + "/")
+				}
+			},
+		})
+	}
+
+	return menu
+}
 
 func buildQuickMenu() entry {
 	var menu entry
@@ -52,6 +79,13 @@ func buildQuickMenu() entry {
 	})
 
 	menu.children = append(menu.children, entry{
+		label: "Explorer",
+		callback: func() {
+			currentMenu = buildExplorer("/Users/kivutar/testroms")
+		},
+	})
+
+	menu.children = append(menu.children, entry{
 		label: "Quit",
 		callback: func() {
 			window.SetShouldClose(true)
@@ -80,6 +114,10 @@ func menuInput() {
 		if currentMenu.children[currentMenu.ptr].callback != nil {
 			currentMenu.children[currentMenu.ptr].callback()
 		}
+	}
+
+	if pressed[0][libretro.DeviceIDJoypadB] {
+
 	}
 }
 
