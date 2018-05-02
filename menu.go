@@ -112,13 +112,13 @@ func menuInput() {
 		}
 	}
 
-	if pressed[0][libretro.DeviceIDJoypadA] {
+	if released[0][libretro.DeviceIDJoypadA] {
 		if currentMenu.children[currentMenu.ptr].callback != nil {
 			currentMenu.children[currentMenu.ptr].callback()
 		}
 	}
 
-	if pressed[0][libretro.DeviceIDJoypadB] {
+	if released[0][libretro.DeviceIDJoypadB] {
 		if len(menuStack) > 1 {
 			menuStack = menuStack[:len(menuStack)-1]
 		}

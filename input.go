@@ -120,7 +120,7 @@ func inputPoll() {
 	}
 
 	// Toggle the menu if DeviceIDJoypadMenuToggle is pressed
-	if pressed[0][DeviceIDJoypadMenuToggle] {
+	if released[0][DeviceIDJoypadMenuToggle] {
 		menuActive = !menuActive
 	}
 
