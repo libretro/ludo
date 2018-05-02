@@ -4,16 +4,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"libretro"
+
+	"github.com/tanema/gween"
+	"github.com/tanema/gween/ease"
 )
 
 type menuCallback func()
 
 type entry struct {
-	label    string
-	scroll   float32
-	ptr      int
-	callback menuCallback
-	children []entry
+	label       string
+	scroll      float32
+	scrollTween *gween.Tween
+	ptr         int
+	callback    menuCallback
+	children    []entry
 }
 
 var menuStack []entry
@@ -95,6 +99,8 @@ func buildQuickMenu() entry {
 	return menu
 }
 
+var vSpacing = 70
+
 func menuInput() {
 	currentMenu := &menuStack[len(menuStack)-1]
 
@@ -103,6 +109,7 @@ func menuInput() {
 		if currentMenu.ptr >= len(currentMenu.children) {
 			currentMenu.ptr = 0
 		}
+		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*vSpacing), 0.15, ease.OutSine)
 	}
 
 	if pressed[0][libretro.DeviceIDJoypadUp] {
@@ -110,6 +117,7 @@ func menuInput() {
 		if currentMenu.ptr < 0 {
 			currentMenu.ptr = len(currentMenu.children) - 1
 		}
+		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*vSpacing), 0.15, ease.OutSine)
 	}
 
 	if released[0][libretro.DeviceIDJoypadA] {
@@ -126,19 +134,27 @@ func menuInput() {
 }
 
 func renderMenuList() {
-	vSpacing := 70
-	currentMenu := menuStack[len(menuStack)-1]
-	currentMenu.scroll = float32(currentMenu.ptr * vSpacing)
+	_, h := window.GetSize()
 
-	video.font.SetColor(0, 0, 0, 1.0)
-	video.font.Printf(60+2, 20+60+2, 0.5, currentMenu.label)
+	currentMenu := &menuStack[len(menuStack)-1]
+	if currentMenu.scrollTween != nil {
+		currentMenu.scroll, _ = currentMenu.scrollTween.Update(1.0 / 60.0)
+	}
+
+	// video.font.SetColor(0, 0, 0, 1.0)
+	// video.font.Printf(60+2, 20+60+2, 0.5, currentMenu.label)
 	video.font.SetColor(1, 1, 1, 1.0)
 	video.font.Printf(60, 20+60, 0.5, currentMenu.label)
 
 	for i, e := range currentMenu.children {
 		y := -currentMenu.scroll + 20 + float32(vSpacing*(i+2))
-		video.font.SetColor(0, 0, 0, 1.0)
-		video.font.Printf(100+2, y+2, 0.5, e.label)
+
+		if y < 0 || y > float32(h) {
+			continue
+		}
+
+		// video.font.SetColor(0, 0, 0, 1.0)
+		// video.font.Printf(100+2, y+2, 0.5, e.label)
 		if i == currentMenu.ptr {
 			video.font.SetColor(0.0, 1.0, 0.0, 1.0)
 		} else {
