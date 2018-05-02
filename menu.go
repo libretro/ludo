@@ -15,7 +15,7 @@ type entry struct {
 	children []entry
 }
 
-var currentMenu entry
+var menuStack []entry
 
 func buildExplorer(path string) entry {
 	var menu entry
@@ -33,8 +33,7 @@ func buildExplorer(path string) entry {
 			label: f.Name(),
 			callback: func() {
 				if f.IsDir() {
-					fmt.Println(path + "/" + f.Name())
-					currentMenu = buildExplorer(path + "/" + f.Name() + "/")
+					menuStack = append(menuStack, buildExplorer(path+"/"+f.Name()+"/"))
 				}
 			},
 		})
@@ -81,7 +80,7 @@ func buildQuickMenu() entry {
 	menu.children = append(menu.children, entry{
 		label: "Explorer",
 		callback: func() {
-			currentMenu = buildExplorer("/Users/kivutar/testroms")
+			menuStack = append(menuStack, buildExplorer("/Users/kivutar/testroms"))
 		},
 	})
 
@@ -96,6 +95,8 @@ func buildQuickMenu() entry {
 }
 
 func menuInput() {
+	currentMenu := &menuStack[len(menuStack)-1]
+
 	if pressed[0][libretro.DeviceIDJoypadDown] {
 		currentMenu.ptr++
 		if currentMenu.ptr >= len(currentMenu.children) {
@@ -117,11 +118,15 @@ func menuInput() {
 	}
 
 	if pressed[0][libretro.DeviceIDJoypadB] {
-
+		if len(menuStack) > 1 {
+			menuStack = menuStack[:len(menuStack)-1]
+		}
 	}
 }
 
 func renderMenuList() {
+	currentMenu := menuStack[len(menuStack)-1]
+
 	video.font.SetColor(0, 0, 0, 1.0)
 	video.font.Printf(60+2, 20+60+2, 0.5, currentMenu.label)
 	video.font.SetColor(1, 1, 1, 1.0)
@@ -139,5 +144,5 @@ func renderMenuList() {
 }
 
 func menuInit() {
-	currentMenu = buildQuickMenu()
+	menuStack = append(menuStack, buildQuickMenu())
 }
