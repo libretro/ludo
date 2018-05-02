@@ -18,8 +18,6 @@ var window *glfw.Window
 var scale = 3.0
 
 var video struct {
-	width   int
-	height  int
 	program uint32
 	vao     uint32
 	vbo     uint32
@@ -61,11 +59,6 @@ func videoSetPixelFormat(format uint32) bool {
 	return true
 }
 
-// When resizing the window, resize the content.
-func resizedFramebuffer(w *glfw.Window, width int, height int) {
-	gl.Viewport(0, 0, int32(width), int32(height))
-}
-
 func updateMaskUniform() {
 	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
 	if menuActive {
@@ -75,15 +68,13 @@ func updateMaskUniform() {
 	}
 }
 
-func createWindow() {
-	glfw.WindowHint(glfw.Resizable, glfw.False)
+func createWindow(width int, height int) {
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
-	glfw.WindowHint(glfw.Resizable, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	var err error
-	window, err = glfw.CreateWindow(video.width, video.height, "nanorarch", nil, nil)
+	window, err = glfw.CreateWindow(width, height, "playthemall", nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -91,10 +82,7 @@ func createWindow() {
 	window.MakeContextCurrent()
 
 	// Force the same aspect ratio.
-	window.SetAspectRatio(video.width, video.height)
-
-	// When resizing the window, also resize the content.
-	window.SetFramebufferSizeCallback(resizedFramebuffer)
+	window.SetAspectRatio(width, height)
 
 	// Initialize Glow
 	if err := gl.Init(); err != nil {
@@ -102,7 +90,7 @@ func createWindow() {
 	}
 
 	//load font (fontfile, font scale, window width, window height
-	video.font, err = glfont.LoadFont("font.ttf", int32(64), video.width, video.height)
+	video.font, err = glfont.LoadFont("font.ttf", int32(64), width, height)
 	if err != nil {
 		panic(err)
 	}
@@ -140,6 +128,34 @@ func createWindow() {
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 }
 
+func toggleFullscreen() {
+	if window.GetMonitor() == nil {
+		m := glfw.GetMonitors()[0]
+		vm := m.GetVideoMode()
+		newWindow, _ := glfw.CreateWindow(vm.Width, vm.Height, "playthemall", m, window)
+		window.Destroy()
+		window = newWindow
+		window.MakeContextCurrent()
+		w, h := window.GetFramebufferSize()
+		video.font, _ = glfont.LoadFont("font.ttf", int32(64), w, h)
+		gl.Viewport(0, 0, int32(w), int32(h))
+	} else {
+		avi := core.GetSystemAVInfo()
+		geom := avi.Geometry
+		nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
+		width := int(nwidth * scale)
+		height := int(nheight * scale)
+		newWindow, _ := glfw.CreateWindow(width, height, "playthemall", nil, window)
+		window.Destroy()
+		window = newWindow
+		window.MakeContextCurrent()
+		w, h := window.GetFramebufferSize()
+		window.SetAspectRatio(width, height)
+		video.font, _ = glfont.LoadFont("font.ttf", int32(64), w, h)
+		gl.Viewport(0, 0, int32(w), int32(h))
+	}
+}
+
 func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float64) {
 	if ratio <= 0 {
 		ratio = sw / sh
@@ -158,11 +174,11 @@ func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float
 func videoConfigure(geom libretro.GameGeometry) {
 	nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
 
-	video.width = int(nwidth * scale)
-	video.height = int(nheight * scale)
+	width := int(nwidth * scale)
+	height := int(nheight * scale)
 
 	if window == nil {
-		createWindow()
+		createWindow(width, height)
 	}
 
 	if video.pixFmt == 0 {
@@ -185,11 +201,12 @@ func videoConfigure(geom libretro.GameGeometry) {
 }
 
 func renderNotifications() {
+	_, height := window.GetSize()
 	for i, n := range notifications {
-		video.font.SetColor(0.5, 0.5, 0.0, 1.0)
-		video.font.Printf(30+1, float32(video.height-30*(i+1)+1), 0.25, n.message)
-		video.font.SetColor(1.0, 1.0, 0.0, 1.0)
-		video.font.Printf(30, float32(video.height-30*(i+1)), 0.25, n.message)
+		video.font.SetColor(0.5, 0.5, 0.0, float32(n.frames)/120.0)
+		video.font.Printf(30+1, float32(height-30*len(notifications)+30*i+1), 0.25, n.message)
+		video.font.SetColor(1.0, 1.0, 0.0, float32(n.frames)/120.0)
+		video.font.Printf(30, float32(height-30*len(notifications)+30*i), 0.25, n.message)
 	}
 }
 

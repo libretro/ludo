@@ -9,6 +9,7 @@ import (
 
 const numPlayers = 5
 const DeviceIDJoypadMenuToggle uint32 = 16
+const DeviceIDJoypadFullscreenToggle uint32 = 17
 
 var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyX:         libretro.DeviceIDJoypadA,
@@ -42,10 +43,12 @@ var buttonBinds = map[byte]uint32{
 }
 
 // Input state for all the players
-var newState [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
-var oldState [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
-var released [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
-var pressed [numPlayers][libretro.DeviceIDJoypadR3 + 2]bool
+var (
+	newState [numPlayers][libretro.DeviceIDJoypadR3 + 3]bool
+	oldState [numPlayers][libretro.DeviceIDJoypadR3 + 3]bool
+	released [numPlayers][libretro.DeviceIDJoypadR3 + 3]bool
+	pressed  [numPlayers][libretro.DeviceIDJoypadR3 + 3]bool
+)
 
 func joystickCallback(joy int, event int) {
 	var message string
@@ -104,6 +107,10 @@ func inputPoll() {
 		newState[0][DeviceIDJoypadMenuToggle] = true
 	}
 
+	if window.GetKey(glfw.KeyF) == glfw.Press {
+		newState[0][DeviceIDJoypadFullscreenToggle] = true
+	}
+
 	// Compute the keys pressed or released during this frame
 	for p := range newState {
 		for k := range newState[p] {
@@ -115,6 +122,11 @@ func inputPoll() {
 	// Toggle the menu if DeviceIDJoypadMenuToggle is pressed
 	if pressed[0][DeviceIDJoypadMenuToggle] {
 		menuActive = !menuActive
+	}
+
+	// Toggle fullscreen if DeviceIDJoypadFullscreenToggle is pressed
+	if released[0][DeviceIDJoypadFullscreenToggle] {
+		toggleFullscreen()
 	}
 
 	// Store the old input state for comparisions
