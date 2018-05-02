@@ -10,8 +10,9 @@ type menuCallback func()
 
 type entry struct {
 	label    string
-	callback menuCallback
+	scroll   float32
 	ptr      int
+	callback menuCallback
 	children []entry
 }
 
@@ -125,21 +126,25 @@ func menuInput() {
 }
 
 func renderMenuList() {
+	vSpacing := 70
 	currentMenu := menuStack[len(menuStack)-1]
+	currentMenu.scroll = float32(currentMenu.ptr * vSpacing)
 
 	video.font.SetColor(0, 0, 0, 1.0)
 	video.font.Printf(60+2, 20+60+2, 0.5, currentMenu.label)
 	video.font.SetColor(1, 1, 1, 1.0)
 	video.font.Printf(60, 20+60, 0.5, currentMenu.label)
+
 	for i, e := range currentMenu.children {
+		y := -currentMenu.scroll + 20 + float32(vSpacing*(i+2))
 		video.font.SetColor(0, 0, 0, 1.0)
-		video.font.Printf(100+2, 20+float32(70*(i+2))+2, 0.5, e.label)
+		video.font.Printf(100+2, y+2, 0.5, e.label)
 		if i == currentMenu.ptr {
 			video.font.SetColor(0.0, 1.0, 0.0, 1.0)
 		} else {
 			video.font.SetColor(0.6, 0.6, 0.9, 1.0)
 		}
-		video.font.Printf(100, 20+float32(70*(i+2)), 0.5, e.label)
+		video.font.Printf(100, y, 0.5, e.label)
 	}
 }
 
