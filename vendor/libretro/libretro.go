@@ -1,6 +1,7 @@
 package libretro
 
 /*
+#cgo LDFLAGS: -ldl
 #include "libretro.h"
 #include <stdlib.h>
 #include <stdio.h>
