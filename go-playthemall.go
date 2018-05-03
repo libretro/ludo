@@ -87,7 +87,7 @@ func coreLoadGame(filename string) {
 
 	avi := core.GetSystemAVInfo()
 
-	videoConfigure(avi.Geometry)
+	videoConfigure(avi.Geometry, true)
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
 		window.SetTitle("playthemall - " + si.LibraryName)
