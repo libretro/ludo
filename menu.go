@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"libretro"
 
-	"github.com/go-gl/gl/all-core/gl"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
@@ -135,8 +134,8 @@ func menuInput() {
 }
 
 func renderMenuList() {
-	w, h := window.GetFramebufferSize()
-	gl.Viewport(0, 0, int32(w), int32(h))
+	_, h := window.GetFramebufferSize()
+	fullscreenViewport()
 
 	currentMenu := &menuStack[len(menuStack)-1]
 	if currentMenu.scrollTween != nil {

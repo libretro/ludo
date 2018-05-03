@@ -90,15 +90,13 @@ func createWindow(width int, height int) {
 	// Force a minimum size for the window.
 	window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
 
-	// When resizing the window, also resize the content.
-
 	// Initialize Glow
 	if err := gl.Init(); err != nil {
 		panic(err)
 	}
 
 	w, h := window.GetFramebufferSize()
-	resizeFramebuffer(window, w, h)
+	coreRatioViewport(window, w, h)
 
 	//load font (fontfile, font scale, window width, window height
 	video.font, err = glfont.LoadFont("font.ttf", int32(64), w, h)
@@ -232,7 +230,7 @@ func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float
 	return
 }
 
-func resizeFramebuffer(w *glfw.Window, screenWidth int, screenHeight int) {
+func coreRatioViewport(w *glfw.Window, screenWidth int, screenHeight int) {
 	// Scale the content to fit in the viewport.
 	width := float64(screenWidth)
 	height := float64(screenHeight)
@@ -248,6 +246,11 @@ func resizeFramebuffer(w *glfw.Window, screenWidth int, screenHeight int) {
 	vportY := (height - viewHeight) / 2
 
 	gl.Viewport(int32(vportX), int32(vportY), int32(viewWidth), int32(viewHeight))
+}
+
+func fullscreenViewport() {
+	w, h := window.GetFramebufferSize()
+	gl.Viewport(0, 0, int32(w), int32(h))
 }
 
 func videoConfigure(geom libretro.GameGeometry) {
@@ -295,7 +298,7 @@ func videoRender() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	w, h := window.GetFramebufferSize()
-	resizeFramebuffer(window, w, h)
+	coreRatioViewport(window, w, h)
 
 	gl.UseProgram(video.program)
 	updateMaskUniform()
