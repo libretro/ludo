@@ -16,6 +16,7 @@ import (
 var window *glfw.Window
 
 var scale = 3.0
+var originalAspectRatio float64
 
 var video struct {
 	program uint32
@@ -81,8 +82,11 @@ func createWindow(width int, height int) {
 
 	window.MakeContextCurrent()
 
-	// Force the same aspect ratio.
-	window.SetAspectRatio(width, height)
+	// Force a minimum size for the window.
+	window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
+
+	// When resizing the window, also resize the content.
+	window.SetFramebufferSizeCallback(resizeFramebuffer)
 
 	// Initialize Glow
 	if err := gl.Init(); err != nil {
@@ -171,8 +175,27 @@ func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float
 	return
 }
 
+func resizeFramebuffer(w *glfw.Window, screenWidth int, screenHeight int) {
+	// Scale the content to fit in the viewport.
+	width := float64(screenWidth)
+	height := float64(screenHeight)
+	viewWidth := width
+	viewHeight := width / originalAspectRatio
+	if (viewHeight > height) {
+		viewHeight = height
+		viewWidth = height * originalAspectRatio
+	}
+
+	// Place the content in the middle of the window.
+	vportX := (width - viewWidth) / 2
+	vportY := (height - viewHeight) / 2
+
+	gl.Viewport(int32(vportX), int32(vportY), int32(viewWidth), int32(viewHeight));
+}
+
 func videoConfigure(geom libretro.GameGeometry) {
-	nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
+	originalAspectRatio = geom.AspectRatio
+	nwidth, nheight := resizeToAspect(originalAspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
 
 	width := int(nwidth * scale)
 	height := int(nheight * scale)
