@@ -70,80 +70,12 @@ func updateMaskUniform() {
 }
 
 func toggleFullscreen() {
+	avi := core.GetSystemAVInfo()
+	geom := avi.Geometry
 	if window.GetMonitor() == nil {
-		window.Destroy()
-		avi := core.GetSystemAVInfo()
-		geom := avi.Geometry
-		m := glfw.GetPrimaryMonitor()
-		vms := m.GetVideoModes()
-		vm := vms[len(vms)-1]
-		window, _ = glfw.CreateWindow(vm.Width, vm.Height, "playthemall", m, nil)
-		window.MakeContextCurrent()
-		w, h := window.GetFramebufferSize()
-		video.font, _ = glfont.LoadFont("font.ttf", int32(64), w, h)
-		window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
-		video.program, _ = newProgram(vertexShader, fragmentShader)
-		gl.UseProgram(video.program)
-		textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
-		gl.Uniform1i(textureUniform, 0)
-		gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
-		gl.GenVertexArrays(1, &video.vao)
-		gl.BindVertexArray(video.vao)
-		gl.GenBuffers(1, &video.vbo)
-		gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
-		gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
-		vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
-		gl.EnableVertexAttribArray(vertAttrib)
-		gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
-		texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
-		gl.EnableVertexAttribArray(texCoordAttrib)
-		gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
-		if video.pixFmt == 0 {
-			video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-		}
-		gl.GenTextures(1, &video.texID)
-		gl.ActiveTexture(gl.TEXTURE0)
-		video.pitch = int32(geom.BaseWidth) * video.bpp
-		gl.BindTexture(gl.TEXTURE_2D, video.texID)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+		videoConfigure(geom, true)
 	} else {
-		window.Destroy()
-		avi := core.GetSystemAVInfo()
-		geom := avi.Geometry
-		nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
-		width := int(nwidth * scale)
-		height := int(nheight * scale)
-		window, _ = glfw.CreateWindow(width, height, "playthemall", nil, nil)
-		window.MakeContextCurrent()
-		w, h := window.GetFramebufferSize()
-		video.font, _ = glfont.LoadFont("font.ttf", int32(64), w, h)
-		window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
-		video.program, _ = newProgram(vertexShader, fragmentShader)
-		gl.UseProgram(video.program)
-		textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
-		gl.Uniform1i(textureUniform, 0)
-		gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
-		gl.GenVertexArrays(1, &video.vao)
-		gl.BindVertexArray(video.vao)
-		gl.GenBuffers(1, &video.vbo)
-		gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
-		gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
-		vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
-		gl.EnableVertexAttribArray(vertAttrib)
-		gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
-		texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
-		gl.EnableVertexAttribArray(texCoordAttrib)
-		gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
-		if video.pixFmt == 0 {
-			video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-		}
-		gl.GenTextures(1, &video.texID)
-		gl.ActiveTexture(gl.TEXTURE0)
-		video.pitch = int32(geom.BaseWidth) * video.bpp
-		gl.BindTexture(gl.TEXTURE_2D, video.texID)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+		videoConfigure(geom, false)
 	}
 }
 
