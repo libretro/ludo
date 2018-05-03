@@ -8,8 +8,8 @@ import (
 )
 
 const numPlayers = 5
-const DeviceIDJoypadMenuToggle uint32 = 16
-const DeviceIDJoypadFullscreenToggle uint32 = 17
+const menuActionMenuToggle uint32 = 16
+const menuActionFullscreenToggle uint32 = 17
 
 var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyX:         libretro.DeviceIDJoypadA,
@@ -35,7 +35,7 @@ var buttonBinds = map[byte]uint32{
 	7:  libretro.DeviceIDJoypadR3,
 	8:  libretro.DeviceIDJoypadL,
 	9:  libretro.DeviceIDJoypadR,
-	10: DeviceIDJoypadMenuToggle, // Special case
+	10: menuActionMenuToggle, // Special case
 	11: libretro.DeviceIDJoypadB,
 	12: libretro.DeviceIDJoypadA,
 	13: libretro.DeviceIDJoypadY,
@@ -104,11 +104,11 @@ func inputPoll() {
 
 	// Toggle menu when P is pressed
 	if window.GetKey(glfw.KeyP) == glfw.Press {
-		newState[0][DeviceIDJoypadMenuToggle] = true
+		newState[0][menuActionMenuToggle] = true
 	}
 
 	if window.GetKey(glfw.KeyF) == glfw.Press {
-		newState[0][DeviceIDJoypadFullscreenToggle] = true
+		newState[0][menuActionFullscreenToggle] = true
 	}
 
 	// Compute the keys pressed or released during this frame
@@ -119,13 +119,13 @@ func inputPoll() {
 		}
 	}
 
-	// Toggle the menu if DeviceIDJoypadMenuToggle is pressed
-	if released[0][DeviceIDJoypadMenuToggle] {
+	// Toggle the menu if menuActionMenuToggle is pressed
+	if released[0][menuActionMenuToggle] {
 		menuActive = !menuActive
 	}
 
-	// Toggle fullscreen if DeviceIDJoypadFullscreenToggle is pressed
-	if released[0][DeviceIDJoypadFullscreenToggle] {
+	// Toggle fullscreen if menuActionFullscreenToggle is pressed
+	if released[0][menuActionFullscreenToggle] {
 		toggleFullscreen()
 	}
 
