@@ -154,9 +154,10 @@ func toggleFullscreen() {
 		window = newWindow
 		window.MakeContextCurrent()
 		w, h := window.GetFramebufferSize()
-		window.SetAspectRatio(width, height)
 		video.font, _ = glfont.LoadFont("font.ttf", int32(64), w, h)
 		gl.Viewport(0, 0, int32(w), int32(h))
+		window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
+		window.SetFramebufferSizeCallback(resizeFramebuffer)
 	}
 }
 
@@ -181,7 +182,7 @@ func resizeFramebuffer(w *glfw.Window, screenWidth int, screenHeight int) {
 	height := float64(screenHeight)
 	viewWidth := width
 	viewHeight := width / originalAspectRatio
-	if (viewHeight > height) {
+	if viewHeight > height {
 		viewHeight = height
 		viewWidth = height * originalAspectRatio
 	}
@@ -190,7 +191,7 @@ func resizeFramebuffer(w *glfw.Window, screenWidth int, screenHeight int) {
 	vportX := (width - viewWidth) / 2
 	vportY := (height - viewHeight) / 2
 
-	gl.Viewport(int32(vportX), int32(vportY), int32(viewWidth), int32(viewHeight));
+	gl.Viewport(int32(vportX), int32(vportY), int32(viewWidth), int32(viewHeight))
 }
 
 func videoConfigure(geom libretro.GameGeometry) {
