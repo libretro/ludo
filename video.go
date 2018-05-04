@@ -217,12 +217,10 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 }
 
 func renderNotifications() {
-	_, height := window.GetSize()
+	_, height := window.GetFramebufferSize()
 	for i, n := range notifications {
-		video.font.SetColor(0.5, 0.5, 0.0, float32(n.frames)/120.0)
-		video.font.Printf(30+1, float32(height-30*len(notifications)+30*i+1), 0.25, n.message)
 		video.font.SetColor(1.0, 1.0, 0.0, float32(n.frames)/120.0)
-		video.font.Printf(30, float32(height-30*len(notifications)+30*i), 0.25, n.message)
+		video.font.Printf(float32(vSpacing), float32(height-vSpacing*len(notifications)+vSpacing*i), 0.5, n.message)
 	}
 }
 
