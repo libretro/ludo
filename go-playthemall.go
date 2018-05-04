@@ -87,7 +87,9 @@ func coreLoadGame(filename string) {
 
 	avi := core.GetSystemAVInfo()
 
-	videoConfigure(avi.Geometry)
+	// Create the video window, not-fullscreen.
+	videoConfigure(avi.Geometry, false)
+
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
 		window.SetTitle("playthemall - " + si.LibraryName)

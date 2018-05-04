@@ -134,7 +134,8 @@ func menuInput() {
 }
 
 func renderMenuList() {
-	_, h := window.GetSize()
+	_, h := window.GetFramebufferSize()
+	fullscreenViewport()
 
 	currentMenu := &menuStack[len(menuStack)-1]
 	if currentMenu.scrollTween != nil {

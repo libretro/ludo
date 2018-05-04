@@ -16,7 +16,6 @@ import (
 var window *glfw.Window
 
 var scale = 3.0
-var originalAspectRatio float64
 
 var video struct {
 	program uint32
@@ -27,6 +26,7 @@ var video struct {
 	pixFmt  uint32
 	pixType uint32
 	bpp     int32
+	ratio   float64
 	font    *glfont.Font
 }
 
@@ -66,13 +66,82 @@ func updateMaskUniform() {
 	}
 }
 
-func createWindow(width int, height int) {
+func toggleFullscreen() {
+	avi := core.GetSystemAVInfo()
+	geom := avi.Geometry
+	if window.GetMonitor() == nil {
+		videoConfigure(geom, true)
+	} else {
+		videoConfigure(geom, false)
+	}
+}
+
+func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float64) {
+	if ratio <= 0 {
+		ratio = sw / sh
+	}
+
+	if sw/sh < 1.0 {
+		dw = dh * ratio
+		dh = sh
+	} else {
+		dw = sw
+		dh = dw / ratio
+	}
+	return
+}
+
+func coreRatioViewport(w *glfw.Window, fbWidth int, fbHeight int) {
+	// Scale the content to fit in the viewport.
+	width := float64(fbWidth)
+	height := float64(fbHeight)
+	viewWidth := width
+	viewHeight := width / video.ratio
+	if viewHeight > height {
+		viewHeight = height
+		viewWidth = height * video.ratio
+	}
+
+	// Place the content in the middle of the window.
+	vportX := (width - viewWidth) / 2
+	vportY := (height - viewHeight) / 2
+
+	gl.Viewport(int32(vportX), int32(vportY), int32(viewWidth), int32(viewHeight))
+}
+
+func fullscreenViewport() {
+	w, h := window.GetFramebufferSize()
+	gl.Viewport(0, 0, int32(w), int32(h))
+}
+
+func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+
+	video.ratio = geom.AspectRatio
+	var width, height int
+	var m *glfw.Monitor
+
+	if fullscreen {
+		m = glfw.GetPrimaryMonitor()
+		vms := m.GetVideoModes()
+		vm := vms[len(vms)-1]
+		width = vm.Width
+		height = vm.Height
+	} else {
+		nwidth, nheight := resizeToAspect(video.ratio, float64(geom.BaseWidth), float64(geom.BaseHeight))
+		width = int(nwidth * scale)
+		height = int(nheight * scale)
+	}
+
+	if window != nil {
+		window.Destroy()
+	}
+
 	var err error
-	window, err = glfw.CreateWindow(width, height, "playthemall", nil, nil)
+	window, err = glfw.CreateWindow(width, height, "playthemall", m, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -82,16 +151,16 @@ func createWindow(width int, height int) {
 	// Force a minimum size for the window.
 	window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
 
-	// When resizing the window, also resize the content.
-	window.SetFramebufferSizeCallback(resizeFramebuffer)
-
 	// Initialize Glow
 	if err := gl.Init(); err != nil {
 		panic(err)
 	}
 
+	fbw, fbh := window.GetFramebufferSize()
+	coreRatioViewport(window, fbw, fbh)
+
 	//load font (fontfile, font scale, window width, window height
-	video.font, err = glfont.LoadFont("font.ttf", int32(64), width, height)
+	video.font, err = glfont.LoadFont("font.ttf", int32(64), fbw, fbh)
 	if err != nil {
 		panic(err)
 	}
@@ -127,80 +196,6 @@ func createWindow(width int, height int) {
 	texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
 	gl.EnableVertexAttribArray(texCoordAttrib)
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
-}
-
-func toggleFullscreen() {
-	if window.GetMonitor() == nil {
-		m := glfw.GetMonitors()[0]
-		vm := m.GetVideoMode()
-		newWindow, _ := glfw.CreateWindow(vm.Width, vm.Height, "playthemall", m, window)
-		window.Destroy()
-		window = newWindow
-		window.MakeContextCurrent()
-		w, h := window.GetFramebufferSize()
-		video.font, _ = glfont.LoadFont("font.ttf", int32(64), w, h)
-		gl.Viewport(0, 0, int32(w), int32(h))
-	} else {
-		avi := core.GetSystemAVInfo()
-		geom := avi.Geometry
-		nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
-		width := int(nwidth * scale)
-		height := int(nheight * scale)
-		newWindow, _ := glfw.CreateWindow(width, height, "playthemall", nil, window)
-		window.Destroy()
-		window = newWindow
-		window.MakeContextCurrent()
-		w, h := window.GetFramebufferSize()
-		video.font, _ = glfont.LoadFont("font.ttf", int32(64), w, h)
-		gl.Viewport(0, 0, int32(w), int32(h))
-		window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
-		window.SetFramebufferSizeCallback(resizeFramebuffer)
-	}
-}
-
-func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float64) {
-	if ratio <= 0 {
-		ratio = sw / sh
-	}
-
-	if sw/sh < 1.0 {
-		dw = dh * ratio
-		dh = sh
-	} else {
-		dw = sw
-		dh = dw / ratio
-	}
-	return
-}
-
-func resizeFramebuffer(w *glfw.Window, screenWidth int, screenHeight int) {
-	// Scale the content to fit in the viewport.
-	width := float64(screenWidth)
-	height := float64(screenHeight)
-	viewWidth := width
-	viewHeight := width / originalAspectRatio
-	if viewHeight > height {
-		viewHeight = height
-		viewWidth = height * originalAspectRatio
-	}
-
-	// Place the content in the middle of the window.
-	vportX := (width - viewWidth) / 2
-	vportY := (height - viewHeight) / 2
-
-	gl.Viewport(int32(vportX), int32(vportY), int32(viewWidth), int32(viewHeight))
-}
-
-func videoConfigure(geom libretro.GameGeometry) {
-	originalAspectRatio = geom.AspectRatio
-	nwidth, nheight := resizeToAspect(originalAspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
-
-	width := int(nwidth * scale)
-	height := int(nheight * scale)
-
-	if window == nil {
-		createWindow(width, height)
-	}
 
 	if video.pixFmt == 0 {
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
@@ -234,6 +229,9 @@ func renderNotifications() {
 // Render the current frame
 func videoRender() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
+
+	fbw, fbh := window.GetFramebufferSize()
+	coreRatioViewport(window, fbw, fbh)
 
 	gl.UseProgram(video.program)
 	updateMaskUniform()
