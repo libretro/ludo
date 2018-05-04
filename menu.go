@@ -130,24 +130,31 @@ func buildQuickMenu() entry {
 }
 
 var vSpacing = 70
+var inputCooldown = 0
 
 func menuInput() {
 	currentMenu := &menuStack[len(menuStack)-1]
 
-	if pressed[0][libretro.DeviceIDJoypadDown] {
+	if inputCooldown > 0 {
+		inputCooldown--
+	}
+
+	if newState[0][libretro.DeviceIDJoypadDown] && inputCooldown == 0 {
 		currentMenu.ptr++
 		if currentMenu.ptr >= len(currentMenu.children) {
 			currentMenu.ptr = 0
 		}
 		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*vSpacing), 0.15, ease.OutSine)
+		inputCooldown = 10
 	}
 
-	if pressed[0][libretro.DeviceIDJoypadUp] {
+	if newState[0][libretro.DeviceIDJoypadUp] && inputCooldown == 0 {
 		currentMenu.ptr--
 		if currentMenu.ptr < 0 {
 			currentMenu.ptr = len(currentMenu.children) - 1
 		}
-		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*vSpacing), 0.15, ease.OutSine)
+		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*vSpacing), 0.10, ease.OutSine)
+		inputCooldown = 10
 	}
 
 	if released[0][libretro.DeviceIDJoypadA] {
