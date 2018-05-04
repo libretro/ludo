@@ -172,8 +172,6 @@ func renderMenuList() {
 		currentMenu.scroll, _ = currentMenu.scrollTween.Update(1.0 / 60.0)
 	}
 
-	// video.font.SetColor(0, 0, 0, 1.0)
-	// video.font.Printf(60+2, 20+60+2, 0.5, currentMenu.label)
 	video.font.SetColor(1, 1, 1, 1.0)
 	video.font.Printf(60, 20+60, 0.5, currentMenu.label)
 
@@ -184,8 +182,6 @@ func renderMenuList() {
 			continue
 		}
 
-		// video.font.SetColor(0, 0, 0, 1.0)
-		// video.font.Printf(100+2, y+2, 0.5, e.label)
 		if i == currentMenu.ptr {
 			video.font.SetColor(0.0, 1.0, 0.0, 1.0)
 		} else {
