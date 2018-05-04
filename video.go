@@ -42,17 +42,14 @@ func videoSetPixelFormat(format uint32) bool {
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 		video.pixType = gl.BGRA
 		video.bpp = 2
-		break
 	case libretro.PixelFormatXRGB8888:
 		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
 		video.pixType = gl.BGRA
 		video.bpp = 4
-		break
 	case libretro.PixelFormatRGB565:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_6_5
 		video.pixType = gl.RGB
 		video.bpp = 2
-		break
 	default:
 		log.Fatalf("Unknown pixel type %v", format)
 	}
