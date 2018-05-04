@@ -33,10 +33,6 @@ var video struct {
 func videoSetPixelFormat(format uint32) bool {
 	fmt.Printf("[Video]: Set Pixel Format: %v\n", format)
 
-	if video.texID != 0 {
-		log.Fatal("Tried to change pixel format after initialization.")
-	}
-
 	switch format {
 	case libretro.PixelFormat0RGB1555:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1

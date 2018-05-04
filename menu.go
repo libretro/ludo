@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"libretro"
+	"path/filepath"
 
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -39,6 +40,11 @@ func buildExplorer(path string) entry {
 			callback: func() {
 				if f.IsDir() {
 					menuStack = append(menuStack, buildExplorer(path+"/"+f.Name()+"/"))
+				} else if filepath.Ext(f.Name()) == ".dylib" {
+					coreLoad(path + "/" + f.Name())
+				} else if stringInSlice(filepath.Ext(f.Name()), []string{".sms", ".zip", ".sfc", ".md", ",bin", ".nes"}) {
+					coreLoadGame(path + "/" + f.Name())
+					g.menuActive = false
 				}
 			},
 		})
@@ -51,14 +57,14 @@ func buildMainMenu() entry {
 	var menu entry
 	menu.label = "Main Menu"
 
-	if g.coreRunning {
-		menu.children = append(menu.children, entry{
-			label: "Quick Menu",
-			callback: func() {
-				menuStack = append(menuStack, buildQuickMenu())
-			},
-		})
-	}
+	//if g.coreRunning {
+	menu.children = append(menu.children, entry{
+		label: "Quick Menu",
+		callback: func() {
+			menuStack = append(menuStack, buildQuickMenu())
+		},
+	})
+	//}
 
 	menu.children = append(menu.children, entry{
 		label: "Load Core",

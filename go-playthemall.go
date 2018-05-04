@@ -36,6 +36,11 @@ func nanoLog(level uint32, str string) {
 }
 
 func coreLoad(sofile string) {
+	if g.coreRunning {
+		g.core.UnloadGame()
+		g.core.Deinit()
+	}
+
 	g.core, _ = libretro.Load(sofile)
 	g.core.SetEnvironment(environment)
 	g.core.SetVideoRefresh(videoRefresh)
@@ -44,7 +49,19 @@ func coreLoad(sofile string) {
 	g.core.SetAudioSample(audioSample)
 	g.core.SetAudioSampleBatch(audioSampleBatch)
 	g.core.Init()
-	fmt.Println("Libretro API version:", g.core.APIVersion())
+
+	// Append the library name to the window title.
+	si := g.core.GetSystemInfo()
+	if len(si.LibraryName) > 0 {
+		window.SetTitle("playthemall - " + si.LibraryName)
+		fmt.Println("[Libretro]: Name:", si.LibraryName)
+		fmt.Println("[Libretro]: Version:", si.LibraryVersion)
+		fmt.Println("[Libretro]: Valid extensions:", si.ValidExtensions)
+		fmt.Println("[Libretro]: Need fullpath:", si.NeedFullpath)
+		fmt.Println("[Libretro]: Block extract:", si.BlockExtract)
+	}
+
+	fmt.Println("[Libretro]: API version:", g.core.APIVersion())
 }
 
 func coreLoadGame(filename string) {
@@ -69,12 +86,6 @@ func coreLoadGame(filename string) {
 
 	si := g.core.GetSystemInfo()
 
-	fmt.Println("  library_name:", si.LibraryName)
-	fmt.Println("  library_version:", si.LibraryVersion)
-	fmt.Println("  valid_extensions:", si.ValidExtensions)
-	fmt.Println("  need_fullpath:", si.NeedFullpath)
-	fmt.Println("  block_extract:", si.BlockExtract)
-
 	if !si.NeedFullpath {
 		bytes, err := slurp(filename, size)
 		if err != nil {
@@ -93,10 +104,6 @@ func coreLoadGame(filename string) {
 	// Create the video window, not-fullscreen.
 	videoConfigure(avi.Geometry, false)
 
-	// Append the library name to the window title.
-	if len(si.LibraryName) > 0 {
-		window.SetTitle("playthemall - " + si.LibraryName)
-	}
 	inputInit()
 	audioInit(int32(avi.Timing.SampleRate))
 
