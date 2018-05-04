@@ -100,8 +100,17 @@ func coreLoadGame(filename string) {
 
 func main() {
 	var corePath = flag.String("L", "", "Path to the libretro core")
-	var gamePath = flag.String("G", "", "Path to the game")
 	flag.Parse()
+	args := flag.Args()
+
+	var gamePath string
+	if len(args) > 0 {
+		gamePath = args[0]
+	}
+	if (len(*corePath) == 0 || len(gamePath) == 0) {
+		log.Fatalln("Usage: go-playthemall -L <core> <game>")
+		return
+	}
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
@@ -109,7 +118,7 @@ func main() {
 	defer glfw.Terminate()
 
 	coreLoad(*corePath)
-	coreLoadGame(*gamePath)
+	coreLoadGame(gamePath)
 	menuInit()
 
 	for !window.ShouldClose() {
