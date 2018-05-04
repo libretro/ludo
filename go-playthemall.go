@@ -53,7 +53,9 @@ func coreLoad(sofile string) {
 	// Append the library name to the window title.
 	si := g.core.GetSystemInfo()
 	if len(si.LibraryName) > 0 {
-		window.SetTitle("playthemall - " + si.LibraryName)
+		if window != nil {
+			window.SetTitle("playthemall - " + si.LibraryName)
+		}
 		fmt.Println("[Libretro]: Name:", si.LibraryName)
 		fmt.Println("[Libretro]: Version:", si.LibraryVersion)
 		fmt.Println("[Libretro]: Valid extensions:", si.ValidExtensions)
@@ -104,10 +106,17 @@ func coreLoadGame(filename string) {
 	// Create the video window, not-fullscreen.
 	videoConfigure(avi.Geometry, false)
 
+	// Append the library name to the window title.
+	if len(si.LibraryName) > 0 {
+		window.SetTitle("playthemall - " + si.LibraryName)
+	}
+
 	inputInit()
 	audioInit(int32(avi.Timing.SampleRate))
 
 	g.coreRunning = true
+	g.menuActive = false
+	menuInit()
 }
 
 func main() {
@@ -141,10 +150,9 @@ func main() {
 			BaseHeight:  240,
 		}
 		videoConfigure(geom, false)
+		menuInit()
 		g.menuActive = true
 	}
-
-	menuInit()
 
 	for !window.ShouldClose() {
 		glfw.PollEvents()

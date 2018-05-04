@@ -42,9 +42,8 @@ func buildExplorer(path string) entry {
 					menuStack = append(menuStack, buildExplorer(path+"/"+f.Name()+"/"))
 				} else if filepath.Ext(f.Name()) == ".dylib" {
 					coreLoad(path + "/" + f.Name())
-				} else if stringInSlice(filepath.Ext(f.Name()), []string{".sms", ".zip", ".sfc", ".md", ",bin", ".nes"}) {
+				} else if stringInSlice(filepath.Ext(f.Name()), []string{".sms", ".zip", ".sfc", ".md", ",bin", ".nes", ".pce"}) {
 					coreLoadGame(path + "/" + f.Name())
-					g.menuActive = false
 				}
 			},
 		})
@@ -57,14 +56,14 @@ func buildMainMenu() entry {
 	var menu entry
 	menu.label = "Main Menu"
 
-	//if g.coreRunning {
-	menu.children = append(menu.children, entry{
-		label: "Quick Menu",
-		callback: func() {
-			menuStack = append(menuStack, buildQuickMenu())
-		},
-	})
-	//}
+	if g.coreRunning {
+		menu.children = append(menu.children, entry{
+			label: "Quick Menu",
+			callback: func() {
+				menuStack = append(menuStack, buildQuickMenu())
+			},
+		})
+	}
 
 	menu.children = append(menu.children, entry{
 		label: "Load Core",
