@@ -59,7 +59,7 @@ func videoSetPixelFormat(format uint32) bool {
 
 func updateMaskUniform() {
 	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
-	if menuActive {
+	if g.menuActive {
 		gl.Uniform1f(maskUniform, 1.0)
 	} else {
 		gl.Uniform1f(maskUniform, 0.0)
@@ -67,7 +67,7 @@ func updateMaskUniform() {
 }
 
 func toggleFullscreen() {
-	avi := core.GetSystemAVInfo()
+	avi := g.core.GetSystemAVInfo()
 	geom := avi.Geometry
 	if window.GetMonitor() == nil {
 		videoConfigure(geom, true)

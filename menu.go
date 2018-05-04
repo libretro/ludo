@@ -54,7 +54,7 @@ func buildQuickMenu() entry {
 	menu.children = append(menu.children, entry{
 		label: "Resume",
 		callback: func() {
-			menuActive = !menuActive
+			g.menuActive = !g.menuActive
 		},
 	})
 

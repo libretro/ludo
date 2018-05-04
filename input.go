@@ -121,7 +121,7 @@ func inputPoll() {
 
 	// Toggle the menu if menuActionMenuToggle is pressed
 	if released[0][menuActionMenuToggle] {
-		menuActive = !menuActive
+		g.menuActive = !g.menuActive
 	}
 
 	// Toggle fullscreen if menuActionFullscreenToggle is pressed

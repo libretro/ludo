@@ -17,7 +17,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 			libretro.SetString(data, currentUser.Username)
 		}
 	case libretro.EnvironmentGetLogInterface:
-		core.BindLogCallback(data, nanoLog)
+		g.core.BindLogCallback(data, nanoLog)
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:

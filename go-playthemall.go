@@ -11,9 +11,12 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
-var core libretro.Core
-
-var menuActive bool
+// global state
+var g struct {
+	core        libretro.Core
+	coreRunning bool
+	menuActive  bool
+}
 
 func init() {
 	// GLFW event handling must run on the main OS thread
@@ -33,15 +36,15 @@ func nanoLog(level uint32, str string) {
 }
 
 func coreLoad(sofile string) {
-	core, _ = libretro.Load(sofile)
-	core.SetEnvironment(environment)
-	core.SetVideoRefresh(videoRefresh)
-	core.SetInputPoll(inputPoll)
-	core.SetInputState(inputState)
-	core.SetAudioSample(audioSample)
-	core.SetAudioSampleBatch(audioSampleBatch)
-	core.Init()
-	fmt.Println("Libretro API version:", core.APIVersion())
+	g.core, _ = libretro.Load(sofile)
+	g.core.SetEnvironment(environment)
+	g.core.SetVideoRefresh(videoRefresh)
+	g.core.SetInputPoll(inputPoll)
+	g.core.SetInputState(inputState)
+	g.core.SetAudioSample(audioSample)
+	g.core.SetAudioSampleBatch(audioSampleBatch)
+	g.core.Init()
+	fmt.Println("Libretro API version:", g.core.APIVersion())
 }
 
 func coreLoadGame(filename string) {
@@ -64,7 +67,7 @@ func coreLoadGame(filename string) {
 		Size: size,
 	}
 
-	si := core.GetSystemInfo()
+	si := g.core.GetSystemInfo()
 
 	fmt.Println("  library_name:", si.LibraryName)
 	fmt.Println("  library_version:", si.LibraryVersion)
@@ -80,12 +83,12 @@ func coreLoadGame(filename string) {
 		gi.SetData(bytes)
 	}
 
-	ok := core.LoadGame(gi)
+	ok := g.core.LoadGame(gi)
 	if !ok {
 		log.Fatal("The core failed to load the content.")
 	}
 
-	avi := core.GetSystemAVInfo()
+	avi := g.core.GetSystemAVInfo()
 
 	// Create the video window, not-fullscreen.
 	videoConfigure(avi.Geometry, false)
@@ -96,6 +99,8 @@ func coreLoadGame(filename string) {
 	}
 	inputInit()
 	audioInit(int32(avi.Timing.SampleRate))
+
+	g.coreRunning = true
 }
 
 func main() {
@@ -107,24 +112,37 @@ func main() {
 	if len(args) > 0 {
 		gamePath = args[0]
 	}
-	if (len(*corePath) == 0 || len(gamePath) == 0) {
-		log.Fatalln("Usage: go-playthemall -L <core> <game>")
-		return
-	}
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
 	}
 	defer glfw.Terminate()
 
-	coreLoad(*corePath)
-	coreLoadGame(gamePath)
+	if len(*corePath) > 0 {
+		coreLoad(*corePath)
+	}
+
+	if len(gamePath) > 0 {
+		coreLoadGame(gamePath)
+	}
+
+	// No game running? display the menu with a dummy geometry
+	if !g.coreRunning {
+		geom := libretro.GameGeometry{
+			AspectRatio: 320.0 / 240.0,
+			BaseWidth:   320,
+			BaseHeight:  240,
+		}
+		videoConfigure(geom, false)
+		g.menuActive = true
+	}
+
 	menuInit()
 
 	for !window.ShouldClose() {
 		glfw.PollEvents()
-		if !menuActive {
-			core.Run()
+		if !g.menuActive {
+			g.core.Run()
 			videoRender()
 		} else {
 			inputPoll()
@@ -136,6 +154,8 @@ func main() {
 	}
 
 	// Unload and deinit in the core.
-	core.UnloadGame()
-	core.Deinit()
+	if g.coreRunning {
+		g.core.UnloadGame()
+		g.core.Deinit()
+	}
 }
