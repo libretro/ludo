@@ -27,4 +27,4 @@ On Debian or Ubuntu:
 
 ## Running
 
-    go-playthemall -L nestopia_libretro.so -G mario3.nes
+    go-playthemall -L nestopia_libretro.so mario3.nes
