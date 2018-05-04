@@ -52,10 +52,10 @@ var buttonBinds = map[byte]uint32{
 
 // Input state for all the players
 var (
-	newState [numPlayers][menuActionLast]bool
-	oldState [numPlayers][menuActionLast]bool
-	released [numPlayers][menuActionLast]bool
-	pressed  [numPlayers][menuActionLast]bool
+	newState [numPlayers][menuActionLast]bool // input state for the current frame
+	oldState [numPlayers][menuActionLast]bool // input state for the previous frame
+	released [numPlayers][menuActionLast]bool // keys just released during this frame
+	pressed  [numPlayers][menuActionLast]bool // keys just pressed during this frame
 )
 
 func joystickCallback(joy int, event int) {
