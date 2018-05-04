@@ -47,6 +47,50 @@ func buildExplorer(path string) entry {
 	return menu
 }
 
+func buildMainMenu() entry {
+	var menu entry
+	menu.label = "Main Menu"
+
+	if g.coreRunning {
+		menu.children = append(menu.children, entry{
+			label: "Quick Menu",
+			callback: func() {
+				menuStack = append(menuStack, buildQuickMenu())
+			},
+		})
+	}
+
+	menu.children = append(menu.children, entry{
+		label: "Load Core",
+		callback: func() {
+			menuStack = append(menuStack, buildExplorer("./cores"))
+		},
+	})
+
+	menu.children = append(menu.children, entry{
+		label: "Load Game",
+		callback: func() {
+			menuStack = append(menuStack, buildExplorer("./roms"))
+		},
+	})
+
+	menu.children = append(menu.children, entry{
+		label: "Help",
+		callback: func() {
+			notify("Not implemented yet", 120)
+		},
+	})
+
+	menu.children = append(menu.children, entry{
+		label: "Quit",
+		callback: func() {
+			window.SetShouldClose(true)
+		},
+	})
+
+	return menu
+}
+
 func buildQuickMenu() entry {
 	var menu entry
 	menu.label = "Quick Menu"
@@ -79,20 +123,6 @@ func buildQuickMenu() entry {
 		callback: func() {
 			fmt.Println("[Menu]: Not implemented")
 			notify("Not implemented", 120)
-		},
-	})
-
-	menu.children = append(menu.children, entry{
-		label: "Explorer",
-		callback: func() {
-			menuStack = append(menuStack, buildExplorer("/Users/kivutar/testroms"))
-		},
-	})
-
-	menu.children = append(menu.children, entry{
-		label: "Quit",
-		callback: func() {
-			window.SetShouldClose(true)
 		},
 	})
 
@@ -166,5 +196,10 @@ func renderMenuList() {
 }
 
 func menuInit() {
-	menuStack = append(menuStack, buildQuickMenu())
+	if g.coreRunning {
+		menuStack = append(menuStack, buildMainMenu())
+		menuStack = append(menuStack, buildQuickMenu())
+	} else {
+		menuStack = append(menuStack, buildMainMenu())
+	}
 }
