@@ -22,6 +22,8 @@ var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyRight:     libretro.DeviceIDJoypadRight,
 	glfw.KeyEnter:     libretro.DeviceIDJoypadStart,
 	glfw.KeyBackspace: libretro.DeviceIDJoypadSelect,
+	glfw.KeyP:         menuActionMenuToggle,
+	glfw.KeyF:         menuActionFullscreenToggle,
 }
 
 var buttonBinds = map[byte]uint32{
@@ -100,15 +102,6 @@ func inputPoll() {
 	// Close on escape
 	if window.GetKey(glfw.KeyEscape) == glfw.Press {
 		window.SetShouldClose(true)
-	}
-
-	// Toggle menu when P is pressed
-	if window.GetKey(glfw.KeyP) == glfw.Press {
-		newState[0][menuActionMenuToggle] = true
-	}
-
-	if window.GetKey(glfw.KeyF) == glfw.Press {
-		newState[0][menuActionFullscreenToggle] = true
 	}
 
 	// Compute the keys pressed or released during this frame
