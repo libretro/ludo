@@ -16,13 +16,10 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		} else {
 			libretro.SetString(data, currentUser.Username)
 		}
-		break
 	case libretro.EnvironmentGetLogInterface:
 		core.BindLogCallback(data, nanoLog)
-		break
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
-		break
 	case libretro.EnvironmentSetPixelFormat:
 		format := libretro.GetPixelFormat(data)
 		if format > libretro.PixelFormatRGB565 {
@@ -30,12 +27,11 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		}
 		return videoSetPixelFormat(format)
 	case libretro.EnvironmentGetSystemDirectory:
+		fallthrough
 	case libretro.EnvironmentGetSaveDirectory:
 		libretro.SetString(data, ".")
-		return true
 	case libretro.EnvironmentShutdown:
 		window.SetShouldClose(true)
-		return true
 	case libretro.EnvironmentGetVariable:
 		variable := libretro.GetVariable(data)
 		fmt.Println("[Env]: get variable:", variable.Key)
