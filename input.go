@@ -8,8 +8,13 @@ import (
 )
 
 const numPlayers = 5
-const menuActionMenuToggle uint32 = 16
-const menuActionFullscreenToggle uint32 = 17
+
+const (
+	menuActionMenuToggle       uint32 = libretro.DeviceIDJoypadR3 + 1
+	menuActionFullscreenToggle uint32 = libretro.DeviceIDJoypadR3 + 2
+	menuActionShouldClose      uint32 = libretro.DeviceIDJoypadR3 + 3
+	menuActionLast             uint32 = libretro.DeviceIDJoypadR3 + 4
+)
 
 var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyX:         libretro.DeviceIDJoypadA,
@@ -24,6 +29,7 @@ var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyBackspace: libretro.DeviceIDJoypadSelect,
 	glfw.KeyP:         menuActionMenuToggle,
 	glfw.KeyF:         menuActionFullscreenToggle,
+	glfw.KeyEscape:    menuActionShouldClose,
 }
 
 var buttonBinds = map[byte]uint32{
@@ -37,7 +43,7 @@ var buttonBinds = map[byte]uint32{
 	7:  libretro.DeviceIDJoypadR3,
 	8:  libretro.DeviceIDJoypadL,
 	9:  libretro.DeviceIDJoypadR,
-	10: menuActionMenuToggle, // Special case
+	10: menuActionMenuToggle,
 	11: libretro.DeviceIDJoypadB,
 	12: libretro.DeviceIDJoypadA,
 	13: libretro.DeviceIDJoypadY,
@@ -46,10 +52,10 @@ var buttonBinds = map[byte]uint32{
 
 // Input state for all the players
 var (
-	newState [numPlayers][libretro.DeviceIDJoypadR3 + 3]bool
-	oldState [numPlayers][libretro.DeviceIDJoypadR3 + 3]bool
-	released [numPlayers][libretro.DeviceIDJoypadR3 + 3]bool
-	pressed  [numPlayers][libretro.DeviceIDJoypadR3 + 3]bool
+	newState [numPlayers][menuActionLast]bool
+	oldState [numPlayers][menuActionLast]bool
+	released [numPlayers][menuActionLast]bool
+	pressed  [numPlayers][menuActionLast]bool
 )
 
 func joystickCallback(joy int, event int) {
@@ -99,11 +105,6 @@ func inputPoll() {
 		}
 	}
 
-	// Close on escape
-	if window.GetKey(glfw.KeyEscape) == glfw.Press {
-		window.SetShouldClose(true)
-	}
-
 	// Compute the keys pressed or released during this frame
 	for p := range newState {
 		for k := range newState[p] {
@@ -120,6 +121,11 @@ func inputPoll() {
 	// Toggle fullscreen if menuActionFullscreenToggle is pressed
 	if released[0][menuActionFullscreenToggle] {
 		toggleFullscreen()
+	}
+
+	// Close on escape
+	if pressed[0][menuActionShouldClose] {
+		window.SetShouldClose(true)
 	}
 
 	// Store the old input state for comparisions
