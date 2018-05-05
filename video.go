@@ -26,7 +26,7 @@ var video struct {
 	pixFmt  uint32
 	pixType uint32
 	bpp     int32
-	ratio   float64
+	geom    libretro.GameGeometry
 	font    *glfont.Font
 }
 
@@ -63,12 +63,10 @@ func updateMaskUniform() {
 }
 
 func toggleFullscreen() {
-	avi := g.core.GetSystemAVInfo()
-	geom := avi.Geometry
 	if window.GetMonitor() == nil {
-		videoConfigure(geom, true)
+		videoConfigure(video.geom, true)
 	} else {
-		videoConfigure(geom, false)
+		videoConfigure(video.geom, false)
 	}
 }
 
@@ -92,10 +90,10 @@ func coreRatioViewport(w *glfw.Window, fbWidth int, fbHeight int) {
 	width := float64(fbWidth)
 	height := float64(fbHeight)
 	viewWidth := width
-	viewHeight := width / video.ratio
+	viewHeight := width / video.geom.AspectRatio
 	if viewHeight > height {
 		viewHeight = height
-		viewWidth = height * video.ratio
+		viewWidth = height * video.geom.AspectRatio
 	}
 
 	// Place the content in the middle of the window.
@@ -111,12 +109,13 @@ func fullscreenViewport() {
 }
 
 func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
+	video.geom = geom
+
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	video.ratio = geom.AspectRatio
 	var width, height int
 	var m *glfw.Monitor
 
@@ -127,7 +126,7 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 		width = vm.Width
 		height = vm.Height
 	} else {
-		nwidth, nheight := resizeToAspect(video.ratio, float64(geom.BaseWidth), float64(geom.BaseHeight))
+		nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
 		width = int(nwidth * scale)
 		height = int(nheight * scale)
 	}
