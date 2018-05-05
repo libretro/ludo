@@ -12,15 +12,18 @@ import (
 )
 
 type menuCallback func()
+type menuCallbackGetValue func() string
 
 type entry struct {
-	label       string
-	value       string
-	scroll      float32
-	scrollTween *gween.Tween
-	ptr         int
-	callback    menuCallback
-	children    []entry
+	label         string
+	value         string
+	scroll        float32
+	scrollTween   *gween.Tween
+	ptr           int
+	callback      menuCallback
+	callbackValue menuCallbackGetValue
+	callbackIncr  menuCallback
+	children      []entry
 }
 
 var menuStack []entry
@@ -60,10 +63,15 @@ func buildSettings() entry {
 
 	fields := structs.Fields(&settings)
 	for _, f := range fields {
+		f := f
 		menu.children = append(menu.children, entry{
 			label: f.Tag("label"),
 			value: fmt.Sprintf(f.Tag("fmt"), f.Value()),
-			callback: func() {
+			callbackIncr: func() {
+				incrCallbacks[f.Name()](f)
+			},
+			callbackValue: func() string {
+				return fmt.Sprintf(f.Tag("fmt"), f.Value())
 			},
 		})
 	}
@@ -202,6 +210,12 @@ func menuInput() {
 		}
 	}
 
+	if released[0][libretro.DeviceIDJoypadRight] {
+		if currentMenu.children[currentMenu.ptr].callbackIncr != nil {
+			currentMenu.children[currentMenu.ptr].callbackIncr()
+		}
+	}
+
 	if released[0][libretro.DeviceIDJoypadB] {
 		if len(menuStack) > 1 {
 			menuStack = menuStack[:len(menuStack)-1]
@@ -235,8 +249,8 @@ func renderMenuList() {
 		}
 		video.font.Printf(100, y, 0.5, e.label)
 
-		if e.value != "" {
-			video.font.Printf(float32(w)-250, y, 0.5, e.value)
+		if e.callbackValue != nil {
+			video.font.Printf(float32(w)-250, y, 0.5, e.callbackValue())
 		}
 	}
 }

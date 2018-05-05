@@ -4,12 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/fatih/structs"
 )
 
 var settings struct {
 	VideoScale      int     `json:"video_scale" label:"Video Scale" fmt:"%dx"`
 	VideoFullscreen bool    `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t"`
 	AudioVolume     float64 `json:"audio_volume" label:"Audio Volume" fmt:"%.1f"`
+}
+
+type settingCallbackIncrement func(*structs.Field)
+
+var incrCallbacks = map[string]settingCallbackIncrement{
+	"AudioVolume": func(f *structs.Field) {
+		v := f.Value().(float64)
+		v += 0.1
+		f.Set(v)
+		audio.source.SetGain(float32(v))
+		saveSettings()
+	},
 }
 
 func loadSettings() error {
