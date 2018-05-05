@@ -32,22 +32,40 @@ var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyEscape:    menuActionShouldClose,
 }
 
-var buttonBinds = map[byte]uint32{
-	0:  libretro.DeviceIDJoypadUp,
-	1:  libretro.DeviceIDJoypadDown,
-	2:  libretro.DeviceIDJoypadLeft,
-	3:  libretro.DeviceIDJoypadRight,
-	4:  libretro.DeviceIDJoypadStart,
-	5:  libretro.DeviceIDJoypadSelect,
-	6:  libretro.DeviceIDJoypadL3,
-	7:  libretro.DeviceIDJoypadR3,
-	8:  libretro.DeviceIDJoypadL,
-	9:  libretro.DeviceIDJoypadR,
-	10: menuActionMenuToggle,
-	11: libretro.DeviceIDJoypadB,
-	12: libretro.DeviceIDJoypadA,
-	13: libretro.DeviceIDJoypadY,
-	14: libretro.DeviceIDJoypadX,
+const btn = 0
+const axis = 1
+
+type bind struct {
+	kind      uint32
+	index     uint32
+	direction float32
+	threshold float32
+}
+
+// Joypad binding fox Xbox360 pad on OSX
+var joyBinds = map[bind]uint32{
+	bind{btn, 0, 0, 0}:  libretro.DeviceIDJoypadUp,
+	bind{btn, 1, 0, 0}:  libretro.DeviceIDJoypadDown,
+	bind{btn, 2, 0, 0}:  libretro.DeviceIDJoypadLeft,
+	bind{btn, 3, 0, 0}:  libretro.DeviceIDJoypadRight,
+	bind{btn, 4, 0, 0}:  libretro.DeviceIDJoypadStart,
+	bind{btn, 5, 0, 0}:  libretro.DeviceIDJoypadSelect,
+	bind{btn, 6, 0, 0}:  libretro.DeviceIDJoypadL3,
+	bind{btn, 7, 0, 0}:  libretro.DeviceIDJoypadR3,
+	bind{btn, 8, 0, 0}:  libretro.DeviceIDJoypadL,
+	bind{btn, 9, 0, 0}:  libretro.DeviceIDJoypadR,
+	bind{btn, 10, 0, 0}: menuActionMenuToggle,
+	bind{btn, 11, 0, 0}: libretro.DeviceIDJoypadB,
+	bind{btn, 12, 0, 0}: libretro.DeviceIDJoypadA,
+	bind{btn, 13, 0, 0}: libretro.DeviceIDJoypadY,
+	bind{btn, 14, 0, 0}: libretro.DeviceIDJoypadX,
+	bind{axis, 4, 1, 0}: libretro.DeviceIDJoypadL2,
+	bind{axis, 5, 1, 0}: libretro.DeviceIDJoypadR2,
+	// Uncomment this to bind left analog to directions
+	// bind{axis, 0, -1, -0.5}: libretro.DeviceIDJoypadLeft,
+	// bind{axis, 0, 1, 0.5}:   libretro.DeviceIDJoypadRight,
+	// bind{axis, 1, -1, -0.5}: libretro.DeviceIDJoypadUp,
+	// bind{axis, 1, 1, 0.5}:   libretro.DeviceIDJoypadDown,
 }
 
 // Input state for all the players
@@ -89,10 +107,18 @@ func inputPoll() {
 	// Process joypads of all players
 	for p := range newState {
 		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
+		axisState := glfw.GetJoystickAxes(glfw.Joystick(p))
 		if len(buttonState) > 0 {
-			for k, v := range buttonBinds {
-				if glfw.Action(buttonState[k]) == glfw.Press {
-					newState[p][v] = true
+			for k, v := range joyBinds {
+				switch k.kind {
+				case btn:
+					if glfw.Action(buttonState[k.index]) == glfw.Press {
+						newState[p][v] = true
+					}
+				case axis:
+					if k.direction*axisState[k.index] > k.threshold*k.direction {
+						newState[p][v] = true
+					}
 				}
 			}
 		}
