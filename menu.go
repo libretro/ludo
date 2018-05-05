@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"libretro"
 	"path/filepath"
+	"reflect"
 
 	"github.com/fatih/structs"
 	"github.com/tanema/gween"
@@ -15,6 +16,7 @@ type menuCallback func()
 
 type entry struct {
 	label       string
+	value       string
 	scroll      float32
 	scrollTween *gween.Tween
 	ptr         int
@@ -53,6 +55,18 @@ func buildExplorer(path string) entry {
 	return menu
 }
 
+func stringRepresentation(f *structs.Field) string {
+	switch f.Kind() {
+	case reflect.Bool:
+		return fmt.Sprintf("%t", f.Value())
+	case reflect.Int:
+		return fmt.Sprintf("%d", f.Value())
+	case reflect.Float64:
+		return fmt.Sprintf("%f", f.Value())
+	}
+	return ""
+}
+
 func buildSettings() entry {
 	var menu entry
 	menu.label = "Settings"
@@ -61,6 +75,7 @@ func buildSettings() entry {
 	for _, f := range fields {
 		menu.children = append(menu.children, entry{
 			label: f.Name(),
+			value: stringRepresentation(f),
 			callback: func() {
 			},
 		})
@@ -200,7 +215,7 @@ func menuInput() {
 }
 
 func renderMenuList() {
-	_, h := window.GetFramebufferSize()
+	w, h := window.GetFramebufferSize()
 	fullscreenViewport()
 
 	currentMenu := &menuStack[len(menuStack)-1]
@@ -224,6 +239,10 @@ func renderMenuList() {
 			video.font.SetColor(0.6, 0.6, 0.9, 1.0)
 		}
 		video.font.Printf(100, y, 0.5, e.label)
+
+		if e.value != "" {
+			video.font.Printf(float32(w)-250, y, 0.5, e.value)
+		}
 	}
 }
 
