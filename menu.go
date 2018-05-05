@@ -6,6 +6,7 @@ import (
 	"libretro"
 	"path/filepath"
 
+	"github.com/fatih/structs"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
@@ -52,6 +53,22 @@ func buildExplorer(path string) entry {
 	return menu
 }
 
+func buildSettings() entry {
+	var menu entry
+	menu.label = "Settings"
+
+	fields := structs.Fields(&settings)
+	for _, f := range fields {
+		menu.children = append(menu.children, entry{
+			label: f.Name(),
+			callback: func() {
+			},
+		})
+	}
+
+	return menu
+}
+
 func buildMainMenu() entry {
 	var menu entry
 	menu.label = "Main Menu"
@@ -76,6 +93,13 @@ func buildMainMenu() entry {
 		label: "Load Game",
 		callback: func() {
 			menuStack = append(menuStack, buildExplorer("./roms"))
+		},
+	})
+
+	menu.children = append(menu.children, entry{
+		label: "Settings",
+		callback: func() {
+			menuStack = append(menuStack, buildSettings())
 		},
 	})
 
