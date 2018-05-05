@@ -159,7 +159,7 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 	}
 
 	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("[Video]: OpenGL version: ", version)
+	fmt.Println("[Video]: OpenGL version:", version)
 
 	// Configure the vertex and fragment shaders
 	video.program, err = newProgram(vertexShader, fragmentShader)

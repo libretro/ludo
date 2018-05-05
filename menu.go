@@ -12,6 +12,7 @@ import (
 )
 
 type menuCallback func()
+type menuCallbackIncr func(int)
 type menuCallbackGetValue func() string
 
 type entry struct {
@@ -22,7 +23,7 @@ type entry struct {
 	ptr           int
 	callback      menuCallback
 	callbackValue menuCallbackGetValue
-	callbackIncr  menuCallback
+	callbackIncr  menuCallbackIncr
 	children      []entry
 }
 
@@ -67,8 +68,8 @@ func buildSettings() entry {
 		menu.children = append(menu.children, entry{
 			label: f.Tag("label"),
 			value: fmt.Sprintf(f.Tag("fmt"), f.Value()),
-			callbackIncr: func() {
-				incrCallbacks[f.Name()](f)
+			callbackIncr: func(direction int) {
+				incrCallbacks[f.Name()](f, direction)
 			},
 			callbackValue: func() string {
 				return fmt.Sprintf(f.Tag("fmt"), f.Value())
@@ -212,7 +213,13 @@ func menuInput() {
 
 	if released[0][libretro.DeviceIDJoypadRight] {
 		if currentMenu.children[currentMenu.ptr].callbackIncr != nil {
-			currentMenu.children[currentMenu.ptr].callbackIncr()
+			currentMenu.children[currentMenu.ptr].callbackIncr(1)
+		}
+	}
+
+	if released[0][libretro.DeviceIDJoypadLeft] {
+		if currentMenu.children[currentMenu.ptr].callbackIncr != nil {
+			currentMenu.children[currentMenu.ptr].callbackIncr(-1)
 		}
 	}
 

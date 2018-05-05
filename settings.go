@@ -14,26 +14,26 @@ var settings struct {
 	AudioVolume     float32 `json:"audio_volume" label:"Audio Volume" fmt:"%.1f"`
 }
 
-type settingCallbackIncrement func(*structs.Field)
+type settingCallbackIncrement func(*structs.Field, int)
 
 var incrCallbacks = map[string]settingCallbackIncrement{
-	"VideoScale": func(f *structs.Field) {
+	"VideoScale": func(f *structs.Field, direction int) {
 		v := f.Value().(int)
-		v++
+		v += direction
 		f.Set(v)
 		videoConfigure(video.geom, settings.VideoFullscreen)
 		saveSettings()
 	},
-	"VideoFullscreen": func(f *structs.Field) {
+	"VideoFullscreen": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
 		toggleFullscreen()
 		saveSettings()
 	},
-	"AudioVolume": func(f *structs.Field) {
+	"AudioVolume": func(f *structs.Field, direction int) {
 		v := f.Value().(float32)
-		v += 0.1
+		v += 0.1 * float32(direction)
 		f.Set(v)
 		audio.source.SetGain(v)
 		saveSettings()
