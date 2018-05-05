@@ -11,17 +11,17 @@ import (
 var settings struct {
 	VideoScale      int     `json:"video_scale" label:"Video Scale" fmt:"%dx"`
 	VideoFullscreen bool    `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t"`
-	AudioVolume     float64 `json:"audio_volume" label:"Audio Volume" fmt:"%.1f"`
+	AudioVolume     float32 `json:"audio_volume" label:"Audio Volume" fmt:"%.1f"`
 }
 
 type settingCallbackIncrement func(*structs.Field)
 
 var incrCallbacks = map[string]settingCallbackIncrement{
 	"AudioVolume": func(f *structs.Field) {
-		v := f.Value().(float64)
+		v := f.Value().(float32)
 		v += 0.1
 		f.Set(v)
-		audio.source.SetGain(float32(v))
+		audio.source.SetGain(v)
 		saveSettings()
 	},
 }
@@ -36,7 +36,7 @@ func loadSettings() error {
 	if err != nil {
 		return err
 	}
-	json.Unmarshal(b, settings)
+	json.Unmarshal(b, &settings)
 	return nil
 }
 

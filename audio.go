@@ -34,6 +34,8 @@ func audioInit(rate int32) {
 	audio.source = al.GenSources(1)[0]
 	audio.buffers = al.GenBuffers(int(audio.numBuffers))
 	audio.resPtr = audio.numBuffers
+
+	audio.source.SetGain(settings.AudioVolume)
 }
 
 func min(a, b int32) int32 {
