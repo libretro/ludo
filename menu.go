@@ -74,7 +74,7 @@ func buildSettings() entry {
 	fields := structs.Fields(&settings)
 	for _, f := range fields {
 		menu.children = append(menu.children, entry{
-			label: f.Name(),
+			label: f.Tag("label"),
 			value: stringRepresentation(f),
 			callback: func() {
 			},

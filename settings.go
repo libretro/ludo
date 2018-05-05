@@ -7,9 +7,9 @@ import (
 )
 
 var settings struct {
-	VideoScale      int     `json:"video_scale"`
-	VideoFullscreen bool    `json:"video_fullscreen"`
-	AudioVolume     float64 `json:"audio_volume"`
+	VideoScale      int     `json:"video_scale" label:"Video Scale"`
+	VideoFullscreen bool    `json:"video_fullscreen" label:"Video Fullscreen"`
+	AudioVolume     float64 `json:"audio_volume" label:"Audio Volume"`
 }
 
 func loadSettings() error {
