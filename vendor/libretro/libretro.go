@@ -22,6 +22,7 @@ void bridge_retro_set_audio_sample_batch(void *f, void *callback);
 bool bridge_retro_load_game(void *f, struct retro_game_info *gi);
 void bridge_retro_unload_game(void *f);
 void bridge_retro_run(void *f);
+void bridge_retro_reset(void *f);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -53,6 +54,7 @@ type Core struct {
 	symRetroSetAudioSample      unsafe.Pointer
 	symRetroSetAudioSampleBatch unsafe.Pointer
 	symRetroRun                 unsafe.Pointer
+	symRetroReset               unsafe.Pointer
 	symRetroLoadGame            unsafe.Pointer
 	symRetroUnloadGame          unsafe.Pointer
 
@@ -183,6 +185,7 @@ func Load(sofile string) (Core, error) {
 	core.symRetroSetAudioSample = C.dlsym(core.handle, C.CString("retro_set_audio_sample"))
 	core.symRetroSetAudioSampleBatch = C.dlsym(core.handle, C.CString("retro_set_audio_sample_batch"))
 	core.symRetroRun = C.dlsym(core.handle, C.CString("retro_run"))
+	core.symRetroReset = C.dlsym(core.handle, C.CString("retro_reset"))
 	core.symRetroLoadGame = C.dlsym(core.handle, C.CString("retro_load_game"))
 	core.symRetroUnloadGame = C.dlsym(core.handle, C.CString("retro_unload_game"))
 	mu.Unlock()
@@ -211,6 +214,10 @@ func (core *Core) Deinit() {
 
 func (core *Core) Run() {
 	C.bridge_retro_run(core.symRetroRun)
+}
+
+func (core *Core) Reset() {
+	C.bridge_retro_reset(core.symRetroReset)
 }
 
 func (core *Core) GetSystemInfo() SystemInfo {

@@ -134,6 +134,14 @@ func buildQuickMenu() entry {
 	})
 
 	menu.children = append(menu.children, entry{
+		label: "Reset",
+		callback: func() {
+			g.core.Reset()
+			g.menuActive = false
+		},
+	})
+
+	menu.children = append(menu.children, entry{
 		label: "Save State",
 		callback: func() {
 			fmt.Println("[Menu]: Not implemented")

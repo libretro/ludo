@@ -62,6 +62,10 @@ void bridge_retro_run(void *f) {
 	return ((void (*)(void))f)();
 }
 
+void bridge_retro_reset(void *f) {
+	return ((void (*)(void))f)();
+}
+
 bool coreEnvironment_cgo(unsigned cmd, void *data) {
 	bool coreEnvironment(unsigned, void*);
 	return coreEnvironment(cmd, data);
