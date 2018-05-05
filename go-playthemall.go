@@ -63,7 +63,7 @@ func coreLoad(sofile string) {
 		fmt.Println("[Libretro]: Block extract:", si.BlockExtract)
 	}
 
-	notify("Core loaded: "+si.LibraryName, 120)
+	notify("Core loaded: "+si.LibraryName, 240)
 	fmt.Println("[Libretro]: API version:", g.core.APIVersion())
 }
 
@@ -99,7 +99,10 @@ func coreLoadGame(filename string) {
 
 	ok := g.core.LoadGame(gi)
 	if !ok {
-		log.Fatal("[Libretro]: The core failed to load the content.")
+		notify("The core failed to load the content.", 240)
+		fmt.Println("[Libretro]: The core failed to load the content.")
+		g.coreRunning = false
+		return
 	}
 
 	avi := g.core.GetSystemAVInfo()
@@ -118,7 +121,7 @@ func coreLoadGame(filename string) {
 	g.coreRunning = true
 	g.menuActive = false
 	menuInit()
-	notify("Game loaded: "+filename, 120)
+	notify("Game loaded: "+filename, 240)
 }
 
 func main() {
@@ -159,7 +162,9 @@ func main() {
 	for !window.ShouldClose() {
 		glfw.PollEvents()
 		if !g.menuActive {
-			g.core.Run()
+			if g.coreRunning {
+				g.core.Run()
+			}
 			videoRender()
 		} else {
 			inputPoll()

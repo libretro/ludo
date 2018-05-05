@@ -29,7 +29,7 @@ func buildExplorer(path string) entry {
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		notify(err.Error(), 120)
+		notify(err.Error(), 240)
 		fmt.Println(err)
 	}
 
@@ -82,7 +82,7 @@ func buildMainMenu() entry {
 	menu.children = append(menu.children, entry{
 		label: "Help",
 		callback: func() {
-			notify("Not implemented yet", 120)
+			notify("Not implemented yet", 240)
 		},
 	})
 
@@ -111,7 +111,7 @@ func buildQuickMenu() entry {
 		label: "Save State",
 		callback: func() {
 			fmt.Println("[Menu]: Not implemented")
-			notify("Not implemented", 120)
+			notify("Not implemented", 240)
 		},
 	})
 
@@ -119,7 +119,7 @@ func buildQuickMenu() entry {
 		label: "Load State",
 		callback: func() {
 			fmt.Println("[Menu]: Not implemented")
-			notify("Not implemented", 120)
+			notify("Not implemented", 240)
 		},
 	})
 
@@ -127,7 +127,7 @@ func buildQuickMenu() entry {
 		label: "Take Screenshot",
 		callback: func() {
 			fmt.Println("[Menu]: Not implemented")
-			notify("Not implemented", 120)
+			notify("Not implemented", 240)
 		},
 	})
 

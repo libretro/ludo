@@ -71,7 +71,7 @@ func joystickCallback(joy int, event int) {
 		message = fmt.Sprintf("Joystick #%d unhandled event: %d.", joy, event)
 	}
 	fmt.Printf("[Input]: %s\n", message)
-	notify(message, 120)
+	notify(message, 240)
 }
 
 func inputInit() {
