@@ -91,8 +91,13 @@ func inputPoll() {
 		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
 		if len(buttonState) > 0 {
 			for k, v := range buttonBinds {
-				if glfw.Action(buttonState[k]) == glfw.Press {
-					newState[p][v] = true
+				// Ensure the button is available in one of the states.
+				if int(k) < len(buttonState) {
+					if glfw.Action(buttonState[k]) == glfw.Press {
+						newState[p][v] = true
+					}
+				} else {
+					fmt.Println("Unknown button index: ", k)
 				}
 			}
 		}
