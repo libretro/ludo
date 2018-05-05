@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"libretro"
 	"path/filepath"
-	"reflect"
 
 	"github.com/fatih/structs"
 	"github.com/tanema/gween"
@@ -55,18 +54,6 @@ func buildExplorer(path string) entry {
 	return menu
 }
 
-func stringRepresentation(f *structs.Field) string {
-	switch f.Kind() {
-	case reflect.Bool:
-		return fmt.Sprintf("%t", f.Value())
-	case reflect.Int:
-		return fmt.Sprintf("%d", f.Value())
-	case reflect.Float64:
-		return fmt.Sprintf("%f", f.Value())
-	}
-	return ""
-}
-
 func buildSettings() entry {
 	var menu entry
 	menu.label = "Settings"
@@ -75,7 +62,7 @@ func buildSettings() entry {
 	for _, f := range fields {
 		menu.children = append(menu.children, entry{
 			label: f.Tag("label"),
-			value: stringRepresentation(f),
+			value: fmt.Sprintf(f.Tag("fmt"), f.Value()),
 			callback: func() {
 			},
 		})
