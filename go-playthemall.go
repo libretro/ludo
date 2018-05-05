@@ -63,6 +63,7 @@ func coreLoad(sofile string) {
 		fmt.Println("[Libretro]: Block extract:", si.BlockExtract)
 	}
 
+	notify("Core loaded: "+si.LibraryName, 120)
 	fmt.Println("[Libretro]: API version:", g.core.APIVersion())
 }
 
@@ -79,7 +80,7 @@ func coreLoadGame(filename string) {
 
 	size := fi.Size()
 
-	fmt.Println("ROM size:", size)
+	fmt.Println("[Libretro]: ROM size:", size)
 
 	gi := libretro.GameInfo{
 		Path: filename,
@@ -98,7 +99,7 @@ func coreLoadGame(filename string) {
 
 	ok := g.core.LoadGame(gi)
 	if !ok {
-		log.Fatal("The core failed to load the content.")
+		log.Fatal("[Libretro]: The core failed to load the content.")
 	}
 
 	avi := g.core.GetSystemAVInfo()
@@ -117,6 +118,7 @@ func coreLoadGame(filename string) {
 	g.coreRunning = true
 	g.menuActive = false
 	menuInit()
+	notify("Game loaded: "+filename, 120)
 }
 
 func main() {
