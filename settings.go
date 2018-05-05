@@ -17,6 +17,20 @@ var settings struct {
 type settingCallbackIncrement func(*structs.Field)
 
 var incrCallbacks = map[string]settingCallbackIncrement{
+	"VideoScale": func(f *structs.Field) {
+		v := f.Value().(int)
+		v++
+		f.Set(v)
+		videoConfigure(video.geom, settings.VideoFullscreen)
+		saveSettings()
+	},
+	"VideoFullscreen": func(f *structs.Field) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+		toggleFullscreen()
+		saveSettings()
+	},
 	"AudioVolume": func(f *structs.Field) {
 		v := f.Value().(float32)
 		v += 0.1

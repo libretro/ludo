@@ -15,8 +15,6 @@ import (
 
 var window *glfw.Window
 
-var scale = 3.0
-
 var video struct {
 	program uint32
 	vao     uint32
@@ -127,8 +125,8 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 		height = vm.Height
 	} else {
 		nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
-		width = int(nwidth * scale)
-		height = int(nheight * scale)
+		width = int(nwidth * float64(settings.VideoScale))
+		height = int(nheight * float64(settings.VideoScale))
 	}
 
 	if window != nil {
