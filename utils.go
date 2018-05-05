@@ -5,13 +5,17 @@ import (
 	"os"
 )
 
-func slurp(path string, size int64) ([]byte, error) {
+func slurp(path string) ([]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	bytes := make([]byte, size)
+	stats, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	bytes := make([]byte, stats.Size())
 	buffer := bufio.NewReader(f)
 	_, err = buffer.Read(bytes)
 	if err != nil {

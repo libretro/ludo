@@ -90,7 +90,7 @@ func coreLoadGame(filename string) {
 	si := g.core.GetSystemInfo()
 
 	if !si.NeedFullpath {
-		bytes, err := slurp(filename, size)
+		bytes, err := slurp(filename)
 		if err != nil {
 			panic(err)
 		}
@@ -132,6 +132,13 @@ func main() {
 	var gamePath string
 	if len(args) > 0 {
 		gamePath = args[0]
+	}
+
+	err := loadSettings()
+	if err != nil {
+		fmt.Println("[Settings]: Loading failed:", err)
+		fmt.Println("[Settings]: Using default settings")
+		saveSettings()
 	}
 
 	if err := glfw.Init(); err != nil {
