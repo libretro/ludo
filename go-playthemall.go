@@ -107,8 +107,8 @@ func coreLoadGame(filename string) {
 
 	avi := g.core.GetSystemAVInfo()
 
-	// Create the video window, not-fullscreen.
-	videoConfigure(avi.Geometry, false)
+	// Create the video window
+	videoConfigure(avi.Geometry, settings.VideoFullscreen)
 
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {

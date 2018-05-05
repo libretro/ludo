@@ -50,7 +50,10 @@ func loadSettings() error {
 	if err != nil {
 		return err
 	}
-	json.Unmarshal(b, &settings)
+	err = json.Unmarshal(b, &settings)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
