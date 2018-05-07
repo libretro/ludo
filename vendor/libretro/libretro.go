@@ -20,6 +20,7 @@ void bridge_retro_set_input_state(void *f, void *callback);
 void bridge_retro_set_audio_sample(void *f, void *callback);
 void bridge_retro_set_audio_sample_batch(void *f, void *callback);
 bool bridge_retro_load_game(void *f, struct retro_game_info *gi);
+bool bridge_retro_serialize(void *f, void *data, size_t size);
 size_t bridge_retro_serialize_size(void *f);
 void bridge_retro_unload_game(void *f);
 void bridge_retro_run(void *f);
@@ -59,6 +60,7 @@ type Core struct {
 	symRetroLoadGame            unsafe.Pointer
 	symRetroUnloadGame          unsafe.Pointer
 	symRetroSerializeSize       unsafe.Pointer
+	symRetroSerialize           unsafe.Pointer
 
 	videoRefresh videoRefreshFunc
 }
@@ -191,6 +193,7 @@ func Load(sofile string) (Core, error) {
 	core.symRetroLoadGame = C.dlsym(core.handle, C.CString("retro_load_game"))
 	core.symRetroUnloadGame = C.dlsym(core.handle, C.CString("retro_unload_game"))
 	core.symRetroSerializeSize = C.dlsym(core.handle, C.CString("retro_serialize_size"))
+	core.symRetroSerialize = C.dlsym(core.handle, C.CString("retro_serialize"))
 	mu.Unlock()
 
 	C.bridge_retro_set_environment(core.symRetroSetEnvironment, C.coreEnvironment_cgo)
@@ -261,6 +264,13 @@ func (core *Core) LoadGame(gi GameInfo) bool {
 
 func (core *Core) SerializeSize() uint {
 	return uint(C.bridge_retro_serialize_size(core.symRetroSerializeSize))
+}
+
+func (core *Core) Serialize(size uint) []byte {
+	data := C.malloc(C.size_t(size))
+	C.bridge_retro_serialize(core.symRetroSerialize, data, C.size_t(size))
+	bytes := C.GoBytes(data, C.int(size))
+	return bytes
 }
 
 func (core *Core) UnloadGame() {

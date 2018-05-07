@@ -153,8 +153,18 @@ func buildQuickMenu() entry {
 	menu.children = append(menu.children, entry{
 		label: "Save State",
 		callback: func() {
-			fmt.Println("[Menu]: Not implemented")
-			notify("Not implemented", 240)
+
+			s := g.core.SerializeSize()
+			bytes := g.core.Serialize(s)
+
+			err := ioutil.WriteFile("savestate1", bytes, 0644)
+			if err != nil {
+				fmt.Println("[Menu]: Savestate failed: ", err)
+				notify("Savestate failed: "+err.Error(), 240)
+			} else {
+				fmt.Println("[Menu]: State saved")
+				notify("State saved", 240)
+			}
 		},
 	})
 
