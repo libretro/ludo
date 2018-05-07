@@ -54,6 +54,10 @@ bool bridge_retro_load_game(void *f, struct retro_game_info *gi) {
   return ((bool (*)(struct retro_game_info *))f)(gi);
 }
 
+size_t bridge_retro_serialize_size(void *f) {
+  return ((size_t (*)(void))f)();
+}
+
 void bridge_retro_unload_game(void *f) {
 	return ((void (*)(void))f)();
 }
