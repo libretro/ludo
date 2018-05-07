@@ -62,6 +62,10 @@ bool bridge_retro_serialize(void *f, void *data, size_t size) {
   return ((bool (*)(void*, size_t))f)(data, size);
 }
 
+bool bridge_retro_unserialize(void *f, void *data, size_t size) {
+  return ((bool (*)(void*, size_t))f)(data, size);
+}
+
 void bridge_retro_unload_game(void *f) {
 	return ((void (*)(void))f)();
 }
