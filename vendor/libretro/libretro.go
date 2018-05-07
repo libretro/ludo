@@ -269,15 +269,22 @@ func (core *Core) SerializeSize() uint {
 	return uint(C.bridge_retro_serialize_size(core.symRetroSerializeSize))
 }
 
-func (core *Core) Serialize(size uint) []byte {
+func (core *Core) Serialize(size uint) ([]byte, error) {
 	data := C.malloc(C.size_t(size))
-	C.bridge_retro_serialize(core.symRetroSerialize, data, C.size_t(size))
+	ok := bool(C.bridge_retro_serialize(core.symRetroSerialize, data, C.size_t(size)))
+	if !ok {
+		return nil, errors.New("retro_serialize failed")
+	}
 	bytes := C.GoBytes(data, C.int(size))
-	return bytes
+	return bytes, nil
 }
 
-func (core *Core) Unserialize(bytes []byte, size uint) bool {
-	return bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
+func (core *Core) Unserialize(bytes []byte, size uint) error {
+	ok := bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
+	if !ok {
+		return errors.New("retro_unserialize failed")
+	}
+	return nil
 }
 
 func (core *Core) UnloadGame() {

@@ -153,10 +153,7 @@ func buildQuickMenu() entry {
 	menu.children = append(menu.children, entry{
 		label: "Save State",
 		callback: func() {
-			s := g.core.SerializeSize()
-			bytes := g.core.Serialize(s)
-
-			err := ioutil.WriteFile("savestate1", bytes, 0644)
+			err := saveState()
 			if err != nil {
 				fmt.Println("[Menu]: Savestate failed: ", err)
 				notify("Savestate failed: "+err.Error(), 240)
@@ -170,12 +167,7 @@ func buildQuickMenu() entry {
 	menu.children = append(menu.children, entry{
 		label: "Load State",
 		callback: func() {
-			s := g.core.SerializeSize()
-			bytes, err := ioutil.ReadFile("savestate1")
-			ok := g.core.Unserialize(bytes, s)
-			if !ok {
-				fmt.Println("[Menu]: Unserialize failed")
-			}
+			err := loadState()
 			if err != nil {
 				fmt.Println("[Menu]: Loadstate failed: ", err)
 				notify("Loadstate failed: "+err.Error(), 240)
