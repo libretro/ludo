@@ -1,4 +1,4 @@
-# go-playthemall
+# go-playthemall [![Build Status](https://travis-ci.org/kivutar/go-playthemall.svg?branch=master)](https://travis-ci.org/kivutar/go-playthemall)
 
 go-playthemall is an attempt to write a libretro frontend in go.
 
