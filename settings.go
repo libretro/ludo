@@ -28,7 +28,7 @@ var incrCallbacks = map[string]settingCallbackIncrement{
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
-		toggleFullscreen()
+		videoConfigure(video.geom, settings.VideoFullscreen)
 		saveSettings()
 	},
 	"AudioVolume": func(f *structs.Field, direction int) {

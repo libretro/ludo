@@ -161,7 +161,7 @@ func main() {
 			BaseWidth:   320,
 			BaseHeight:  240,
 		}
-		videoConfigure(geom, false)
+		videoConfigure(geom, settings.VideoFullscreen)
 		menuInit()
 		g.menuActive = true
 	}

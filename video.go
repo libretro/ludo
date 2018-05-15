@@ -64,14 +64,6 @@ func updateMaskUniform() {
 	}
 }
 
-func toggleFullscreen() {
-	if window.GetMonitor() == nil {
-		videoConfigure(video.geom, true)
-	} else {
-		videoConfigure(video.geom, false)
-	}
-}
-
 func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float64) {
 	if ratio <= 0 {
 		ratio = sw / sh
