@@ -192,6 +192,7 @@ func buildQuickMenu() entry {
 
 var vSpacing = 70
 var inputCooldown = 0
+var icons map[string]uint32
 
 func menuInput() {
 	currentMenu := &menuStack[len(menuStack)-1]
@@ -267,11 +268,20 @@ func renderMenuList() {
 		} else {
 			video.font.SetColor(0.6, 0.6, 0.9, 1.0)
 		}
-		video.font.Printf(100, y, 0.5, e.label)
+		video.font.Printf(110, y, 0.5, e.label)
+
+		drawImage(icons["file"], 45, int32(y)-44, 64, 64)
 
 		if e.callbackValue != nil {
 			video.font.Printf(float32(w)-250, y, 0.5, e.callbackValue())
 		}
+	}
+}
+
+func contextReset() {
+	icons = map[string]uint32{
+		"file":   newImage("assets/file.png"),
+		"folder": newImage("assets/file.png"),
 	}
 }
 

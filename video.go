@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"image"
+	"image/draw"
+	_ "image/png"
 	"libretro"
 	"log"
+	"os"
 
 	"strings"
 	"unsafe"
@@ -153,7 +157,7 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 	coreRatioViewport(window, fbw, fbh)
 
 	//load font (fontfile, font scale, window width, window height
-	video.font, err = glfont.LoadFont("font.ttf", int32(64), fbw, fbh)
+	video.font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh)
 	if err != nil {
 		panic(err)
 	}
@@ -207,6 +211,8 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+
+	contextReset()
 }
 
 func renderNotifications() {
@@ -215,6 +221,26 @@ func renderNotifications() {
 		video.font.SetColor(1.0, 1.0, 0.0, float32(n.frames)/120.0)
 		video.font.Printf(float32(vSpacing), float32(height-vSpacing*len(notifications)+vSpacing*i), 0.5, n.message)
 	}
+}
+
+// Draw a textured quad on the screen
+func drawImage(image uint32, x, y, w, h int32) {
+	_, fbh := window.GetFramebufferSize()
+	gl.UseProgram(video.program)
+	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
+	gl.Uniform1f(maskUniform, 0.0)
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.Viewport(x, int32(fbh)-y-h, w, h)
+	gl.BindVertexArray(video.vao)
+	gl.BindTexture(gl.TEXTURE_2D, image)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	fullscreenViewport()
+	gl.BindVertexArray(0)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+	gl.UseProgram(0)
+	gl.Disable(gl.BLEND)
 }
 
 // Render the current frame
@@ -227,7 +253,6 @@ func videoRender() {
 	gl.UseProgram(video.program)
 	updateMaskUniform()
 
-	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindVertexArray(video.vao)
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
@@ -241,9 +266,8 @@ func videoRender() {
 
 // Refresh the texture framebuffer
 func videoRefresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
-
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
 
 	if pitch != video.pitch {
 		video.pitch = pitch
@@ -253,6 +277,44 @@ func videoRefresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
 	if data != nil {
 		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
 	}
+}
+
+func newImage(file string) uint32 {
+	imgFile, err := os.Open(file)
+	if err != nil {
+		return 0
+	}
+	img, _, err := image.Decode(imgFile)
+	if err != nil {
+		return 0
+	}
+
+	rgba := image.NewRGBA(img.Bounds())
+	if rgba.Stride != rgba.Rect.Size().X*4 {
+		return 0
+	}
+	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+
+	var texture uint32
+	gl.GenTextures(1, &texture)
+	gl.ActiveTexture(gl.TEXTURE1)
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexImage2D(
+		gl.TEXTURE_2D,
+		0,
+		gl.RGBA,
+		int32(rgba.Rect.Size().X),
+		int32(rgba.Rect.Size().Y),
+		0,
+		gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		gl.Ptr(rgba.Pix))
+
+	return texture
 }
 
 func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
