@@ -18,6 +18,7 @@ type menuCallbackGetValue func() string
 type entry struct {
 	label         string
 	value         string
+	icon          string
 	scroll        float32
 	scrollTween   *gween.Tween
 	ptr           int
@@ -41,8 +42,13 @@ func buildExplorer(path string) entry {
 
 	for _, f := range files {
 		f := f
+		icon := "file"
+		if f.IsDir() {
+			icon = "folder"
+		}
 		menu.children = append(menu.children, entry{
 			label: f.Name(),
+			icon:  icon,
 			callback: func() {
 				if f.IsDir() {
 					menuStack = append(menuStack, buildExplorer(path+"/"+f.Name()+"/"))
@@ -67,6 +73,7 @@ func buildSettings() entry {
 		f := f
 		menu.children = append(menu.children, entry{
 			label: f.Tag("label"),
+			icon:  "subsetting",
 			value: fmt.Sprintf(f.Tag("fmt"), f.Value()),
 			callbackIncr: func(direction int) {
 				incrCallbacks[f.Name()](f, direction)
@@ -87,6 +94,7 @@ func buildMainMenu() entry {
 	if g.coreRunning {
 		menu.children = append(menu.children, entry{
 			label: "Quick Menu",
+			icon:  "subsetting",
 			callback: func() {
 				menuStack = append(menuStack, buildQuickMenu())
 			},
@@ -95,6 +103,7 @@ func buildMainMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Load Core",
+		icon:  "subsetting",
 		callback: func() {
 			menuStack = append(menuStack, buildExplorer("./cores"))
 		},
@@ -102,6 +111,7 @@ func buildMainMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Load Game",
+		icon:  "subsetting",
 		callback: func() {
 			menuStack = append(menuStack, buildExplorer("./roms"))
 		},
@@ -109,6 +119,7 @@ func buildMainMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Settings",
+		icon:  "subsetting",
 		callback: func() {
 			menuStack = append(menuStack, buildSettings())
 		},
@@ -116,6 +127,7 @@ func buildMainMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Help",
+		icon:  "subsetting",
 		callback: func() {
 			notify("Not implemented yet", 240)
 		},
@@ -123,6 +135,7 @@ func buildMainMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Quit",
+		icon:  "subsetting",
 		callback: func() {
 			window.SetShouldClose(true)
 		},
@@ -137,6 +150,7 @@ func buildQuickMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Resume",
+		icon:  "resume",
 		callback: func() {
 			g.menuActive = !g.menuActive
 		},
@@ -144,6 +158,7 @@ func buildQuickMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Reset",
+		icon:  "reset",
 		callback: func() {
 			g.core.Reset()
 			g.menuActive = false
@@ -152,6 +167,7 @@ func buildQuickMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Save State",
+		icon:  "savestate",
 		callback: func() {
 			err := saveState()
 			if err != nil {
@@ -166,6 +182,7 @@ func buildQuickMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Load State",
+		icon:  "loadstate",
 		callback: func() {
 			err := loadState()
 			if err != nil {
@@ -181,6 +198,7 @@ func buildQuickMenu() entry {
 
 	menu.children = append(menu.children, entry{
 		label: "Take Screenshot",
+		icon:  "screenshot",
 		callback: func() {
 			fmt.Println("[Menu]: Not implemented")
 			notify("Not implemented", 240)
@@ -270,7 +288,7 @@ func renderMenuList() {
 		}
 		video.font.Printf(110, y, 0.5, e.label)
 
-		drawImage(icons["file"], 45, int32(y)-44, 64, 64)
+		drawImage(icons[e.icon], 45, int32(y)-44, 64, 64)
 
 		if e.callbackValue != nil {
 			video.font.Printf(float32(w)-250, y, 0.5, e.callbackValue())
@@ -280,8 +298,14 @@ func renderMenuList() {
 
 func contextReset() {
 	icons = map[string]uint32{
-		"file":   newImage("assets/file.png"),
-		"folder": newImage("assets/file.png"),
+		"file":       newImage("assets/file.png"),
+		"folder":     newImage("assets/folder.png"),
+		"subsetting": newImage("assets/subsetting.png"),
+		"resume":     newImage("assets/resume.png"),
+		"reset":      newImage("assets/reset.png"),
+		"loadstate":  newImage("assets/loadstate.png"),
+		"savestate":  newImage("assets/savestate.png"),
+		"screenshot": newImage("assets/screenshot.png"),
 	}
 }
 
