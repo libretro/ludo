@@ -29,10 +29,10 @@ type entry struct {
 
 var vSpacing = 70
 var inputCooldown = 0
-var icons map[string]uint32
 
 var menu struct {
 	stack []entry
+	icons map[string]uint32
 }
 
 func buildExplorer(path string) entry {
@@ -288,7 +288,7 @@ func renderMenuList() {
 		}
 		video.font.Printf(110, y, 0.5, e.label)
 
-		drawImage(icons[e.icon], 45, int32(y)-44, 64, 64)
+		drawImage(menu.icons[e.icon], 45, int32(y)-44, 64, 64)
 
 		if e.callbackValue != nil {
 			video.font.Printf(float32(w)-250, y, 0.5, e.callbackValue())
@@ -297,7 +297,7 @@ func renderMenuList() {
 }
 
 func contextReset() {
-	icons = map[string]uint32{
+	menu.icons = map[string]uint32{
 		"file":       newImage("assets/file.png"),
 		"folder":     newImage("assets/folder.png"),
 		"subsetting": newImage("assets/subsetting.png"),
