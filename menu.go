@@ -17,7 +17,6 @@ type menuCallbackGetValue func() string
 
 type entry struct {
 	label         string
-	value         string
 	icon          string
 	scroll        float32
 	scrollTween   *gween.Tween
@@ -74,7 +73,6 @@ func buildSettings() entry {
 		menu.children = append(menu.children, entry{
 			label: f.Tag("label"),
 			icon:  "subsetting",
-			value: fmt.Sprintf(f.Tag("fmt"), f.Value()),
 			callbackIncr: func(direction int) {
 				incrCallbacks[f.Name()](f, direction)
 			},
