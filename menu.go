@@ -237,24 +237,28 @@ func menuInput() {
 		inputCooldown = 10
 	}
 
+	// OK
 	if released[0][libretro.DeviceIDJoypadA] {
 		if currentMenu.children[currentMenu.ptr].callback != nil {
 			currentMenu.children[currentMenu.ptr].callback()
 		}
 	}
 
+	// Right
 	if released[0][libretro.DeviceIDJoypadRight] {
 		if currentMenu.children[currentMenu.ptr].callbackIncr != nil {
 			currentMenu.children[currentMenu.ptr].callbackIncr(1)
 		}
 	}
 
+	// Left
 	if released[0][libretro.DeviceIDJoypadLeft] {
 		if currentMenu.children[currentMenu.ptr].callbackIncr != nil {
 			currentMenu.children[currentMenu.ptr].callbackIncr(-1)
 		}
 	}
 
+	// Cancel
 	if released[0][libretro.DeviceIDJoypadB] {
 		if len(menu.stack) > 1 {
 			menu.stack = menu.stack[:len(menu.stack)-1]
