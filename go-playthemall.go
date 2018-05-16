@@ -54,7 +54,7 @@ func coreLoad(sofile string) {
 	si := g.core.GetSystemInfo()
 	if len(si.LibraryName) > 0 {
 		if window != nil {
-			window.SetTitle("playthemall - " + si.LibraryName)
+			window.SetTitle("Play Them All - " + si.LibraryName)
 		}
 		fmt.Println("[Libretro]: Name:", si.LibraryName)
 		fmt.Println("[Libretro]: Version:", si.LibraryVersion)
@@ -112,7 +112,7 @@ func coreLoadGame(filename string) {
 
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
-		window.SetTitle("playthemall - " + si.LibraryName)
+		window.SetTitle("Play Them All - " + si.LibraryName)
 	}
 
 	inputInit()

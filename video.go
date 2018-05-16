@@ -130,7 +130,7 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 	}
 
 	var err error
-	window, err = glfw.CreateWindow(width, height, "playthemall", m, nil)
+	window, err = glfw.CreateWindow(width, height, "Play Them All", m, nil)
 	if err != nil {
 		panic(err)
 	}
