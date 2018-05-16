@@ -28,11 +28,11 @@ type entry struct {
 }
 
 var vSpacing = 70
-var inputCooldown = 0
 
 var menu struct {
-	stack []entry
-	icons map[string]uint32
+	stack         []entry
+	icons         map[string]uint32
+	inputCooldown int
 }
 
 func buildExplorer(path string) entry {
@@ -215,26 +215,26 @@ func buildQuickMenu() entry {
 func menuInput() {
 	currentMenu := &menu.stack[len(menu.stack)-1]
 
-	if inputCooldown > 0 {
-		inputCooldown--
+	if menu.inputCooldown > 0 {
+		menu.inputCooldown--
 	}
 
-	if newState[0][libretro.DeviceIDJoypadDown] && inputCooldown == 0 {
+	if newState[0][libretro.DeviceIDJoypadDown] && menu.inputCooldown == 0 {
 		currentMenu.ptr++
 		if currentMenu.ptr >= len(currentMenu.children) {
 			currentMenu.ptr = 0
 		}
 		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*vSpacing), 0.15, ease.OutSine)
-		inputCooldown = 10
+		menu.inputCooldown = 10
 	}
 
-	if newState[0][libretro.DeviceIDJoypadUp] && inputCooldown == 0 {
+	if newState[0][libretro.DeviceIDJoypadUp] && menu.inputCooldown == 0 {
 		currentMenu.ptr--
 		if currentMenu.ptr < 0 {
 			currentMenu.ptr = len(currentMenu.children) - 1
 		}
 		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*vSpacing), 0.10, ease.OutSine)
-		inputCooldown = 10
+		menu.inputCooldown = 10
 	}
 
 	// OK
