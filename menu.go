@@ -27,11 +27,17 @@ type entry struct {
 	children      []entry
 }
 
-var menuStack []entry
+var vSpacing = 70
+var inputCooldown = 0
+var icons map[string]uint32
+
+var menu struct {
+	stack []entry
+}
 
 func buildExplorer(path string) entry {
-	var menu entry
-	menu.label = "Explorer"
+	var list entry
+	list.label = "Explorer"
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -45,12 +51,12 @@ func buildExplorer(path string) entry {
 		if f.IsDir() {
 			icon = "folder"
 		}
-		menu.children = append(menu.children, entry{
+		list.children = append(list.children, entry{
 			label: f.Name(),
 			icon:  icon,
 			callback: func() {
 				if f.IsDir() {
-					menuStack = append(menuStack, buildExplorer(path+"/"+f.Name()+"/"))
+					menu.stack = append(menu.stack, buildExplorer(path+"/"+f.Name()+"/"))
 				} else if stringInSlice(filepath.Ext(f.Name()), []string{".so", ".dll", ".dylib"}) {
 					coreLoad(path + "/" + f.Name())
 				} else {
@@ -60,7 +66,7 @@ func buildExplorer(path string) entry {
 		})
 	}
 
-	return menu
+	return list
 }
 
 func buildSettings() entry {
@@ -86,44 +92,44 @@ func buildSettings() entry {
 }
 
 func buildMainMenu() entry {
-	var menu entry
-	menu.label = "Main Menu"
+	var list entry
+	list.label = "Main list"
 
 	if g.coreRunning {
-		menu.children = append(menu.children, entry{
+		list.children = append(list.children, entry{
 			label: "Quick Menu",
 			icon:  "subsetting",
 			callback: func() {
-				menuStack = append(menuStack, buildQuickMenu())
+				menu.stack = append(menu.stack, buildQuickMenu())
 			},
 		})
 	}
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Load Core",
 		icon:  "subsetting",
 		callback: func() {
-			menuStack = append(menuStack, buildExplorer("./cores"))
+			menu.stack = append(menu.stack, buildExplorer("./cores"))
 		},
 	})
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Load Game",
 		icon:  "subsetting",
 		callback: func() {
-			menuStack = append(menuStack, buildExplorer("./roms"))
+			menu.stack = append(menu.stack, buildExplorer("./roms"))
 		},
 	})
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Settings",
 		icon:  "subsetting",
 		callback: func() {
-			menuStack = append(menuStack, buildSettings())
+			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Help",
 		icon:  "subsetting",
 		callback: func() {
@@ -131,7 +137,7 @@ func buildMainMenu() entry {
 		},
 	})
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Quit",
 		icon:  "subsetting",
 		callback: func() {
@@ -139,14 +145,14 @@ func buildMainMenu() entry {
 		},
 	})
 
-	return menu
+	return list
 }
 
 func buildQuickMenu() entry {
-	var menu entry
-	menu.label = "Quick Menu"
+	var list entry
+	list.label = "Quick Menu"
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Resume",
 		icon:  "resume",
 		callback: func() {
@@ -154,7 +160,7 @@ func buildQuickMenu() entry {
 		},
 	})
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Reset",
 		icon:  "reset",
 		callback: func() {
@@ -163,7 +169,7 @@ func buildQuickMenu() entry {
 		},
 	})
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Save State",
 		icon:  "savestate",
 		callback: func() {
@@ -178,7 +184,7 @@ func buildQuickMenu() entry {
 		},
 	})
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Load State",
 		icon:  "loadstate",
 		callback: func() {
@@ -194,7 +200,7 @@ func buildQuickMenu() entry {
 		},
 	})
 
-	menu.children = append(menu.children, entry{
+	list.children = append(list.children, entry{
 		label: "Take Screenshot",
 		icon:  "screenshot",
 		callback: func() {
@@ -203,15 +209,11 @@ func buildQuickMenu() entry {
 		},
 	})
 
-	return menu
+	return list
 }
 
-var vSpacing = 70
-var inputCooldown = 0
-var icons map[string]uint32
-
 func menuInput() {
-	currentMenu := &menuStack[len(menuStack)-1]
+	currentMenu := &menu.stack[len(menu.stack)-1]
 
 	if inputCooldown > 0 {
 		inputCooldown--
@@ -254,8 +256,8 @@ func menuInput() {
 	}
 
 	if released[0][libretro.DeviceIDJoypadB] {
-		if len(menuStack) > 1 {
-			menuStack = menuStack[:len(menuStack)-1]
+		if len(menu.stack) > 1 {
+			menu.stack = menu.stack[:len(menu.stack)-1]
 		}
 	}
 }
@@ -264,7 +266,7 @@ func renderMenuList() {
 	w, h := window.GetFramebufferSize()
 	fullscreenViewport()
 
-	currentMenu := &menuStack[len(menuStack)-1]
+	currentMenu := &menu.stack[len(menu.stack)-1]
 	if currentMenu.scrollTween != nil {
 		currentMenu.scroll, _ = currentMenu.scrollTween.Update(1.0 / 60.0)
 	}
@@ -309,9 +311,9 @@ func contextReset() {
 
 func menuInit() {
 	if g.coreRunning {
-		menuStack = append(menuStack, buildMainMenu())
-		menuStack = append(menuStack, buildQuickMenu())
+		menu.stack = append(menu.stack, buildMainMenu())
+		menu.stack = append(menu.stack, buildQuickMenu())
 	} else {
-		menuStack = append(menuStack, buildMainMenu())
+		menu.stack = append(menu.stack, buildMainMenu())
 	}
 }
