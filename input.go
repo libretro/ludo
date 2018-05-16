@@ -140,7 +140,7 @@ func inputPoll() {
 	}
 
 	// Toggle the menu if menuActionMenuToggle is pressed
-	if released[0][menuActionMenuToggle] {
+	if released[0][menuActionMenuToggle] && g.coreRunning {
 		g.menuActive = !g.menuActive
 	}
 
