@@ -42,12 +42,14 @@ type bind struct {
 	threshold float32
 }
 
+type inputstate [numPlayers][menuActionLast]bool
+
 // Input state for all the players
 var (
-	newState [numPlayers][menuActionLast]bool // input state for the current frame
-	oldState [numPlayers][menuActionLast]bool // input state for the previous frame
-	released [numPlayers][menuActionLast]bool // keys just released during this frame
-	pressed  [numPlayers][menuActionLast]bool // keys just pressed during this frame
+	newState inputstate // input state for the current frame
+	oldState inputstate // input state for the previous frame
+	released inputstate // keys just released during this frame
+	pressed  inputstate // keys just pressed during this frame
 )
 
 func joystickCallback(joy int, event int) {
@@ -71,17 +73,18 @@ func inputInit() {
 }
 
 // Reset all retropad buttons to false
-func inputPollReset() {
-	for p := range newState {
-		for k := range newState[p] {
-			newState[p][k] = false
+func inputPollReset(state inputstate) inputstate {
+	for p := range state {
+		for k := range state[p] {
+			state[p][k] = false
 		}
 	}
+	return state
 }
 
 // Process joypads of all players
-func inputPollJoypads() {
-	for p := range newState {
+func inputPollJoypads(state inputstate) inputstate {
+	for p := range state {
 		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
 		axisState := glfw.GetJoystickAxes(glfw.Joystick(p))
 		if len(buttonState) > 0 {
@@ -89,39 +92,45 @@ func inputPollJoypads() {
 				switch k.kind {
 				case btn:
 					if glfw.Action(buttonState[k.index]) == glfw.Press {
-						newState[p][v] = true
+						state[p][v] = true
 					}
 				case axis:
 					if k.direction*axisState[k.index] > k.threshold*k.direction {
-						newState[p][v] = true
+						state[p][v] = true
 					}
 				}
 			}
 		}
 	}
+	return state
 }
 
 // Process keyboard keys
-func inputPollKeyboard() {
+func inputPollKeyboard(state inputstate) inputstate {
 	for k, v := range keyBinds {
 		if window.GetKey(k) == glfw.Press {
-			newState[0][v] = true
+			state[0][v] = true
 		}
 	}
+	return state
+}
+
+// Compute the keys pressed or released during this frame
+func inputGetPressedReleased(new inputstate, old inputstate) (inputstate, inputstate) {
+	for p := range new {
+		for k := range new[p] {
+			pressed[p][k] = new[p][k] && !old[p][k]
+			released[p][k] = !new[p][k] && old[p][k]
+		}
+	}
+	return pressed, released
 }
 
 func inputPoll() {
-	inputPollReset()
-	inputPollJoypads()
-	inputPollKeyboard()
-
-	// Compute the keys pressed or released during this frame
-	for p := range newState {
-		for k := range newState[p] {
-			pressed[p][k] = newState[p][k] && !oldState[p][k]
-			released[p][k] = !newState[p][k] && oldState[p][k]
-		}
-	}
+	newState = inputPollReset(newState)
+	newState = inputPollJoypads(newState)
+	newState = inputPollKeyboard(newState)
+	pressed, released = inputGetPressedReleased(newState, oldState)
 
 	// Toggle the menu if menuActionMenuToggle is pressed
 	if released[0][menuActionMenuToggle] && g.coreRunning {
