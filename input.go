@@ -70,15 +70,17 @@ func inputInit() {
 	glfw.SetJoystickCallback(joystickCallback)
 }
 
-func inputPoll() {
-	// Reset all retropad buttons to false
+// Reset all retropad buttons to false
+func inputPollReset() {
 	for p := range newState {
 		for k := range newState[p] {
 			newState[p][k] = false
 		}
 	}
+}
 
-	// Process joypads of all players
+// Process joypads of all players
+func inputPollJoypads() {
 	for p := range newState {
 		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
 		axisState := glfw.GetJoystickAxes(glfw.Joystick(p))
@@ -97,13 +99,21 @@ func inputPoll() {
 			}
 		}
 	}
+}
 
-	// Process keyboard keys
+// Process keyboard keys
+func inputPollKeyboard() {
 	for k, v := range keyBinds {
 		if window.GetKey(k) == glfw.Press {
 			newState[0][v] = true
 		}
 	}
+}
+
+func inputPoll() {
+	inputPollReset()
+	inputPollJoypads()
+	inputPollKeyboard()
 
 	// Compute the keys pressed or released during this frame
 	for p := range newState {
