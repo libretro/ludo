@@ -2,7 +2,15 @@ package main
 
 import (
 	"io/ioutil"
+	"path/filepath"
 )
+
+func savestateName() string {
+	name := filepath.Base(g.gamePath)
+	ext := filepath.Ext(name)
+	name = name[0 : len(name)-len(ext)]
+	return name + ".state"
+}
 
 func saveState() error {
 	s := g.core.SerializeSize()
@@ -10,12 +18,12 @@ func saveState() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile("savestate1", bytes, 0644)
+	return ioutil.WriteFile(savestateName(), bytes, 0644)
 }
 
 func loadState() error {
 	s := g.core.SerializeSize()
-	bytes, err := ioutil.ReadFile("savestate1")
+	bytes, err := ioutil.ReadFile(savestateName())
 	if err != nil {
 		return err
 	}

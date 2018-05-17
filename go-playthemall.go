@@ -16,6 +16,7 @@ var g struct {
 	core        libretro.Core
 	coreRunning bool
 	menuActive  bool
+	gamePath    string
 }
 
 func init() {
@@ -39,6 +40,7 @@ func coreLoad(sofile string) {
 	if g.coreRunning {
 		g.core.UnloadGame()
 		g.core.Deinit()
+		g.gamePath = ""
 	}
 
 	g.core, _ = libretro.Load(sofile)
@@ -120,6 +122,7 @@ func coreLoadGame(filename string) {
 
 	g.coreRunning = true
 	g.menuActive = false
+	g.gamePath = filename
 	menuInit()
 	notify("Game loaded: "+filename, 240)
 }
