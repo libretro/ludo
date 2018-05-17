@@ -114,7 +114,7 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 	var m *glfw.Monitor
 
 	if fullscreen {
-		m = glfw.GetPrimaryMonitor()
+		m = glfw.GetMonitors()[settings.VideoMonitorIndex]
 		vms := m.GetVideoModes()
 		vm := vms[len(vms)-1]
 		width = vm.Width
