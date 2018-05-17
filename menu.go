@@ -27,12 +27,11 @@ type entry struct {
 	children      []entry
 }
 
-var vSpacing = 70
-
 var menu struct {
 	stack         []entry
 	icons         map[string]uint32
 	inputCooldown int
+	spacing       int
 }
 
 func buildExplorer(path string) entry {
@@ -224,7 +223,7 @@ func menuInput() {
 		if currentMenu.ptr >= len(currentMenu.children) {
 			currentMenu.ptr = 0
 		}
-		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*vSpacing), 0.15, ease.OutSine)
+		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*menu.spacing), 0.15, ease.OutSine)
 		menu.inputCooldown = 10
 	}
 
@@ -233,7 +232,7 @@ func menuInput() {
 		if currentMenu.ptr < 0 {
 			currentMenu.ptr = len(currentMenu.children) - 1
 		}
-		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*vSpacing), 0.10, ease.OutSine)
+		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*menu.spacing), 0.10, ease.OutSine)
 		menu.inputCooldown = 10
 	}
 
@@ -279,7 +278,7 @@ func renderMenuList() {
 	video.font.Printf(60, 20+60, 0.5, currentMenu.label)
 
 	for i, e := range currentMenu.children {
-		y := -currentMenu.scroll + 20 + float32(vSpacing*(i+2))
+		y := -currentMenu.scroll + 20 + float32(menu.spacing*(i+2))
 
 		if y < 0 || y > float32(h) {
 			continue
@@ -301,6 +300,8 @@ func renderMenuList() {
 }
 
 func contextReset() {
+	menu.spacing = 70
+
 	menu.icons = map[string]uint32{
 		"file":       newImage("assets/file.png"),
 		"folder":     newImage("assets/folder.png"),
