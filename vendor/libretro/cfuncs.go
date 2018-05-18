@@ -19,7 +19,15 @@ unsigned bridge_retro_api_version(void *f) {
 }
 
 void bridge_retro_frame_time_callback(void *f, int64_t usec) {
-	((void (*)(int64_t))f)(1);
+	((void (*)(int64_t))f)(usec);
+}
+
+void bridge_retro_audio_callback(void *f) {
+	((void (*)(void))f)();
+}
+
+void bridge_retro_audio_set_state(void *f, bool state) {
+	((void (*)(bool))f)(state);
 }
 
 void bridge_retro_get_system_info(void *f, struct retro_system_info *si) {

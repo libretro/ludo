@@ -27,6 +27,8 @@ void bridge_retro_unload_game(void *f);
 void bridge_retro_run(void *f);
 void bridge_retro_reset(void *f);
 void bridge_retro_frame_time_callback(void *f, int64_t usec);
+void bridge_retro_audio_callback(void *f);
+void bridge_retro_audio_set_state(void *f, bool state);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -109,6 +111,11 @@ type FrameTimeCallback struct {
 	Reference int64
 }
 
+type AudioCallback struct {
+	Callback func()
+	SetState func(bool)
+}
+
 const (
 	PixelFormat0RGB1555 = uint32(C.RETRO_PIXEL_FORMAT_0RGB1555)
 	PixelFormatXRGB8888 = uint32(C.RETRO_PIXEL_FORMAT_XRGB8888)
@@ -147,6 +154,7 @@ const (
 	EnvironmentGetVariable          = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
 	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
 	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
+	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
 )
 
 const (
@@ -433,4 +441,16 @@ func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
 		C.bridge_retro_frame_time_callback(unsafe.Pointer(c.callback), C.int64_t(usec))
 	}
 	return ftc
+}
+
+func SetAudioCallback(data unsafe.Pointer) AudioCallback {
+	c := (*C.struct_retro_audio_callback)(data)
+	auc := AudioCallback{}
+	auc.Callback = func() {
+		C.bridge_retro_audio_callback(unsafe.Pointer(c.callback))
+	}
+	auc.SetState = func(state bool) {
+		C.bridge_retro_audio_set_state(unsafe.Pointer(c.callback), C.bool(state))
+	}
+	return auc
 }
