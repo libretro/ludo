@@ -14,6 +14,8 @@ import (
 // global state
 var g struct {
 	core        libretro.Core
+	frameTimeCb libretro.FrameTimeCallback
+	audioCb     libretro.AudioCallback
 	coreRunning bool
 	menuActive  bool
 	gamePath    string
@@ -119,8 +121,8 @@ func coreLoadGame(filename string) {
 
 	inputInit()
 	audioInit(int32(avi.Timing.SampleRate))
-	// if myauc.SetState != nil {
-	// 	myauc.SetState(true)
+	// if g.audioCb.SetState != nil {
+	// 	g.audioCb.SetState(true)
 	// }
 
 	g.coreRunning = true
@@ -177,12 +179,12 @@ func main() {
 		if !g.menuActive {
 			if g.coreRunning {
 				g.core.Run()
-				// if myftc.Callback != nil {
-				// 	fmt.Println(myftc.Reference)
-				// 	myftc.Callback(myftc.Reference)
+				// if g.frameTimeCb.Callback != nil {
+				// 	fmt.Println(g.frameTimeCb.Reference)
+				// 	g.frameTimeCb.Callback(g.frameTimeCb.Reference)
 				// }
-				// if myauc.Callback != nil {
-				// 	myauc.Callback()
+				// if g.audioCb.Callback != nil {
+				// 	g.audioCb.Callback()
 				// }
 			}
 			videoRender()
