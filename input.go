@@ -9,6 +9,8 @@ import (
 
 const numPlayers = 5
 
+type joybinds map[bind]uint32
+
 const (
 	menuActionMenuToggle       uint32 = libretro.DeviceIDJoypadR3 + 1
 	menuActionFullscreenToggle uint32 = libretro.DeviceIDJoypadR3 + 2
@@ -87,8 +89,10 @@ func inputPollJoypads(state inputstate) inputstate {
 	for p := range state {
 		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
 		axisState := glfw.GetJoystickAxes(glfw.Joystick(p))
+		name := glfw.GetJoystickName(glfw.Joystick(p))
+		jb := joyBinds[name]
 		if len(buttonState) > 0 {
-			for k, v := range joyBinds {
+			for k, v := range jb {
 				switch k.kind {
 				case btn:
 					if glfw.Action(buttonState[k.index]) == glfw.Press {

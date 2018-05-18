@@ -2,8 +2,12 @@ package main
 
 import "libretro"
 
+var joyBinds = map[string]joybinds{
+	"Xbox 360 Wired Controller": xbox360JoyBinds,
+}
+
 // Joypad bindings fox Xbox360 pad on Linux
-var joyBinds = map[bind]uint32{
+var xbox360JoyBinds = joybinds{
 	bind{btn, 0, 0, 0}:      libretro.DeviceIDJoypadB,
 	bind{btn, 1, 0, 0}:      libretro.DeviceIDJoypadA,
 	bind{btn, 2, 0, 0}:      libretro.DeviceIDJoypadY,
