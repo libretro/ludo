@@ -450,7 +450,7 @@ func SetAudioCallback(data unsafe.Pointer) AudioCallback {
 		C.bridge_retro_audio_callback(unsafe.Pointer(c.callback))
 	}
 	auc.SetState = func(state bool) {
-		C.bridge_retro_audio_set_state(unsafe.Pointer(c.callback), C.bool(state))
+		C.bridge_retro_audio_set_state(unsafe.Pointer(c.set_state), C.bool(state))
 	}
 	return auc
 }
