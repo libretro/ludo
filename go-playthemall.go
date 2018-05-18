@@ -119,9 +119,9 @@ func coreLoadGame(filename string) {
 
 	inputInit()
 	audioInit(int32(avi.Timing.SampleRate))
-	if myauc.SetState != nil {
-		myauc.SetState(true)
-	}
+	// if myauc.SetState != nil {
+	// 	myauc.SetState(true)
+	// }
 
 	g.coreRunning = true
 	g.menuActive = false
@@ -177,13 +177,13 @@ func main() {
 		if !g.menuActive {
 			if g.coreRunning {
 				g.core.Run()
-				if myftc.Callback != nil {
-					//fmt.Println(myftc.Reference)
-					myftc.Callback(myftc.Reference)
-				}
-				if myauc.Callback != nil {
-					myauc.Callback()
-				}
+				// if myftc.Callback != nil {
+				// 	fmt.Println(myftc.Reference)
+				// 	myftc.Callback(myftc.Reference)
+				// }
+				// if myauc.Callback != nil {
+				// 	myauc.Callback()
+				// }
 			}
 			videoRender()
 		} else {

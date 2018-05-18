@@ -26,9 +26,9 @@ size_t bridge_retro_serialize_size(void *f);
 void bridge_retro_unload_game(void *f);
 void bridge_retro_run(void *f);
 void bridge_retro_reset(void *f);
-void bridge_retro_frame_time_callback(void *f, int64_t usec);
-void bridge_retro_audio_callback(void *f);
-void bridge_retro_audio_set_state(void *f, bool state);
+void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_t usec);
+void bridge_retro_audio_callback(retro_audio_callback_t f);
+void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -438,7 +438,7 @@ func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
 	ftc := FrameTimeCallback{}
 	ftc.Reference = int64(c.reference)
 	ftc.Callback = func(usec int64) {
-		C.bridge_retro_frame_time_callback(unsafe.Pointer(c.callback), C.int64_t(usec))
+		C.bridge_retro_frame_time_callback(c.callback, C.retro_usec_t(usec))
 	}
 	return ftc
 }
@@ -447,10 +447,10 @@ func SetAudioCallback(data unsafe.Pointer) AudioCallback {
 	c := (*C.struct_retro_audio_callback)(data)
 	auc := AudioCallback{}
 	auc.Callback = func() {
-		C.bridge_retro_audio_callback(unsafe.Pointer(c.callback))
+		C.bridge_retro_audio_callback(c.callback)
 	}
 	auc.SetState = func(state bool) {
-		C.bridge_retro_audio_set_state(unsafe.Pointer(c.set_state), C.bool(state))
+		C.bridge_retro_audio_set_state(c.set_state, C.bool(state))
 	}
 	return auc
 }

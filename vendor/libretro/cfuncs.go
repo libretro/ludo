@@ -18,16 +18,16 @@ unsigned bridge_retro_api_version(void *f) {
 	return ((unsigned (*)(void))f)();
 }
 
-void bridge_retro_frame_time_callback(void *f, int64_t usec) {
-	((void (*)(int64_t))f)(usec);
+void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_t usec) {
+	f(usec);
 }
 
-void bridge_retro_audio_callback(void *f) {
-	((void (*)(void))f)();
+void bridge_retro_audio_callback(retro_audio_callback_t f) {
+	f();
 }
 
-void bridge_retro_audio_set_state(void *f, bool state) {
-	((void (*)(bool))f)(state);
+void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state) {
+	f(state);
 }
 
 void bridge_retro_get_system_info(void *f, struct retro_system_info *si) {
