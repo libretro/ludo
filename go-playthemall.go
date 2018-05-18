@@ -174,7 +174,10 @@ func main() {
 		if !g.menuActive {
 			if g.coreRunning {
 				g.core.Run()
-				//fmt.Println(myftc.Reference)
+				if myftc.Callback != nil {
+					//fmt.Println(myftc.Reference)
+					myftc.Callback(myftc.Reference)
+				}
 			}
 			videoRender()
 		} else {

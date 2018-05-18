@@ -26,6 +26,7 @@ size_t bridge_retro_serialize_size(void *f);
 void bridge_retro_unload_game(void *f);
 void bridge_retro_run(void *f);
 void bridge_retro_reset(void *f);
+void bridge_retro_frame_time_callback(void *f, int64_t usec);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -104,8 +105,8 @@ type Variable struct {
 }
 
 type FrameTimeCallback struct {
-	Callback  func() uint64
-	Reference uint64
+	Callback  func(int64)
+	Reference int64
 }
 
 const (
@@ -427,6 +428,9 @@ func SetString(data unsafe.Pointer, val string) {
 func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
 	c := (*C.struct_retro_frame_time_callback)(data)
 	ftc := FrameTimeCallback{}
-	ftc.Reference = uint64(c.reference)
+	ftc.Reference = int64(c.reference)
+	ftc.Callback = func(usec int64) {
+		C.bridge_retro_frame_time_callback(unsafe.Pointer(c.callback), C.int64_t(usec))
+	}
 	return ftc
 }
