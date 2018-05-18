@@ -103,6 +103,11 @@ type Variable struct {
 	Value string
 }
 
+type FrameTimeCallback struct {
+	Callback  func() uint64
+	Reference uint64
+}
+
 const (
 	PixelFormat0RGB1555 = uint32(C.RETRO_PIXEL_FORMAT_0RGB1555)
 	PixelFormatXRGB8888 = uint32(C.RETRO_PIXEL_FORMAT_XRGB8888)
@@ -131,15 +136,16 @@ const (
 )
 
 const (
-	EnvironmentGetUsername        = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
-	EnvironmentGetLogInterface    = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
-	EnvironmentGetCanDupe         = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
-	EnvironmentSetPixelFormat     = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
-	EnvironmentGetSystemDirectory = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
-	EnvironmentGetSaveDirectory   = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
-	EnvironmentShutdown           = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
-	EnvironmentGetVariable        = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
-	EnvironmentGetPerfInterface   = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
+	EnvironmentGetUsername          = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
+	EnvironmentGetLogInterface      = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
+	EnvironmentGetCanDupe           = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
+	EnvironmentSetPixelFormat       = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
+	EnvironmentGetSystemDirectory   = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
+	EnvironmentGetSaveDirectory     = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
+	EnvironmentShutdown             = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
+	EnvironmentGetVariable          = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
+	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
+	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
 )
 
 const (
@@ -416,4 +422,11 @@ func SetBool(data unsafe.Pointer, val bool) {
 func SetString(data unsafe.Pointer, val string) {
 	s := (**C.char)(data)
 	*s = C.CString(val)
+}
+
+func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
+	c := (*C.struct_retro_frame_time_callback)(data)
+	ftc := FrameTimeCallback{}
+	ftc.Reference = uint64(c.reference)
+	return ftc
 }

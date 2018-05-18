@@ -174,6 +174,7 @@ func main() {
 		if !g.menuActive {
 			if g.coreRunning {
 				g.core.Run()
+				//fmt.Println(myftc.Reference)
 			}
 			videoRender()
 		} else {

@@ -13,6 +13,8 @@ func getTimeUsec() int64 {
 	return time.Now().UnixNano()
 }
 
+var myftc libretro.FrameTimeCallback
+
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
 	case libretro.EnvironmentGetUsername:
@@ -26,6 +28,8 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		g.core.BindLogCallback(data, nanoLog)
 	case libretro.EnvironmentGetPerfInterface:
 		g.core.BindPerfCallback(data, getTimeUsec)
+	case libretro.EnvironmentSetFrameTimeCallback:
+		myftc = libretro.SetFrameTimeCallback(data)
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:
