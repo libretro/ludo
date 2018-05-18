@@ -4,8 +4,14 @@ import (
 	"fmt"
 	"libretro"
 	"os/user"
+	"time"
 	"unsafe"
 )
+
+func getTimeUsec() int64 {
+	//fmt.Printf("Seconds since epoch %d", time.Now().Unix())
+	return time.Now().UnixNano()
+}
 
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
@@ -18,6 +24,8 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		}
 	case libretro.EnvironmentGetLogInterface:
 		g.core.BindLogCallback(data, nanoLog)
+	case libretro.EnvironmentGetPerfInterface:
+		g.core.BindPerfCallback(data, getTimeUsec)
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:

@@ -34,6 +34,7 @@ void coreAudioSample_cgo(int16_t left, int16_t right);
 size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames);
 int16_t coreInputState_cgo(unsigned port, unsigned device, unsigned index, unsigned id);
 void coreLog_cgo(enum retro_log_level level, const char *msg);
+int64_t coreGetTimeUsec_cgo();
 */
 import "C"
 import (
@@ -138,6 +139,7 @@ const (
 	EnvironmentGetSaveDirectory   = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
 	EnvironmentShutdown           = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
 	EnvironmentGetVariable        = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
+	EnvironmentGetPerfInterface   = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
 )
 
 const (
@@ -156,6 +158,7 @@ type (
 	inputPollFunc        func()
 	inputStateFunc       func(uint, uint32, uint, uint) int16
 	logFunc              func(uint32, string)
+	getTimeUsecFunc      func() int64
 )
 
 var (
@@ -166,6 +169,7 @@ var (
 	inputPoll        inputPollFunc
 	inputState       inputStateFunc
 	log              logFunc
+	getTimeUsec      getTimeUsecFunc
 )
 
 var mu sync.Mutex
@@ -321,6 +325,12 @@ func (core *Core) BindLogCallback(data unsafe.Pointer, f logFunc) {
 	cb.log = (C.retro_log_printf_t)(C.coreLog_cgo)
 }
 
+func (core *Core) BindPerfCallback(data unsafe.Pointer, f getTimeUsecFunc) {
+	getTimeUsec = f
+	cb := (*C.struct_retro_perf_callback)(data)
+	cb.get_time_usec = (C.retro_perf_get_time_usec_t)(C.coreGetTimeUsec_cgo)
+}
+
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
 	if environment == nil {
@@ -372,6 +382,11 @@ func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
 //export coreLog
 func coreLog(level C.enum_retro_log_level, msg *C.char) {
 	log(uint32(level), C.GoString(msg))
+}
+
+//export coreGetTimeUsec
+func coreGetTimeUsec() C.uint64_t {
+	return C.uint64_t(getTimeUsec())
 }
 
 func (gi *GameInfo) SetData(bytes []byte) {

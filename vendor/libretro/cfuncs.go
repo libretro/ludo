@@ -119,5 +119,10 @@ void coreLog_cgo(enum retro_log_level level, const char *fmt, ...) {
 	coreLog(level, msg);
 }
 
+int64_t coreGetTimeUsec_cgo() {
+	uint64_t coreGetTimeUsec();
+	return coreGetTimeUsec();
+}
+
 */
 import "C"
