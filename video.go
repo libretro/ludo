@@ -140,6 +140,10 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 	// Force a minimum size for the window.
 	window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
 
+	if fullscreen {
+		window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
+	}
+
 	// Initialize Glow
 	if err := gl.Init(); err != nil {
 		panic(err)
