@@ -1,13 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
+	"io"
 	"os"
+	"sync"
 
 	"github.com/fatih/structs"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
+
+var lock sync.Mutex
 
 var settings struct {
 	VideoScale        int     `json:"video_scale" label:"Video Scale" fmt:"%dx"`
@@ -56,6 +60,9 @@ var incrCallbacks = map[string]settingCallbackIncrement{
 }
 
 func loadSettings() error {
+	lock.Lock()
+	defer lock.Unlock()
+
 	// Set default values
 	settings.VideoScale = 3
 	settings.VideoFullscreen = false
@@ -73,13 +80,16 @@ func loadSettings() error {
 	return nil
 }
 
-func saveSettings() {
+func saveSettings() error {
+	lock.Lock()
+	defer lock.Unlock()
+
 	b, _ := json.MarshalIndent(settings, "", "  ")
-	f, err := os.OpenFile("settings.json", os.O_CREATE|os.O_WRONLY, 0755)
+	f, err := os.Create("settings.json")
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
-	f.Write(b)
-	f.Close()
+	defer f.Close()
+	_, err = io.Copy(f, bytes.NewReader(b))
+	return err
 }
