@@ -13,8 +13,8 @@ import (
 
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/kivutar/glfont"
 	"github.com/kivutar/go-playthemall/libretro"
-	"github.com/nullboundary/glfont"
 )
 
 var window *glfw.Window
@@ -258,6 +258,7 @@ func videoRender() {
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 
 	processNotifications()
+	video.font.UpdateResolution(fbw, fbh)
 	renderNotifications()
 }
 
