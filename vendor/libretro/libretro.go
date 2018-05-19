@@ -26,6 +26,9 @@ size_t bridge_retro_serialize_size(void *f);
 void bridge_retro_unload_game(void *f);
 void bridge_retro_run(void *f);
 void bridge_retro_reset(void *f);
+void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_t usec);
+void bridge_retro_audio_callback(retro_audio_callback_t f);
+void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -104,8 +107,13 @@ type Variable struct {
 }
 
 type FrameTimeCallback struct {
-	Callback  func() uint64
-	Reference uint64
+	Callback  func(int64)
+	Reference int64
+}
+
+type AudioCallback struct {
+	Callback func()
+	SetState func(bool)
 }
 
 const (
@@ -146,6 +154,7 @@ const (
 	EnvironmentGetVariable          = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
 	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
 	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
+	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
 )
 
 const (
@@ -425,8 +434,23 @@ func SetString(data unsafe.Pointer, val string) {
 }
 
 func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
-	c := (*C.struct_retro_frame_time_callback)(data)
+	c := *(*C.struct_retro_frame_time_callback)(data)
 	ftc := FrameTimeCallback{}
-	ftc.Reference = uint64(c.reference)
+	ftc.Reference = int64(c.reference)
+	ftc.Callback = func(usec int64) {
+		C.bridge_retro_frame_time_callback(c.callback, C.retro_usec_t(usec))
+	}
 	return ftc
+}
+
+func SetAudioCallback(data unsafe.Pointer) AudioCallback {
+	c := *(*C.struct_retro_audio_callback)(data)
+	auc := AudioCallback{}
+	auc.Callback = func() {
+		C.bridge_retro_audio_callback(c.callback)
+	}
+	auc.SetState = func(state bool) {
+		C.bridge_retro_audio_set_state(c.set_state, C.bool(state))
+	}
+	return auc
 }
