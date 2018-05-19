@@ -434,7 +434,7 @@ func SetString(data unsafe.Pointer, val string) {
 }
 
 func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
-	c := (*C.struct_retro_frame_time_callback)(data)
+	c := *(*C.struct_retro_frame_time_callback)(data)
 	ftc := FrameTimeCallback{}
 	ftc.Reference = int64(c.reference)
 	ftc.Callback = func(usec int64) {
@@ -444,7 +444,7 @@ func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
 }
 
 func SetAudioCallback(data unsafe.Pointer) AudioCallback {
-	c := (*C.struct_retro_audio_callback)(data)
+	c := *(*C.struct_retro_audio_callback)(data)
 	auc := AudioCallback{}
 	auc.Callback = func() {
 		C.bridge_retro_audio_callback(c.callback)

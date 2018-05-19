@@ -121,9 +121,9 @@ func coreLoadGame(filename string) {
 
 	inputInit()
 	audioInit(int32(avi.Timing.SampleRate))
-	// if g.audioCb.SetState != nil {
-	// 	g.audioCb.SetState(true)
-	// }
+	if g.audioCb.SetState != nil {
+		g.audioCb.SetState(true)
+	}
 
 	g.coreRunning = true
 	g.menuActive = false
@@ -179,13 +179,12 @@ func main() {
 		if !g.menuActive {
 			if g.coreRunning {
 				g.core.Run()
-				// if g.frameTimeCb.Callback != nil {
-				// 	fmt.Println(g.frameTimeCb.Reference)
-				// 	g.frameTimeCb.Callback(g.frameTimeCb.Reference)
-				// }
-				// if g.audioCb.Callback != nil {
-				// 	g.audioCb.Callback()
-				// }
+				if g.frameTimeCb.Callback != nil {
+					g.frameTimeCb.Callback(g.frameTimeCb.Reference)
+				}
+				if g.audioCb.Callback != nil {
+					g.audioCb.Callback()
+				}
 			}
 			videoRender()
 		} else {
