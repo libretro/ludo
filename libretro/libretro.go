@@ -125,24 +125,24 @@ type AudioCallback struct {
 	SetState func(bool)
 }
 
-/* The pixel format the core must use to render into data.
-This format could differ from the format used in SET_PIXEL_FORMAT.
-Set by frontend in GET_CURRENT_SOFTWARE_FRAMEBUFFER. */
+// The pixel format the core must use to render into data.
+// This format could differ from the format used in SET_PIXEL_FORMAT.
+// Set by frontend in GET_CURRENT_SOFTWARE_FRAMEBUFFER.
 const (
 	PixelFormat0RGB1555 = uint32(C.RETRO_PIXEL_FORMAT_0RGB1555)
 	PixelFormatXRGB8888 = uint32(C.RETRO_PIXEL_FORMAT_XRGB8888)
 	PixelFormatRGB565   = uint32(C.RETRO_PIXEL_FORMAT_RGB565)
 )
 
-/* The JOYPAD is called RetroPad. It is essentially a Super Nintendo
-controller, but with additional L2/R2/L3/R3 buttons, similar to a
-PS1 DualShock. */
+// DeviceJoypad represents the RetroPad. It is essentially a Super Nintendo
+// controller, but with additional L2/R2/L3/R3 buttons, similar to a
+// PS1 DualShock.
 const DeviceJoypad = uint32(C.RETRO_DEVICE_JOYPAD)
 
-/* Buttons for the RetroPad (JOYPAD).
-The placement of these is equivalent to placements on the
-Super Nintendo controller.
-L2/R2/L3/R3 buttons correspond to the PS1 DualShock. */
+// Buttons for the RetroPad (JOYPAD).
+// The placement of these is equivalent to placements on the
+// Super Nintendo controller.
+// L2/R2/L3/R3 buttons correspond to the PS1 DualShock.
 const (
 	DeviceIDJoypadB      = uint32(C.RETRO_DEVICE_ID_JOYPAD_B)
 	DeviceIDJoypadY      = uint32(C.RETRO_DEVICE_ID_JOYPAD_Y)
@@ -469,7 +469,7 @@ func coreGetTimeUsec() C.uint64_t {
 	return C.uint64_t(getTimeUsec())
 }
 
-// SetData sets the data ([]byte) of a GameInfo type
+// SetData is a setter for the data of a GameInfo type
 func (gi *GameInfo) SetData(bytes []byte) {
 	cstr := C.CString(string(bytes))
 	gi.Data = unsafe.Pointer(cstr)
