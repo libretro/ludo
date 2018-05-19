@@ -208,6 +208,7 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 }
 
 func renderNotifications() {
+	fullscreenViewport()
 	_, height := window.GetFramebufferSize()
 	for i, n := range notifications {
 		video.font.SetColor(1.0, 1.0, 0.0, float32(n.frames)/120.0)
