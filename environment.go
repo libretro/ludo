@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"libretro"
 	"os/user"
 	"time"
 	"unsafe"
+
+	"github.com/kivutar/go-playthemall/libretro"
 )
 
 func getTimeUsec() int64 {

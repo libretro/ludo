@@ -1,6 +1,6 @@
 package main
 
-import "libretro"
+import "github.com/kivutar/go-playthemall/libretro"
 
 var joyBinds = map[string]joybinds{
 	"Xbox 360 Wired Controller": xbox360JoyBinds,

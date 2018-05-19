@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/draw"
 	_ "image/png"
-	"libretro"
 	"log"
 	"os"
 
@@ -14,6 +13,7 @@ import (
 
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/kivutar/go-playthemall/libretro"
 	"github.com/nullboundary/glfont"
 )
 

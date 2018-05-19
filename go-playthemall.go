@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"libretro"
 	"log"
 	"os"
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/kivutar/go-playthemall/libretro"
 )
 
 // global state

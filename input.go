@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"libretro"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/kivutar/go-playthemall/libretro"
 )
 
 const numPlayers = 5

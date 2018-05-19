@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"libretro"
 	"path/filepath"
 
 	"github.com/fatih/structs"
+	"github.com/kivutar/go-playthemall/libretro"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
