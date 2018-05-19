@@ -46,6 +46,7 @@ import (
 	"unsafe"
 )
 
+// Core is an instance of a dynalically loaded libretro core
 type Core struct {
 	handle unsafe.Pointer
 
@@ -71,18 +72,21 @@ type Core struct {
 	videoRefresh videoRefreshFunc
 }
 
+// GameGeometry represents the geometry of a game, with its aspect ratio, with and height
 type GameGeometry struct {
 	AspectRatio float64
 	BaseWidth   int
 	BaseHeight  int
 }
 
+// GameInfo stores information about a ROM
 type GameInfo struct {
 	Path string
 	Size int64
 	Data unsafe.Pointer
 }
 
+// SystemInfo stores informations about the emulated system
 type SystemInfo struct {
 	LibraryName     string
 	LibraryVersion  string
@@ -91,40 +95,55 @@ type SystemInfo struct {
 	BlockExtract    bool
 }
 
+// SystemTiming stores informations about the timing of the emulated system
 type SystemTiming struct {
 	FPS        float64
 	SampleRate float64
 }
 
+// SystemAVInfo stores informations about the emulated system audio and video
 type SystemAVInfo struct {
 	Geometry GameGeometry
 	Timing   SystemTiming
 }
 
+// Variable is a key value pair that represents a core option
 type Variable struct {
 	Key   string
 	Value string
 }
 
+// FrameTimeCallback stores the frame time callback itself and the reference time
 type FrameTimeCallback struct {
 	Callback  func(int64)
 	Reference int64
 }
 
+// AudioCallback stores the audio callback itself and the SetState callback
 type AudioCallback struct {
 	Callback func()
 	SetState func(bool)
 }
 
+/* The pixel format the core must use to render into data.
+This format could differ from the format used in SET_PIXEL_FORMAT.
+Set by frontend in GET_CURRENT_SOFTWARE_FRAMEBUFFER. */
 const (
 	PixelFormat0RGB1555 = uint32(C.RETRO_PIXEL_FORMAT_0RGB1555)
 	PixelFormatXRGB8888 = uint32(C.RETRO_PIXEL_FORMAT_XRGB8888)
 	PixelFormatRGB565   = uint32(C.RETRO_PIXEL_FORMAT_RGB565)
 )
 
-const (
-	DeviceJoypad = uint32(C.RETRO_DEVICE_JOYPAD)
+/* The JOYPAD is called RetroPad. It is essentially a Super Nintendo
+controller, but with additional L2/R2/L3/R3 buttons, similar to a
+PS1 DualShock. */
+const DeviceJoypad = uint32(C.RETRO_DEVICE_JOYPAD)
 
+/* Buttons for the RetroPad (JOYPAD).
+The placement of these is equivalent to placements on the
+Super Nintendo controller.
+L2/R2/L3/R3 buttons correspond to the PS1 DualShock. */
+const (
 	DeviceIDJoypadB      = uint32(C.RETRO_DEVICE_ID_JOYPAD_B)
 	DeviceIDJoypadY      = uint32(C.RETRO_DEVICE_ID_JOYPAD_Y)
 	DeviceIDJoypadSelect = uint32(C.RETRO_DEVICE_ID_JOYPAD_SELECT)
@@ -143,6 +162,7 @@ const (
 	DeviceIDJoypadR3     = uint32(C.RETRO_DEVICE_ID_JOYPAD_R3)
 )
 
+// Environment callback API. See libretro.h for details
 const (
 	EnvironmentGetUsername          = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
 	EnvironmentGetLogInterface      = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
@@ -157,6 +177,7 @@ const (
 	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
 )
 
+// Debug levels
 const (
 	LogLevelDebug = uint32(C.RETRO_LOG_DEBUG)
 	LogLevelInfo  = uint32(C.RETRO_LOG_INFO)
@@ -189,6 +210,7 @@ var (
 
 var mu sync.Mutex
 
+// Load dynamically loads a libretro core at the given path and returns a Core instance
 func Load(sofile string) (Core, error) {
 	core := Core{}
 
@@ -228,26 +250,40 @@ func Load(sofile string) (Core, error) {
 	return core, nil
 }
 
+// Init takes care of the library global initialization
 func (core *Core) Init() {
 	C.bridge_retro_init(core.symRetroInit)
 }
 
+// APIVersion returns the RETRO_API_VERSION.
+// Used to validate ABI compatibility when the API is revised.
 func (core *Core) APIVersion() uint {
 	return uint(C.bridge_retro_api_version(core.symRetroAPIVersion))
 }
 
+// Deinit takes care of the library global deinitialization
 func (core *Core) Deinit() {
 	C.bridge_retro_deinit(core.symRetroDeinit)
 }
 
+// Run runs the game for one video frame.
+// During retro_run(), input_poll callback must be called at least once.
+// If a frame is not rendered for reasons where a game "dropped" a frame,
+// this still counts as a frame, and retro_run() should explicitly dupe
+// a frame if GET_CAN_DUPE returns true.
+// In this case, the video callback can take a NULL argument for data.
 func (core *Core) Run() {
 	C.bridge_retro_run(core.symRetroRun)
 }
 
+// Reset resets the current game.
 func (core *Core) Reset() {
 	C.bridge_retro_reset(core.symRetroReset)
 }
 
+// GetSystemInfo returns statically known system info. Pointers provided in *info
+// must be statically allocated.
+// Can be called at any time, even before retro_init().
 func (core *Core) GetSystemInfo() SystemInfo {
 	rsi := C.struct_retro_system_info{}
 	C.bridge_retro_get_system_info(core.symRetroGetSystemInfo, &rsi)
@@ -260,6 +296,12 @@ func (core *Core) GetSystemInfo() SystemInfo {
 	}
 }
 
+// GetSystemAVInfo returns information about system audio/video timings and geometry.
+// Can be called only after retro_load_game() has successfully completed.
+// NOTE: The implementation of this function might not initialize every
+// variable if needed.
+// E.g. geom.aspect_ratio might not be initialized if core doesn't
+// desire a particular aspect ratio.
 func (core *Core) GetSystemAVInfo() SystemAVInfo {
 	avi := C.struct_retro_system_av_info{}
 	C.bridge_retro_get_system_av_info(core.symRetroGetSystemAVInfo, &avi)
@@ -276,6 +318,7 @@ func (core *Core) GetSystemAVInfo() SystemAVInfo {
 	}
 }
 
+// LoadGame loads a game
 func (core *Core) LoadGame(gi GameInfo) bool {
 	rgi := C.struct_retro_game_info{}
 	rgi.path = C.CString(gi.Path)
@@ -284,10 +327,16 @@ func (core *Core) LoadGame(gi GameInfo) bool {
 	return bool(C.bridge_retro_load_game(core.symRetroLoadGame, &rgi))
 }
 
+// SerializeSize returns the amount of data the implementation requires to serialize
+// internal state (save states).
+// Between calls to retro_load_game() and retro_unload_game(), the
+// returned size is never allowed to be larger than a previous returned
+// value, to ensure that the frontend can allocate a save state buffer once.
 func (core *Core) SerializeSize() uint {
 	return uint(C.bridge_retro_serialize_size(core.symRetroSerializeSize))
 }
 
+// Serialize serializes internal state and returns the state as a byte slice.
 func (core *Core) Serialize(size uint) ([]byte, error) {
 	data := C.malloc(C.size_t(size))
 	ok := bool(C.bridge_retro_serialize(core.symRetroSerialize, data, C.size_t(size)))
@@ -298,6 +347,7 @@ func (core *Core) Serialize(size uint) ([]byte, error) {
 	return bytes, nil
 }
 
+// Unserialize unserializes internal state from a byte slice.
 func (core *Core) Unserialize(bytes []byte, size uint) error {
 	ok := bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
 	if !ok {
@@ -306,40 +356,55 @@ func (core *Core) Unserialize(bytes []byte, size uint) error {
 	return nil
 }
 
+// UnloadGame unloads a currently loaded game
 func (core *Core) UnloadGame() {
 	C.bridge_retro_unload_game(core.symRetroUnloadGame)
 }
 
+// SetEnvironment sets the environment callback.
+// Must be called before Init
 func (core *Core) SetEnvironment(f environmentFunc) {
 	environment = f
 }
 
+// SetVideoRefresh sets the video refresh callback.
+// Must be set before the first Run call
 func (core *Core) SetVideoRefresh(f videoRefreshFunc) {
 	videoRefresh = f
 }
 
+// SetAudioSample sets the audio sample callback.
+// Must be set before the first Run call
 func (core *Core) SetAudioSample(f audioSampleFunc) {
 	audioSample = f
 }
 
+// SetAudioSampleBatch sets the audio sample batch callback.
+// Must be set before the first Run call
 func (core *Core) SetAudioSampleBatch(f audioSampleBatchFunc) {
 	audioSampleBatch = f
 }
 
+// SetInputPoll sets the input poll callback.
+// Must be set before the first Run call
 func (core *Core) SetInputPoll(f inputPollFunc) {
 	inputPoll = f
 }
 
+// SetInputState sets the input state callback.
+// Must be set before the first Run call
 func (core *Core) SetInputState(f inputStateFunc) {
 	inputState = f
 }
 
+// BindLogCallback binds f to the log callback
 func (core *Core) BindLogCallback(data unsafe.Pointer, f logFunc) {
 	log = f
 	cb := (*C.struct_retro_log_callback)(data)
 	cb.log = (C.retro_log_printf_t)(C.coreLog_cgo)
 }
 
+// BindPerfCallback binds f to the perf callback get_time_usec
 func (core *Core) BindPerfCallback(data unsafe.Pointer, f getTimeUsecFunc) {
 	getTimeUsec = f
 	cb := (*C.struct_retro_perf_callback)(data)
@@ -404,6 +469,7 @@ func coreGetTimeUsec() C.uint64_t {
 	return C.uint64_t(getTimeUsec())
 }
 
+// SetData sets the data ([]byte) of a GameInfo type
 func (gi *GameInfo) SetData(bytes []byte) {
 	cstr := C.CString(string(bytes))
 	gi.Data = unsafe.Pointer(cstr)
@@ -411,10 +477,13 @@ func (gi *GameInfo) SetData(bytes []byte) {
 
 // Environment helpers
 
+// GetPixelFormat is an environment callback helper that returns the pixel format.
+// Should be used in the case of EnvironmentSetPixelFormat
 func GetPixelFormat(data unsafe.Pointer) uint32 {
 	return *(*C.enum_retro_pixel_format)(data)
 }
 
+// GetVariable is an environment callback helper that returns a Variable
 func GetVariable(data unsafe.Pointer) Variable {
 	variable := (*C.struct_retro_variable)(data)
 	return Variable{
@@ -423,16 +492,19 @@ func GetVariable(data unsafe.Pointer) Variable {
 	}
 }
 
+// SetBool is an environment callback helper to set a boolean
 func SetBool(data unsafe.Pointer, val bool) {
 	b := (*C.bool)(data)
 	*b = C.bool(val)
 }
 
+// SetString is an environment callback helper to set a string
 func SetString(data unsafe.Pointer, val string) {
 	s := (**C.char)(data)
 	*s = C.CString(val)
 }
 
+// SetFrameTimeCallback is an environment callback helper to set the FrameTimeCallback
 func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
 	c := *(*C.struct_retro_frame_time_callback)(data)
 	ftc := FrameTimeCallback{}
@@ -443,6 +515,7 @@ func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
 	return ftc
 }
 
+// SetAudioCallback is an environment callback helper to set the AudioCallback
 func SetAudioCallback(data unsafe.Pointer) AudioCallback {
 	c := *(*C.struct_retro_audio_callback)(data)
 	auc := AudioCallback{}
