@@ -3,7 +3,7 @@ package main
 import "github.com/kivutar/go-playthemall/libretro"
 
 var joyBinds = map[string]joybinds{
-	"Xbox 360 Wired Controller": xbox360JoyBinds,
+	"Microsoft X-Box 360 pad": xbox360JoyBinds,
 }
 
 // Joypad bindings fox Xbox360 pad on Linux
