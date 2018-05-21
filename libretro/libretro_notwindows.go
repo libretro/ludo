@@ -1,3 +1,5 @@
+// +build !windows
+
 package libretro
 
 import (
@@ -37,10 +39,12 @@ type Core struct {
 	videoRefresh videoRefreshFunc
 }
 
+// DlSym loads a symbol from a dynamic library
 func (core *Core) DlSym(name string) unsafe.Pointer {
 	return C.dlsym(core.handle, C.CString(name))
 }
 
+// DlOpen opens a dynamic library
 func DlOpen(path string) (unsafe.Pointer, error) {
 	h := C.dlopen(C.CString(path), C.RTLD_NOW)
 	if h == nil {
