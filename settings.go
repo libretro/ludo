@@ -54,7 +54,7 @@ var incrCallbacks = map[string]settingCallbackIncrement{
 		v := f.Value().(float32)
 		v += 0.1 * float32(direction)
 		f.Set(v)
-		//audio.source.SetGain(v)
+		audioSetVolume(v)
 		saveSettings()
 	},
 }
