@@ -13,7 +13,7 @@ environment:
 install:
   - echo %PATH%
   - echo %GOPATH%
-  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - set PATH=C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;C:\MinGW\bin;%GOPATH%\bin;c:\go\bin;%PATH%
   - go version
   - gcc --version
   - go env
