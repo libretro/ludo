@@ -74,10 +74,7 @@ func loadSettings() error {
 		return err
 	}
 	err = json.Unmarshal(b, &settings)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func saveSettings() error {
