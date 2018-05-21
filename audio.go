@@ -16,7 +16,7 @@ var audio struct {
 }
 
 func audioSetVolume(vol float32) {
-	audio.source.SetGain(vol)
+	//audio.source.SetGain(vol)
 }
 
 func audioInit(rate int32) {
