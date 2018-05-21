@@ -1,5 +1,8 @@
 package main
 
+func audioInit(rate int32) {
+}
+
 func audioSetVolume(vol float32) {
 }
 
