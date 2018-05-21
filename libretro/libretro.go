@@ -1,12 +1,10 @@
 package libretro
 
 /*
-#cgo LDFLAGS: -ldl
 #include "libretro.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dlfcn.h>
 
 void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
@@ -43,12 +41,13 @@ import "C"
 import (
 	"errors"
 	"sync"
+	"syscall"
 	"unsafe"
 )
 
 // Core is an instance of a dynalically loaded libretro core
 type Core struct {
-	handle unsafe.Pointer
+	handle syscall.Handle
 
 	symRetroInit                unsafe.Pointer
 	symRetroDeinit              unsafe.Pointer
@@ -215,29 +214,48 @@ func Load(sofile string) (Core, error) {
 	core := Core{}
 
 	mu.Lock()
-	core.handle = C.dlopen(C.CString(sofile), C.RTLD_NOW)
-	if core.handle == nil {
+	var err error
+	core.handle, err = syscall.LoadLibrary(sofile)
+	if err != nil {
 		return core, errors.New("dlopen failed")
 	}
 
-	core.symRetroInit = C.dlsym(core.handle, C.CString("retro_init"))
-	core.symRetroDeinit = C.dlsym(core.handle, C.CString("retro_deinit"))
-	core.symRetroAPIVersion = C.dlsym(core.handle, C.CString("retro_api_version"))
-	core.symRetroGetSystemInfo = C.dlsym(core.handle, C.CString("retro_get_system_info"))
-	core.symRetroGetSystemAVInfo = C.dlsym(core.handle, C.CString("retro_get_system_av_info"))
-	core.symRetroSetEnvironment = C.dlsym(core.handle, C.CString("retro_set_environment"))
-	core.symRetroSetVideoRefresh = C.dlsym(core.handle, C.CString("retro_set_video_refresh"))
-	core.symRetroSetInputPoll = C.dlsym(core.handle, C.CString("retro_set_input_poll"))
-	core.symRetroSetInputState = C.dlsym(core.handle, C.CString("retro_set_input_state"))
-	core.symRetroSetAudioSample = C.dlsym(core.handle, C.CString("retro_set_audio_sample"))
-	core.symRetroSetAudioSampleBatch = C.dlsym(core.handle, C.CString("retro_set_audio_sample_batch"))
-	core.symRetroRun = C.dlsym(core.handle, C.CString("retro_run"))
-	core.symRetroReset = C.dlsym(core.handle, C.CString("retro_reset"))
-	core.symRetroLoadGame = C.dlsym(core.handle, C.CString("retro_load_game"))
-	core.symRetroUnloadGame = C.dlsym(core.handle, C.CString("retro_unload_game"))
-	core.symRetroSerializeSize = C.dlsym(core.handle, C.CString("retro_serialize_size"))
-	core.symRetroSerialize = C.dlsym(core.handle, C.CString("retro_serialize"))
-	core.symRetroUnserialize = C.dlsym(core.handle, C.CString("retro_unserialize"))
+	tmp, _ := syscall.GetProcAddress(core.handle, "retro_init")
+	core.symRetroInit = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_deinit")
+	core.symRetroDeinit = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_api_version")
+	core.symRetroAPIVersion = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_get_system_info")
+	core.symRetroGetSystemInfo = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_get_system_av_info")
+	core.symRetroGetSystemAVInfo = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_set_environment")
+	core.symRetroSetEnvironment = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_set_video_refresh")
+	core.symRetroSetVideoRefresh = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_set_input_poll")
+	core.symRetroSetInputPoll = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_set_input_state")
+	core.symRetroSetInputState = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_set_audio_sample")
+	core.symRetroSetAudioSample = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_set_audio_sample_batch")
+	core.symRetroSetAudioSampleBatch = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_run")
+	core.symRetroRun = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_reset")
+	core.symRetroReset = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_load_game")
+	core.symRetroLoadGame = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_unload_game")
+	core.symRetroUnloadGame = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_serialize_size")
+	core.symRetroSerializeSize = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_serialize")
+	core.symRetroSerialize = unsafe.Pointer(tmp)
+	tmp, _ = syscall.GetProcAddress(core.handle, "retro_unserialize")
+	core.symRetroUnserialize = unsafe.Pointer(tmp)
 	mu.Unlock()
 
 	C.bridge_retro_set_environment(core.symRetroSetEnvironment, C.coreEnvironment_cgo)

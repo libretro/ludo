@@ -175,6 +175,7 @@ func main() {
 	}
 
 	for !window.ShouldClose() {
+		glfw.SwapInterval(1)
 		glfw.PollEvents()
 		if !g.menuActive {
 			if g.coreRunning {

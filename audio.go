@@ -1,17 +1,12 @@
 package main
 
-import (
-	"fmt"
-	"time"
-
-	"golang.org/x/mobile/exp/audio/al"
-)
+//"golang.org/x/mobile/exp/audio/al"
 
 const bufSize = 1024 * 4
 
 var audio struct {
-	source     al.Source
-	buffers    []al.Buffer
+	// source     al.Source
+	// buffers    []al.Buffer
 	rate       int32
 	numBuffers int32
 	tmpBuf     [bufSize]byte
@@ -21,21 +16,21 @@ var audio struct {
 }
 
 func audioInit(rate int32) {
-	err := al.OpenDevice()
-	if err != nil {
-		fmt.Println(err)
-	}
+	// err := al.OpenDevice()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	audio.rate = rate
-	audio.numBuffers = 4
+	// audio.rate = rate
+	// audio.numBuffers = 4
 
-	fmt.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
+	// fmt.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
 
-	audio.source = al.GenSources(1)[0]
-	audio.buffers = al.GenBuffers(int(audio.numBuffers))
-	audio.resPtr = audio.numBuffers
+	// audio.source = al.GenSources(1)[0]
+	// audio.buffers = al.GenBuffers(int(audio.numBuffers))
+	// audio.resPtr = audio.numBuffers
 
-	audio.source.SetGain(settings.AudioVolume)
+	// audio.source.SetGain(settings.AudioVolume)
 }
 
 func min(a, b int32) int32 {
@@ -46,31 +41,31 @@ func min(a, b int32) int32 {
 }
 
 func alUnqueueBuffers() bool {
-	val := audio.source.BuffersProcessed()
+	// val := audio.source.BuffersProcessed()
 
-	if val <= 0 {
-		return false
-	}
+	// if val <= 0 {
+	// 	return false
+	// }
 
-	audio.source.UnqueueBuffers(audio.buffers[audio.resPtr:val]...)
-	audio.resPtr += val
+	// audio.source.UnqueueBuffers(audio.buffers[audio.resPtr:val]...)
+	// audio.resPtr += val
 	return true
 }
 
-func alGetBuffer() al.Buffer {
-	if audio.resPtr == 0 {
-		for {
-			if alUnqueueBuffers() {
-				break
-			}
+// func alGetBuffer() al.Buffer {
+// 	if audio.resPtr == 0 {
+// 		for {
+// 			if alUnqueueBuffers() {
+// 				break
+// 			}
 
-			time.Sleep(time.Millisecond)
-		}
-	}
+// 			time.Sleep(time.Millisecond)
+// 		}
+// 	}
 
-	audio.resPtr--
-	return audio.buffers[audio.resPtr]
-}
+// 	audio.resPtr--
+// 	return audio.buffers[audio.resPtr]
+// }
 
 func fillInternalBuf(buf []byte, size int32) int32 {
 	readSize := min(bufSize-audio.tmpBufPtr, size)
@@ -82,30 +77,30 @@ func fillInternalBuf(buf []byte, size int32) int32 {
 func audioWrite(buf []byte, size int32) int32 {
 	written := int32(0)
 
-	for size > 0 {
+	// for size > 0 {
 
-		rc := fillInternalBuf(buf, size)
+	// 	rc := fillInternalBuf(buf, size)
 
-		written += rc
-		audio.bufPtr += rc
-		size -= rc
+	// 	written += rc
+	// 	audio.bufPtr += rc
+	// 	size -= rc
 
-		if audio.tmpBufPtr != bufSize {
-			break
-		}
+	// 	if audio.tmpBufPtr != bufSize {
+	// 		break
+	// 	}
 
-		buffer := alGetBuffer()
+	// 	buffer := alGetBuffer()
 
-		buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], int32(audio.rate))
-		audio.tmpBufPtr = 0
-		audio.source.QueueBuffers(buffer)
+	// 	buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], int32(audio.rate))
+	// 	audio.tmpBufPtr = 0
+	// 	audio.source.QueueBuffers(buffer)
 
-		if audio.source.State() != al.Playing {
-			al.PlaySources(audio.source)
-		}
-	}
+	// 	if audio.source.State() != al.Playing {
+	// 		al.PlaySources(audio.source)
+	// 	}
+	// }
 
-	audio.bufPtr = 0
+	// audio.bufPtr = 0
 
 	return written
 }
