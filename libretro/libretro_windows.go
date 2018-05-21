@@ -37,5 +37,5 @@ func (core *Core) DlSym(name string) unsafe.Pointer {
 }
 
 func DlOpen(path string) (syscall.Handle, error) {
-	return yscall.LoadLibrary(path)
+	return syscall.LoadLibrary(path)
 }
