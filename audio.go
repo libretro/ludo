@@ -15,7 +15,7 @@ var audio struct {
 	resPtr     int32
 }
 
-func audioSetVolume(float32 vol) {
+func audioSetVolume(vol float32) {
 	audio.source.SetGain(vol)
 }
 
