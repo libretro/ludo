@@ -1,0 +1,18 @@
+version: 0.1.0.{build}
+
+platform: x64
+
+clone_folder: c:\go\src\github.com\kivutar\go-playthemall
+
+environment:
+  GOPATH: c:\go
+
+install:
+  - echo %PATH%
+  - echo %GOPATH%
+  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - go version
+  - go env
+
+build_script:
+  - go build .
