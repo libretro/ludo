@@ -6,12 +6,14 @@ clone_folder: c:\gopath\src\github.com\kivutar\go-playthemall
 
 environment:
   GOPATH: c:\gopath
+  CC: gcc.exe
 
 install:
   - echo %PATH%
   - echo %GOPATH%
   - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
   - go version
+  - gcc --version
   - go env
 
 build_script:
