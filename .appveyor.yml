@@ -19,8 +19,15 @@ install:
   - go env
 
 build_script:
-  - go get -t .
+  - go get -t -v ./...
   - go build
 
+before_test:
+  - go get github.com/golang/lint/golint
+  - go get honnef.co/go/tools/cmd/megacheck
+
 test_script:
-  - go test -v ./...
+  - go test -v -race ./...
+  - go vet ./...
+  - megacheck ./...
+  - golint -set_exit_status $(go list ./...)
