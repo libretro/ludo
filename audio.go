@@ -1,12 +1,10 @@
-// +build !windows
-
 package main
 
 import (
 	"fmt"
 	"time"
 
-	"golang.org/x/mobile/exp/audio/al"
+	"github.com/kivutar/mobile/exp/audio/al"
 )
 
 const bufSize = 1024 * 4
