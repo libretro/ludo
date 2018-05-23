@@ -17,11 +17,9 @@ install:
   - go version
   - gcc --version
   - go env
-  - appveyor DownloadFile http://kcat.strangesoft.net/openal-binaries/openal-soft-1.17.2-bin.zip
-  - 7z x openal-soft-1.17.2-bin.zip
-  - ren openal-soft-1.17.2-bin openal
-  - echo [General] > %APPDATA%/alsoft.ini
-  - echo drivers=null >> %APPDATA%/alsoft.ini
+  - appveyor DownloadFile http://kcat.strangesoft.net/openal-binaries/openal-soft-1.18.2-bin.zip
+  - 7z x openal-soft-1.18.2-bin.zip
+  - set INCLUDE=openal-soft-1.18.2-bin\include;%INCLUDE%
 
 build_script:
   - go get -t -v ./...
