@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kivutar/mobile/exp/audio/al"
+	"golang.org/x/mobile/exp/audio/al"
 )
 
 const bufSize = 1024 * 4
