@@ -9,6 +9,18 @@ import (
 	"github.com/kivutar/go-playthemall/libretro"
 )
 
+var logLevels = map[uint32]string{
+	libretro.LogLevelDebug: "DEBUG",
+	libretro.LogLevelInfo:  "INFO",
+	libretro.LogLevelWarn:  "WARN",
+	libretro.LogLevelError: "ERROR",
+	libretro.LogLevelDummy: "DUMMY",
+}
+
+func logCallback(level uint32, str string) {
+	fmt.Printf("[%s]: %s", logLevels[level], str)
+}
+
 func getTimeUsec() int64 {
 	//fmt.Printf("Seconds since epoch %d", time.Now().Unix())
 	return time.Now().UnixNano()
@@ -24,7 +36,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 			libretro.SetString(data, currentUser.Username)
 		}
 	case libretro.EnvironmentGetLogInterface:
-		g.core.BindLogCallback(data, nanoLog)
+		g.core.BindLogCallback(data, logCallback)
 	case libretro.EnvironmentGetPerfInterface:
 		g.core.BindPerfCallback(data, getTimeUsec)
 	case libretro.EnvironmentSetFrameTimeCallback:

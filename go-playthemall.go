@@ -26,18 +26,6 @@ func init() {
 	runtime.LockOSThread()
 }
 
-var logLevels = map[uint32]string{
-	libretro.LogLevelDebug: "DEBUG",
-	libretro.LogLevelInfo:  "INFO",
-	libretro.LogLevelWarn:  "WARN",
-	libretro.LogLevelError: "ERROR",
-	libretro.LogLevelDummy: "DUMMY",
-}
-
-func nanoLog(level uint32, str string) {
-	fmt.Printf("[%s]: %s", logLevels[level], str)
-}
-
 func coreLoad(sofile string) {
 	if g.coreRunning {
 		g.core.UnloadGame()
