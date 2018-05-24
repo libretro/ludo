@@ -1,3 +1,7 @@
+branches:
+  only:
+    - master
+
 os: Visual Studio 2015
 
 version: 0.1.0.{build}
