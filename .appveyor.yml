@@ -19,7 +19,7 @@ install:
   - go env
   - appveyor DownloadFile http://kcat.strangesoft.net/openal-binaries/openal-soft-1.18.2-bin.zip
   - 7z x openal-soft-1.18.2-bin.zip
-  - set INCLUDE=openal-soft-1.18.2-bin\include;%INCLUDE%
+  - cp openal-soft-1.18.2-bin\include\* C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\x86_64-w64-mingw32\include\
 
 build_script:
   - go get -t -v ./...
