@@ -27,8 +27,6 @@ type Core struct {
 	symRetroSerializeSize       unsafe.Pointer
 	symRetroSerialize           unsafe.Pointer
 	symRetroUnserialize         unsafe.Pointer
-
-	videoRefresh videoRefreshFunc
 }
 
 // DlSym loads a symbol from a dynamic library
