@@ -62,12 +62,16 @@ func coreLoad(sofile string) {
 func coreLoadGame(filename string) {
 	file, err := os.Open(filename)
 	if err != nil {
-		panic(err)
+		notify(err.Error(), 240)
+		fmt.Println(err)
+		return
 	}
 
 	fi, err := file.Stat()
 	if err != nil {
-		panic(err)
+		notify(err.Error(), 240)
+		fmt.Println(err)
+		return
 	}
 
 	size := fi.Size()
@@ -84,7 +88,9 @@ func coreLoadGame(filename string) {
 	if !si.NeedFullpath {
 		bytes, err := slurp(filename)
 		if err != nil {
-			panic(err)
+			notify(err.Error(), 240)
+			fmt.Println(err)
+			return
 		}
 		gi.SetData(bytes)
 	}
@@ -118,6 +124,7 @@ func coreLoadGame(filename string) {
 	g.gamePath = filename
 	menuInit()
 	notify("Game loaded: "+filename, 240)
+	fmt.Println("[Libretro]: Game loaded: " + filename)
 }
 
 func main() {
