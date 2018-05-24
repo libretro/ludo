@@ -28,8 +28,5 @@ func loadState() error {
 		return err
 	}
 	err = g.core.Unserialize(bytes, s)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

@@ -1,0 +1,36 @@
+os: Visual Studio 2015
+
+version: 0.1.0.{build}
+
+platform: x64
+
+clone_folder: c:\gopath\src\github.com\kivutar\go-playthemall
+
+environment:
+  GOPATH: c:\gopath
+  CC: gcc.exe
+
+install:
+  - echo %PATH%
+  - echo %GOPATH%
+  - set PATH=C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;C:\MinGW\bin;%GOPATH%\bin;c:\go\bin;%PATH%
+  - go version
+  - gcc --version
+  - go env
+  - appveyor DownloadFile http://kcat.strangesoft.net/openal-binaries/openal-soft-1.18.2-bin.zip
+  - 7z x openal-soft-1.18.2-bin.zip
+  - cp -r openal-soft-1.18.2-bin/include/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/include/
+  - cp -r openal-soft-1.18.2-bin/libs/Win64/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/lib/
+
+build_script:
+  - go get -t -v ./...
+  - go build
+
+before_test:
+  - go get github.com/golang/lint/golint
+  - go get honnef.co/go/tools/cmd/megacheck
+
+test_script:
+  - go test -v -race ./...
+  - megacheck ./...
+  - golint -set_exit_status $(go list ./...)

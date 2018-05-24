@@ -59,10 +59,8 @@ func joystickCallback(joy int, event int) {
 	switch event {
 	case 262145:
 		message = fmt.Sprintf("Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
-		break
 	case 262146:
 		message = fmt.Sprintf("Joystick #%d unplugged.", joy)
-		break
 	default:
 		message = fmt.Sprintf("Joystick #%d unhandled event: %d.", joy, event)
 	}

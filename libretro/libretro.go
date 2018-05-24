@@ -1,12 +1,10 @@
 package libretro
 
 /*
-#cgo LDFLAGS: -ldl
 #include "libretro.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dlfcn.h>
 
 void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
@@ -45,32 +43,6 @@ import (
 	"sync"
 	"unsafe"
 )
-
-// Core is an instance of a dynalically loaded libretro core
-type Core struct {
-	handle unsafe.Pointer
-
-	symRetroInit                unsafe.Pointer
-	symRetroDeinit              unsafe.Pointer
-	symRetroAPIVersion          unsafe.Pointer
-	symRetroGetSystemInfo       unsafe.Pointer
-	symRetroGetSystemAVInfo     unsafe.Pointer
-	symRetroSetEnvironment      unsafe.Pointer
-	symRetroSetVideoRefresh     unsafe.Pointer
-	symRetroSetInputPoll        unsafe.Pointer
-	symRetroSetInputState       unsafe.Pointer
-	symRetroSetAudioSample      unsafe.Pointer
-	symRetroSetAudioSampleBatch unsafe.Pointer
-	symRetroRun                 unsafe.Pointer
-	symRetroReset               unsafe.Pointer
-	symRetroLoadGame            unsafe.Pointer
-	symRetroUnloadGame          unsafe.Pointer
-	symRetroSerializeSize       unsafe.Pointer
-	symRetroSerialize           unsafe.Pointer
-	symRetroUnserialize         unsafe.Pointer
-
-	videoRefresh videoRefreshFunc
-}
 
 // GameGeometry represents the geometry of a game, with its aspect ratio, with and height
 type GameGeometry struct {
@@ -215,29 +187,30 @@ func Load(sofile string) (Core, error) {
 	core := Core{}
 
 	mu.Lock()
-	core.handle = C.dlopen(C.CString(sofile), C.RTLD_NOW)
-	if core.handle == nil {
-		return core, errors.New("dlopen failed")
+	var err error
+	core.handle, err = DlOpen(sofile)
+	if err != nil {
+		return core, err
 	}
 
-	core.symRetroInit = C.dlsym(core.handle, C.CString("retro_init"))
-	core.symRetroDeinit = C.dlsym(core.handle, C.CString("retro_deinit"))
-	core.symRetroAPIVersion = C.dlsym(core.handle, C.CString("retro_api_version"))
-	core.symRetroGetSystemInfo = C.dlsym(core.handle, C.CString("retro_get_system_info"))
-	core.symRetroGetSystemAVInfo = C.dlsym(core.handle, C.CString("retro_get_system_av_info"))
-	core.symRetroSetEnvironment = C.dlsym(core.handle, C.CString("retro_set_environment"))
-	core.symRetroSetVideoRefresh = C.dlsym(core.handle, C.CString("retro_set_video_refresh"))
-	core.symRetroSetInputPoll = C.dlsym(core.handle, C.CString("retro_set_input_poll"))
-	core.symRetroSetInputState = C.dlsym(core.handle, C.CString("retro_set_input_state"))
-	core.symRetroSetAudioSample = C.dlsym(core.handle, C.CString("retro_set_audio_sample"))
-	core.symRetroSetAudioSampleBatch = C.dlsym(core.handle, C.CString("retro_set_audio_sample_batch"))
-	core.symRetroRun = C.dlsym(core.handle, C.CString("retro_run"))
-	core.symRetroReset = C.dlsym(core.handle, C.CString("retro_reset"))
-	core.symRetroLoadGame = C.dlsym(core.handle, C.CString("retro_load_game"))
-	core.symRetroUnloadGame = C.dlsym(core.handle, C.CString("retro_unload_game"))
-	core.symRetroSerializeSize = C.dlsym(core.handle, C.CString("retro_serialize_size"))
-	core.symRetroSerialize = C.dlsym(core.handle, C.CString("retro_serialize"))
-	core.symRetroUnserialize = C.dlsym(core.handle, C.CString("retro_unserialize"))
+	core.symRetroInit = core.DlSym("retro_init")
+	core.symRetroDeinit = core.DlSym("retro_deinit")
+	core.symRetroAPIVersion = core.DlSym("retro_api_version")
+	core.symRetroGetSystemInfo = core.DlSym("retro_get_system_info")
+	core.symRetroGetSystemAVInfo = core.DlSym("retro_get_system_av_info")
+	core.symRetroSetEnvironment = core.DlSym("retro_set_environment")
+	core.symRetroSetVideoRefresh = core.DlSym("retro_set_video_refresh")
+	core.symRetroSetInputPoll = core.DlSym("retro_set_input_poll")
+	core.symRetroSetInputState = core.DlSym("retro_set_input_state")
+	core.symRetroSetAudioSample = core.DlSym("retro_set_audio_sample")
+	core.symRetroSetAudioSampleBatch = core.DlSym("retro_set_audio_sample_batch")
+	core.symRetroRun = core.DlSym("retro_run")
+	core.symRetroReset = core.DlSym("retro_reset")
+	core.symRetroLoadGame = core.DlSym("retro_load_game")
+	core.symRetroUnloadGame = core.DlSym("retro_unload_game")
+	core.symRetroSerializeSize = core.DlSym("retro_serialize_size")
+	core.symRetroSerialize = core.DlSym("retro_serialize")
+	core.symRetroUnserialize = core.DlSym("retro_unserialize")
 	mu.Unlock()
 
 	C.bridge_retro_set_environment(core.symRetroSetEnvironment, C.coreEnvironment_cgo)

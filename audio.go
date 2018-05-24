@@ -20,6 +20,10 @@ var audio struct {
 	resPtr     int32
 }
 
+func audioSetVolume(vol float32) {
+	audio.source.SetGain(vol)
+}
+
 func audioInit(rate int32) {
 	err := al.OpenDevice()
 	if err != nil {
