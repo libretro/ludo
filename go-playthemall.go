@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/user"
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
@@ -24,6 +25,12 @@ var g struct {
 func init() {
 	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
+	// Create base folders
+	usr, _ := user.Current()
+	os.Mkdir(usr.HomeDir+"/.playthemall/", 0777)
+	os.Mkdir(usr.HomeDir+"/.playthemall/savefiles/", 0777)
+	os.Mkdir(usr.HomeDir+"/.playthemall/savestates/", 0777)
+	os.Mkdir(usr.HomeDir+"/.playthemall/system/", 0777)
 }
 
 func coreLoad(sofile string) {

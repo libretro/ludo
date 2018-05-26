@@ -52,9 +52,11 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		}
 		return videoSetPixelFormat(format)
 	case libretro.EnvironmentGetSystemDirectory:
-		fallthrough
+		usr, _ := user.Current()
+		libretro.SetString(data, usr.HomeDir+"/.playthemall/system/")
 	case libretro.EnvironmentGetSaveDirectory:
-		libretro.SetString(data, ".")
+		usr, _ := user.Current()
+		libretro.SetString(data, usr.HomeDir+"/.playthemall/savefiles/")
 	case libretro.EnvironmentShutdown:
 		window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:

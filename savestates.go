@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"os/user"
 	"path/filepath"
 )
 
@@ -13,17 +14,19 @@ func savestateName() string {
 }
 
 func saveState() error {
+	usr, _ := user.Current()
 	s := g.core.SerializeSize()
 	bytes, err := g.core.Serialize(s)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(savestateName(), bytes, 0644)
+	return ioutil.WriteFile(usr.HomeDir+"/.playthemall/savestates/"+savestateName(), bytes, 0644)
 }
 
 func loadState() error {
+	usr, _ := user.Current()
 	s := g.core.SerializeSize()
-	bytes, err := ioutil.ReadFile(savestateName())
+	bytes, err := ioutil.ReadFile(usr.HomeDir + "/.playthemall/savestates/" + savestateName())
 	if err != nil {
 		return err
 	}

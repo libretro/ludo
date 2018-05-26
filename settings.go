@@ -85,7 +85,6 @@ func saveSettings() error {
 	defer lock.Unlock()
 
 	usr, _ := user.Current()
-	os.Mkdir(usr.HomeDir+"/.playthemall/", 0755)
 
 	b, _ := json.MarshalIndent(settings, "", "  ")
 	f, err := os.Create(usr.HomeDir + "/.playthemall/settings.json")
