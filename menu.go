@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os/user"
 	"path/filepath"
 
 	"github.com/fatih/structs"
@@ -94,6 +95,8 @@ func buildMainMenu() entry {
 	var list entry
 	list.label = "Main list"
 
+	usr, _ := user.Current()
+
 	if g.coreRunning {
 		list.children = append(list.children, entry{
 			label: "Quick Menu",
@@ -108,7 +111,7 @@ func buildMainMenu() entry {
 		label: "Load Core",
 		icon:  "subsetting",
 		callback: func() {
-			menu.stack = append(menu.stack, buildExplorer("./cores"))
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 		},
 	})
 
@@ -116,7 +119,7 @@ func buildMainMenu() entry {
 		label: "Load Game",
 		icon:  "subsetting",
 		callback: func() {
-			menu.stack = append(menu.stack, buildExplorer("./roms"))
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 		},
 	})
 
