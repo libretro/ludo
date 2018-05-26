@@ -31,3 +31,4 @@ script:
   - megacheck ./...
   - gocyclo -over 19 $GO_FILES
   - golint -set_exit_status $(go list ./...)
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make Play\ Them\ All.app; fi
