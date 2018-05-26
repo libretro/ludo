@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"os/user"
 	"sync"
 
 	"github.com/fatih/structs"
@@ -69,7 +70,9 @@ func loadSettings() error {
 	settings.VideoMonitorIndex = 0
 	settings.AudioVolume = 0.5
 
-	b, err := slurp("settings.json")
+	usr, _ := user.Current()
+
+	b, err := slurp(usr.HomeDir + "/.playthemall/settings.json")
 	if err != nil {
 		return err
 	}
@@ -81,8 +84,11 @@ func saveSettings() error {
 	lock.Lock()
 	defer lock.Unlock()
 
+	usr, _ := user.Current()
+	os.Mkdir(usr.HomeDir+"/.playthemall/", 755)
+
 	b, _ := json.MarshalIndent(settings, "", "  ")
-	f, err := os.Create("settings.json")
+	f, err := os.Create(usr.HomeDir + "/.playthemall/settings.json")
 	if err != nil {
 		return err
 	}
