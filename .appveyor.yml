@@ -4,6 +4,9 @@ branches:
 
 os: Visual Studio 2015
 
+build:
+  verbosity: detailed
+
 version: 0.1.0.{build}
 
 platform: x64
@@ -20,6 +23,7 @@ install:
   - set PATH=C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;C:\MinGW\bin;%GOPATH%\bin;c:\go\bin;%PATH%
   - go version
   - gcc --version
+  - set PKG_CONFIG=""
   - go env
   - appveyor DownloadFile http://kcat.strangesoft.net/openal-binaries/openal-soft-1.18.2-bin.zip
   - 7z x openal-soft-1.18.2-bin.zip
@@ -35,6 +39,6 @@ before_test:
   - go get honnef.co/go/tools/cmd/megacheck
 
 test_script:
-  - go test -v -race ./...
+  - go test -v -tags no_pkgconfig ./...
   - megacheck ./...
   - golint -set_exit_status $(go list ./...)

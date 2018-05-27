@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/user"
 	"path/filepath"
 
 	"github.com/kivutar/go-playthemall/libretro"
@@ -61,8 +60,7 @@ func coreUnzipGame(filename string) (string, int64, error) {
 	}
 	defer rc.Close()
 
-	usr, _ := user.Current()
-	path := usr.HomeDir + "/" + cf.Name
+	path := os.TempDir() + "/" + cf.Name
 
 	f2, err := os.Create(path)
 	if err != nil {
