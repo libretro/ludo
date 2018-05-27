@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/user"
 	"path/filepath"
 
 	"github.com/kivutar/go-playthemall/libretro"
@@ -43,6 +44,39 @@ func coreLoad(sofile string) {
 	fmt.Println("[Libretro]: API version:", g.core.APIVersion())
 }
 
+// coreUnzipGame unzips a rom to tmpdir and returns the path and size of the extracted rom
+func coreUnzipGame(filename string) (string, int64, error) {
+	r, err := zip.OpenReader(filename)
+	if err != nil {
+		return "", 0, err
+	}
+	defer r.Close()
+
+	cf := r.File[0]
+	size := int64(cf.UncompressedSize)
+	rc, err := cf.Open()
+	if err != nil {
+		return "", 0, err
+	}
+	defer rc.Close()
+
+	usr, _ := user.Current()
+	path := usr.HomeDir + "/" + cf.Name
+
+	f2, err := os.Create(path)
+	if err != nil {
+		return "", 0, err
+	}
+	defer f2.Close()
+	_, err = io.CopyN(f2, rc, size)
+	if err != nil {
+		return "", 0, err
+	}
+
+	return path, size, nil
+}
+
+// coreGetGameInfo opens a rom and return the libretro.GameInfo needed to launch it
 func coreGetGameInfo(filename string, blockExtract bool) (libretro.GameInfo, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -54,37 +88,21 @@ func coreGetGameInfo(filename string, blockExtract bool) (libretro.GameInfo, err
 		return libretro.GameInfo{}, err
 	}
 
-	var realfilename string
+	var path string
 	var size int64
+
 	if filepath.Ext(filename) == ".zip" && !blockExtract {
-		r, err := zip.OpenReader(filename)
+		path, size, err = coreUnzipGame(filename)
 		if err != nil {
 			return libretro.GameInfo{}, err
 		}
-		defer r.Close()
-
-		cf := r.File[0]
-		rc, err := cf.Open()
-		if err != nil {
-			return libretro.GameInfo{}, err
-		}
-		defer rc.Close()
-
-		f2, err := os.Create("/tmp/" + cf.Name)
-		if err != nil {
-			return libretro.GameInfo{}, err
-		}
-		defer f2.Close()
-		io.CopyN(f2, rc, int64(cf.UncompressedSize))
-		realfilename = "/tmp/" + cf.Name
-		size = int64(cf.UncompressedSize)
 	} else {
-		realfilename = filename
+		path = filename
 		size = fi.Size()
 	}
 
 	gi := libretro.GameInfo{
-		Path: realfilename,
+		Path: path,
 		Size: size,
 	}
 
