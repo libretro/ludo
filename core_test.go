@@ -1,7 +1,7 @@
 package main
 
 import (
-	"os/user"
+	"os"
 	"reflect"
 	"testing"
 
@@ -9,8 +9,6 @@ import (
 )
 
 func Test_coreGetGameInfo(t *testing.T) {
-	usr, _ := user.Current()
-
 	type args struct {
 		filename     string
 		blockExtract bool
@@ -34,7 +32,7 @@ func Test_coreGetGameInfo(t *testing.T) {
 			name: "Returns the right path and size for a zipped ROM",
 			args: args{filename: "testdata/ZoomingSecretary.zip", blockExtract: false},
 			want: libretro.GameInfo{
-				Path: usr.HomeDir + "/ZoomingSecretary.uze",
+				Path: os.TempDir() + "/ZoomingSecretary.uze",
 				Size: 61286,
 			},
 			wantErr: false,
@@ -64,7 +62,7 @@ func Test_coreGetGameInfo(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Doesn't attemtp to unzip a file that has no .zip extension",
+			name: "Doesn't attempt to unzip a file that has no .zip extension",
 			args: args{filename: "testdata/ZoomingSecretary.uze", blockExtract: true},
 			want: libretro.GameInfo{
 				Path: "testdata/ZoomingSecretary.uze",
