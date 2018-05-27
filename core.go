@@ -1,8 +1,11 @@
 package main
 
 import (
+	"archive/zip"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/kivutar/go-playthemall/libretro"
 )
@@ -55,19 +58,37 @@ func coreLoadGame(filename string) {
 		return
 	}
 
-	size := fi.Size()
+	si := g.core.GetSystemInfo()
+
+	var realfilename string
+	var size int64
+	if filepath.Ext(filename) == ".zip" && !si.BlockExtract {
+		r, _ := zip.OpenReader(filename)
+		defer r.Close()
+
+		cf := r.File[0]
+		rc, _ := cf.Open()
+		defer rc.Close()
+
+		f2, _ := os.Create("/tmp/" + cf.Name)
+		defer f2.Close()
+		io.CopyN(f2, rc, int64(cf.UncompressedSize))
+		realfilename = "/tmp/" + cf.Name
+		size = int64(cf.UncompressedSize)
+	} else {
+		realfilename = filename
+		size = fi.Size()
+	}
 
 	fmt.Println("[Libretro]: ROM size:", size)
 
 	gi := libretro.GameInfo{
-		Path: filename,
+		Path: realfilename,
 		Size: size,
 	}
 
-	si := g.core.GetSystemInfo()
-
 	if !si.NeedFullpath {
-		bytes, err := slurp(filename)
+		bytes, err := slurp(realfilename)
 		if err != nil {
 			notify(err.Error(), 240)
 			fmt.Println(err)
