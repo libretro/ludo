@@ -35,6 +35,6 @@ before_test:
   - go get honnef.co/go/tools/cmd/megacheck
 
 test_script:
-  - go test -v -race ./...
+  - go test .
   - megacheck ./...
   - golint -set_exit_status $(go list ./...)
