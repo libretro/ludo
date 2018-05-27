@@ -84,3 +84,53 @@ func Test_coreGetGameInfo(t *testing.T) {
 		})
 	}
 }
+
+func Test_coreUnzipGame(t *testing.T) {
+	type args struct {
+		filename string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		want1   int64
+		wantErr bool
+	}{
+		{
+			name:    "Should unzip to the right path",
+			args:    args{filename: "testdata/ZoomingSecretary.zip"},
+			want:    os.TempDir() + "/ZoomingSecretary.uze",
+			want1:   61286,
+			wantErr: false,
+		},
+		{
+			name:    "Returns an error if the file is not a zip",
+			args:    args{filename: "testdata/ZoomingSecretary.uze"},
+			want:    "",
+			want1:   0,
+			wantErr: true,
+		},
+		{
+			name:    "Returns an error if the file doesn't exists",
+			args:    args{filename: "testdata/ZoomingSecretary2.zip"},
+			want:    "",
+			want1:   0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := coreUnzipGame(tt.args.filename)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("coreUnzipGame() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("coreUnzipGame() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("coreUnzipGame() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
