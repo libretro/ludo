@@ -23,6 +23,7 @@ install:
   - set PATH=C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;C:\MinGW\bin;%GOPATH%\bin;c:\go\bin;%PATH%
   - go version
   - gcc --version
+  - set PKG_CONFIG=""
   - go env
   - appveyor DownloadFile http://kcat.strangesoft.net/openal-binaries/openal-soft-1.18.2-bin.zip
   - 7z x openal-soft-1.18.2-bin.zip
