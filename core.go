@@ -95,9 +95,8 @@ func coreGetGameInfo(filename string, blockExtract bool) (libretro.GameInfo, err
 			return libretro.GameInfo{}, err
 		}
 		return libretro.GameInfo{Path: path, Size: size}, nil
-	} else {
-		return libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
 	}
+	return libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
 }
 
 // coreLoadGame loads a game. A core has to be loaded first.
