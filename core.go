@@ -11,6 +11,7 @@ import (
 	"github.com/kivutar/go-playthemall/libretro"
 )
 
+// coreLoad loads a libretro core
 func coreLoad(sofile string) {
 	if g.coreRunning {
 		g.core.UnloadGame()
@@ -88,27 +89,18 @@ func coreGetGameInfo(filename string, blockExtract bool) (libretro.GameInfo, err
 		return libretro.GameInfo{}, err
 	}
 
-	var path string
-	var size int64
-
 	if filepath.Ext(filename) == ".zip" && !blockExtract {
-		path, size, err = coreUnzipGame(filename)
+		path, size, err := coreUnzipGame(filename)
 		if err != nil {
 			return libretro.GameInfo{}, err
 		}
+		return libretro.GameInfo{Path: path, Size: size}, nil
 	} else {
-		path = filename
-		size = fi.Size()
+		return libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
 	}
-
-	gi := libretro.GameInfo{
-		Path: path,
-		Size: size,
-	}
-
-	return gi, nil
 }
 
+// coreLoadGame loads a game. A core has to be loaded first.
 func coreLoadGame(filename string) {
 	si := g.core.GetSystemInfo()
 
