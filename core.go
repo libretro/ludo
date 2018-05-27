@@ -43,34 +43,37 @@ func coreLoad(sofile string) {
 	fmt.Println("[Libretro]: API version:", g.core.APIVersion())
 }
 
-func coreLoadGame(filename string) {
+func coreGetGameInfo(filename string, blockExtract bool) (libretro.GameInfo, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		notify(err.Error(), 240)
-		fmt.Println(err)
-		return
+		return libretro.GameInfo{}, err
 	}
 
 	fi, err := file.Stat()
 	if err != nil {
-		notify(err.Error(), 240)
-		fmt.Println(err)
-		return
+		return libretro.GameInfo{}, err
 	}
-
-	si := g.core.GetSystemInfo()
 
 	var realfilename string
 	var size int64
-	if filepath.Ext(filename) == ".zip" && !si.BlockExtract {
-		r, _ := zip.OpenReader(filename)
+	if filepath.Ext(filename) == ".zip" && !blockExtract {
+		r, err := zip.OpenReader(filename)
+		if err != nil {
+			return libretro.GameInfo{}, err
+		}
 		defer r.Close()
 
 		cf := r.File[0]
-		rc, _ := cf.Open()
+		rc, err := cf.Open()
+		if err != nil {
+			return libretro.GameInfo{}, err
+		}
 		defer rc.Close()
 
-		f2, _ := os.Create("/tmp/" + cf.Name)
+		f2, err := os.Create("/tmp/" + cf.Name)
+		if err != nil {
+			return libretro.GameInfo{}, err
+		}
 		defer f2.Close()
 		io.CopyN(f2, rc, int64(cf.UncompressedSize))
 		realfilename = "/tmp/" + cf.Name
@@ -80,15 +83,26 @@ func coreLoadGame(filename string) {
 		size = fi.Size()
 	}
 
-	fmt.Println("[Libretro]: ROM size:", size)
-
 	gi := libretro.GameInfo{
 		Path: realfilename,
 		Size: size,
 	}
 
+	return gi, nil
+}
+
+func coreLoadGame(filename string) {
+	si := g.core.GetSystemInfo()
+
+	gi, err := coreGetGameInfo(filename, si.BlockExtract)
+	if err != nil {
+		notify(err.Error(), 240)
+		fmt.Println(err)
+		return
+	}
+
 	if !si.NeedFullpath {
-		bytes, err := slurp(realfilename)
+		bytes, err := slurp(gi.Path)
 		if err != nil {
 			notify(err.Error(), 240)
 			fmt.Println(err)
