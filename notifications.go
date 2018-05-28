@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 type notification struct {
 	message string
@@ -26,7 +29,7 @@ func notifyAndLog(prefix, message string, vars ...interface{}) {
 		msg = message
 	}
 	if g.verbose {
-		fmt.Print("[" + prefix + "]: " + msg + "\n")
+		log.Print("[" + prefix + "]: " + msg + "\n")
 	}
 	notify(msg, 240)
 }

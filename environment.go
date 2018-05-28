@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os/user"
 	"time"
 	"unsafe"
@@ -18,7 +18,7 @@ var logLevels = map[uint32]string{
 }
 
 func logCallback(level uint32, str string) {
-	fmt.Printf("[%s]: %s", logLevels[level], str)
+	log.Printf("[%s]: %s", logLevels[level], str)
 }
 
 func getTimeUsec() int64 {
@@ -61,7 +61,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:
 		variable := libretro.GetVariable(data)
-		fmt.Println("[Env]: get variable:", variable.Key)
+		log.Println("[Env]: get variable:", variable.Key)
 		return false
 	default:
 		//fmt.Println("[Env]: command not implemented", cmd)

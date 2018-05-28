@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"golang.org/x/mobile/exp/audio/al"
@@ -27,13 +27,13 @@ func audioSetVolume(vol float32) {
 func audioInit(rate int32) {
 	err := al.OpenDevice()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	audio.rate = rate
 	audio.numBuffers = 4
 
-	fmt.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
+	log.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
 
 	audio.source = al.GenSources(1)[0]
 	audio.buffers = al.GenBuffers(int(audio.numBuffers))

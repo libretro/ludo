@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/user"
@@ -48,8 +47,8 @@ func main() {
 
 	err := loadSettings()
 	if err != nil {
-		fmt.Println("[Settings]: Loading failed:", err)
-		fmt.Println("[Settings]: Using default settings")
+		log.Println("[Settings]: Loading failed:", err)
+		log.Println("[Settings]: Using default settings")
 		saveSettings()
 	}
 

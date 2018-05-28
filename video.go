@@ -34,7 +34,7 @@ var video struct {
 
 func videoSetPixelFormat(format uint32) bool {
 	if g.verbose {
-		fmt.Printf("[Video]: Set Pixel Format: %v\n", format)
+		log.Printf("[Video]: Set Pixel Format: %v\n", format)
 	}
 
 	switch format {
@@ -162,7 +162,7 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 
 	if g.verbose {
 		version := gl.GoStr(gl.GetString(gl.VERSION))
-		fmt.Println("[Video]: OpenGL version:", version)
+		log.Println("[Video]: OpenGL version:", version)
 	}
 
 	// Configure the vertex and fragment shaders
@@ -201,8 +201,8 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 	gl.GenTextures(1, &video.texID)
 
 	gl.ActiveTexture(gl.TEXTURE0)
-	if video.texID == 0 {
-		fmt.Println("[Video]: Failed to create the video texture")
+	if video.texID == 0 && g.verbose {
+		log.Println("[Video]: Failed to create the video texture")
 	}
 
 	video.pitch = int32(geom.BaseWidth) * video.bpp
