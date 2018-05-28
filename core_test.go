@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"runtime"
@@ -22,8 +21,6 @@ func Test_coreLoad(t *testing.T) {
 	ext := exts[runtime.GOOS]
 
 	out := captureOutput(func() { coreLoad("testdata/uzem_libretro" + ext) })
-
-	fmt.Println(g.core)
 
 	t.Run("The core is loaded", func(t *testing.T) {
 		if g.core == (libretro.Core{}) {
