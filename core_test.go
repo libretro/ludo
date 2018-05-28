@@ -1,12 +1,55 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/kivutar/go-playthemall/libretro"
 )
+
+func Test_coreLoad(t *testing.T) {
+	g.verbose = true
+
+	exts := map[string]string{
+		"darwin":  ".dylib",
+		"linux":   ".so",
+		"windows": ".dll",
+	}
+
+	ext := exts[runtime.GOOS]
+
+	out := captureOutput(func() { coreLoad("testdata/uzem_libretro" + ext) })
+
+	fmt.Println(g.core)
+
+	t.Run("The core is loaded", func(t *testing.T) {
+		if g.core == (libretro.Core{}) {
+			t.Errorf("got = %v, want not libretro.Core{}", g.core)
+		}
+	})
+
+	t.Run("Logs information about the loaded core", func(t *testing.T) {
+		got := out
+		want := `[Core]: Name: Uzem
+[Core]: Version: v2.0
+[Core]: Valid extensions: uze
+[Core]: Need fullpath: false
+[Core]: Block extract: false
+[Core]: Core loaded: Uzem
+`
+		if got != want {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+
+	g.core.UnloadGame()
+	g.core.Deinit()
+	g.gamePath = ""
+	g.verbose = false
+}
 
 func Test_coreGetGameInfo(t *testing.T) {
 	type args struct {
