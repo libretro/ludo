@@ -40,8 +40,7 @@ func coreLoad(sofile string) {
 		fmt.Println("[Libretro]: Block extract:", si.BlockExtract)
 	}
 
-	notify("Core loaded: "+si.LibraryName, 240)
-	fmt.Println("[Libretro]: API version:", g.core.APIVersion())
+	notifyAndLog("Core", "Core loaded: "+si.LibraryName)
 }
 
 // coreUnzipGame unzips a rom to tmpdir and returns the path and size of the extracted rom
@@ -103,16 +102,14 @@ func coreLoadGame(filename string) {
 
 	gi, err := coreGetGameInfo(filename, si.BlockExtract)
 	if err != nil {
-		notify(err.Error(), 240)
-		fmt.Println(err)
+		notifyAndLog("Core", err.Error())
 		return
 	}
 
 	if !si.NeedFullpath {
 		bytes, err := slurp(gi.Path)
 		if err != nil {
-			notify(err.Error(), 240)
-			fmt.Println(err)
+			notifyAndLog("Core", err.Error())
 			return
 		}
 		gi.SetData(bytes)
@@ -120,8 +117,7 @@ func coreLoadGame(filename string) {
 
 	ok := g.core.LoadGame(gi)
 	if !ok {
-		notify("The core failed to load the content.", 240)
-		fmt.Println("[Libretro]: The core failed to load the content.")
+		notifyAndLog("Core", "Failed to load the content.")
 		g.coreRunning = false
 		return
 	}
@@ -146,6 +142,5 @@ func coreLoadGame(filename string) {
 	g.menuActive = false
 	g.gamePath = filename
 	menuInit()
-	notify("Game loaded: "+filename, 240)
-	fmt.Println("[Libretro]: Game loaded: " + filename)
+	notifyAndLog("Core", "Game loaded: "+filename)
 }

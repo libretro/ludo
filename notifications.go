@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type notification struct {
 	message string
 	frames  int
@@ -16,6 +18,17 @@ func notify(message string, frames int) {
 	notifications = append(notifications, n)
 }
 
+func notifyAndLog(prefix, message string, vars ...interface{}) {
+	var msg string
+	if len(vars) > 0 {
+		msg = fmt.Sprintf(message, vars...)
+	} else {
+		msg = message
+	}
+	fmt.Print("[" + prefix + "]: " + msg + "\n")
+	notify(msg, 240)
+}
+
 func processNotifications() {
 	deleted := 0
 	for i := range notifications {
@@ -26,4 +39,8 @@ func processNotifications() {
 			deleted++
 		}
 	}
+}
+
+func clearNotifications() {
+	notifications = []notification{}
 }
