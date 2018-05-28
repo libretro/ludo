@@ -19,12 +19,14 @@ func notify(message string, frames int) {
 }
 
 func notifyAndLog(prefix, message string, vars ...interface{}) {
+	var msg string
 	if len(vars) > 0 {
-		fmt.Printf("["+prefix+"]: "+message+"\n", vars)
+		msg = fmt.Sprintf(message, vars...)
 	} else {
-		fmt.Printf("[" + prefix + "]: " + message + "\n")
+		msg = message
 	}
-	notify(message, 240)
+	fmt.Print("[" + prefix + "]: " + msg + "\n")
+	notify(msg, 240)
 }
 
 func processNotifications() {
@@ -37,4 +39,8 @@ func processNotifications() {
 			deleted++
 		}
 	}
+}
+
+func clearNotifications() {
+	notifications = []notification{}
 }
