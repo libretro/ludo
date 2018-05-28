@@ -57,7 +57,8 @@ func buildExplorer(path string) entry {
 				if f.IsDir() {
 					menu.stack = append(menu.stack, buildExplorer(path+"/"+f.Name()+"/"))
 				} else if stringInSlice(filepath.Ext(f.Name()), []string{".so", ".dll", ".dylib"}) {
-					coreLoad(path + "/" + f.Name())
+					g.corePath = path + "/" + f.Name()
+					coreLoad(g.corePath)
 				} else {
 					coreLoadGame(path + "/" + f.Name())
 				}

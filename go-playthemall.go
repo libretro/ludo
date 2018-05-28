@@ -19,6 +19,8 @@ var g struct {
 	audioCb     libretro.AudioCallback
 	coreRunning bool
 	menuActive  bool
+	verbose     bool
+	corePath    string
 	gamePath    string
 }
 
@@ -34,7 +36,8 @@ func init() {
 }
 
 func main() {
-	var corePath = flag.String("L", "", "Path to the libretro core")
+	flag.StringVar(&g.corePath, "L", "", "Path to the libretro core")
+	flag.BoolVar(&g.verbose, "v", false, "Verbose logs")
 	flag.Parse()
 	args := flag.Args()
 
@@ -55,8 +58,8 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	if len(*corePath) > 0 {
-		coreLoad(*corePath)
+	if len(g.corePath) > 0 {
+		coreLoad(g.corePath)
 	}
 
 	if len(gamePath) > 0 {

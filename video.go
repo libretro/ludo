@@ -33,7 +33,9 @@ var video struct {
 }
 
 func videoSetPixelFormat(format uint32) bool {
-	fmt.Printf("[Video]: Set Pixel Format: %v\n", format)
+	if g.verbose {
+		fmt.Printf("[Video]: Set Pixel Format: %v\n", format)
+	}
 
 	switch format {
 	case libretro.PixelFormat0RGB1555:
@@ -158,8 +160,10 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 		panic(err)
 	}
 
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("[Video]: OpenGL version:", version)
+	if g.verbose {
+		version := gl.GoStr(gl.GetString(gl.VERSION))
+		fmt.Println("[Video]: OpenGL version:", version)
+	}
 
 	// Configure the vertex and fragment shaders
 	video.program, err = newProgram(vertexShader, fragmentShader)

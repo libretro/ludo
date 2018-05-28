@@ -25,7 +25,9 @@ func notifyAndLog(prefix, message string, vars ...interface{}) {
 	} else {
 		msg = message
 	}
-	fmt.Print("[" + prefix + "]: " + msg + "\n")
+	if g.verbose {
+		fmt.Print("[" + prefix + "]: " + msg + "\n")
+	}
 	notify(msg, 240)
 }
 

@@ -31,13 +31,16 @@ func coreLoad(sofile string) {
 	si := g.core.GetSystemInfo()
 	if len(si.LibraryName) > 0 {
 		if window != nil {
+			fmt.Println("lala")
 			window.SetTitle("Play Them All - " + si.LibraryName)
 		}
-		fmt.Println("[Libretro]: Name:", si.LibraryName)
-		fmt.Println("[Libretro]: Version:", si.LibraryVersion)
-		fmt.Println("[Libretro]: Valid extensions:", si.ValidExtensions)
-		fmt.Println("[Libretro]: Need fullpath:", si.NeedFullpath)
-		fmt.Println("[Libretro]: Block extract:", si.BlockExtract)
+		if g.verbose {
+			fmt.Println("[Libretro]: Name:", si.LibraryName)
+			fmt.Println("[Libretro]: Version:", si.LibraryVersion)
+			fmt.Println("[Libretro]: Valid extensions:", si.ValidExtensions)
+			fmt.Println("[Libretro]: Need fullpath:", si.NeedFullpath)
+			fmt.Println("[Libretro]: Block extract:", si.BlockExtract)
+		}
 	}
 
 	notifyAndLog("Core", "Core loaded: "+si.LibraryName)
