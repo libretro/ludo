@@ -1,9 +1,30 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
+	"log"
+	"os"
 	"reflect"
 	"testing"
 )
+
+type logWriter struct {
+}
+
+func (writer logWriter) Write(bytes []byte) (int, error) {
+	return fmt.Print("OOO" + string(bytes))
+}
+
+func captureOutput(f func()) string {
+	var buf bytes.Buffer
+	log.SetFlags(0)
+	log.SetOutput(new(logWriter))
+	log.SetOutput(&buf)
+	f()
+	log.SetOutput(os.Stderr)
+	return buf.String()
+}
 
 func Test_notify(t *testing.T) {
 	clearNotifications()
@@ -30,6 +51,26 @@ func Test_notifyAndLog(t *testing.T) {
 		got := notifications[0].message
 		want := "Joypad #3 loaded with name Foo."
 		if got != want {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+
+	clearNotifications()
+	t.Run("Logs to stdout if verbose", func(t *testing.T) {
+		g.verbose = true
+		got := captureOutput(func() { notifyAndLog("Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
+		want := "[Test]: Joypad #3 loaded with name Foo.\n"
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+
+	clearNotifications()
+	t.Run("Logs nothing if not verbose", func(t *testing.T) {
+		g.verbose = false
+		got := captureOutput(func() { notifyAndLog("Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
+		want := ""
+		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
 		}
 	})

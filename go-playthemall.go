@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/user"
@@ -19,6 +18,8 @@ var g struct {
 	audioCb     libretro.AudioCallback
 	coreRunning bool
 	menuActive  bool
+	verbose     bool
+	corePath    string
 	gamePath    string
 }
 
@@ -34,7 +35,8 @@ func init() {
 }
 
 func main() {
-	var corePath = flag.String("L", "", "Path to the libretro core")
+	flag.StringVar(&g.corePath, "L", "", "Path to the libretro core")
+	flag.BoolVar(&g.verbose, "v", false, "Verbose logs")
 	flag.Parse()
 	args := flag.Args()
 
@@ -45,8 +47,8 @@ func main() {
 
 	err := loadSettings()
 	if err != nil {
-		fmt.Println("[Settings]: Loading failed:", err)
-		fmt.Println("[Settings]: Using default settings")
+		log.Println("[Settings]: Loading failed:", err)
+		log.Println("[Settings]: Using default settings")
 		saveSettings()
 	}
 
@@ -55,8 +57,8 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	if len(*corePath) > 0 {
-		coreLoad(*corePath)
+	if len(g.corePath) > 0 {
+		coreLoad(g.corePath)
 	}
 
 	if len(gamePath) > 0 {
