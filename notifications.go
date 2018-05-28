@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type notification struct {
 	message string
 	frames  int
@@ -14,6 +16,15 @@ func notify(message string, frames int) {
 	}
 
 	notifications = append(notifications, n)
+}
+
+func notifyAndLog(prefix, message string, vars ...interface{}) {
+	if len(vars) > 0 {
+		fmt.Printf("["+prefix+"]: "+message+"\n", vars)
+	} else {
+		fmt.Printf("[" + prefix + "]: " + message + "\n")
+	}
+	notify(message, 240)
 }
 
 func processNotifications() {

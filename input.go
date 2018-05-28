@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/kivutar/go-playthemall/libretro"
 )
@@ -55,17 +53,14 @@ var (
 )
 
 func joystickCallback(joy int, event int) {
-	var message string
 	switch event {
 	case 262145:
-		message = fmt.Sprintf("Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
+		notifyAndLog("Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
 	case 262146:
-		message = fmt.Sprintf("Joystick #%d unplugged.", joy)
+		notifyAndLog("Input", "Joystick #%d unplugged.", joy)
 	default:
-		message = fmt.Sprintf("Joystick #%d unhandled event: %d.", joy, event)
+		notifyAndLog("Input", "Joystick #%d unhandled event: %d.", joy, event)
 	}
-	fmt.Printf("[Input]: %s\n", message)
-	notify(message, 240)
 }
 
 func inputInit() {

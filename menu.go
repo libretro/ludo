@@ -41,8 +41,7 @@ func buildExplorer(path string) entry {
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		notify(err.Error(), 240)
-		fmt.Println(err)
+		notifyAndLog("Menu", err.Error())
 	}
 
 	for _, f := range files {
@@ -135,7 +134,7 @@ func buildMainMenu() entry {
 		label: "Help",
 		icon:  "subsetting",
 		callback: func() {
-			notify("Not implemented yet", 240)
+			notifyAndLog("Menu", "Not implemented yet.")
 		},
 	})
 
@@ -177,11 +176,9 @@ func buildQuickMenu() entry {
 		callback: func() {
 			err := saveState()
 			if err != nil {
-				fmt.Println("[Menu]: Savestate failed: ", err)
-				notify("Savestate failed: "+err.Error(), 240)
+				notifyAndLog("Menu", err.Error())
 			} else {
-				fmt.Println("[Menu]: State saved")
-				notify("State saved", 240)
+				notifyAndLog("Menu", "State saved.")
 			}
 		},
 	})
@@ -192,12 +189,10 @@ func buildQuickMenu() entry {
 		callback: func() {
 			err := loadState()
 			if err != nil {
-				fmt.Println("[Menu]: Loadstate failed: ", err)
-				notify("Loadstate failed: "+err.Error(), 240)
+				notifyAndLog("Menu", err.Error())
 			} else {
 				g.menuActive = false
-				fmt.Println("[Menu]: State loaded")
-				notify("State loaded", 240)
+				notifyAndLog("Menu", "State loaded.")
 			}
 		},
 	})
@@ -206,8 +201,7 @@ func buildQuickMenu() entry {
 		label: "Take Screenshot",
 		icon:  "screenshot",
 		callback: func() {
-			fmt.Println("[Menu]: Not implemented")
-			notify("Not implemented", 240)
+			notifyAndLog("Menu", "Not implemented yet.")
 		},
 	})
 
