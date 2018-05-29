@@ -34,11 +34,11 @@ func coreLoad(sofile string) {
 			window.SetTitle("Play Them All - " + si.LibraryName)
 		}
 		if g.verbose {
-			log.Println("[Libretro]: Name:", si.LibraryName)
-			log.Println("[Libretro]: Version:", si.LibraryVersion)
-			log.Println("[Libretro]: Valid extensions:", si.ValidExtensions)
-			log.Println("[Libretro]: Need fullpath:", si.NeedFullpath)
-			log.Println("[Libretro]: Block extract:", si.BlockExtract)
+			log.Println("[Core]: Name:", si.LibraryName)
+			log.Println("[Core]: Version:", si.LibraryVersion)
+			log.Println("[Core]: Valid extensions:", si.ValidExtensions)
+			log.Println("[Core]: Need fullpath:", si.NeedFullpath)
+			log.Println("[Core]: Block extract:", si.BlockExtract)
 		}
 	}
 

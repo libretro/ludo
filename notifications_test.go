@@ -1,30 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
-	"log"
-	"os"
 	"reflect"
 	"testing"
 )
-
-type logWriter struct {
-}
-
-func (writer logWriter) Write(bytes []byte) (int, error) {
-	return fmt.Print("OOO" + string(bytes))
-}
-
-func captureOutput(f func()) string {
-	var buf bytes.Buffer
-	log.SetFlags(0)
-	log.SetOutput(new(logWriter))
-	log.SetOutput(&buf)
-	f()
-	log.SetOutput(os.Stderr)
-	return buf.String()
-}
 
 func Test_notify(t *testing.T) {
 	clearNotifications()
