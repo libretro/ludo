@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
-	_ "image/png"
+	"image/png"
 	"log"
 	"os"
 
@@ -260,10 +260,20 @@ func videoRender() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+}
 
-	processNotifications()
-	video.font.UpdateResolution(fbw, fbh)
-	renderNotifications()
+func takeScreenshot() {
+	g.menuActive = false
+	videoRender()
+	fbw, fbh := window.GetFramebufferSize()
+	//img := image.NewNRGBA(image.Rect(0, 0, video.geom.BaseWidth, video.geom.BaseHeight))
+	img := image.NewNRGBA(image.Rect(0, 0, fbw, fbh))
+	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+	//gl.CopyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, int32(video.geom.BaseWidth), int32(video.geom.BaseHeight))
+	//gl.GetTexImage(gl.TEXTURE_2D, 0, video.pixType, video.pixFmt, gl.Ptr(img.Pix))
+	fd, _ := os.Create("./screenshot.png")
+	png.Encode(fd, img)
+	g.menuActive = true
 }
 
 // Refresh the texture framebuffer

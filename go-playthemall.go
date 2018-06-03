@@ -98,6 +98,9 @@ func main() {
 			videoRender()
 			renderMenuList()
 		}
+		fbw, fbh := window.GetFramebufferSize()
+		video.font.UpdateResolution(fbw, fbh)
+		renderNotifications()
 		window.SwapBuffers()
 	}
 
