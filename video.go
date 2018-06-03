@@ -267,14 +267,10 @@ func takeScreenshot() {
 	g.menuActive = false
 	videoRender()
 	fbw, fbh := window.GetFramebufferSize()
-	//img := image.NewNRGBA(image.Rect(0, 0, video.geom.BaseWidth, video.geom.BaseHeight))
 	img := image.NewNRGBA(image.Rect(0, 0, fbw, fbh))
 	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
-	//gl.CopyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, int32(video.geom.BaseWidth), int32(video.geom.BaseHeight))
-	//gl.GetTexImage(gl.TEXTURE_2D, 0, video.pixType, video.pixFmt, gl.Ptr(img.Pix))
-	rimg := imaging.FlipV(img)
 	fd, _ := os.Create("./screenshot.png")
-	png.Encode(fd, rimg)
+	png.Encode(fd, imaging.FlipV(img))
 	g.menuActive = true
 }
 
