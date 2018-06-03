@@ -11,6 +11,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/disintegration/imaging"
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/kivutar/glfont"
@@ -271,8 +272,9 @@ func takeScreenshot() {
 	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 	//gl.CopyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, int32(video.geom.BaseWidth), int32(video.geom.BaseHeight))
 	//gl.GetTexImage(gl.TEXTURE_2D, 0, video.pixType, video.pixFmt, gl.Ptr(img.Pix))
+	rimg := imaging.FlipV(img)
 	fd, _ := os.Create("./screenshot.png")
-	png.Encode(fd, img)
+	png.Encode(fd, rimg)
 	g.menuActive = true
 }
 
