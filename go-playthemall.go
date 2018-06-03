@@ -68,9 +68,9 @@ func main() {
 	// No game running? display the menu with a dummy geometry
 	if !g.coreRunning {
 		geom := libretro.GameGeometry{
-			AspectRatio: 320.0 / 240.0,
+			AspectRatio: 320.0 / 180.0,
 			BaseWidth:   320,
-			BaseHeight:  240,
+			BaseHeight:  180,
 		}
 		videoConfigure(geom, settings.VideoFullscreen)
 		menuInit()
@@ -80,6 +80,7 @@ func main() {
 	for !window.ShouldClose() {
 		glfw.SwapInterval(1)
 		glfw.PollEvents()
+		processNotifications()
 		if !g.menuActive {
 			if g.coreRunning {
 				g.core.Run()
