@@ -4,13 +4,17 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
-	_ "image/png"
+	"image/png"
 	"log"
 	"os"
+	"os/user"
+	"path/filepath"
+	"time"
 
 	"strings"
 	"unsafe"
 
+	"github.com/disintegration/imaging"
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/kivutar/glfont"
@@ -260,10 +264,26 @@ func videoRender() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+}
 
-	processNotifications()
-	video.font.UpdateResolution(fbw, fbh)
-	renderNotifications()
+func screenshotName() string {
+	name := filepath.Base(g.gamePath)
+	ext := filepath.Ext(name)
+	name = name[0 : len(name)-len(ext)]
+	date := time.Now().Format("2006-01-02-15-04-05")
+	return name + "@" + date + ".png"
+}
+
+func takeScreenshot() {
+	usr, _ := user.Current()
+	g.menuActive = false
+	videoRender()
+	fbw, fbh := window.GetFramebufferSize()
+	img := image.NewNRGBA(image.Rect(0, 0, fbw, fbh))
+	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+	fd, _ := os.Create(usr.HomeDir + "/.playthemall/screenshots/" + screenshotName())
+	png.Encode(fd, imaging.FlipV(img))
+	g.menuActive = true
 }
 
 // Refresh the texture framebuffer

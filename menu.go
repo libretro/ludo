@@ -202,7 +202,8 @@ func buildQuickMenu() entry {
 		label: "Take Screenshot",
 		icon:  "screenshot",
 		callback: func() {
-			notifyAndLog("Menu", "Not implemented yet.")
+			takeScreenshot()
+			notifyAndLog("Menu", "Took a screenshot.")
 		},
 	})
 
