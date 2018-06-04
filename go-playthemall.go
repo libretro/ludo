@@ -31,6 +31,7 @@ func init() {
 	os.Mkdir(usr.HomeDir+"/.playthemall/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/savefiles/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/savestates/", 0777)
+	os.Mkdir(usr.HomeDir+"/.playthemall/screenshots/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/system/", 0777)
 }
 
