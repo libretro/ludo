@@ -110,7 +110,7 @@ func verticalRender() {
 		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
 		video.font.Printf(110, e.y, 0.5, e.label)
 
-		drawImage(menu.icons[e.icon], 45, int32(e.y)-44, 64, 64, color{1, 1, 1, 1})
+		drawImage(menu.icons[e.icon], 45, int32(e.y)-44, 64, 64, color{1, 1, 1, e.iconAlpha})
 
 		if e.callbackValue != nil {
 			video.font.Printf(float32(w)-250, e.y, 0.5, e.callbackValue())
