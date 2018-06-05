@@ -4,7 +4,7 @@ import "os/user"
 
 func buildMainMenu() entry {
 	var list entry
-	list.label = "Main list"
+	list.label = "Main Menu"
 	list.input = verticalInput
 	list.render = verticalRender
 

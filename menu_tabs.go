@@ -44,7 +44,40 @@ func buildTabs() entry {
 		},
 	})
 
+	w, _ := window.GetFramebufferSize()
+	for i := range list.children {
+		e := &list.children[i]
+
+		if i == list.ptr {
+			e.x = float32(w / 2)
+		} else if i < list.ptr {
+			e.x = float32(w/2) + float32(menu.spacing*2*(i-list.ptr)-menu.spacing*2)
+		} else if i > list.ptr {
+			e.x = float32(w/2) + float32(menu.spacing*2*(i-list.ptr)+menu.spacing*2)
+		}
+	}
+
 	return list
+}
+
+func animateTabs() {
+	w, _ := window.GetFramebufferSize()
+	currentMenu := &menu.stack[len(menu.stack)-1]
+
+	for i := range currentMenu.children {
+		e := &currentMenu.children[i]
+
+		var nx float32
+		if i == currentMenu.ptr {
+			nx = float32(w / 2)
+		} else if i < currentMenu.ptr {
+			nx = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)-menu.spacing*2)
+		} else if i > currentMenu.ptr {
+			nx = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)+menu.spacing*2)
+		}
+
+		menu.tweens[&e.x] = gween.New(e.x, nx, 0.15, ease.OutSine)
+	}
 }
 
 func inputTabs() {
@@ -59,7 +92,7 @@ func inputTabs() {
 		if currentMenu.ptr >= len(currentMenu.children) {
 			currentMenu.ptr = 0
 		}
-		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*menu.spacing*3), 0.15, ease.OutSine)
+		animateTabs()
 		menu.inputCooldown = 10
 	}
 
@@ -68,7 +101,7 @@ func inputTabs() {
 		if currentMenu.ptr < 0 {
 			currentMenu.ptr = len(currentMenu.children) - 1
 		}
-		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*menu.spacing*3), 0.10, ease.OutSine)
+		animateTabs()
 		menu.inputCooldown = 10
 	}
 
@@ -80,9 +113,7 @@ func renderTabs() {
 	currentMenu := &menu.stack[len(menu.stack)-1]
 
 	for i, e := range currentMenu.children {
-		x := float32(w/2) - currentMenu.scroll + float32(menu.spacing*3*i)
-
-		if x < 0 || x > float32(w) {
+		if e.x < -128 || e.x > float32(w+128) {
 			continue
 		}
 
@@ -91,8 +122,8 @@ func renderTabs() {
 		} else {
 			video.font.SetColor(0.6, 0.6, 0.9, 1.0)
 		}
-		video.font.Printf(x, float32(h/2), 0.5, e.label)
+		video.font.Printf(e.x, float32(h/2)+100, 0.5, e.label)
 
-		drawImage(menu.icons[e.icon], int32(x)-64, int32(h/2)-64, 64, 64)
+		drawImage(menu.icons[e.icon], int32(e.x)-64, int32(h/2)-64, 128, 128)
 	}
 }

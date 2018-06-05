@@ -7,7 +7,9 @@ import (
 type menuCallback func()
 type menuCallbackIncr func(int)
 type menuCallbackGetValue func() string
+
 type entry struct {
+	x, y          float32
 	label         string
 	icon          string
 	scroll        float32
@@ -26,6 +28,7 @@ var menu struct {
 	icons         map[string]uint32
 	inputCooldown int
 	spacing       int
+	tweens        map[*float32]*gween.Tween
 }
 
 func menuRender() {
@@ -34,6 +37,14 @@ func menuRender() {
 	currentMenu := &menu.stack[len(menu.stack)-1]
 	if currentMenu.scrollTween != nil {
 		currentMenu.scroll, _ = currentMenu.scrollTween.Update(1.0 / 60.0)
+	}
+
+	for e, t := range menu.tweens {
+		var finished bool
+		*e, finished = t.Update(1.0 / 60.0)
+		if finished {
+			delete(menu.tweens, e)
+		}
 	}
 
 	currentMenu.render()
@@ -87,6 +98,8 @@ func contextReset() {
 }
 
 func menuInit() {
+	menu.tweens = make(map[*float32]*gween.Tween)
+
 	if g.coreRunning {
 		menu.stack = append(menu.stack, buildTabs())
 		menu.stack = append(menu.stack, buildMainMenu())
