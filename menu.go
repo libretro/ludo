@@ -13,6 +13,7 @@ type entry struct {
 	label         string
 	labelAlpha    float32
 	icon          string
+	iconAlpha     float32
 	scroll        float32
 	scrollTween   *gween.Tween
 	ptr           int
@@ -72,7 +73,7 @@ func verticalRender() {
 		}
 		video.font.Printf(110, y, 0.5, e.label)
 
-		drawImage(menu.icons[e.icon], 45, int32(y)-44, 64, 64)
+		drawImage(menu.icons[e.icon], 45, int32(y)-44, 64, 64, color{1, 1, 1, 1})
 
 		if e.callbackValue != nil {
 			video.font.Printf(float32(w)-250, y, 0.5, e.callbackValue())

@@ -229,12 +229,17 @@ func renderNotifications() {
 	}
 }
 
+type color struct {
+	r, g, b, a float32
+}
+
 // Draw a textured quad on the screen
-func drawImage(image uint32, x, y, w, h int32) {
+func drawImage(image uint32, x, y, w, h int32, c color) {
 	_, fbh := window.GetFramebufferSize()
 	gl.UseProgram(video.program)
 	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
 	gl.Uniform1f(maskUniform, 0.0)
+	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), c.r, c.g, c.b, c.a)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.Viewport(x, int32(fbh)-y-h, w, h)
@@ -417,6 +422,7 @@ var fragmentShader = `
 
 uniform sampler2D tex;
 uniform float mask;
+uniform vec4 texColor;
 
 in vec2 fragTexCoord;
 
@@ -437,7 +443,7 @@ void main() {
 	vec4 c = vec4(0.2, 0.2, 0.4, 1.0);
 	vec4 color = texture(tex, fragTexCoord);
   vec4 grayscale = toGrayscale(color);
-	outputColor = mix(color, colorize(grayscale, c), mask);
+	outputColor = texColor * mix(color, colorize(grayscale, c), mask);
 }
 ` + "\x00"
 

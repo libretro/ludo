@@ -51,12 +51,15 @@ func buildTabs() entry {
 		if i == list.ptr {
 			e.x = float32(w / 2)
 			e.labelAlpha = 1.0
+			e.iconAlpha = 1.0
 		} else if i < list.ptr {
 			e.x = float32(w/2) + float32(menu.spacing*2*(i-list.ptr)-menu.spacing*2)
 			e.labelAlpha = 0
+			e.iconAlpha = 0.5
 		} else if i > list.ptr {
 			e.x = float32(w/2) + float32(menu.spacing*2*(i-list.ptr)+menu.spacing*2)
 			e.labelAlpha = 0
+			e.iconAlpha = 0.5
 		}
 	}
 
@@ -70,21 +73,24 @@ func animateTabs() {
 	for i := range currentMenu.children {
 		e := &currentMenu.children[i]
 
-		var nx float32
-		var nla float32
+		var x, la, ia float32
 		if i == currentMenu.ptr {
-			nx = float32(w / 2)
-			nla = 1.0
+			x = float32(w / 2)
+			la = 1.0
+			ia = 1.0
 		} else if i < currentMenu.ptr {
-			nx = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)-menu.spacing*2)
-			nla = 0
+			x = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)-menu.spacing*2)
+			la = 0
+			ia = 0.5
 		} else if i > currentMenu.ptr {
-			nx = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)+menu.spacing*2)
-			nla = 0
+			x = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)+menu.spacing*2)
+			la = 0
+			ia = 0.5
 		}
 
-		menu.tweens[&e.x] = gween.New(e.x, nx, 0.15, ease.OutSine)
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, nla, 0.15, ease.OutSine)
+		menu.tweens[&e.x] = gween.New(e.x, x, 0.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, la, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, ia, 0.15, ease.OutSine)
 	}
 }
 
@@ -128,6 +134,6 @@ func renderTabs() {
 		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
 		video.font.Printf(e.x, float32(h/2)+100, 0.5, e.label)
 
-		drawImage(menu.icons[e.icon], int32(e.x)-64, int32(h/2)-64, 128, 128)
+		drawImage(menu.icons[e.icon], int32(e.x)-64, int32(h/2)-64, 128, 128, color{1, 1, 1, e.iconAlpha})
 	}
 }
