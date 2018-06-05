@@ -113,7 +113,8 @@ func verticalRender() {
 		drawImage(menu.icons[e.icon], 45, int32(e.y)-44, 64, 64, color{1, 1, 1, e.iconAlpha})
 
 		if e.callbackValue != nil {
-			video.font.Printf(float32(w)-250, e.y, 0.5, e.callbackValue())
+			lw := video.font.Width(0.5, e.callbackValue())
+			video.font.Printf(float32(w)-lw-70, e.y, 0.5, e.callbackValue())
 		}
 	}
 }
