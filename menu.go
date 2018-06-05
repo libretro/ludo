@@ -9,7 +9,7 @@ type menuCallbackIncr func(int)
 type menuCallbackGetValue func() string
 
 type entry struct {
-	x, y          float32
+	x             float32
 	label         string
 	labelAlpha    float32
 	icon          string
