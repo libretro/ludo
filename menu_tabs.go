@@ -44,7 +44,14 @@ func buildTabs() entry {
 		},
 	})
 
+	initTabs(list)
+
+	return list
+}
+
+func initTabs(list entry) {
 	w, _ := window.GetFramebufferSize()
+
 	for i := range list.children {
 		e := &list.children[i]
 
@@ -62,8 +69,6 @@ func buildTabs() entry {
 			e.iconAlpha = 0.5
 		}
 	}
-
-	return list
 }
 
 func animateTabs() {

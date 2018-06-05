@@ -38,5 +38,7 @@ func buildExplorer(path string) entry {
 		})
 	}
 
+	initEntries(list)
+
 	return list
 }

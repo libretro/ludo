@@ -27,5 +27,7 @@ func buildSettings() entry {
 		})
 	}
 
+	initEntries(list)
+
 	return list
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/tanema/gween"
+	"github.com/tanema/gween/ease"
 )
 
 type menuCallback func()
@@ -9,13 +10,11 @@ type menuCallbackIncr func(int)
 type menuCallbackGetValue func() string
 
 type entry struct {
-	x             float32
+	x, y          float32
 	label         string
 	labelAlpha    float32
 	icon          string
 	iconAlpha     float32
-	scroll        float32
-	scrollTween   *gween.Tween
 	ptr           int
 	callback      menuCallback
 	callbackValue menuCallbackGetValue
@@ -37,9 +36,6 @@ func menuRender() {
 	fullscreenViewport()
 
 	currentMenu := &menu.stack[len(menu.stack)-1]
-	if currentMenu.scrollTween != nil {
-		currentMenu.scroll, _ = currentMenu.scrollTween.Update(1.0 / 60.0)
-	}
 
 	for e, t := range menu.tweens {
 		var finished bool
@@ -52,6 +48,53 @@ func menuRender() {
 	currentMenu.render()
 }
 
+func initEntries(list entry) {
+	for i := range list.children {
+		e := &list.children[i]
+
+		if i == list.ptr {
+			e.y = 200 + float32(menu.spacing*(i-list.ptr))
+			e.labelAlpha = 1.0
+			e.iconAlpha = 1.0
+		} else if i < list.ptr {
+			e.y = 0 + float32(menu.spacing*(i-list.ptr))
+			e.labelAlpha = 0.5
+			e.iconAlpha = 0.5
+		} else if i > list.ptr {
+			e.y = 250 + float32(menu.spacing*(i-list.ptr))
+			e.labelAlpha = 0.5
+			e.iconAlpha = 0.5
+		}
+	}
+}
+
+func animateEntries() {
+	currentMenu := &menu.stack[len(menu.stack)-1]
+
+	for i := range currentMenu.children {
+		e := &currentMenu.children[i]
+
+		var y, la, ia float32
+		if i == currentMenu.ptr {
+			y = 200 + float32(menu.spacing*(i-currentMenu.ptr))
+			la = 1.0
+			ia = 1.0
+		} else if i < currentMenu.ptr {
+			y = 0 + float32(menu.spacing*(i-currentMenu.ptr))
+			la = 0.5
+			ia = 0.5
+		} else if i > currentMenu.ptr {
+			y = 250 + float32(menu.spacing*(i-currentMenu.ptr))
+			la = 0.5
+			ia = 0.5
+		}
+
+		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, la, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, ia, 0.15, ease.OutSine)
+	}
+}
+
 func verticalRender() {
 	w, h := window.GetFramebufferSize()
 	currentMenu := &menu.stack[len(menu.stack)-1]
@@ -59,24 +102,18 @@ func verticalRender() {
 	video.font.SetColor(1, 1, 1, 1.0)
 	video.font.Printf(60, 20+60, 0.5, currentMenu.label)
 
-	for i, e := range currentMenu.children {
-		y := -currentMenu.scroll + 20 + float32(menu.spacing*(i+2))
-
-		if y < 0 || y > float32(h) {
+	for _, e := range currentMenu.children {
+		if e.y < -128 || e.y > float32(h+128) {
 			continue
 		}
 
-		if i == currentMenu.ptr {
-			video.font.SetColor(0.0, 1.0, 0.0, 1.0)
-		} else {
-			video.font.SetColor(0.6, 0.6, 0.9, 1.0)
-		}
-		video.font.Printf(110, y, 0.5, e.label)
+		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
+		video.font.Printf(110, e.y, 0.5, e.label)
 
-		drawImage(menu.icons[e.icon], 45, int32(y)-44, 64, 64, color{1, 1, 1, 1})
+		drawImage(menu.icons[e.icon], 45, int32(e.y)-44, 64, 64, color{1, 1, 1, 1})
 
 		if e.callbackValue != nil {
-			video.font.Printf(float32(w)-250, y, 0.5, e.callbackValue())
+			video.font.Printf(float32(w)-250, e.y, 0.5, e.callbackValue())
 		}
 	}
 }

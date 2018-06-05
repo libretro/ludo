@@ -59,5 +59,7 @@ func buildQuickMenu() entry {
 		},
 	})
 
+	initEntries(list)
+
 	return list
 }

@@ -60,5 +60,7 @@ func buildMainMenu() entry {
 		},
 	})
 
+	initEntries(list)
+
 	return list
 }

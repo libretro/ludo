@@ -2,8 +2,6 @@ package main
 
 import (
 	"github.com/kivutar/go-playthemall/libretro"
-	"github.com/tanema/gween"
-	"github.com/tanema/gween/ease"
 )
 
 func menuInput() {
@@ -23,7 +21,7 @@ func verticalInput() {
 		if currentMenu.ptr >= len(currentMenu.children) {
 			currentMenu.ptr = 0
 		}
-		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*menu.spacing), 0.15, ease.OutSine)
+		animateEntries()
 		menu.inputCooldown = 10
 	}
 
@@ -32,7 +30,7 @@ func verticalInput() {
 		if currentMenu.ptr < 0 {
 			currentMenu.ptr = len(currentMenu.children) - 1
 		}
-		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*menu.spacing), 0.10, ease.OutSine)
+		animateEntries()
 		menu.inputCooldown = 10
 	}
 
