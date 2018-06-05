@@ -136,8 +136,9 @@ func renderTabs() {
 			continue
 		}
 
+		lw := video.font.Width(0.5, e.label)
 		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		video.font.Printf(e.x, float32(h/2)+100, 0.5, e.label)
+		video.font.Printf(e.x-lw/2, float32(h/2)+100, 0.5, e.label)
 
 		drawImage(menu.icons[e.icon], int32(e.x)-64, int32(h/2)-64, 128, 128, color{1, 1, 1, e.iconAlpha})
 	}
