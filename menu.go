@@ -70,13 +70,13 @@ func buildExplorer(path string) entry {
 }
 
 func buildSettings() entry {
-	var menu entry
-	menu.label = "Settings"
+	var list entry
+	list.label = "Settings"
 
 	fields := structs.Fields(&settings)
 	for _, f := range fields {
 		f := f
-		menu.children = append(menu.children, entry{
+		list.children = append(list.children, entry{
 			label: f.Tag("label"),
 			icon:  "subsetting",
 			callbackIncr: func(direction int) {
@@ -88,7 +88,7 @@ func buildSettings() entry {
 		})
 	}
 
-	return menu
+	return list
 }
 
 func buildMainMenu() entry {
