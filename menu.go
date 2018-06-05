@@ -11,6 +11,7 @@ type menuCallbackGetValue func() string
 type entry struct {
 	x, y          float32
 	label         string
+	labelAlpha    float32
 	icon          string
 	scroll        float32
 	scrollTween   *gween.Tween
