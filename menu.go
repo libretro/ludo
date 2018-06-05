@@ -15,7 +15,6 @@ import (
 type menuCallback func()
 type menuCallbackIncr func(int)
 type menuCallbackGetValue func() string
-
 type entry struct {
 	label         string
 	icon          string
@@ -26,6 +25,8 @@ type entry struct {
 	callbackValue menuCallbackGetValue
 	callbackIncr  menuCallbackIncr
 	children      []entry
+	input         func()
+	render        func()
 }
 
 var menu struct {
@@ -38,6 +39,8 @@ var menu struct {
 func buildExplorer(path string) entry {
 	var list entry
 	list.label = "Explorer"
+	list.input = verticalInput
+	list.render = verticalRender
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -72,6 +75,8 @@ func buildExplorer(path string) entry {
 func buildSettings() entry {
 	var list entry
 	list.label = "Settings"
+	list.input = verticalInput
+	list.render = verticalRender
 
 	fields := structs.Fields(&settings)
 	for _, f := range fields {
@@ -91,9 +96,52 @@ func buildSettings() entry {
 	return list
 }
 
+func buildTabs() entry {
+	var list entry
+	list.label = "Play Them All"
+	list.input = horizontalInput
+	list.render = tabsRender
+
+	list.children = append(list.children, entry{
+		label: "Main Menu",
+		icon:  "setting",
+		callback: func() {
+			menu.stack = append(menu.stack, buildMainMenu())
+		},
+	})
+
+	list.children = append(list.children, entry{
+		label: "Settings",
+		icon:  "setting",
+		callback: func() {
+			menu.stack = append(menu.stack, buildSettings())
+		},
+	})
+
+	list.children = append(list.children, entry{
+		label: "Nintendo - Super Nintendo Entertainment System",
+		icon:  "Nintendo - Super Nintendo Entertainment System",
+		callback: func() {
+			menu.stack = append(menu.stack, buildSettings())
+		},
+	})
+
+	list.children = append(list.children, entry{
+		label: "Sega - Mega Drive - Genesis",
+		icon:  "Sega - Mega Drive - Genesis",
+		callback: func() {
+			menu.stack = append(menu.stack, buildSettings())
+		},
+	})
+
+	return list
+}
+
 func buildMainMenu() entry {
 	var list entry
 	list.label = "Main list"
+	list.input = verticalInput
+	list.render = verticalRender
 
 	usr, _ := user.Current()
 
@@ -153,6 +201,8 @@ func buildMainMenu() entry {
 func buildQuickMenu() entry {
 	var list entry
 	list.label = "Quick Menu"
+	list.input = verticalInput
+	list.render = verticalRender
 
 	list.children = append(list.children, entry{
 		label: "Resume",
@@ -212,6 +262,11 @@ func buildQuickMenu() entry {
 
 func menuInput() {
 	currentMenu := &menu.stack[len(menu.stack)-1]
+	currentMenu.input()
+}
+
+func verticalInput() {
+	currentMenu := &menu.stack[len(menu.stack)-1]
 
 	if menu.inputCooldown > 0 {
 		menu.inputCooldown--
@@ -234,6 +289,40 @@ func menuInput() {
 		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*menu.spacing), 0.10, ease.OutSine)
 		menu.inputCooldown = 10
 	}
+
+	commonInput()
+}
+
+func horizontalInput() {
+	currentMenu := &menu.stack[len(menu.stack)-1]
+
+	if menu.inputCooldown > 0 {
+		menu.inputCooldown--
+	}
+
+	if newState[0][libretro.DeviceIDJoypadRight] && menu.inputCooldown == 0 {
+		currentMenu.ptr++
+		if currentMenu.ptr >= len(currentMenu.children) {
+			currentMenu.ptr = 0
+		}
+		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*menu.spacing*3), 0.15, ease.OutSine)
+		menu.inputCooldown = 10
+	}
+
+	if newState[0][libretro.DeviceIDJoypadLeft] && menu.inputCooldown == 0 {
+		currentMenu.ptr--
+		if currentMenu.ptr < 0 {
+			currentMenu.ptr = len(currentMenu.children) - 1
+		}
+		currentMenu.scrollTween = gween.New(currentMenu.scroll, float32(currentMenu.ptr*menu.spacing*3), 0.10, ease.OutSine)
+		menu.inputCooldown = 10
+	}
+
+	commonInput()
+}
+
+func commonInput() {
+	currentMenu := &menu.stack[len(menu.stack)-1]
 
 	// OK
 	if released[0][libretro.DeviceIDJoypadA] {
@@ -264,14 +353,20 @@ func menuInput() {
 	}
 }
 
-func renderMenuList() {
-	w, h := window.GetFramebufferSize()
+func menuRender() {
 	fullscreenViewport()
 
 	currentMenu := &menu.stack[len(menu.stack)-1]
 	if currentMenu.scrollTween != nil {
 		currentMenu.scroll, _ = currentMenu.scrollTween.Update(1.0 / 60.0)
 	}
+
+	currentMenu.render()
+}
+
+func verticalRender() {
+	w, h := window.GetFramebufferSize()
+	currentMenu := &menu.stack[len(menu.stack)-1]
 
 	video.font.SetColor(1, 1, 1, 1.0)
 	video.font.Printf(60, 20+60, 0.5, currentMenu.label)
@@ -298,6 +393,28 @@ func renderMenuList() {
 	}
 }
 
+func tabsRender() {
+	w, h := window.GetFramebufferSize()
+	currentMenu := &menu.stack[len(menu.stack)-1]
+
+	for i, e := range currentMenu.children {
+		x := float32(w/2) - currentMenu.scroll + float32(menu.spacing*3*i)
+
+		if x < 0 || x > float32(w) {
+			continue
+		}
+
+		if i == currentMenu.ptr {
+			video.font.SetColor(0.0, 1.0, 0.0, 1.0)
+		} else {
+			video.font.SetColor(0.6, 0.6, 0.9, 1.0)
+		}
+		video.font.Printf(x, float32(h/2), 0.5, e.label)
+
+		drawImage(menu.icons[e.icon], int32(x)-64, int32(h/2)-64, 64, 64)
+	}
+}
+
 func contextReset() {
 	menu.spacing = 70
 
@@ -305,19 +422,23 @@ func contextReset() {
 		"file":       newImage("assets/file.png"),
 		"folder":     newImage("assets/folder.png"),
 		"subsetting": newImage("assets/subsetting.png"),
+		"setting":    newImage("assets/setting.png"),
 		"resume":     newImage("assets/resume.png"),
 		"reset":      newImage("assets/reset.png"),
 		"loadstate":  newImage("assets/loadstate.png"),
 		"savestate":  newImage("assets/savestate.png"),
 		"screenshot": newImage("assets/screenshot.png"),
+		"Nintendo - Super Nintendo Entertainment System": newImage("assets/Nintendo - Super Nintendo Entertainment System.png"),
+		"Sega - Mega Drive - Genesis":                    newImage("assets/Sega - Mega Drive - Genesis.png"),
 	}
 }
 
 func menuInit() {
 	if g.coreRunning {
+		menu.stack = append(menu.stack, buildTabs())
 		menu.stack = append(menu.stack, buildMainMenu())
 		menu.stack = append(menu.stack, buildQuickMenu())
 	} else {
-		menu.stack = append(menu.stack, buildMainMenu())
+		menu.stack = append(menu.stack, buildTabs())
 	}
 }

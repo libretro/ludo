@@ -29,6 +29,7 @@ func init() {
 	// Create base folders
 	usr, _ := user.Current()
 	os.Mkdir(usr.HomeDir+"/.playthemall/", 0777)
+	os.Mkdir(usr.HomeDir+"/.playthemall/playlists/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/savefiles/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/savestates/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/screenshots/", 0777)
@@ -97,7 +98,7 @@ func main() {
 			inputPoll()
 			menuInput()
 			videoRender()
-			renderMenuList()
+			menuRender()
 		}
 		renderNotifications()
 		window.SwapBuffers()
