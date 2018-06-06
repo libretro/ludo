@@ -10,7 +10,7 @@ type menuCallbackIncr func(int)
 type menuCallbackGetValue func() string
 
 type entry struct {
-	x, y          float32
+	x, y, scale   float32
 	label         string
 	labelAlpha    float32
 	icon          string
@@ -56,14 +56,17 @@ func initEntries(list entry) {
 			e.y = 200 + float32(menu.spacing*(i-list.ptr))
 			e.labelAlpha = 1.0
 			e.iconAlpha = 1.0
+			e.scale = 1.0
 		} else if i < list.ptr {
 			e.y = 0 + float32(menu.spacing*(i-list.ptr))
 			e.labelAlpha = 0.5
 			e.iconAlpha = 0.5
+			e.scale = 0.5
 		} else if i > list.ptr {
 			e.y = 250 + float32(menu.spacing*(i-list.ptr))
 			e.labelAlpha = 0.5
 			e.iconAlpha = 0.5
+			e.scale = 0.5
 		}
 	}
 }
@@ -74,24 +77,28 @@ func animateEntries() {
 	for i := range currentMenu.children {
 		e := &currentMenu.children[i]
 
-		var y, la, ia float32
+		var y, la, a, s float32
 		if i == currentMenu.ptr {
 			y = 200 + float32(menu.spacing*(i-currentMenu.ptr))
 			la = 1.0
-			ia = 1.0
+			a = 1.0
+			s = 1.0
 		} else if i < currentMenu.ptr {
 			y = 0 + float32(menu.spacing*(i-currentMenu.ptr))
 			la = 0.5
-			ia = 0.5
+			a = 0.5
+			s = 0.5
 		} else if i > currentMenu.ptr {
 			y = 250 + float32(menu.spacing*(i-currentMenu.ptr))
 			la = 0.5
-			ia = 0.5
+			a = 0.5
+			s = 0.5
 		}
 
 		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, la, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, ia, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
+		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
 	}
 }
 
@@ -107,10 +114,9 @@ func verticalRender() {
 			continue
 		}
 
+		drawImage(menu.icons[e.icon], 88-64*e.scale, e.y-12-64*e.scale, 128, 128, e.scale, color{1, 1, 1, e.iconAlpha})
 		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		video.font.Printf(110, e.y, 0.5, e.label)
-
-		drawImage(menu.icons[e.icon], 45, int32(e.y)-44, 64, 64, color{1, 1, 1, e.iconAlpha})
+		video.font.Printf(150, e.y, 0.5, e.label)
 
 		if e.callbackValue != nil {
 			lw := video.font.Width(0.5, e.callbackValue())

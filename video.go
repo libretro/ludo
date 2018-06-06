@@ -229,7 +229,7 @@ type color struct {
 }
 
 // Draw a textured quad on the screen
-func drawImage(image uint32, x, y, w, h int32, c color) {
+func drawImage(image uint32, x, y, w, h float32, scale float32, c color) {
 	_, fbh := window.GetFramebufferSize()
 	gl.UseProgram(video.program)
 	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
@@ -237,7 +237,7 @@ func drawImage(image uint32, x, y, w, h int32, c color) {
 	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), c.r, c.g, c.b, c.a)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.Viewport(x, int32(fbh)-y-h, w, h)
+	gl.Viewport(int32(x), int32(fbh)-int32(y)-int32(h*scale), int32(w*scale), int32(h*scale))
 	gl.BindVertexArray(video.vao)
 	gl.BindTexture(gl.TEXTURE_2D, image)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
