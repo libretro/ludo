@@ -10,18 +10,18 @@ type menuCallbackIncr func(int)
 type menuCallbackGetValue func() string
 
 type entry struct {
-	x, y, scale   float32
-	label         string
-	labelAlpha    float32
-	icon          string
-	iconAlpha     float32
-	ptr           int
-	callback      menuCallback
-	callbackValue menuCallbackGetValue
-	callbackIncr  menuCallbackIncr
-	children      []entry
-	input         func()
-	render        func()
+	x, y, scale     float32
+	label, subLabel string
+	labelAlpha      float32
+	icon            string
+	iconAlpha       float32
+	ptr             int
+	callback        menuCallback
+	callbackValue   menuCallbackGetValue
+	callbackIncr    menuCallbackIncr
+	children        []entry
+	input           func()
+	render          func()
 }
 
 var menu struct {

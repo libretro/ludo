@@ -21,24 +21,27 @@ func buildTabs() entry {
 	})
 
 	list.children = append(list.children, entry{
-		label: "Settings",
-		icon:  "setting",
+		label:    "Settings",
+		subLabel: "Configure Play Them All",
+		icon:     "setting",
 		callback: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
 
 	list.children = append(list.children, entry{
-		label: "Nintendo - Super Nintendo Entertainment System",
-		icon:  "Nintendo - Super Nintendo Entertainment System",
+		label:    "Nintendo - Super Nintendo Entertainment System",
+		subLabel: "10 Games - 5 Favorites",
+		icon:     "Nintendo - Super Nintendo Entertainment System",
 		callback: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
 
 	list.children = append(list.children, entry{
-		label: "Sega - Mega Drive - Genesis",
-		icon:  "Sega - Mega Drive - Genesis",
+		label:    "Sega - Mega Drive - Genesis",
+		subLabel: "10 Games - 5 Favorites",
+		icon:     "Sega - Mega Drive - Genesis",
 		callback: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
@@ -64,12 +67,12 @@ func initTabs(list entry) {
 			e.x = float32(w/2) + float32(menu.spacing*2*(i-list.ptr)-menu.spacing*2)
 			e.labelAlpha = 0
 			e.iconAlpha = 0.5
-			e.scale = 0.5
+			e.scale = 0.25
 		} else if i > list.ptr {
 			e.x = float32(w/2) + float32(menu.spacing*2*(i-list.ptr)+menu.spacing*2)
 			e.labelAlpha = 0
 			e.iconAlpha = 0.5
-			e.scale = 0.5
+			e.scale = 0.25
 		}
 	}
 }
@@ -91,12 +94,12 @@ func animateTabs() {
 			x = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)-menu.spacing*2)
 			la = 0
 			a = 0.5
-			s = 0.5
+			s = 0.25
 		} else if i > currentMenu.ptr {
 			x = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)+menu.spacing*2)
 			la = 0
 			a = 0.5
-			s = 0.5
+			s = 0.25
 		}
 
 		menu.tweens[&e.x] = gween.New(e.x, x, 0.15, ease.OutSine)
@@ -143,12 +146,14 @@ func renderTabs() {
 			continue
 		}
 
-		lw := video.font.Width(0.5, e.label)
 		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		video.font.Printf(e.x-lw/2, float32(h/2)+100, 0.5, e.label)
+		lw := video.font.Width(0.75, e.label)
+		video.font.Printf(e.x-lw/2, float32(h/2)+180, 0.75, e.label)
+		lw = video.font.Width(0.5, e.subLabel)
+		video.font.Printf(e.x-lw/2, float32(h/2)+260, 0.5, e.subLabel)
 
 		drawImage(menu.icons[e.icon],
-			e.x-64*e.scale, float32(h)/2-64*e.scale,
-			128, 128, e.scale, color{1, 1, 1, e.iconAlpha})
+			e.x-128*e.scale, float32(h)/2-128*e.scale,
+			256, 256, e.scale, color{1, 1, 1, e.iconAlpha})
 	}
 }
