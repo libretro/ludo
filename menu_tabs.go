@@ -141,6 +141,13 @@ func renderTabs() {
 	w, h := window.GetFramebufferSize()
 	currentMenu := &menu.stack[len(menu.stack)-1]
 
+	drawPolygon(
+		0, 0,
+		float32(w)/2, 0,
+		0, float32(h),
+		float32(w), float32(h),
+		color{1, 1, 0, 1})
+
 	for _, e := range currentMenu.children {
 		if e.x < -128 || e.x > float32(w+128) {
 			continue
