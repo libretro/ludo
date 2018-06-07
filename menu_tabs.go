@@ -30,7 +30,7 @@ func buildTabs() entry {
 	})
 
 	list.children = append(list.children, entry{
-		label:    "Nintendo - Super Nintendo Entertainment System",
+		label:    "Super NES",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
 		callback: func() {
@@ -39,7 +39,7 @@ func buildTabs() entry {
 	})
 
 	list.children = append(list.children, entry{
-		label:    "Sega - Mega Drive - Genesis",
+		label:    "Mega Drive - Genesis",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
 		callback: func() {
