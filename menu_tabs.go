@@ -63,16 +63,19 @@ func initTabs(list entry) {
 			e.labelAlpha = 1
 			e.iconAlpha = 1
 			e.scale = 1
+			e.width = 1000
 		} else if i < list.ptr {
 			e.x = float32(w/2) + float32(menu.spacing*2*(i-list.ptr)-menu.spacing*2)
 			e.labelAlpha = 0
 			e.iconAlpha = 0.5
 			e.scale = 0.25
+			e.width = 128
 		} else if i > list.ptr {
 			e.x = float32(w/2) + float32(menu.spacing*2*(i-list.ptr)+menu.spacing*2)
 			e.labelAlpha = 0
 			e.iconAlpha = 0.5
 			e.scale = 0.25
+			e.width = 128
 		}
 	}
 }
@@ -84,29 +87,34 @@ func animateTabs() {
 	for i := range currentMenu.children {
 		e := &currentMenu.children[i]
 
-		var x, la, a, s float32
+		var x, labelAlpha, iconAlpha, scale, width float32
 		if i == currentMenu.ptr {
 			x = float32(w / 2)
-			la = 1
-			a = 1
-			s = 1
+			labelAlpha = 1
+			iconAlpha = 1
+			scale = 1
+			width = 1000
 		} else if i < currentMenu.ptr {
 			x = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)-menu.spacing*2)
-			la = 0
-			a = 0.5
-			s = 0.25
+			labelAlpha = 0
+			iconAlpha = 0.5
+			scale = 0.25
+			width = 128
 		} else if i > currentMenu.ptr {
 			x = float32(w/2) + float32(menu.spacing*2*(i-currentMenu.ptr)+menu.spacing*2)
-			la = 0
-			a = 0.5
-			s = 0.25
+			labelAlpha = 0
+			iconAlpha = 0.5
+			scale = 0.25
+			width = 128
 		}
 
 		menu.tweens[&e.x] = gween.New(e.x, x, 0.15, ease.OutSine)
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, la, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
+		menu.tweens[&e.width] = gween.New(e.width, width, 0.15, ease.OutSine)
 	}
+	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(currentMenu.ptr*128), 0.15, ease.OutSine)
 }
 
 func inputTabs() {
@@ -141,12 +149,18 @@ func renderTabs() {
 	w, h := window.GetFramebufferSize()
 	currentMenu := &menu.stack[len(menu.stack)-1]
 
-	drawPolygon(
-		0, 0,
-		float32(w)/2, 0,
-		0, float32(h),
-		float32(w), float32(h),
-		color{1, 1, 0, 1})
+	var stackWidth float32 = 256
+	for i, e := range currentMenu.children {
+
+		drawPolygon(
+			-menu.scroll+stackWidth, 0,
+			-menu.scroll+stackWidth+e.width, 0,
+			-menu.scroll+stackWidth+400, float32(h),
+			-menu.scroll+stackWidth+400+e.width, float32(h),
+			color{0.5, 0.5, float32(i) / 10, 1})
+
+		stackWidth += e.width
+	}
 
 	for _, e := range currentMenu.children {
 		if e.x < -128 || e.x > float32(w+128) {

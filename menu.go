@@ -11,6 +11,7 @@ type menuCallbackGetValue func() string
 
 type entry struct {
 	x, y, scale     float32
+	width           float32
 	label, subLabel string
 	labelAlpha      float32
 	icon            string
@@ -30,6 +31,7 @@ var menu struct {
 	inputCooldown int
 	spacing       int
 	tweens        map[*float32]*gween.Tween
+	scroll        float32
 }
 
 func menuRender() {
