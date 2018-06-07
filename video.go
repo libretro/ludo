@@ -20,6 +20,7 @@ var video struct {
 	vao     uint32
 	vbo     uint32
 	texID   uint32
+	white   uint32
 	pitch   int32
 	pixFmt  uint32
 	pixType uint32

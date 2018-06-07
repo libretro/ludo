@@ -8,8 +8,6 @@ import (
 	"github.com/go-gl/gl/all-core/gl"
 )
 
-var white = newWhite()
-
 type color struct {
 	r, g, b, a float32
 }
@@ -57,7 +55,7 @@ func drawPolygon(x1, y1, x2, y2, x3, y3, x4, y4 float32, c color) {
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 	gl.BindVertexArray(video.vao)
-	gl.BindTexture(gl.TEXTURE_2D, white)
+	gl.BindTexture(gl.TEXTURE_2D, video.white)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 	gl.BindVertexArray(0)

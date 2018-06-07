@@ -127,6 +127,7 @@ func verticalRender() {
 
 func contextReset() {
 	menu.spacing = 70
+	video.white = newWhite()
 
 	menu.icons = map[string]uint32{
 		"file":       newImage("assets/file.png"),
