@@ -2,11 +2,13 @@ package main
 
 import "os/user"
 
-func buildMainMenu() entry {
-	var list entry
+type screenMain struct {
+	entry
+}
+
+func buildMainMenu() screen {
+	var list screenMain
 	list.label = "Main Menu"
-	list.input = verticalInput
-	list.render = verticalRender
 
 	usr, _ := user.Current()
 
@@ -60,7 +62,15 @@ func buildMainMenu() entry {
 		},
 	})
 
-	initEntries(list)
+	initEntries(list.entry)
 
-	return list
+	return &list
+}
+
+func (main *screenMain) update() {
+	verticalInput(&main.entry)
+}
+
+func (main *screenMain) render() {
+	verticalRender(&main.entry)
 }

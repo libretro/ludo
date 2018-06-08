@@ -5,11 +5,13 @@ import (
 	"path/filepath"
 )
 
-func buildExplorer(path string) entry {
-	var list entry
+type screenExplorer struct {
+	entry
+}
+
+func buildExplorer(path string) screen {
+	var list screenExplorer
 	list.label = "Explorer"
-	list.input = verticalInput
-	list.render = verticalRender
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -38,7 +40,15 @@ func buildExplorer(path string) entry {
 		})
 	}
 
-	initEntries(list)
+	initEntries(list.entry)
 
-	return list
+	return &list
+}
+
+func (explorer *screenExplorer) update() {
+	verticalInput(&explorer.entry)
+}
+
+func (explorer *screenExplorer) render() {
+	verticalRender(&explorer.entry)
 }

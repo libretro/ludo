@@ -21,12 +21,15 @@ type entry struct {
 	callbackValue   menuCallbackGetValue
 	callbackIncr    menuCallbackIncr
 	children        []entry
-	input           func()
-	render          func()
+}
+
+type screen interface {
+	update()
+	render()
 }
 
 var menu struct {
-	stack         []entry
+	stack         []screen
 	icons         map[string]uint32
 	inputCooldown int
 	spacing       int
@@ -37,8 +40,6 @@ var menu struct {
 func menuRender() {
 	fullscreenViewport()
 
-	currentMenu := &menu.stack[len(menu.stack)-1]
-
 	for e, t := range menu.tweens {
 		var finished bool
 		*e, finished = t.Update(1.0 / 60.0)
@@ -47,7 +48,15 @@ func menuRender() {
 		}
 	}
 
-	currentMenu.render()
+	cur := len(menu.stack) - 1
+	for i := cur - 1; i <= cur+1; i++ {
+		if i < 0 || i > cur {
+			continue
+		}
+
+		menu := menu.stack[i]
+		menu.render()
+	}
 }
 
 func initEntries(list entry) {
@@ -73,25 +82,23 @@ func initEntries(list entry) {
 	}
 }
 
-func animateEntries() {
-	currentMenu := &menu.stack[len(menu.stack)-1]
-
-	for i := range currentMenu.children {
-		e := &currentMenu.children[i]
+func animateEntries(list *entry) {
+	for i := range list.children {
+		e := &list.children[i]
 
 		var y, la, a, s float32
-		if i == currentMenu.ptr {
-			y = 200 + float32(menu.spacing*(i-currentMenu.ptr))
+		if i == list.ptr {
+			y = 200 + float32(menu.spacing*(i-list.ptr))
 			la = 1.0
 			a = 1.0
 			s = 1.0
-		} else if i < currentMenu.ptr {
-			y = 0 + float32(menu.spacing*(i-currentMenu.ptr))
+		} else if i < list.ptr {
+			y = 0 + float32(menu.spacing*(i-list.ptr))
 			la = 0.5
 			a = 0.5
 			s = 0.5
-		} else if i > currentMenu.ptr {
-			y = 250 + float32(menu.spacing*(i-currentMenu.ptr))
+		} else if i > list.ptr {
+			y = 250 + float32(menu.spacing*(i-list.ptr))
 			la = 0.5
 			a = 0.5
 			s = 0.5
@@ -104,14 +111,13 @@ func animateEntries() {
 	}
 }
 
-func verticalRender() {
+func verticalRender(list *entry) {
 	w, h := window.GetFramebufferSize()
-	currentMenu := &menu.stack[len(menu.stack)-1]
 
 	video.font.SetColor(1, 1, 1, 1.0)
-	video.font.Printf(60, 20+60, 0.5, currentMenu.label)
+	video.font.Printf(60, 20+60, 0.5, list.label)
 
-	for _, e := range currentMenu.children {
+	for _, e := range list.children {
 		if e.y < -128 || e.y > float32(h+128) {
 			continue
 		}

@@ -6,11 +6,13 @@ import (
 	"github.com/fatih/structs"
 )
 
-func buildSettings() entry {
-	var list entry
+type screenSettings struct {
+	entry
+}
+
+func buildSettings() screen {
+	var list screenSettings
 	list.label = "Settings"
-	list.input = verticalInput
-	list.render = verticalRender
 
 	fields := structs.Fields(&settings)
 	for _, f := range fields {
@@ -27,7 +29,15 @@ func buildSettings() entry {
 		})
 	}
 
-	initEntries(list)
+	initEntries(list.entry)
 
-	return list
+	return &list
+}
+
+func (s *screenSettings) update() {
+	verticalInput(&s.entry)
+}
+
+func (s *screenSettings) render() {
+	verticalRender(&s.entry)
 }

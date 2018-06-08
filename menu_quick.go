@@ -1,10 +1,12 @@
 package main
 
-func buildQuickMenu() entry {
-	var list entry
+type screenQuick struct {
+	entry
+}
+
+func buildQuickMenu() screen {
+	var list screenQuick
 	list.label = "Quick Menu"
-	list.input = verticalInput
-	list.render = verticalRender
 
 	list.children = append(list.children, entry{
 		label: "Resume",
@@ -59,7 +61,15 @@ func buildQuickMenu() entry {
 		},
 	})
 
-	initEntries(list)
+	initEntries(list.entry)
 
-	return list
+	return &list
+}
+
+func (s *screenQuick) update() {
+	verticalInput(&s.entry)
+}
+
+func (s *screenQuick) render() {
+	verticalRender(&s.entry)
 }
