@@ -156,7 +156,7 @@ func (tabs screenTabs) init() {
 			e.labelAlpha = 1
 			e.iconAlpha = 1
 			e.scale = 1
-			e.width = 1000
+			e.width = 1256
 		} else if i < tabs.ptr {
 			e.y = 64
 			e.labelAlpha = 0
@@ -185,7 +185,7 @@ func (tabs screenTabs) animate() {
 			labelAlpha = 1
 			iconAlpha = 1
 			scale = 1
-			width = 1000
+			width = 1256
 		} else if i < tabs.ptr {
 			y = 64
 			labelAlpha = 0
@@ -257,7 +257,7 @@ func (tabs *screenTabs) update() {
 func (tabs screenTabs) render() {
 	_, h := window.GetFramebufferSize()
 
-	var stackWidth float32 = 260
+	var stackWidth float32 = 132
 	for i, e := range tabs.children {
 
 		c := colorful.Hcl(float64(i%12)*30, 0.5, 0.5)
