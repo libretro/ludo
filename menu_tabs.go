@@ -146,27 +146,24 @@ func buildTabs() screen {
 }
 
 func (tabs screenTabs) init() {
-	w, h := window.GetFramebufferSize()
+	_, h := window.GetFramebufferSize()
 
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
 		if i == tabs.ptr {
-			e.x = float32(w / 2)
 			e.y = float32(h / 2)
 			e.labelAlpha = 1
 			e.iconAlpha = 1
 			e.scale = 1
 			e.width = 1000
 		} else if i < tabs.ptr {
-			e.x = float32(w/2) + float32(128*(i-tabs.ptr)-128*2)
 			e.y = 64
 			e.labelAlpha = 0
 			e.iconAlpha = 0.5
 			e.scale = 0.25
 			e.width = 128
 		} else if i > tabs.ptr {
-			e.x = float32(w/2) + float32(128*(i-tabs.ptr)+128*2)
 			e.y = float32(h) - 64
 			e.labelAlpha = 0
 			e.iconAlpha = 0.5
@@ -177,28 +174,25 @@ func (tabs screenTabs) init() {
 }
 
 func (tabs screenTabs) animate() {
-	w, h := window.GetFramebufferSize()
+	_, h := window.GetFramebufferSize()
 
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
-		var x, y, labelAlpha, iconAlpha, scale, width float32
+		var y, labelAlpha, iconAlpha, scale, width float32
 		if i == tabs.ptr {
-			x = float32(w / 2)
 			y = float32(h / 2)
 			labelAlpha = 1
 			iconAlpha = 1
 			scale = 1
 			width = 1000
 		} else if i < tabs.ptr {
-			x = float32(w/2) + float32(128*(i-tabs.ptr)-128*2)
 			y = 64
 			labelAlpha = 0
 			iconAlpha = 0.5
 			scale = 0.25
 			width = 128
 		} else if i > tabs.ptr {
-			x = float32(w/2) + float32(128*(i-tabs.ptr)+128*2)
 			y = float32(h) - 64
 			labelAlpha = 0
 			iconAlpha = 0.5
@@ -206,7 +200,6 @@ func (tabs screenTabs) animate() {
 			width = 128
 		}
 
-		menu.tweens[&e.x] = gween.New(e.x, x, 0.15, ease.OutSine)
 		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
@@ -214,6 +207,12 @@ func (tabs screenTabs) animate() {
 		menu.tweens[&e.width] = gween.New(e.width, width, 0.15, ease.OutSine)
 	}
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.15, ease.OutSine)
+}
+
+func (tabs screenTabs) animateNext() {
+	cur := &tabs.children[tabs.ptr]
+	menu.tweens[&cur.width] = gween.New(cur.width, 4000, 0.25, ease.OutSine)
+	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+800, 0.25, ease.OutSine)
 }
 
 func (tabs *screenTabs) update() {
@@ -239,11 +238,24 @@ func (tabs *screenTabs) update() {
 		menu.inputCooldown = 10
 	}
 
-	commonInput(&tabs.entry)
+	// OK
+	if released[0][libretro.DeviceIDJoypadA] {
+		if tabs.children[tabs.ptr].callback != nil {
+			tabs.animateNext()
+			tabs.children[tabs.ptr].callback()
+		}
+	}
+
+	// Cancel
+	if released[0][libretro.DeviceIDJoypadB] {
+		if len(menu.stack) > 1 {
+			menu.stack = menu.stack[:len(menu.stack)-1]
+		}
+	}
 }
 
 func (tabs screenTabs) render() {
-	w, h := window.GetFramebufferSize()
+	_, h := window.GetFramebufferSize()
 
 	var stackWidth float32 = 260
 	for i, e := range tabs.children {
@@ -258,21 +270,17 @@ func (tabs screenTabs) render() {
 			color{float32(c.R), float32(c.G), float32(c.B), 1})
 
 		stackWidth += e.width
-	}
 
-	for _, e := range tabs.children {
-		if e.x < -128 || e.x > float32(w+128) {
-			continue
-		}
+		x := -menu.scroll + stackWidth - e.width/2 + 400 - 400/(float32(h)/e.y)
 
 		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
 		lw := video.font.Width(0.75, e.label)
-		video.font.Printf(e.x-lw/2, e.y+180, 0.75, e.label)
+		video.font.Printf(x-lw/2, e.y+180, 0.75, e.label)
 		lw = video.font.Width(0.5, e.subLabel)
-		video.font.Printf(e.x-lw/2, e.y+260, 0.5, e.subLabel)
+		video.font.Printf(x-lw/2, e.y+260, 0.5, e.subLabel)
 
 		drawImage(menu.icons[e.icon],
-			e.x-128*e.scale, e.y-128*e.scale,
+			x-128*e.scale, e.y-128*e.scale,
 			256, 256, e.scale, color{1, 1, 1, e.iconAlpha})
 	}
 }
