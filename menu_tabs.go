@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/kivutar/go-playthemall/libretro"
+	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
@@ -33,6 +34,42 @@ func buildTabs() entry {
 		label:    "Super NES",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
+		callback: func() {
+			menu.stack = append(menu.stack, buildSettings())
+		},
+	})
+
+	list.children = append(list.children, entry{
+		label:    "Mega Drive - Genesis",
+		subLabel: "10 Games - 5 Favorites",
+		icon:     "Sega - Mega Drive - Genesis",
+		callback: func() {
+			menu.stack = append(menu.stack, buildSettings())
+		},
+	})
+
+	list.children = append(list.children, entry{
+		label:    "Mega Drive - Genesis",
+		subLabel: "10 Games - 5 Favorites",
+		icon:     "Sega - Mega Drive - Genesis",
+		callback: func() {
+			menu.stack = append(menu.stack, buildSettings())
+		},
+	})
+
+	list.children = append(list.children, entry{
+		label:    "Mega Drive - Genesis",
+		subLabel: "10 Games - 5 Favorites",
+		icon:     "Sega - Mega Drive - Genesis",
+		callback: func() {
+			menu.stack = append(menu.stack, buildSettings())
+		},
+	})
+
+	list.children = append(list.children, entry{
+		label:    "Mega Drive - Genesis",
+		subLabel: "10 Games - 5 Favorites",
+		icon:     "Sega - Mega Drive - Genesis",
 		callback: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
@@ -156,15 +193,17 @@ func renderTabs() {
 	w, h := window.GetFramebufferSize()
 	currentMenu := &menu.stack[len(menu.stack)-1]
 
-	var stackWidth float32 = 256
+	var stackWidth float32 = 260
 	for i, e := range currentMenu.children {
+
+		c := colorful.Hcl(float64(i%12)*30, 0.5, 0.5)
 
 		drawPolygon(
 			-menu.scroll+stackWidth, 0,
 			-menu.scroll+stackWidth+e.width, 0,
 			-menu.scroll+stackWidth+400, float32(h),
 			-menu.scroll+stackWidth+400+e.width, float32(h),
-			color{0.5, 0.5, float32(i) / 10, 1})
+			color{float32(c.R), float32(c.G), float32(c.B), 1})
 
 		stackWidth += e.width
 	}
