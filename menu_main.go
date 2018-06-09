@@ -56,7 +56,6 @@ func buildMainMenu() scene {
 		label: "Help",
 		icon:  "subsetting",
 		callbackOK: func() {
-			list.makeRoomForChildren()
 			notifyAndLog("Menu", "Not implemented yet.")
 		},
 	})
