@@ -62,9 +62,13 @@ func buildMainMenu() screen {
 		},
 	})
 
-	initEntries(list.entry)
+	list.open()
 
 	return &list
+}
+
+func (main *screenMain) open() {
+	initEntries(&main.entry)
 }
 
 func (main *screenMain) update() {

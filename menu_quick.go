@@ -61,9 +61,13 @@ func buildQuickMenu() screen {
 		},
 	})
 
-	initEntries(list.entry)
+	list.open()
 
 	return &list
+}
+
+func (s *screenQuick) open() {
+	initEntries(&s.entry)
 }
 
 func (s *screenQuick) update() {

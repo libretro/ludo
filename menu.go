@@ -24,6 +24,7 @@ type entry struct {
 }
 
 type screen interface {
+	open()
 	update()
 	render()
 }
@@ -58,29 +59,31 @@ func menuRender() {
 	}
 }
 
-func initEntries(list entry) {
+func initEntries(list *entry) {
 	_, h := window.GetFramebufferSize()
 
 	for i := range list.children {
 		e := &list.children[i]
 
 		if i == list.ptr {
-			e.y = float32(h)/2 + float32(80*(i-list.ptr))
+			e.y = float32(h) + 100 + float32(80*(i-list.ptr))
 			e.labelAlpha = 1.0
 			e.iconAlpha = 1.0
 			e.scale = 1.0
 		} else if i < list.ptr {
-			e.y = float32(h)/2 - 100 + float32(80*(i-list.ptr))
+			e.y = float32(h) + 100 - 100 + float32(80*(i-list.ptr))
 			e.labelAlpha = 0.5
 			e.iconAlpha = 0.5
 			e.scale = 0.5
 		} else if i > list.ptr {
-			e.y = float32(h)/2 + 100 + float32(80*(i-list.ptr))
+			e.y = float32(h) + 100 + 100 + float32(80*(i-list.ptr))
 			e.labelAlpha = 0.5
 			e.iconAlpha = 0.5
 			e.scale = 0.5
 		}
 	}
+
+	animateEntries(list)
 }
 
 func animateEntries(list *entry) {

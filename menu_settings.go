@@ -29,13 +29,13 @@ func buildSettings() screen {
 		})
 	}
 
-	list.init()
+	list.open()
 
 	return &list
 }
 
-func (s *screenSettings) init() {
-	initEntries(s.entry)
+func (s *screenSettings) open() {
+	initEntries(&s.entry)
 }
 
 func (s *screenSettings) update() {

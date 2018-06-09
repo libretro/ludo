@@ -40,9 +40,13 @@ func buildExplorer(path string) screen {
 		})
 	}
 
-	initEntries(list.entry)
+	list.open()
 
 	return &list
+}
+
+func (explorer *screenExplorer) open() {
+	initEntries(&explorer.entry)
 }
 
 func (explorer *screenExplorer) update() {

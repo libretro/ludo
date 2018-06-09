@@ -140,12 +140,12 @@ func buildTabs() screen {
 		},
 	})
 
-	list.init()
+	list.open()
 
 	return &list
 }
 
-func (tabs screenTabs) init() {
+func (tabs screenTabs) open() {
 	_, h := window.GetFramebufferSize()
 
 	for i := range tabs.children {
