@@ -37,7 +37,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -46,7 +46,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -55,7 +55,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -64,7 +64,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -73,7 +73,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -82,7 +82,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -91,7 +91,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -100,7 +100,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -109,7 +109,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -118,7 +118,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -127,7 +127,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 
@@ -136,7 +136,7 @@ func buildTabs() scene {
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.stack = append(menu.stack, buildGameList())
 		},
 	})
 

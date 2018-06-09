@@ -40,7 +40,7 @@ type logWriter struct {
 }
 
 func (writer logWriter) Write(bytes []byte) (int, error) {
-	return fmt.Print("OOO" + string(bytes))
+	return fmt.Print(string(bytes))
 }
 
 func captureOutput(f func()) string {
