@@ -16,7 +16,7 @@ func buildMainMenu() screen {
 		list.children = append(list.children, entry{
 			label: "Quick Menu",
 			icon:  "subsetting",
-			callback: func() {
+			callbackOK: func() {
 				menu.stack = append(menu.stack, buildQuickMenu())
 			},
 		})
@@ -25,7 +25,7 @@ func buildMainMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Load Core",
 		icon:  "subsetting",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 		},
 	})
@@ -33,7 +33,7 @@ func buildMainMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Load Game",
 		icon:  "subsetting",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 		},
 	})
@@ -41,7 +41,7 @@ func buildMainMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Settings",
 		icon:  "subsetting",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -49,7 +49,7 @@ func buildMainMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Help",
 		icon:  "subsetting",
-		callback: func() {
+		callbackOK: func() {
 			notifyAndLog("Menu", "Not implemented yet.")
 		},
 	})
@@ -57,7 +57,7 @@ func buildMainMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Quit",
 		icon:  "subsetting",
-		callback: func() {
+		callbackOK: func() {
 			window.SetShouldClose(true)
 		},
 	})

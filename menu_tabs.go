@@ -18,7 +18,7 @@ func buildTabs() screen {
 	list.children = append(list.children, entry{
 		label: "Main Menu",
 		icon:  "setting",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildMainMenu())
 		},
 	})
@@ -27,7 +27,7 @@ func buildTabs() screen {
 		label:    "Settings",
 		subLabel: "Configure Play Them All",
 		icon:     "setting",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -36,7 +36,7 @@ func buildTabs() screen {
 		label:    "Super NES",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -45,7 +45,7 @@ func buildTabs() screen {
 		label:    "Mega Drive - Genesis",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -54,7 +54,7 @@ func buildTabs() screen {
 		label:    "Super NES",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -63,7 +63,7 @@ func buildTabs() screen {
 		label:    "Mega Drive - Genesis",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -72,7 +72,7 @@ func buildTabs() screen {
 		label:    "Super NES",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -81,7 +81,7 @@ func buildTabs() screen {
 		label:    "Mega Drive - Genesis",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -90,7 +90,7 @@ func buildTabs() screen {
 		label:    "Super NES",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -99,7 +99,7 @@ func buildTabs() screen {
 		label:    "Mega Drive - Genesis",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -108,7 +108,7 @@ func buildTabs() screen {
 		label:    "Super NES",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -117,7 +117,7 @@ func buildTabs() screen {
 		label:    "Mega Drive - Genesis",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -126,7 +126,7 @@ func buildTabs() screen {
 		label:    "Super NES",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -135,7 +135,7 @@ func buildTabs() screen {
 		label:    "Mega Drive - Genesis",
 		subLabel: "10 Games - 5 Favorites",
 		icon:     "Sega - Mega Drive - Genesis",
-		callback: func() {
+		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -211,8 +211,8 @@ func (tabs screenTabs) animate() {
 
 func (tabs screenTabs) animateNext() {
 	cur := &tabs.children[tabs.ptr]
-	menu.tweens[&cur.width] = gween.New(cur.width, 4000, 0.25, ease.OutSine)
-	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+800, 0.25, ease.OutSine)
+	menu.tweens[&cur.width] = gween.New(cur.width, 4000, 0.15, ease.OutSine)
+	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+700, 0.15, ease.OutSine)
 }
 
 func (tabs *screenTabs) update() {
@@ -240,9 +240,9 @@ func (tabs *screenTabs) update() {
 
 	// OK
 	if released[0][libretro.DeviceIDJoypadA] {
-		if tabs.children[tabs.ptr].callback != nil {
+		if tabs.children[tabs.ptr].callbackOK != nil {
 			tabs.animateNext()
-			tabs.children[tabs.ptr].callback()
+			tabs.children[tabs.ptr].callbackOK()
 		}
 	}
 
@@ -274,10 +274,10 @@ func (tabs screenTabs) render() {
 		x := -menu.scroll + stackWidth - e.width/2 + 400 - 400/(float32(h)/e.y)
 
 		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		lw := video.font.Width(0.75, e.label)
-		video.font.Printf(x-lw/2, e.y+180, 0.75, e.label)
-		lw = video.font.Width(0.5, e.subLabel)
-		video.font.Printf(x-lw/2, e.y+260, 0.5, e.subLabel)
+		lw := video.font.Width(0.7, e.label)
+		video.font.Printf(x-lw/2, e.y+180, 0.7, e.label)
+		lw = video.font.Width(0.4, e.subLabel)
+		video.font.Printf(x-lw/2, e.y+260, 0.4, e.subLabel)
 
 		drawImage(menu.icons[e.icon],
 			x-128*e.scale, e.y-128*e.scale,

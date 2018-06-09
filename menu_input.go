@@ -38,8 +38,8 @@ func verticalInput(list *entry) {
 func commonInput(list *entry) {
 	// OK
 	if released[0][libretro.DeviceIDJoypadA] {
-		if list.children[list.ptr].callback != nil {
-			list.children[list.ptr].callback()
+		if list.children[list.ptr].callbackOK != nil {
+			list.children[list.ptr].callbackOK()
 		}
 	}
 

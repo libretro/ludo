@@ -11,7 +11,7 @@ func buildQuickMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Resume",
 		icon:  "resume",
-		callback: func() {
+		callbackOK: func() {
 			g.menuActive = !g.menuActive
 		},
 	})
@@ -19,7 +19,7 @@ func buildQuickMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Reset",
 		icon:  "reset",
-		callback: func() {
+		callbackOK: func() {
 			g.core.Reset()
 			g.menuActive = false
 		},
@@ -28,7 +28,7 @@ func buildQuickMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Save State",
 		icon:  "savestate",
-		callback: func() {
+		callbackOK: func() {
 			err := saveState()
 			if err != nil {
 				notifyAndLog("Menu", err.Error())
@@ -41,7 +41,7 @@ func buildQuickMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Load State",
 		icon:  "loadstate",
-		callback: func() {
+		callbackOK: func() {
 			err := loadState()
 			if err != nil {
 				notifyAndLog("Menu", err.Error())
@@ -55,7 +55,7 @@ func buildQuickMenu() screen {
 	list.children = append(list.children, entry{
 		label: "Take Screenshot",
 		icon:  "screenshot",
-		callback: func() {
+		callbackOK: func() {
 			takeScreenshot()
 			notifyAndLog("Menu", "Took a screenshot.")
 		},

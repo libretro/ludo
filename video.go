@@ -218,7 +218,7 @@ func renderNotifications() {
 	video.font.UpdateResolution(w, h)
 	for i, n := range notifications {
 		video.font.SetColor(1.0, 1.0, 0.0, float32(n.frames)/120.0)
-		video.font.Printf(float32(menu.spacing), float32(h-menu.spacing*len(notifications)+menu.spacing*i), 0.5, n.message)
+		video.font.Printf(80, float32(h-80*len(notifications)+80*i), 0.7, n.message)
 	}
 }
 

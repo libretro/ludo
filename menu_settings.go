@@ -29,9 +29,13 @@ func buildSettings() screen {
 		})
 	}
 
-	initEntries(list.entry)
+	list.init()
 
 	return &list
+}
+
+func (s *screenSettings) init() {
+	initEntries(s.entry)
 }
 
 func (s *screenSettings) update() {

@@ -10,14 +10,14 @@ type menuCallbackIncr func(int)
 type menuCallbackGetValue func() string
 
 type entry struct {
-	x, y, scale     float32
+	y, scale        float32
 	width           float32
 	label, subLabel string
 	labelAlpha      float32
 	icon            string
 	iconAlpha       float32
 	ptr             int
-	callback        menuCallback
+	callbackOK      menuCallback
 	callbackValue   menuCallbackGetValue
 	callbackIncr    menuCallbackIncr
 	children        []entry
@@ -32,7 +32,6 @@ var menu struct {
 	stack         []screen
 	icons         map[string]uint32
 	inputCooldown int
-	spacing       int
 	tweens        map[*float32]*gween.Tween
 	scroll        float32
 }
@@ -60,21 +59,23 @@ func menuRender() {
 }
 
 func initEntries(list entry) {
+	_, h := window.GetFramebufferSize()
+
 	for i := range list.children {
 		e := &list.children[i]
 
 		if i == list.ptr {
-			e.y = 200 + float32(menu.spacing*(i-list.ptr))
+			e.y = float32(h)/2 + float32(80*(i-list.ptr))
 			e.labelAlpha = 1.0
 			e.iconAlpha = 1.0
 			e.scale = 1.0
 		} else if i < list.ptr {
-			e.y = 0 + float32(menu.spacing*(i-list.ptr))
+			e.y = float32(h)/2 - 100 + float32(80*(i-list.ptr))
 			e.labelAlpha = 0.5
 			e.iconAlpha = 0.5
 			e.scale = 0.5
 		} else if i > list.ptr {
-			e.y = 250 + float32(menu.spacing*(i-list.ptr))
+			e.y = float32(h)/2 + 100 + float32(80*(i-list.ptr))
 			e.labelAlpha = 0.5
 			e.iconAlpha = 0.5
 			e.scale = 0.5
@@ -83,22 +84,24 @@ func initEntries(list entry) {
 }
 
 func animateEntries(list *entry) {
+	_, h := window.GetFramebufferSize()
+
 	for i := range list.children {
 		e := &list.children[i]
 
 		var y, la, a, s float32
 		if i == list.ptr {
-			y = 200 + float32(menu.spacing*(i-list.ptr))
+			y = float32(h)/2 + float32(80*(i-list.ptr))
 			la = 1.0
 			a = 1.0
 			s = 1.0
 		} else if i < list.ptr {
-			y = 0 + float32(menu.spacing*(i-list.ptr))
+			y = float32(h)/2 - 100 + float32(80*(i-list.ptr))
 			la = 0.5
 			a = 0.5
 			s = 0.5
 		} else if i > list.ptr {
-			y = 250 + float32(menu.spacing*(i-list.ptr))
+			y = float32(h)/2 + 100 + float32(80*(i-list.ptr))
 			la = 0.5
 			a = 0.5
 			s = 0.5
@@ -114,27 +117,23 @@ func animateEntries(list *entry) {
 func verticalRender(list *entry) {
 	w, h := window.GetFramebufferSize()
 
-	video.font.SetColor(1, 1, 1, 1.0)
-	video.font.Printf(60, 20+60, 0.5, list.label)
-
 	for _, e := range list.children {
 		if e.y < -128 || e.y > float32(h+128) {
 			continue
 		}
 
-		drawImage(menu.icons[e.icon], 88-64*e.scale, e.y-12-64*e.scale, 128, 128, e.scale, color{1, 1, 1, e.iconAlpha})
-		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		video.font.Printf(150, e.y, 0.5, e.label)
+		drawImage(menu.icons[e.icon], 120-64*e.scale, e.y-16-64*e.scale, 128, 128, e.scale, color{1, 1, 1, e.iconAlpha})
+		video.font.SetColor(1, 1, 1, e.labelAlpha)
+		video.font.Printf(200, e.y, 0.7, e.label)
 
 		if e.callbackValue != nil {
-			lw := video.font.Width(0.5, e.callbackValue())
-			video.font.Printf(float32(w)-lw-70, e.y, 0.5, e.callbackValue())
+			lw := video.font.Width(0.7, e.callbackValue())
+			video.font.Printf(float32(w)-lw-650, e.y, 0.7, e.callbackValue())
 		}
 	}
 }
 
 func contextReset() {
-	menu.spacing = 70
 	video.white = newWhite()
 
 	menu.icons = map[string]uint32{

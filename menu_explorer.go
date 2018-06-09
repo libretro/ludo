@@ -27,7 +27,7 @@ func buildExplorer(path string) screen {
 		list.children = append(list.children, entry{
 			label: f.Name(),
 			icon:  icon,
-			callback: func() {
+			callbackOK: func() {
 				if f.IsDir() {
 					menu.stack = append(menu.stack, buildExplorer(path+"/"+f.Name()+"/"))
 				} else if stringInSlice(filepath.Ext(f.Name()), []string{".so", ".dll", ".dylib"}) {
