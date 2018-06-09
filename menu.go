@@ -24,8 +24,9 @@ type entry struct {
 }
 
 type screen interface {
-	open()
-	close()
+	present()
+	makeRoomForChildren()
+	getFocusBack()
 	update()
 	render()
 }
@@ -49,9 +50,9 @@ func menuRender() {
 		}
 	}
 
-	cur := len(menu.stack) - 1
-	for i := cur - 1; i <= cur+1; i++ {
-		if i < 0 || i > cur {
+	currentScreenIndex := len(menu.stack) - 1
+	for i := 0; i <= currentScreenIndex+1; i++ {
+		if i < 0 || i > currentScreenIndex {
 			continue
 		}
 
@@ -108,6 +109,37 @@ func animateEntries(list *entry) {
 			y = float32(h)/2 + 100 + float32(80*(i-list.ptr))
 			la = 0.5
 			a = 0.5
+			s = 0.5
+		}
+
+		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, la, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
+		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
+	}
+}
+
+func genericMakeRoomForChildren(list *entry) {
+	_, h := window.GetFramebufferSize()
+
+	for i := range list.children {
+		e := &list.children[i]
+
+		var y, la, a, s float32
+		if i == list.ptr {
+			y = float32(h)/2 - 200 + float32(80*(i-list.ptr))
+			la = 0
+			a = 0
+			s = 1.0
+		} else if i < list.ptr {
+			y = float32(h)/2 - 200 - 100 + float32(80*(i-list.ptr))
+			la = 0
+			a = 0
+			s = 0.5
+		} else if i > list.ptr {
+			y = float32(h)/2 - 200 + 100 + float32(80*(i-list.ptr))
+			la = 0
+			a = 0
 			s = 0.5
 		}
 

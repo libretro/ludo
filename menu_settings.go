@@ -29,16 +29,20 @@ func buildSettings() screen {
 		})
 	}
 
-	list.open()
+	list.present()
 
 	return &list
 }
 
-func (s *screenSettings) open() {
+func (s *screenSettings) present() {
 	initEntries(&s.entry)
 }
 
-func (s *screenSettings) close() {
+func (s *screenSettings) makeRoomForChildren() {
+	genericMakeRoomForChildren(&s.entry)
+}
+
+func (s *screenSettings) getFocusBack() {
 	animateEntries(&s.entry)
 }
 

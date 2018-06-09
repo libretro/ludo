@@ -140,12 +140,12 @@ func buildTabs() screen {
 		},
 	})
 
-	list.open()
+	list.present()
 
 	return &list
 }
 
-func (tabs *screenTabs) open() {
+func (tabs *screenTabs) present() {
 	_, h := window.GetFramebufferSize()
 
 	for i := range tabs.children {
@@ -175,7 +175,7 @@ func (tabs *screenTabs) open() {
 	tabs.animate()
 }
 
-func (tabs *screenTabs) close() {
+func (tabs *screenTabs) getFocusBack() {
 	tabs.animate()
 }
 
@@ -215,7 +215,7 @@ func (tabs *screenTabs) animate() {
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.15, ease.OutSine)
 }
 
-func (tabs *screenTabs) animateNext() {
+func (tabs *screenTabs) makeRoomForChildren() {
 	cur := &tabs.children[tabs.ptr]
 	menu.tweens[&cur.width] = gween.New(cur.width, 4000, 0.15, ease.OutSine)
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+700, 0.15, ease.OutSine)
@@ -249,7 +249,7 @@ func (tabs *screenTabs) update() {
 	// OK
 	if released[0][libretro.DeviceIDJoypadA] {
 		if tabs.children[tabs.ptr].callbackOK != nil {
-			tabs.animateNext()
+			tabs.makeRoomForChildren()
 			tabs.children[tabs.ptr].callbackOK()
 		}
 	}

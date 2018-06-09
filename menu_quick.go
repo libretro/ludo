@@ -61,16 +61,20 @@ func buildQuickMenu() screen {
 		},
 	})
 
-	list.open()
+	list.present()
 
 	return &list
 }
 
-func (s *screenQuick) open() {
+func (s *screenQuick) present() {
 	initEntries(&s.entry)
 }
 
-func (s *screenQuick) close() {
+func (s *screenQuick) makeRoomForChildren() {
+	genericMakeRoomForChildren(&s.entry)
+}
+
+func (s *screenQuick) getFocusBack() {
 	animateEntries(&s.entry)
 }
 

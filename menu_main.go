@@ -1,6 +1,8 @@
 package main
 
-import "os/user"
+import (
+	"os/user"
+)
 
 type screenMain struct {
 	entry
@@ -17,6 +19,7 @@ func buildMainMenu() screen {
 			label: "Quick Menu",
 			icon:  "subsetting",
 			callbackOK: func() {
+				list.makeRoomForChildren()
 				menu.stack = append(menu.stack, buildQuickMenu())
 			},
 		})
@@ -26,6 +29,7 @@ func buildMainMenu() screen {
 		label: "Load Core",
 		icon:  "subsetting",
 		callbackOK: func() {
+			list.makeRoomForChildren()
 			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 		},
 	})
@@ -34,6 +38,7 @@ func buildMainMenu() screen {
 		label: "Load Game",
 		icon:  "subsetting",
 		callbackOK: func() {
+			list.makeRoomForChildren()
 			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 		},
 	})
@@ -42,6 +47,7 @@ func buildMainMenu() screen {
 		label: "Settings",
 		icon:  "subsetting",
 		callbackOK: func() {
+			list.makeRoomForChildren()
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -50,6 +56,7 @@ func buildMainMenu() screen {
 		label: "Help",
 		icon:  "subsetting",
 		callbackOK: func() {
+			list.makeRoomForChildren()
 			notifyAndLog("Menu", "Not implemented yet.")
 		},
 	})
@@ -62,17 +69,21 @@ func buildMainMenu() screen {
 		},
 	})
 
-	list.open()
+	list.present()
 
 	return &list
 }
 
-func (main *screenMain) open() {
+func (main *screenMain) present() {
 	initEntries(&main.entry)
 }
 
-func (main *screenMain) close() {
+func (main *screenMain) getFocusBack() {
 	animateEntries(&main.entry)
+}
+
+func (main *screenMain) makeRoomForChildren() {
+	genericMakeRoomForChildren(&main.entry)
 }
 
 func (main *screenMain) update() {

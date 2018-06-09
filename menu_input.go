@@ -60,7 +60,7 @@ func commonInput(list *entry) {
 	// Cancel
 	if released[0][libretro.DeviceIDJoypadB] {
 		if len(menu.stack) > 1 {
-			menu.stack[len(menu.stack)-2].close()
+			menu.stack[len(menu.stack)-2].getFocusBack()
 			menu.stack = menu.stack[:len(menu.stack)-1]
 		}
 	}
