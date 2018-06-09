@@ -25,6 +25,7 @@ type entry struct {
 
 type screen interface {
 	open()
+	close()
 	update()
 	render()
 }

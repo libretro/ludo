@@ -38,6 +38,10 @@ func (s *screenSettings) open() {
 	initEntries(&s.entry)
 }
 
+func (s *screenSettings) close() {
+	animateEntries(&s.entry)
+}
+
 func (s *screenSettings) update() {
 	verticalInput(&s.entry)
 }

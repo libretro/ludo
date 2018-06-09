@@ -171,6 +171,12 @@ func (tabs *screenTabs) open() {
 			e.width = 128
 		}
 	}
+
+	tabs.animate()
+}
+
+func (tabs *screenTabs) close() {
+	tabs.animate()
 }
 
 func (tabs *screenTabs) animate() {
@@ -245,13 +251,6 @@ func (tabs *screenTabs) update() {
 		if tabs.children[tabs.ptr].callbackOK != nil {
 			tabs.animateNext()
 			tabs.children[tabs.ptr].callbackOK()
-		}
-	}
-
-	// Cancel
-	if released[0][libretro.DeviceIDJoypadB] {
-		if len(menu.stack) > 1 {
-			menu.stack = menu.stack[:len(menu.stack)-1]
 		}
 	}
 }

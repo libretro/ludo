@@ -49,6 +49,10 @@ func (explorer *screenExplorer) open() {
 	initEntries(&explorer.entry)
 }
 
+func (explorer *screenExplorer) close() {
+	animateEntries(&explorer.entry)
+}
+
 func (explorer *screenExplorer) update() {
 	verticalInput(&explorer.entry)
 }

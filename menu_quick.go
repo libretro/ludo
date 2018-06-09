@@ -70,6 +70,10 @@ func (s *screenQuick) open() {
 	initEntries(&s.entry)
 }
 
+func (s *screenQuick) close() {
+	animateEntries(&s.entry)
+}
+
 func (s *screenQuick) update() {
 	verticalInput(&s.entry)
 }

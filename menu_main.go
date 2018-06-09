@@ -71,6 +71,10 @@ func (main *screenMain) open() {
 	initEntries(&main.entry)
 }
 
+func (main *screenMain) close() {
+	animateEntries(&main.entry)
+}
+
 func (main *screenMain) update() {
 	verticalInput(&main.entry)
 }
