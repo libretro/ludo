@@ -19,7 +19,7 @@ func buildMainMenu() scene {
 			label: "Quick Menu",
 			icon:  "subsetting",
 			callbackOK: func() {
-				list.makeRoomForChildren()
+				list.segueNext()
 				menu.stack = append(menu.stack, buildQuickMenu())
 			},
 		})
@@ -29,7 +29,7 @@ func buildMainMenu() scene {
 		label: "Load Core",
 		icon:  "subsetting",
 		callbackOK: func() {
-			list.makeRoomForChildren()
+			list.segueNext()
 			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 		},
 	})
@@ -38,7 +38,7 @@ func buildMainMenu() scene {
 		label: "Load Game",
 		icon:  "subsetting",
 		callbackOK: func() {
-			list.makeRoomForChildren()
+			list.segueNext()
 			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 		},
 	})
@@ -47,7 +47,7 @@ func buildMainMenu() scene {
 		label: "Settings",
 		icon:  "subsetting",
 		callbackOK: func() {
-			list.makeRoomForChildren()
+			list.segueNext()
 			menu.stack = append(menu.stack, buildSettings())
 		},
 	})
@@ -68,27 +68,27 @@ func buildMainMenu() scene {
 		},
 	})
 
-	list.present()
+	list.segueMount()
 
 	return &list
 }
 
-func (main *screenMain) present() {
-	initEntries(&main.entry)
+func (main *screenMain) segueMount() {
+	genericSegueMount(&main.entry)
 }
 
-func (main *screenMain) getFocusBack() {
-	animateEntries(&main.entry)
+func (main *screenMain) segueBack() {
+	genericAnimate(&main.entry)
 }
 
-func (main *screenMain) makeRoomForChildren() {
-	genericMakeRoomForChildren(&main.entry)
+func (main *screenMain) segueNext() {
+	genericSegueNext(&main.entry)
 }
 
 func (main *screenMain) update() {
-	verticalInput(&main.entry)
+	genericInput(&main.entry)
 }
 
 func (main *screenMain) render() {
-	verticalRender(&main.entry)
+	genericRender(&main.entry)
 }

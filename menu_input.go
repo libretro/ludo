@@ -9,7 +9,7 @@ func menuInput() {
 	currentMenu.update()
 }
 
-func verticalInput(list *entry) {
+func genericInput(list *entry) {
 	if menu.inputCooldown > 0 {
 		menu.inputCooldown--
 	}
@@ -19,7 +19,7 @@ func verticalInput(list *entry) {
 		if list.ptr >= len(list.children) {
 			list.ptr = 0
 		}
-		animateEntries(list)
+		genericAnimate(list)
 		menu.inputCooldown = 10
 	}
 
@@ -28,14 +28,10 @@ func verticalInput(list *entry) {
 		if list.ptr < 0 {
 			list.ptr = len(list.children) - 1
 		}
-		animateEntries(list)
+		genericAnimate(list)
 		menu.inputCooldown = 10
 	}
 
-	commonInput(list)
-}
-
-func commonInput(list *entry) {
 	// OK
 	if released[0][libretro.DeviceIDJoypadA] {
 		if list.children[list.ptr].callbackOK != nil {
@@ -60,7 +56,7 @@ func commonInput(list *entry) {
 	// Cancel
 	if released[0][libretro.DeviceIDJoypadB] {
 		if len(menu.stack) > 1 {
-			menu.stack[len(menu.stack)-2].getFocusBack()
+			menu.stack[len(menu.stack)-2].segueBack()
 			menu.stack = menu.stack[:len(menu.stack)-1]
 		}
 	}

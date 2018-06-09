@@ -61,27 +61,27 @@ func buildQuickMenu() scene {
 		},
 	})
 
-	list.present()
+	list.segueMount()
 
 	return &list
 }
 
-func (s *screenQuick) present() {
-	initEntries(&s.entry)
+func (s *screenQuick) segueMount() {
+	genericSegueMount(&s.entry)
 }
 
-func (s *screenQuick) makeRoomForChildren() {
-	genericMakeRoomForChildren(&s.entry)
+func (s *screenQuick) segueNext() {
+	genericSegueNext(&s.entry)
 }
 
-func (s *screenQuick) getFocusBack() {
-	animateEntries(&s.entry)
+func (s *screenQuick) segueBack() {
+	genericAnimate(&s.entry)
 }
 
 func (s *screenQuick) update() {
-	verticalInput(&s.entry)
+	genericInput(&s.entry)
 }
 
 func (s *screenQuick) render() {
-	verticalRender(&s.entry)
+	genericRender(&s.entry)
 }

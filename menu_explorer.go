@@ -29,7 +29,7 @@ func buildExplorer(path string) scene {
 			icon:  icon,
 			callbackOK: func() {
 				if f.IsDir() {
-					list.makeRoomForChildren()
+					list.segueNext()
 					menu.stack = append(menu.stack, buildExplorer(path+"/"+f.Name()+"/"))
 				} else if stringInSlice(filepath.Ext(f.Name()), []string{".so", ".dll", ".dylib"}) {
 					g.corePath = path + "/" + f.Name()
@@ -41,27 +41,27 @@ func buildExplorer(path string) scene {
 		})
 	}
 
-	list.present()
+	list.segueMount()
 
 	return &list
 }
 
-func (explorer *screenExplorer) present() {
-	initEntries(&explorer.entry)
+func (explorer *screenExplorer) segueMount() {
+	genericSegueMount(&explorer.entry)
 }
 
-func (explorer *screenExplorer) makeRoomForChildren() {
-	genericMakeRoomForChildren(&explorer.entry)
+func (explorer *screenExplorer) segueNext() {
+	genericSegueNext(&explorer.entry)
 }
 
-func (explorer *screenExplorer) getFocusBack() {
-	animateEntries(&explorer.entry)
+func (explorer *screenExplorer) segueBack() {
+	genericAnimate(&explorer.entry)
 }
 
 func (explorer *screenExplorer) update() {
-	verticalInput(&explorer.entry)
+	genericInput(&explorer.entry)
 }
 
 func (explorer *screenExplorer) render() {
-	verticalRender(&explorer.entry)
+	genericRender(&explorer.entry)
 }

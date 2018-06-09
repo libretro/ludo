@@ -24,9 +24,9 @@ type entry struct {
 }
 
 type scene interface {
-	present()
-	makeRoomForChildren()
-	getFocusBack()
+	segueMount()
+	segueNext()
+	segueBack()
 	update()
 	render()
 }
@@ -61,7 +61,7 @@ func menuRender() {
 	}
 }
 
-func initEntries(list *entry) {
+func genericSegueMount(list *entry) {
 	_, h := window.GetFramebufferSize()
 
 	for i := range list.children {
@@ -85,10 +85,10 @@ func initEntries(list *entry) {
 		}
 	}
 
-	animateEntries(list)
+	genericAnimate(list)
 }
 
-func animateEntries(list *entry) {
+func genericAnimate(list *entry) {
 	_, h := window.GetFramebufferSize()
 
 	for i := range list.children {
@@ -119,7 +119,7 @@ func animateEntries(list *entry) {
 	}
 }
 
-func genericMakeRoomForChildren(list *entry) {
+func genericSegueNext(list *entry) {
 	_, h := window.GetFramebufferSize()
 
 	for i := range list.children {
@@ -150,7 +150,7 @@ func genericMakeRoomForChildren(list *entry) {
 	}
 }
 
-func verticalRender(list *entry) {
+func genericRender(list *entry) {
 	w, h := window.GetFramebufferSize()
 
 	for _, e := range list.children {

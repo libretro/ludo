@@ -29,27 +29,27 @@ func buildSettings() scene {
 		})
 	}
 
-	list.present()
+	list.segueMount()
 
 	return &list
 }
 
-func (s *screenSettings) present() {
-	initEntries(&s.entry)
+func (s *screenSettings) segueMount() {
+	genericSegueMount(&s.entry)
 }
 
-func (s *screenSettings) makeRoomForChildren() {
-	genericMakeRoomForChildren(&s.entry)
+func (s *screenSettings) segueNext() {
+	genericSegueNext(&s.entry)
 }
 
-func (s *screenSettings) getFocusBack() {
-	animateEntries(&s.entry)
+func (s *screenSettings) segueBack() {
+	genericAnimate(&s.entry)
 }
 
 func (s *screenSettings) update() {
-	verticalInput(&s.entry)
+	genericInput(&s.entry)
 }
 
 func (s *screenSettings) render() {
-	verticalRender(&s.entry)
+	genericRender(&s.entry)
 }
