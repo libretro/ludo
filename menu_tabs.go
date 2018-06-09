@@ -145,7 +145,7 @@ func buildTabs() screen {
 	return &list
 }
 
-func (tabs screenTabs) open() {
+func (tabs *screenTabs) open() {
 	_, h := window.GetFramebufferSize()
 
 	for i := range tabs.children {
@@ -173,7 +173,7 @@ func (tabs screenTabs) open() {
 	}
 }
 
-func (tabs screenTabs) animate() {
+func (tabs *screenTabs) animate() {
 	_, h := window.GetFramebufferSize()
 
 	for i := range tabs.children {
@@ -209,7 +209,7 @@ func (tabs screenTabs) animate() {
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.15, ease.OutSine)
 }
 
-func (tabs screenTabs) animateNext() {
+func (tabs *screenTabs) animateNext() {
 	cur := &tabs.children[tabs.ptr]
 	menu.tweens[&cur.width] = gween.New(cur.width, 4000, 0.15, ease.OutSine)
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+700, 0.15, ease.OutSine)
@@ -220,6 +220,7 @@ func (tabs *screenTabs) update() {
 		menu.inputCooldown--
 	}
 
+	// Right
 	if newState[0][libretro.DeviceIDJoypadRight] && menu.inputCooldown == 0 {
 		tabs.ptr++
 		if tabs.ptr >= len(tabs.children) {
@@ -229,6 +230,7 @@ func (tabs *screenTabs) update() {
 		menu.inputCooldown = 10
 	}
 
+	// Left
 	if newState[0][libretro.DeviceIDJoypadLeft] && menu.inputCooldown == 0 {
 		tabs.ptr--
 		if tabs.ptr < 0 {
