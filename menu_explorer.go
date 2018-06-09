@@ -9,7 +9,7 @@ type screenExplorer struct {
 	entry
 }
 
-func buildExplorer(path string) screen {
+func buildExplorer(path string) scene {
 	var list screenExplorer
 	list.label = "Explorer"
 

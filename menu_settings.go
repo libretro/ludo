@@ -10,7 +10,7 @@ type screenSettings struct {
 	entry
 }
 
-func buildSettings() screen {
+func buildSettings() scene {
 	var list screenSettings
 	list.label = "Settings"
 

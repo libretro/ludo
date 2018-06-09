@@ -23,7 +23,7 @@ type entry struct {
 	children        []entry
 }
 
-type screen interface {
+type scene interface {
 	present()
 	makeRoomForChildren()
 	getFocusBack()
@@ -32,7 +32,7 @@ type screen interface {
 }
 
 var menu struct {
-	stack         []screen
+	stack         []scene
 	icons         map[string]uint32
 	inputCooldown int
 	tweens        map[*float32]*gween.Tween
@@ -68,19 +68,19 @@ func initEntries(list *entry) {
 		e := &list.children[i]
 
 		if i == list.ptr {
-			e.y = float32(h) + 100 + float32(80*(i-list.ptr))
-			e.labelAlpha = 1.0
-			e.iconAlpha = 1.0
+			e.y = float32(h)/2 + 200 + float32(80*(i-list.ptr))
+			e.labelAlpha = 0
+			e.iconAlpha = 0
 			e.scale = 1.0
 		} else if i < list.ptr {
-			e.y = float32(h) + 100 - 100 + float32(80*(i-list.ptr))
-			e.labelAlpha = 0.5
-			e.iconAlpha = 0.5
+			e.y = float32(h)/2 + 200 - 100 + float32(80*(i-list.ptr))
+			e.labelAlpha = 0
+			e.iconAlpha = 0
 			e.scale = 0.5
 		} else if i > list.ptr {
-			e.y = float32(h) + 100 + 100 + float32(80*(i-list.ptr))
-			e.labelAlpha = 0.5
-			e.iconAlpha = 0.5
+			e.y = float32(h)/2 + 200 + 100 + float32(80*(i-list.ptr))
+			e.labelAlpha = 0
+			e.iconAlpha = 0
 			e.scale = 0.5
 		}
 	}
