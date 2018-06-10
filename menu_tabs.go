@@ -258,30 +258,30 @@ func (tabs *screenTabs) update() {
 func (tabs screenTabs) render() {
 	_, h := window.GetFramebufferSize()
 
-	var stackWidth float32 = 132
+	stackWidth := 132 * menu.ratio
 	for i, e := range tabs.children {
 
 		c := colorful.Hcl(float64(i%12)*30, 0.5, 0.5)
 
 		drawPolygon(
-			-menu.scroll+stackWidth, 0,
-			-menu.scroll+stackWidth+e.width, 0,
-			-menu.scroll+stackWidth+400, float32(h),
-			-menu.scroll+stackWidth+400+e.width, float32(h),
+			-menu.scroll*menu.ratio+stackWidth, 0,
+			-menu.scroll*menu.ratio+stackWidth+e.width*menu.ratio, 0,
+			-menu.scroll*menu.ratio+stackWidth+400*menu.ratio, float32(h),
+			-menu.scroll*menu.ratio+stackWidth+400*menu.ratio+e.width*menu.ratio, float32(h),
 			color{float32(c.R), float32(c.G), float32(c.B), 1})
 
-		stackWidth += e.width
+		stackWidth += e.width * menu.ratio
 
-		x := -menu.scroll + stackWidth - e.width/2 + 400 - 400/(float32(h)/e.y)
+		x := -menu.scroll*menu.ratio + stackWidth - e.width/2*menu.ratio + 400*menu.ratio - 400/(float32(h)/e.y)*menu.ratio
 
 		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		lw := video.font.Width(0.7, e.label)
-		video.font.Printf(x-lw/2, e.y+180, 0.7, e.label)
-		lw = video.font.Width(0.4, e.subLabel)
-		video.font.Printf(x-lw/2, e.y+260, 0.4, e.subLabel)
+		lw := video.font.Width(0.7*menu.ratio, e.label)
+		video.font.Printf(x-lw/2, e.y+180*menu.ratio, 0.7*menu.ratio, e.label)
+		lw = video.font.Width(0.4*menu.ratio, e.subLabel)
+		video.font.Printf(x-lw/2, e.y+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
 
 		drawImage(menu.icons[e.icon],
-			x-128*e.scale, e.y-128*e.scale,
-			256, 256, e.scale, color{1, 1, 1, e.iconAlpha})
+			x-128*e.scale*menu.ratio, e.y-128*e.scale*menu.ratio,
+			256*menu.ratio, 256*menu.ratio, e.scale, color{1, 1, 1, e.iconAlpha})
 	}
 }

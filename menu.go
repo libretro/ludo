@@ -37,9 +37,13 @@ var menu struct {
 	inputCooldown int
 	tweens        map[*float32]*gween.Tween
 	scroll        float32
+	ratio         float32
 }
 
 func menuRender() {
+	w, _ := window.GetFramebufferSize()
+	menu.ratio = float32(w) / 1920
+
 	fullscreenViewport()
 
 	for e, t := range menu.tweens {
@@ -62,23 +66,21 @@ func menuRender() {
 }
 
 func genericSegueMount(list *entry) {
-	_, h := window.GetFramebufferSize()
-
 	for i := range list.children {
 		e := &list.children[i]
 
 		if i == list.ptr {
-			e.y = float32(h)/2 + 200 + float32(80*(i-list.ptr))
+			e.y = 200 + float32(80*(i-list.ptr))
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.scale = 1.0
 		} else if i < list.ptr {
-			e.y = float32(h)/2 + 200 - 100 + float32(80*(i-list.ptr))
+			e.y = 200 - 100 + float32(80*(i-list.ptr))
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.scale = 0.5
 		} else if i > list.ptr {
-			e.y = float32(h)/2 + 200 + 100 + float32(80*(i-list.ptr))
+			e.y = 200 + 100 + float32(80*(i-list.ptr))
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.scale = 0.5
@@ -89,24 +91,22 @@ func genericSegueMount(list *entry) {
 }
 
 func genericAnimate(list *entry) {
-	_, h := window.GetFramebufferSize()
-
 	for i := range list.children {
 		e := &list.children[i]
 
 		var y, la, a, s float32
 		if i == list.ptr {
-			y = float32(h)/2 + float32(80*(i-list.ptr))
+			y = float32(80 * (i - list.ptr))
 			la = 1.0
 			a = 1.0
 			s = 1.0
 		} else if i < list.ptr {
-			y = float32(h)/2 - 100 + float32(80*(i-list.ptr))
+			y = -100 + float32(80*(i-list.ptr))
 			la = 0.5
 			a = 0.5
 			s = 0.5
 		} else if i > list.ptr {
-			y = float32(h)/2 + 100 + float32(80*(i-list.ptr))
+			y = 100 + float32(80*(i-list.ptr))
 			la = 0.5
 			a = 0.5
 			s = 0.5
@@ -120,24 +120,22 @@ func genericAnimate(list *entry) {
 }
 
 func genericSegueNext(list *entry) {
-	_, h := window.GetFramebufferSize()
-
 	for i := range list.children {
 		e := &list.children[i]
 
 		var y, la, a, s float32
 		if i == list.ptr {
-			y = float32(h)/2 - 200 + float32(80*(i-list.ptr))
+			y = -200 + float32(80*(i-list.ptr))
 			la = 0
 			a = 0
 			s = 1.0
 		} else if i < list.ptr {
-			y = float32(h)/2 - 200 - 100 + float32(80*(i-list.ptr))
+			y = -200 - 100 + float32(80*(i-list.ptr))
 			la = 0
 			a = 0
 			s = 0.5
 		} else if i > list.ptr {
-			y = float32(h)/2 - 200 + 100 + float32(80*(i-list.ptr))
+			y = -200 + 100 + float32(80*(i-list.ptr))
 			la = 0
 			a = 0
 			s = 0.5
@@ -154,17 +152,22 @@ func genericRender(list *entry) {
 	w, h := window.GetFramebufferSize()
 
 	for _, e := range list.children {
-		if e.y < -128 || e.y > float32(h+128) {
+		if e.y < -float32(h)/2 || e.y > float32(h)/2 {
 			continue
 		}
 
-		drawImage(menu.icons[e.icon], 120-64*e.scale, e.y-16-64*e.scale, 128, 128, e.scale, color{1, 1, 1, e.iconAlpha})
+		drawImage(menu.icons[e.icon],
+			120*menu.ratio-64*e.scale*menu.ratio,
+			float32(h)/2+e.y*menu.ratio-16*menu.ratio-64*e.scale*menu.ratio,
+			128*menu.ratio, 128*menu.ratio,
+			e.scale, color{1, 1, 1, e.iconAlpha})
+
 		video.font.SetColor(1, 1, 1, e.labelAlpha)
-		video.font.Printf(200, e.y, 0.7, e.label)
+		video.font.Printf(200*menu.ratio, float32(h)/2+e.y*menu.ratio, 0.7*menu.ratio, e.label)
 
 		if e.callbackValue != nil {
-			lw := video.font.Width(0.7, e.callbackValue())
-			video.font.Printf(float32(w)-lw-650, e.y, 0.7, e.callbackValue())
+			lw := video.font.Width(0.7*menu.ratio, e.callbackValue())
+			video.font.Printf(float32(w)-lw-650*menu.ratio, float32(h)/2+e.y*menu.ratio, 0.7*menu.ratio, e.callbackValue())
 		}
 	}
 }
@@ -188,11 +191,14 @@ func contextReset() {
 }
 
 func menuInit() {
+	menu.stack = []scene{}
 	menu.tweens = make(map[*float32]*gween.Tween)
 
 	if g.coreRunning {
 		menu.stack = append(menu.stack, buildTabs())
+		menu.stack[0].segueNext()
 		menu.stack = append(menu.stack, buildMainMenu())
+		menu.stack[1].segueNext()
 		menu.stack = append(menu.stack, buildQuickMenu())
 	} else {
 		menu.stack = append(menu.stack, buildTabs())
