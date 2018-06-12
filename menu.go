@@ -70,17 +70,17 @@ func genericSegueMount(list *entry) {
 		e := &list.children[i]
 
 		if i == list.ptr {
-			e.y = 200 + float32(80*(i-list.ptr))
+			e.y = 200*menu.ratio + float32(80*(i-list.ptr))
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.scale = 1.0
 		} else if i < list.ptr {
-			e.y = 200 - 100 + float32(80*(i-list.ptr))
+			e.y = 100*menu.ratio + float32(80*(i-list.ptr))
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.scale = 0.5
 		} else if i > list.ptr {
-			e.y = 200 + 100 + float32(80*(i-list.ptr))
+			e.y = 300*menu.ratio + float32(80*(i-list.ptr))
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.scale = 0.5
@@ -91,6 +91,8 @@ func genericSegueMount(list *entry) {
 }
 
 func genericAnimate(list *entry) {
+	_, h := window.GetFramebufferSize()
+
 	for i := range list.children {
 		e := &list.children[i]
 
@@ -101,15 +103,19 @@ func genericAnimate(list *entry) {
 			a = 1.0
 			s = 1.0
 		} else if i < list.ptr {
-			y = -100 + float32(80*(i-list.ptr))
+			y = -100*menu.ratio + float32(80*(i-list.ptr))
 			la = 0.5
 			a = 0.5
 			s = 0.5
 		} else if i > list.ptr {
-			y = 100 + float32(80*(i-list.ptr))
+			y = 100*menu.ratio + float32(80*(i-list.ptr))
 			la = 0.5
 			a = 0.5
 			s = 0.5
+		}
+
+		if y < -float32(h)/2-200*menu.ratio || y > float32(h)/2+200*menu.ratio {
+			continue
 		}
 
 		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
@@ -120,25 +126,31 @@ func genericAnimate(list *entry) {
 }
 
 func genericSegueNext(list *entry) {
+	_, h := window.GetFramebufferSize()
+
 	for i := range list.children {
 		e := &list.children[i]
 
 		var y, la, a, s float32
 		if i == list.ptr {
-			y = -200 + float32(80*(i-list.ptr))
+			y = -200*menu.ratio + float32(80*(i-list.ptr))
 			la = 0
 			a = 0
 			s = 1.0
 		} else if i < list.ptr {
-			y = -200 - 100 + float32(80*(i-list.ptr))
+			y = -300*menu.ratio + float32(80*(i-list.ptr))
 			la = 0
 			a = 0
 			s = 0.5
 		} else if i > list.ptr {
-			y = -200 + 100 + float32(80*(i-list.ptr))
+			y = -100*menu.ratio + float32(80*(i-list.ptr))
 			la = 0
 			a = 0
 			s = 0.5
+		}
+
+		if y < -float32(h)/2-200*menu.ratio || y > float32(h)/2+200*menu.ratio {
+			continue
 		}
 
 		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
