@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os/user"
 )
 
 type screenGameList struct {
@@ -11,6 +12,7 @@ type screenGameList struct {
 func buildGameList() scene {
 	var list screenGameList
 	list.label = "Game List"
+	usr, _ := user.Current()
 
 	for i := 1; i <= 20; i++ {
 		list.children = append(list.children, entry{
@@ -18,7 +20,7 @@ func buildGameList() scene {
 			icon:  "subsetting",
 			callbackOK: func() {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildExplorer("/"))
+				menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 			},
 		})
 	}

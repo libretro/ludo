@@ -91,8 +91,6 @@ func genericSegueMount(list *entry) {
 }
 
 func genericAnimate(list *entry) {
-	_, h := window.GetFramebufferSize()
-
 	for i := range list.children {
 		e := &list.children[i]
 
@@ -112,10 +110,6 @@ func genericAnimate(list *entry) {
 			la = 0.5
 			a = 0.5
 			s = 0.5
-		}
-
-		if y < -float32(h)/2-200*menu.ratio || y > float32(h)/2+200*menu.ratio {
-			continue
 		}
 
 		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
@@ -163,6 +157,14 @@ func genericSegueNext(list *entry) {
 func genericRender(list *entry) {
 	w, h := window.GetFramebufferSize()
 
+	drawPolygon(
+		60*menu.ratio, float32(h)/2-50*menu.ratio,
+		float32(w)-610*menu.ratio, float32(h)/2-50*menu.ratio,
+		60*menu.ratio, float32(h)/2+50*menu.ratio,
+		float32(w)-610*menu.ratio, float32(h)/2+50*menu.ratio,
+		color{1, 1, 1, 0.1},
+	)
+
 	for _, e := range list.children {
 		if e.y < -float32(h)/2 || e.y > float32(h)/2 {
 			continue
@@ -174,12 +176,14 @@ func genericRender(list *entry) {
 			128*menu.ratio, 128*menu.ratio,
 			e.scale, color{1, 1, 1, e.iconAlpha})
 
-		video.font.SetColor(1, 1, 1, e.labelAlpha)
-		video.font.Printf(200*menu.ratio, float32(h)/2+e.y*menu.ratio, 0.7*menu.ratio, e.label)
+		if e.labelAlpha > 0 {
+			video.font.SetColor(1, 1, 1, e.labelAlpha)
+			video.font.Printf(200*menu.ratio, float32(h)/2+e.y*menu.ratio, 0.7*menu.ratio, e.label)
 
-		if e.callbackValue != nil {
-			lw := video.font.Width(0.7*menu.ratio, e.callbackValue())
-			video.font.Printf(float32(w)-lw-650*menu.ratio, float32(h)/2+e.y*menu.ratio, 0.7*menu.ratio, e.callbackValue())
+			if e.callbackValue != nil {
+				lw := video.font.Width(0.7*menu.ratio, e.callbackValue())
+				video.font.Printf(float32(w)-lw-650*menu.ratio, float32(h)/2+e.y*menu.ratio, 0.7*menu.ratio, e.callbackValue())
+			}
 		}
 	}
 }
