@@ -170,19 +170,28 @@ func genericRender(list *entry) {
 			continue
 		}
 
+		fontOffset := 64 * 0.7 * menu.ratio * 0.3
+
 		drawImage(menu.icons[e.icon],
 			120*menu.ratio-64*e.scale*menu.ratio,
-			float32(h)/2+e.y*menu.ratio-16*menu.ratio-64*e.scale*menu.ratio,
+			float32(h)/2+e.y*menu.ratio-16*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
 			e.scale, color{1, 1, 1, e.iconAlpha})
 
 		if e.labelAlpha > 0 {
+
 			video.font.SetColor(1, 1, 1, e.labelAlpha)
-			video.font.Printf(200*menu.ratio, float32(h)/2+e.y*menu.ratio, 0.7*menu.ratio, e.label)
+			video.font.Printf(
+				200*menu.ratio,
+				float32(h)/2+e.y*menu.ratio+fontOffset,
+				0.7*menu.ratio, e.label)
 
 			if e.callbackValue != nil {
 				lw := video.font.Width(0.7*menu.ratio, e.callbackValue())
-				video.font.Printf(float32(w)-lw-650*menu.ratio, float32(h)/2+e.y*menu.ratio, 0.7*menu.ratio, e.callbackValue())
+				video.font.Printf(
+					float32(w)-lw-650*menu.ratio,
+					float32(h)/2+e.y*menu.ratio+fontOffset,
+					0.7*menu.ratio, e.callbackValue())
 			}
 		}
 	}
