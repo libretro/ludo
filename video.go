@@ -78,22 +78,33 @@ func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float
 	return
 }
 
-func coreRatioViewport(w *glfw.Window, fbWidth int, fbHeight int) {
+func coreRatioViewport(win *glfw.Window, fbWidth int, fbHeight int) {
 	// Scale the content to fit in the viewport.
-	width := float64(fbWidth)
-	height := float64(fbHeight)
-	viewWidth := width
-	viewHeight := width / video.geom.AspectRatio
-	if viewHeight > height {
-		viewHeight = height
-		viewWidth = height * video.geom.AspectRatio
+	fbw := float32(fbWidth)
+	fbh := float32(fbHeight)
+	w := fbw
+	h := fbw / float32(video.geom.AspectRatio)
+	if h > fbh {
+		w = fbh * float32(video.geom.AspectRatio)
+		h = fbh
 	}
 
 	// Place the content in the middle of the window.
-	vportX := (width - viewWidth) / 2
-	vportY := (height - viewHeight) / 2
+	x := (fbw - w) / 2
+	y := (fbh - h) / 2
 
-	gl.Viewport(int32(vportX), int32(vportY), int32(viewWidth), int32(viewHeight))
+	x1, y1, x2, y2, x3, y3, x4, y4 := xywhToCoords(x, y, w, h, fbh)
+
+	va := []float32{
+		//  X, Y, U, V
+		x1/fbw*2 - 1, y1/fbh*2 - 1, 0, 1, // left-bottom
+		x2/fbw*2 - 1, y2/fbh*2 - 1, 0, 0, // left-top
+		x3/fbw*2 - 1, y3/fbh*2 - 1, 1, 1, // right-bottom
+		x4/fbw*2 - 1, y4/fbh*2 - 1, 1, 0, // right-top
+	}
+
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 }
 
 func fullscreenViewport() {
