@@ -66,6 +66,10 @@ func buildQuickMenu() scene {
 	return &list
 }
 
+func (s *screenQuick) Entry() *entry {
+	return &s.entry
+}
+
 func (s *screenQuick) segueMount() {
 	genericSegueMount(&s.entry)
 }

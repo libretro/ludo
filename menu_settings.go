@@ -34,6 +34,10 @@ func buildSettings() scene {
 	return &list
 }
 
+func (s *screenSettings) Entry() *entry {
+	return &s.entry
+}
+
 func (s *screenSettings) segueMount() {
 	genericSegueMount(&s.entry)
 }

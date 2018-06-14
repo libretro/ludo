@@ -73,6 +73,10 @@ func buildMainMenu() scene {
 	return &list
 }
 
+func (main *screenMain) Entry() *entry {
+	return &main.entry
+}
+
 func (main *screenMain) segueMount() {
 	genericSegueMount(&main.entry)
 }

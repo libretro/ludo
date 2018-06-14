@@ -145,6 +145,10 @@ func buildTabs() scene {
 	return &list
 }
 
+func (tabs *screenTabs) Entry() *entry {
+	return &tabs.entry
+}
+
 func (tabs *screenTabs) segueMount() {
 	_, h := window.GetFramebufferSize()
 

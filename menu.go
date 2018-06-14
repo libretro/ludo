@@ -29,6 +29,7 @@ type scene interface {
 	segueBack()
 	update()
 	render()
+	Entry() *entry
 }
 
 var menu struct {
@@ -216,8 +217,10 @@ func contextReset() {
 }
 
 func menuInit() {
+	w, _ := window.GetFramebufferSize()
 	menu.stack = []scene{}
 	menu.tweens = make(map[*float32]*gween.Tween)
+	menu.ratio = float32(w) / 1920
 
 	if g.coreRunning {
 		menu.stack = append(menu.stack, buildTabs())

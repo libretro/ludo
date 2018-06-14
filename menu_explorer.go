@@ -46,6 +46,10 @@ func buildExplorer(path string) scene {
 	return &list
 }
 
+func (explorer *screenExplorer) Entry() *entry {
+	return &explorer.entry
+}
+
 func (explorer *screenExplorer) segueMount() {
 	genericSegueMount(&explorer.entry)
 }

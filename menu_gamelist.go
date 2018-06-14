@@ -30,6 +30,10 @@ func buildGameList() scene {
 	return &list
 }
 
+func (s *screenGameList) Entry() *entry {
+	return &s.entry
+}
+
 func (s *screenGameList) segueMount() {
 	genericSegueMount(&s.entry)
 }
