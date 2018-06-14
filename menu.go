@@ -157,7 +157,7 @@ func genericSegueNext(list *entry) {
 func genericRender(list *entry) {
 	w, h := window.GetFramebufferSize()
 
-	drawPolygon(
+	drawQuad(
 		60*menu.ratio, float32(h)/2-50*menu.ratio,
 		float32(w)-610*menu.ratio, float32(h)/2-50*menu.ratio,
 		60*menu.ratio, float32(h)/2+50*menu.ratio,

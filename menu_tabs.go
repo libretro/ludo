@@ -263,7 +263,7 @@ func (tabs screenTabs) render() {
 
 		c := colorful.Hcl(float64(i%12)*30, 0.5, 0.5)
 
-		drawPolygon(
+		drawQuad(
 			-menu.scroll*menu.ratio+stackWidth, 0,
 			-menu.scroll*menu.ratio+stackWidth+e.width*menu.ratio, 0,
 			-menu.scroll*menu.ratio+stackWidth+400*menu.ratio, float32(h),
