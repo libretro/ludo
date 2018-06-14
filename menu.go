@@ -167,7 +167,7 @@ func genericRender(list *entry) {
 	)
 
 	for _, e := range list.children {
-		if e.y < -float32(h)/2 || e.y > float32(h)/2 {
+		if e.y*menu.ratio < -float32(h)/2 || e.y*menu.ratio > float32(h)/2 {
 			continue
 		}
 
