@@ -108,7 +108,7 @@ func newImage(file string) uint32 {
 }
 
 func newWhite() uint32 {
-	rgba := image.NewRGBA(image.Rect(0, 0, 10, 10))
+	rgba := image.NewRGBA(image.Rect(0, 0, 8, 8))
 	draw.Draw(rgba, rgba.Bounds(), image.White, image.Point{0, 0}, draw.Src)
 	return textureLoad(rgba)
 }
