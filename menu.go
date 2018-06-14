@@ -216,6 +216,16 @@ func contextReset() {
 	}
 }
 
+func fastForwardTweens() {
+	for e, t := range menu.tweens {
+		var finished bool
+		*e, finished = t.Update(1)
+		if finished {
+			delete(menu.tweens, e)
+		}
+	}
+}
+
 func menuInit() {
 	w, _ := window.GetFramebufferSize()
 	menu.stack = []scene{}
@@ -228,6 +238,7 @@ func menuInit() {
 		menu.stack = append(menu.stack, buildMainMenu())
 		menu.stack[1].segueNext()
 		menu.stack = append(menu.stack, buildQuickMenu())
+		fastForwardTweens()
 	} else {
 		menu.stack = append(menu.stack, buildTabs())
 	}
