@@ -262,13 +262,17 @@ func (tabs screenTabs) render() {
 	for i, e := range tabs.children {
 
 		c := colorful.Hcl(float64(i%12)*30, 0.5, 0.5)
+		var alpha float32 = 1
+		if i == 0 {
+			alpha = 0
+		}
 
 		drawQuad(
 			-menu.scroll*menu.ratio+stackWidth, 0,
 			-menu.scroll*menu.ratio+stackWidth+e.width*menu.ratio, 0,
 			-menu.scroll*menu.ratio+stackWidth+400*menu.ratio, float32(h),
 			-menu.scroll*menu.ratio+stackWidth+400*menu.ratio+e.width*menu.ratio, float32(h),
-			color{float32(c.R), float32(c.G), float32(c.B), 1})
+			color{float32(c.R), float32(c.G), float32(c.B), alpha})
 
 		stackWidth += e.width * menu.ratio
 
