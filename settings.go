@@ -15,7 +15,6 @@ import (
 var lock sync.Mutex
 
 var settings struct {
-	VideoScale        int     `json:"video_scale" label:"Video Scale" fmt:"%dx"`
 	VideoFullscreen   bool    `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t"`
 	VideoMonitorIndex int     `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	AudioVolume       float32 `json:"audio_volume" label:"Audio Volume" fmt:"%.1f"`
@@ -24,18 +23,11 @@ var settings struct {
 type settingCallbackIncrement func(*structs.Field, int)
 
 var incrCallbacks = map[string]settingCallbackIncrement{
-	"VideoScale": func(f *structs.Field, direction int) {
-		v := f.Value().(int)
-		v += direction
-		f.Set(v)
-		videoConfigure(video.geom, settings.VideoFullscreen)
-		saveSettings()
-	},
 	"VideoFullscreen": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
-		videoConfigure(video.geom, settings.VideoFullscreen)
+		videoConfigure(settings.VideoFullscreen)
 		saveSettings()
 	},
 	"VideoMonitorIndex": func(f *structs.Field, direction int) {
@@ -48,7 +40,7 @@ var incrCallbacks = map[string]settingCallbackIncrement{
 			v = len(glfw.GetMonitors()) - 1
 		}
 		f.Set(v)
-		videoConfigure(video.geom, settings.VideoFullscreen)
+		videoConfigure(settings.VideoFullscreen)
 		saveSettings()
 	},
 	"AudioVolume": func(f *structs.Field, direction int) {
@@ -65,7 +57,6 @@ func loadSettings() error {
 	defer lock.Unlock()
 
 	// Set default values
-	settings.VideoScale = 3
 	settings.VideoFullscreen = false
 	settings.VideoMonitorIndex = 0
 	settings.AudioVolume = 0.5

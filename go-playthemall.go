@@ -63,20 +63,21 @@ func main() {
 		coreLoad(g.corePath)
 	}
 
-	if len(gamePath) > 0 {
-		coreLoadGame(gamePath)
+	video.geom = libretro.GameGeometry{
+		AspectRatio: 16.0 / 9.0,
+		BaseWidth:   320 * 3,
+		BaseHeight:  180 * 3,
 	}
 
-	// No game running? display the menu with a dummy geometry
-	if !g.coreRunning {
-		geom := libretro.GameGeometry{
-			AspectRatio: 320.0 / 180.0,
-			BaseWidth:   320,
-			BaseHeight:  180,
-		}
-		videoConfigure(geom, settings.VideoFullscreen)
-		menuInit()
-		g.menuActive = true
+	videoConfigure(settings.VideoFullscreen)
+
+	menuInit()
+
+	// No game running? display the menu
+	g.menuActive = !g.coreRunning
+
+	if len(gamePath) > 0 {
+		coreLoadGame(gamePath)
 	}
 
 	for !window.ShouldClose() {

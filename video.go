@@ -63,21 +63,6 @@ func updateMaskUniform() {
 	}
 }
 
-func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float64) {
-	if ratio <= 0 {
-		ratio = sw / sh
-	}
-
-	if sw/sh < 1.0 {
-		dw = dh * ratio
-		dh = sh
-	} else {
-		dw = sw
-		dh = dw / ratio
-	}
-	return
-}
-
 func coreRatioViewport(win *glfw.Window, fbWidth int, fbHeight int) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
@@ -112,9 +97,7 @@ func fullscreenViewport() {
 	gl.Viewport(0, 0, int32(w), int32(h))
 }
 
-func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
-	video.geom = geom
-
+func videoConfigure(fullscreen bool) {
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
@@ -130,9 +113,8 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 		width = vm.Width
 		height = vm.Height
 	} else {
-		nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
-		width = int(nwidth * float64(settings.VideoScale))
-		height = int(nheight * float64(settings.VideoScale))
+		width = video.geom.BaseWidth
+		height = video.geom.BaseHeight
 	}
 
 	if window != nil {
@@ -213,7 +195,7 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 		log.Println("[Video]: Failed to create the video texture")
 	}
 
-	video.pitch = int32(geom.BaseWidth) * video.bpp
+	video.pitch = int32(video.geom.BaseWidth) * video.bpp
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 

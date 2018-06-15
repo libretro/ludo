@@ -137,7 +137,7 @@ func inputPoll() {
 	// Toggle fullscreen if menuActionFullscreenToggle is pressed
 	if released[0][menuActionFullscreenToggle] {
 		settings.VideoFullscreen = !settings.VideoFullscreen
-		videoConfigure(video.geom, settings.VideoFullscreen)
+		videoConfigure(settings.VideoFullscreen)
 		saveSettings()
 	}
 
