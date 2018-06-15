@@ -12,7 +12,7 @@ type color struct {
 	r, g, b, a float32
 }
 
-func xywhToCoords(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 float32) {
+func xywhTo4points(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 float32) {
 	x1 = x
 	x2 = x
 	x3 = x + w
@@ -32,7 +32,7 @@ func drawImage(image uint32, x, y, w, h float32, scale float32, c color) {
 	w *= scale
 	h *= scale
 
-	x1, y1, x2, y2, x3, y3, x4, y4 := xywhToCoords(x, y, w, h, ffbh)
+	x1, y1, x2, y2, x3, y3, x4, y4 := xywhTo4points(x, y, w, h, ffbh)
 
 	drawTextureQuad(image, x1, y1, x2, y2, x3, y3, x4, y4, c)
 }

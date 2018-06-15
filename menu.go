@@ -16,6 +16,7 @@ type entry struct {
 	labelAlpha      float32
 	icon            string
 	iconAlpha       float32
+	cursAlpha       float32
 	ptr             int
 	callbackOK      menuCallback
 	callbackValue   menuCallbackGetValue
@@ -86,6 +87,7 @@ func genericSegueMount(list *entry) {
 			e.iconAlpha = 0
 			e.scale = 0.5
 		}
+		e.cursAlpha = 0
 	}
 
 	genericAnimate(list)
@@ -118,6 +120,7 @@ func genericAnimate(list *entry) {
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
 	}
+	menu.tweens[&list.cursAlpha] = gween.New(list.cursAlpha, 0.1, 0.15, ease.OutSine)
 }
 
 func genericSegueNext(list *entry) {
@@ -153,6 +156,7 @@ func genericSegueNext(list *entry) {
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
 	}
+	menu.tweens[&list.cursAlpha] = gween.New(list.cursAlpha, 0, 0.15, ease.OutSine)
 }
 
 func genericRender(list *entry) {
@@ -163,7 +167,7 @@ func genericRender(list *entry) {
 		float32(w)-610*menu.ratio, float32(h)/2-50*menu.ratio,
 		60*menu.ratio, float32(h)/2+50*menu.ratio,
 		float32(w)-610*menu.ratio, float32(h)/2+50*menu.ratio,
-		color{1, 1, 1, 0.1},
+		color{1, 1, 1, list.cursAlpha},
 	)
 
 	for _, e := range list.children {

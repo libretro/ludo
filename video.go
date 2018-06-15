@@ -93,7 +93,7 @@ func coreRatioViewport(win *glfw.Window, fbWidth int, fbHeight int) {
 	x := (fbw - w) / 2
 	y := (fbh - h) / 2
 
-	x1, y1, x2, y2, x3, y3, x4, y4 := xywhToCoords(x, y, w, h, fbh)
+	x1, y1, x2, y2, x3, y3, x4, y4 := xywhTo4points(x, y, w, h, fbh)
 
 	va := []float32{
 		//  X, Y, U, V
