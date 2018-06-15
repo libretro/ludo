@@ -41,6 +41,13 @@ func buildExplorer(path string) scene {
 		})
 	}
 
+	if len(files) == 0 {
+		list.children = append(list.children, entry{
+			label: "Empty",
+			icon:  "subsetting",
+		})
+	}
+
 	list.segueMount()
 
 	return &list
