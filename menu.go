@@ -206,6 +206,7 @@ func contextReset() {
 	video.white = newWhite()
 
 	menu.icons = map[string]uint32{
+		"main":       newImage("assets/main.png"),
 		"file":       newImage("assets/file.png"),
 		"folder":     newImage("assets/folder.png"),
 		"subsetting": newImage("assets/subsetting.png"),

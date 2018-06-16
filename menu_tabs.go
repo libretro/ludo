@@ -17,7 +17,7 @@ func buildTabs() scene {
 
 	list.children = append(list.children, entry{
 		label: "Main Menu",
-		icon:  "setting",
+		icon:  "main",
 		callbackOK: func() {
 			menu.stack = append(menu.stack, buildMainMenu())
 		},
