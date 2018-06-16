@@ -9,7 +9,7 @@ type screenExplorer struct {
 	entry
 }
 
-func buildExplorer(path string) scene {
+func buildExplorer(path string, exts []string, cb func(string)) scene {
 	var list screenExplorer
 	list.label = "Explorer"
 
@@ -30,12 +30,11 @@ func buildExplorer(path string) scene {
 			callbackOK: func() {
 				if f.IsDir() {
 					list.segueNext()
-					menu.stack = append(menu.stack, buildExplorer(path+"/"+f.Name()+"/"))
-				} else if stringInSlice(filepath.Ext(f.Name()), []string{".so", ".dll", ".dylib"}) {
-					g.corePath = path + "/" + f.Name()
-					coreLoad(g.corePath)
-				} else {
-					coreLoadGame(path + "/" + f.Name())
+					menu.stack = append(menu.stack, buildExplorer(path+"/"+f.Name()+"/", exts, cb))
+				} else if exts == nil || stringInSlice(filepath.Ext(f.Name()), exts) {
+					cb(path + "/" + f.Name())
+				} else if exts == nil {
+					cb(path + "/" + f.Name())
 				}
 			},
 		})

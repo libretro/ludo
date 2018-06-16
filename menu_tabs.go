@@ -18,8 +18,9 @@ func buildTabs() scene {
 	list.label = "Play Them All"
 
 	list.children = append(list.children, entry{
-		label: "Main Menu",
-		icon:  "main",
+		label:    "Main Menu",
+		subLabel: "Load cores and games manually",
+		icon:     "main",
 		callbackOK: func() {
 			menu.stack = append(menu.stack, buildMainMenu())
 		},
@@ -58,7 +59,7 @@ func buildTabs() scene {
 		icon:     "add",
 		callbackOK: func() {
 			usr, _ := user.Current()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, nil))
 		},
 	})
 

@@ -12,6 +12,7 @@ import (
 
 // coreLoad loads a libretro core
 func coreLoad(sofile string) {
+	g.corePath = sofile
 	if g.coreRunning {
 		g.core.UnloadGame()
 		g.core.Deinit()

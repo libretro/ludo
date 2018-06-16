@@ -20,7 +20,7 @@ func buildGameList() scene {
 			icon:  "subsetting",
 			callbackOK: func() {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
+				menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, nil))
 			},
 		})
 	}
