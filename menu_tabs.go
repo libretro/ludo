@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os/user"
+
 	"github.com/kivutar/go-playthemall/libretro"
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/tanema/gween"
@@ -51,92 +53,12 @@ func buildTabs() scene {
 	})
 
 	list.children = append(list.children, entry{
-		label:    "Super NES",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Nintendo - Super Nintendo Entertainment System",
+		label:    "Add games",
+		subLabel: "Scan your collection",
+		icon:     "add",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "Mega Drive - Genesis",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Sega - Mega Drive - Genesis",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "Super NES",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "Mega Drive - Genesis",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Sega - Mega Drive - Genesis",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "Super NES",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "Mega Drive - Genesis",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Sega - Mega Drive - Genesis",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "Super NES",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "Mega Drive - Genesis",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Sega - Mega Drive - Genesis",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "Super NES",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "Mega Drive - Genesis",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Sega - Mega Drive - Genesis",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
+			usr, _ := user.Current()
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir))
 		},
 	})
 

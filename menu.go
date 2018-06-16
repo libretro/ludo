@@ -181,7 +181,7 @@ func genericRender(list *entry) {
 	drawCursor(list)
 
 	for _, e := range list.children {
-		if e.yp < -1 || e.yp > 1 {
+		if e.yp < -1.1 || e.yp > 1.1 {
 			continue
 		}
 
@@ -226,6 +226,7 @@ func contextReset() {
 		"loadstate":  newImage("assets/loadstate.png"),
 		"savestate":  newImage("assets/savestate.png"),
 		"screenshot": newImage("assets/screenshot.png"),
+		"add":        newImage("assets/add.png"),
 		"Nintendo - Super Nintendo Entertainment System": newImage("assets/Nintendo - Super Nintendo Entertainment System.png"),
 		"Sega - Mega Drive - Genesis":                    newImage("assets/Sega - Mega Drive - Genesis.png"),
 	}
