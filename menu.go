@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math"
+
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
@@ -43,9 +45,11 @@ var menu struct {
 	tweens        map[*float32]*gween.Tween
 	scroll        float32
 	ratio         float32
+	t             float64
 }
 
 func menuRender() {
+	menu.t += 0.1
 	w, _ := window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
@@ -159,16 +163,22 @@ func genericSegueNext(list *entry) {
 	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5+0.3, 0.15, ease.OutSine)
 }
 
-func genericRender(list *entry) {
+func drawCursor(list *entry) {
 	w, h := window.GetFramebufferSize()
-
+	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
 	drawQuad(
 		60*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		60*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
 		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
-		color{1, 1, 1, list.cursor.alpha},
+		color{1, 1, 1, alpha},
 	)
+}
+
+func genericRender(list *entry) {
+	w, h := window.GetFramebufferSize()
+
+	drawCursor(list)
 
 	for _, e := range list.children {
 		if e.yp < -1 || e.yp > 1 {
