@@ -72,17 +72,17 @@ func genericSegueMount(list *entry) {
 		e := &list.children[i]
 
 		if i == list.ptr {
-			e.y = 200*menu.ratio + float32(80*(i-list.ptr))
+			e.yp = 0.5 + 0.3
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.scale = 1.0
 		} else if i < list.ptr {
-			e.y = 100*menu.ratio + float32(80*(i-list.ptr))
+			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.scale = 0.5
 		} else if i > list.ptr {
-			e.y = 300*menu.ratio + float32(80*(i-list.ptr))
+			e.yp = 0.6 + 0.3 + 0.08*float32(i-list.ptr)
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.scale = 0.5
@@ -97,25 +97,25 @@ func genericAnimate(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
 
-		var y, la, a, s float32
+		var yp, la, a, s float32
 		if i == list.ptr {
-			y = float32(80 * (i - list.ptr))
+			yp = 0.5
 			la = 1.0
 			a = 1.0
 			s = 1.0
 		} else if i < list.ptr {
-			y = -100*menu.ratio + float32(80*(i-list.ptr))
+			yp = 0.4 + 0.08*float32(i-list.ptr)
 			la = 0.5
 			a = 0.5
 			s = 0.5
 		} else if i > list.ptr {
-			y = 100*menu.ratio + float32(80*(i-list.ptr))
+			yp = 0.6 + 0.08*float32(i-list.ptr)
 			la = 0.5
 			a = 0.5
 			s = 0.5
 		}
 
-		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
+		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, la, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
@@ -124,34 +124,28 @@ func genericAnimate(list *entry) {
 }
 
 func genericSegueNext(list *entry) {
-	_, h := window.GetFramebufferSize()
-
 	for i := range list.children {
 		e := &list.children[i]
 
-		var y, la, a, s float32
+		var yp, la, a, s float32
 		if i == list.ptr {
-			y = -200*menu.ratio + float32(80*(i-list.ptr))
+			yp = 0.5 - 0.3
 			la = 0
 			a = 0
 			s = 1.0
 		} else if i < list.ptr {
-			y = -300*menu.ratio + float32(80*(i-list.ptr))
+			yp = 0.4 - 0.3 + 0.08*float32(i-list.ptr)
 			la = 0
 			a = 0
 			s = 0.5
 		} else if i > list.ptr {
-			y = -100*menu.ratio + float32(80*(i-list.ptr))
+			yp = 0.6 - 0.3 + 0.08*float32(i-list.ptr)
 			la = 0
 			a = 0
 			s = 0.5
 		}
 
-		if y < -float32(h)/2-200*menu.ratio || y > float32(h)/2+200*menu.ratio {
-			continue
-		}
-
-		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
+		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, la, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
@@ -171,7 +165,7 @@ func genericRender(list *entry) {
 	)
 
 	for _, e := range list.children {
-		if e.y*menu.ratio < -float32(h)/2 || e.y*menu.ratio > float32(h)/2 {
+		if e.yp < -1 || e.yp > 1 {
 			continue
 		}
 
@@ -179,7 +173,7 @@ func genericRender(list *entry) {
 
 		drawImage(menu.icons[e.icon],
 			120*menu.ratio-64*e.scale*menu.ratio,
-			float32(h)/2+e.y*menu.ratio-16*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+			float32(h)*+e.yp-16*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
 			e.scale, color{1, 1, 1, e.iconAlpha})
 
@@ -188,14 +182,14 @@ func genericRender(list *entry) {
 			video.font.SetColor(1, 1, 1, e.labelAlpha)
 			video.font.Printf(
 				200*menu.ratio,
-				float32(h)/2+e.y*menu.ratio+fontOffset,
+				float32(h)*e.yp+fontOffset,
 				0.7*menu.ratio, e.label)
 
 			if e.callbackValue != nil {
 				lw := video.font.Width(0.7*menu.ratio, e.callbackValue())
 				video.font.Printf(
 					float32(w)-lw-650*menu.ratio,
-					float32(h)/2+e.y*menu.ratio+fontOffset,
+					float32(h)*e.yp+fontOffset,
 					0.7*menu.ratio, e.callbackValue())
 			}
 		}
