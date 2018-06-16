@@ -150,25 +150,23 @@ func (tabs *screenTabs) Entry() *entry {
 }
 
 func (tabs *screenTabs) segueMount() {
-	_, h := window.GetFramebufferSize()
-
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
 		if i == tabs.ptr {
-			e.y = float32(h / 2)
+			e.yp = 0.5
 			e.labelAlpha = 1
 			e.iconAlpha = 1
 			e.scale = 1
 			e.width = 1256
 		} else if i < tabs.ptr {
-			e.y = 64
+			e.yp = 0.05
 			e.labelAlpha = 0
 			e.iconAlpha = 0.5
 			e.scale = 0.25
 			e.width = 128
 		} else if i > tabs.ptr {
-			e.y = float32(h) - 64
+			e.yp = 0.95
 			e.labelAlpha = 0
 			e.iconAlpha = 0.5
 			e.scale = 0.25
@@ -184,33 +182,31 @@ func (tabs *screenTabs) segueBack() {
 }
 
 func (tabs *screenTabs) animate() {
-	_, h := window.GetFramebufferSize()
-
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
-		var y, labelAlpha, iconAlpha, scale, width float32
+		var yp, labelAlpha, iconAlpha, scale, width float32
 		if i == tabs.ptr {
-			y = float32(h / 2)
+			yp = 0.5
 			labelAlpha = 1
 			iconAlpha = 1
 			scale = 1
 			width = 1256
 		} else if i < tabs.ptr {
-			y = 64
+			yp = 0.05
 			labelAlpha = 0
 			iconAlpha = 0.5
 			scale = 0.25
 			width = 128
 		} else if i > tabs.ptr {
-			y = float32(h) - 64
+			yp = 0.95
 			labelAlpha = 0
 			iconAlpha = 0.5
 			scale = 0.25
 			width = 128
 		}
 
-		menu.tweens[&e.y] = gween.New(e.y, y, 0.15, ease.OutSine)
+		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
@@ -280,16 +276,16 @@ func (tabs screenTabs) render() {
 
 		stackWidth += e.width * menu.ratio
 
-		x := -menu.scroll*menu.ratio + stackWidth - e.width/2*menu.ratio + 400*menu.ratio - 400/(float32(h)/e.y)*menu.ratio
+		x := -menu.scroll*menu.ratio + stackWidth - e.width/2*menu.ratio + 400*menu.ratio - 400*e.yp*menu.ratio
 
 		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
 		lw := video.font.Width(0.7*menu.ratio, e.label)
-		video.font.Printf(x-lw/2, e.y+180*menu.ratio, 0.7*menu.ratio, e.label)
+		video.font.Printf(x-lw/2, float32(h)*e.yp+180*menu.ratio, 0.7*menu.ratio, e.label)
 		lw = video.font.Width(0.4*menu.ratio, e.subLabel)
-		video.font.Printf(x-lw/2, e.y+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
+		video.font.Printf(x-lw/2, float32(h)*e.yp+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
 
 		drawImage(menu.icons[e.icon],
-			x-128*e.scale*menu.ratio, e.y-128*e.scale*menu.ratio,
+			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,
 			256*menu.ratio, 256*menu.ratio, e.scale, color{1, 1, 1, e.iconAlpha})
 	}
 }
