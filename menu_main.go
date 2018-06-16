@@ -30,7 +30,12 @@ func buildMainMenu() scene {
 		icon:  "subsetting",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, []string{".dll", ".dylib", ".so"}, coreLoad))
+			menu.stack = append(menu.stack, buildExplorer(
+				usr.HomeDir,
+				[]string{".dll", ".dylib", ".so"},
+				coreLoad,
+				entry{},
+			))
 		},
 	})
 
@@ -39,7 +44,7 @@ func buildMainMenu() scene {
 		icon:  "subsetting",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, coreLoadGame))
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, coreLoadGame, entry{}))
 		},
 	})
 

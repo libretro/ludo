@@ -59,7 +59,10 @@ func buildTabs() scene {
 		icon:     "add",
 		callbackOK: func() {
 			usr, _ := user.Current()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, nil))
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, nil, entry{
+				label: "<Scan this directory>",
+				icon:  "scan",
+			}))
 		},
 	})
 

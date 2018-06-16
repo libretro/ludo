@@ -227,6 +227,7 @@ func contextReset() {
 		"savestate":  newImage("assets/savestate.png"),
 		"screenshot": newImage("assets/screenshot.png"),
 		"add":        newImage("assets/add.png"),
+		"scan":       newImage("assets/scan.png"),
 		"Nintendo - Super Nintendo Entertainment System": newImage("assets/Nintendo - Super Nintendo Entertainment System.png"),
 		"Sega - Mega Drive - Genesis":                    newImage("assets/Sega - Mega Drive - Genesis.png"),
 	}

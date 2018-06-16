@@ -9,13 +9,17 @@ type screenExplorer struct {
 	entry
 }
 
-func buildExplorer(path string, exts []string, cb func(string)) scene {
+func buildExplorer(path string, exts []string, cb func(string), dirAction entry) scene {
 	var list screenExplorer
 	list.label = "Explorer"
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		notifyAndLog("Menu", err.Error())
+	}
+
+	if dirAction.label != "" {
+		list.children = append(list.children, dirAction)
 	}
 
 	for _, f := range files {
@@ -30,10 +34,8 @@ func buildExplorer(path string, exts []string, cb func(string)) scene {
 			callbackOK: func() {
 				if f.IsDir() {
 					list.segueNext()
-					menu.stack = append(menu.stack, buildExplorer(path+"/"+f.Name()+"/", exts, cb))
-				} else if exts == nil || stringInSlice(filepath.Ext(f.Name()), exts) {
-					cb(path + "/" + f.Name())
-				} else if exts == nil {
+					menu.stack = append(menu.stack, buildExplorer(path+"/"+f.Name()+"/", exts, cb, dirAction))
+				} else if cb != nil && (exts == nil || stringInSlice(filepath.Ext(f.Name()), exts)) {
 					cb(path + "/" + f.Name())
 				}
 			},
