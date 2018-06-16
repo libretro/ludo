@@ -16,7 +16,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/go-gl/gl/all-core/gl"
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/vulkan-go/glfw/v3.3/glfw"
 	"github.com/kivutar/glfont"
 	"github.com/kivutar/go-playthemall/libretro"
 )

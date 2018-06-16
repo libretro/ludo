@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/fatih/structs"
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/vulkan-go/glfw/v3.3/glfw"
 )
 
 var lock sync.Mutex
