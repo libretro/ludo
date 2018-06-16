@@ -16,12 +16,15 @@ type entry struct {
 	labelAlpha      float32
 	icon            string
 	iconAlpha       float32
-	cursAlpha       float32
-	ptr             int
-	callbackOK      menuCallback
-	callbackValue   menuCallbackGetValue
-	callbackIncr    menuCallbackIncr
-	children        []entry
+	cursor          struct {
+		alpha float32
+		yp    float32
+	}
+	ptr           int
+	callbackOK    menuCallback
+	callbackValue menuCallbackGetValue
+	callbackIncr  menuCallbackIncr
+	children      []entry
 }
 
 type scene interface {
@@ -87,7 +90,8 @@ func genericSegueMount(list *entry) {
 			e.iconAlpha = 0
 			e.scale = 0.5
 		}
-		e.cursAlpha = 0
+		e.cursor.alpha = 0
+		e.cursor.yp = 0.5 + 0.3
 	}
 
 	genericAnimate(list)
@@ -120,7 +124,8 @@ func genericAnimate(list *entry) {
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
 	}
-	menu.tweens[&list.cursAlpha] = gween.New(list.cursAlpha, 0.1, 0.15, ease.OutSine)
+	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0.1, 0.15, ease.OutSine)
+	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5, 0.15, ease.OutSine)
 }
 
 func genericSegueNext(list *entry) {
@@ -150,18 +155,19 @@ func genericSegueNext(list *entry) {
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
 	}
-	menu.tweens[&list.cursAlpha] = gween.New(list.cursAlpha, 0, 0.15, ease.OutSine)
+	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 0.15, ease.OutSine)
+	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5+0.3, 0.15, ease.OutSine)
 }
 
 func genericRender(list *entry) {
 	w, h := window.GetFramebufferSize()
 
 	drawQuad(
-		60*menu.ratio, float32(h)/2-50*menu.ratio,
-		float32(w)-610*menu.ratio, float32(h)/2-50*menu.ratio,
-		60*menu.ratio, float32(h)/2+50*menu.ratio,
-		float32(w)-610*menu.ratio, float32(h)/2+50*menu.ratio,
-		color{1, 1, 1, list.cursAlpha},
+		60*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
+		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
+		60*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
+		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
+		color{1, 1, 1, list.cursor.alpha},
 	)
 
 	for _, e := range list.children {
@@ -173,7 +179,7 @@ func genericRender(list *entry) {
 
 		drawImage(menu.icons[e.icon],
 			120*menu.ratio-64*e.scale*menu.ratio,
-			float32(h)*+e.yp-16*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+			float32(h)*e.yp-16*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
 			e.scale, color{1, 1, 1, e.iconAlpha})
 
