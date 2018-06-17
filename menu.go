@@ -189,7 +189,7 @@ func genericRender(list *entry) {
 
 		drawImage(menu.icons[e.icon],
 			120*menu.ratio-64*e.scale*menu.ratio,
-			float32(h)*e.yp-16*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+			float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
 			e.scale, color{1, 1, 1, e.iconAlpha})
 
