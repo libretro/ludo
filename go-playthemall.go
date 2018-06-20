@@ -36,6 +36,33 @@ func init() {
 	os.Mkdir(usr.HomeDir+"/.playthemall/system/", 0777)
 }
 
+func runLoop() {
+	for !window.ShouldClose() {
+		glfw.SwapInterval(1)
+		glfw.PollEvents()
+		processNotifications()
+		if !g.menuActive {
+			if g.coreRunning {
+				g.core.Run()
+				if g.frameTimeCb.Callback != nil {
+					g.frameTimeCb.Callback(g.frameTimeCb.Reference)
+				}
+				if g.audioCb.Callback != nil {
+					g.audioCb.Callback()
+				}
+			}
+			videoRender()
+		} else {
+			inputPoll()
+			menuInput()
+			videoRender()
+			menuRender()
+		}
+		renderNotifications()
+		window.SwapBuffers()
+	}
+}
+
 func main() {
 	flag.StringVar(&g.corePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&g.verbose, "v", false, "Verbose logs")
@@ -80,30 +107,7 @@ func main() {
 	// No game running? display the menu
 	g.menuActive = !g.coreRunning
 
-	for !window.ShouldClose() {
-		glfw.SwapInterval(1)
-		glfw.PollEvents()
-		processNotifications()
-		if !g.menuActive {
-			if g.coreRunning {
-				g.core.Run()
-				if g.frameTimeCb.Callback != nil {
-					g.frameTimeCb.Callback(g.frameTimeCb.Reference)
-				}
-				if g.audioCb.Callback != nil {
-					g.audioCb.Callback()
-				}
-			}
-			videoRender()
-		} else {
-			inputPoll()
-			menuInput()
-			videoRender()
-			menuRender()
-		}
-		renderNotifications()
-		window.SwapBuffers()
-	}
+	runLoop()
 
 	// Unload and deinit in the core.
 	if g.coreRunning {
