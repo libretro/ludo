@@ -2,7 +2,7 @@
 
 go-playthemall is an attempt to write a libretro frontend written in go.
 
-<img src="screenshot.png" height="373" />
+<img src="assets/illustration.png" height="373" />
 
 It is able to launch most non GL libretro cores.
 
