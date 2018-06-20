@@ -50,10 +50,10 @@ var menu struct {
 }
 
 // updateTweens loops over the animation queue and updade them so we can see progress
-func updateTweens() {
+func updateTweens(dt float32) {
 	for e, t := range menu.tweens {
 		var finished bool
-		*e, finished = t.Update(1.0 / 60.0)
+		*e, finished = t.Update(dt)
 		if finished {
 			delete(menu.tweens, e)
 		}
@@ -68,7 +68,7 @@ func menuRender() {
 
 	fullscreenViewport()
 
-	updateTweens()
+	updateTweens(1.0 / 60.0)
 
 	currentScreenIndex := len(menu.stack) - 1
 	for i := 0; i <= currentScreenIndex+1; i++ {
@@ -249,13 +249,7 @@ func contextReset() {
 
 // fastForwardTweens finishes all the current animations in the queue
 func fastForwardTweens() {
-	for e, t := range menu.tweens {
-		var finished bool
-		*e, finished = t.Update(1)
-		if finished {
-			delete(menu.tweens, e)
-		}
-	}
+	updateTweens(10)
 }
 
 // Context is used to mock GLFW windows
