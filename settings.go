@@ -20,7 +20,7 @@ var lock sync.Mutex
 var settings struct {
 	VideoFullscreen   bool    `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
 	VideoMonitorIndex int     `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
-	AudioVolume       float32 `json:"audio_volume" label:"Audio Volume" fmt:"%.1f"`
+	AudioVolume       float32 `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
 }
 
 type settingCallbackIncrement func(*structs.Field, int)

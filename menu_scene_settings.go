@@ -49,6 +49,19 @@ var widgets = map[string]func(*entry){
 			128*menu.ratio, 128*menu.ratio,
 			1.25, color{1, 1, 1, e.iconAlpha})
 	},
+	"range": func(e *entry) {
+		fbw, fbh := window.GetFramebufferSize()
+		x := float32(fbw) - 650*menu.ratio - 128*menu.ratio
+		y := float32(fbh)*e.yp - 4*menu.ratio
+		w := 128 * menu.ratio
+		h := 8 * menu.ratio
+		x1, y1, x2, y2, x3, y3, x4, y4 := xywhTo4points(x, y, w, h, float32(fbh))
+		drawQuad(x1, y1, x2, y2, x3, y3, x4, y4, color{0.25, 0.25, 0.25, e.iconAlpha})
+
+		w = 128 * menu.ratio * e.value().(float32)
+		x1, y1, x2, y2, x3, y3, x4, y4 = xywhTo4points(x, y, w, h, float32(fbh))
+		drawQuad(x1, y1, x2, y2, x3, y3, x4, y4, color{1, 1, 1, e.iconAlpha})
+	},
 }
 
 // Generic stuff
