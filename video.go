@@ -16,17 +16,19 @@ import (
 var window *glfw.Window
 
 var video struct {
-	program uint32
-	vao     uint32
-	vbo     uint32
-	texID   uint32
-	white   uint32
-	pitch   int32
-	pixFmt  uint32
-	pixType uint32
-	bpp     int32
-	geom    libretro.GameGeometry
-	font    *glfont.Font
+	program   uint32
+	vao       uint32
+	vbo       uint32
+	texID     uint32
+	white     uint32
+	pitch     int32
+	pixFmt    uint32
+	pixType   uint32
+	bpp       int32
+	geom      libretro.GameGeometry
+	font      *glfont.Font
+	winWidth  int
+	winHeight int
 }
 
 func videoSetPixelFormat(format uint32) bool {
@@ -113,8 +115,8 @@ func videoConfigure(fullscreen bool) {
 		width = vm.Width
 		height = vm.Height
 	} else {
-		width = video.geom.BaseWidth
-		height = video.geom.BaseHeight
+		width = video.winWidth
+		height = video.winHeight
 	}
 
 	if window != nil {

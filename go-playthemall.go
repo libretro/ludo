@@ -90,11 +90,8 @@ func main() {
 		coreLoad(g.corePath)
 	}
 
-	video.geom = libretro.GameGeometry{
-		AspectRatio: 16.0 / 9.0,
-		BaseWidth:   320 * 3,
-		BaseHeight:  180 * 3,
-	}
+	video.winWidth = 320 * 3
+	video.winHeight = 180 * 3
 
 	videoConfigure(settings.VideoFullscreen)
 
