@@ -99,7 +99,7 @@ func main() {
 		coreLoadGame(gamePath)
 	}
 
-	menuInit()
+	menuInit(window)
 
 	// No game running? display the menu
 	g.menuActive = !g.coreRunning

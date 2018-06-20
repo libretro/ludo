@@ -258,11 +258,16 @@ func fastForwardTweens() {
 	}
 }
 
+// Context is used to mock GLFW windows
+type Context interface {
+	GetFramebufferSize() (width, height int)
+}
+
 // menuInit initializes the menu.
 // If a game is already running, it will warp the user to the quick menu.
 // If not, it will display the menu tabs
-func menuInit() {
-	w, _ := window.GetFramebufferSize()
+func menuInit(ctx Context) {
+	w, _ := ctx.GetFramebufferSize()
 	menu.stack = []scene{}
 	menu.tweens = make(map[*float32]*gween.Tween)
 	menu.ratio = float32(w) / 1920
