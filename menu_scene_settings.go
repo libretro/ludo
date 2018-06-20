@@ -20,13 +20,14 @@ func buildSettings() scene {
 		list.children = append(list.children, entry{
 			label: f.Tag("label"),
 			icon:  "subsetting",
-			callbackIncr: func(direction int) {
+			incr: func(direction int) {
 				incrCallbacks[f.Name()](f, direction)
 			},
-			callbackValue: func() string {
+			value: f.Value,
+			stringValue: func() string {
 				return fmt.Sprintf(f.Tag("fmt"), f.Value())
 			},
-			callbackWidget: widgets[f.Tag("widget")],
+			widget: widgets[f.Tag("widget")],
 		})
 	}
 
@@ -38,7 +39,7 @@ func buildSettings() scene {
 var widgets = map[string]func(*entry){
 	"switch": func(e *entry) {
 		icon := "on"
-		if e.callbackValue() == "false" {
+		if e.value().(bool) {
 			icon = "off"
 		}
 		w, h := window.GetFramebufferSize()

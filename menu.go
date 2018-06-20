@@ -18,9 +18,10 @@ type entry struct {
 	iconAlpha       float32
 	ptr             int
 	callbackOK      func()
-	callbackValue   func() string
-	callbackWidget  func(*entry)
-	callbackIncr    func(int)
+	value           func() interface{}
+	stringValue     func() string
+	widget          func(*entry)
+	incr            func(int)
 	children        []entry
 	cursor          struct {
 		alpha float32
@@ -216,14 +217,14 @@ func genericRender(list *entry) {
 				float32(h)*e.yp+fontOffset,
 				0.7*menu.ratio, e.label)
 
-			if e.callbackWidget != nil {
-				e.callbackWidget(&e)
-			} else if e.callbackValue != nil {
-				lw := video.font.Width(0.7*menu.ratio, e.callbackValue())
+			if e.widget != nil {
+				e.widget(&e)
+			} else if e.stringValue != nil {
+				lw := video.font.Width(0.7*menu.ratio, e.stringValue())
 				video.font.Printf(
 					float32(w)-lw-650*menu.ratio,
 					float32(h)*e.yp+fontOffset,
-					0.7*menu.ratio, e.callbackValue())
+					0.7*menu.ratio, e.stringValue())
 			}
 		}
 	}
