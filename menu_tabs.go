@@ -62,6 +62,9 @@ func buildTabs() scene {
 			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, nil, entry{
 				label: "<Scan this directory>",
 				icon:  "scan",
+				callbackOK: func() {
+					notifyAndLog("Menu", "Not implemented yet.")
+				},
 			}))
 		},
 	})
