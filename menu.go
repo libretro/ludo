@@ -105,28 +105,28 @@ func genericAnimate(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
 
-		var yp, la, a, s float32
+		var yp, labelAlpha, iconAlpha, scale float32
 		if i == list.ptr {
 			yp = 0.5
-			la = 1.0
-			a = 1.0
-			s = 1.0
+			labelAlpha = 1.0
+			iconAlpha = 1.0
+			scale = 1.0
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
-			la = 0.5
-			a = 0.5
-			s = 0.5
+			labelAlpha = 0.5
+			iconAlpha = 0.5
+			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 + 0.08*float32(i-list.ptr)
-			la = 0.5
-			a = 0.5
-			s = 0.5
+			labelAlpha = 0.5
+			iconAlpha = 0.5
+			scale = 0.5
 		}
 
 		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, la, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
 	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0.1, 0.15, ease.OutSine)
 	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5, 0.15, ease.OutSine)
