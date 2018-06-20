@@ -14,6 +14,9 @@ import (
 
 var lock sync.Mutex
 
+// settings is the list of available settings for the program.
+// It serializes to JSON.
+// Tags are used to set a human readable label and a format for the settings value.
 var settings struct {
 	VideoFullscreen   bool    `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t"`
 	VideoMonitorIndex int     `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
@@ -22,6 +25,8 @@ var settings struct {
 
 type settingCallbackIncrement func(*structs.Field, int)
 
+// incrCallbacks is a map of callbacks called when a setting value
+// is incremented or decremented
 var incrCallbacks = map[string]settingCallbackIncrement{
 	"VideoFullscreen": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
@@ -52,6 +57,9 @@ var incrCallbacks = map[string]settingCallbackIncrement{
 	},
 }
 
+// loadSettings loads settings from the home directory.
+// If the settings file doesn't exists, it will return an error and
+// set all the settings to their default value.
 func loadSettings() error {
 	lock.Lock()
 	defer lock.Unlock()
@@ -71,6 +79,7 @@ func loadSettings() error {
 	return err
 }
 
+// saveSettings saves the current configuration to the home directory
 func saveSettings() error {
 	lock.Lock()
 	defer lock.Unlock()
