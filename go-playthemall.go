@@ -71,14 +71,14 @@ func main() {
 
 	videoConfigure(settings.VideoFullscreen)
 
+	if len(gamePath) > 0 {
+		coreLoadGame(gamePath)
+	}
+
 	menuInit()
 
 	// No game running? display the menu
 	g.menuActive = !g.coreRunning
-
-	if len(gamePath) > 0 {
-		coreLoadGame(gamePath)
-	}
 
 	for !window.ShouldClose() {
 		glfw.SwapInterval(1)
