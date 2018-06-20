@@ -7,10 +7,8 @@ import (
 	"github.com/tanema/gween/ease"
 )
 
-type menuCallback func()
-type menuCallbackIncr func(int)
-type menuCallbackGetValue func() string
-
+// entry is a menu entry. It can also represent a scene.
+// The menu data is a tree of entries.
 type entry struct {
 	yp, scale       float32
 	width           float32
@@ -23,12 +21,14 @@ type entry struct {
 		yp    float32
 	}
 	ptr           int
-	callbackOK    menuCallback
-	callbackValue menuCallbackGetValue
-	callbackIncr  menuCallbackIncr
+	callbackOK    func()
+	callbackValue func() string
+	callbackIncr  func(int)
 	children      []entry
 }
 
+// scene represents a page of the UI
+// A scene is typically an entry displaying its own children
 type scene interface {
 	segueMount()
 	segueNext()
@@ -38,6 +38,7 @@ type scene interface {
 	Entry() *entry
 }
 
+// menu is a global struct holding the menu state
 var menu struct {
 	stack         []scene
 	icons         map[string]uint32
@@ -48,13 +49,8 @@ var menu struct {
 	t             float64
 }
 
-func menuRender() {
-	menu.t += 0.1
-	w, _ := window.GetFramebufferSize()
-	menu.ratio = float32(w) / 1920
-
-	fullscreenViewport()
-
+// updateTweens loops over the animation queue and updade them so we can see progress
+func updateTweens() {
 	for e, t := range menu.tweens {
 		var finished bool
 		*e, finished = t.Update(1.0 / 60.0)
@@ -62,6 +58,17 @@ func menuRender() {
 			delete(menu.tweens, e)
 		}
 	}
+}
+
+// menuRender takes care of rendering the menu
+func menuRender() {
+	menu.t += 0.1
+	w, _ := window.GetFramebufferSize()
+	menu.ratio = float32(w) / 1920
+
+	fullscreenViewport()
+
+	updateTweens()
 
 	currentScreenIndex := len(menu.stack) - 1
 	for i := 0; i <= currentScreenIndex+1; i++ {
@@ -74,6 +81,7 @@ func menuRender() {
 	}
 }
 
+// genericSegueMount is the smooth transition of the menu entries first appearance
 func genericSegueMount(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
@@ -101,6 +109,7 @@ func genericSegueMount(list *entry) {
 	genericAnimate(list)
 }
 
+// genericAnimate is the generic animation of entries when the user scrolls up or down
 func genericAnimate(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
@@ -132,6 +141,8 @@ func genericAnimate(list *entry) {
 	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5, 0.15, ease.OutSine)
 }
 
+// genericSegueNext is a smooth transition that fades out the current list
+// to leave room for the next list to appear
 func genericSegueNext(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
@@ -163,6 +174,7 @@ func genericSegueNext(list *entry) {
 	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5+0.3, 0.15, ease.OutSine)
 }
 
+// drawCursor draws the blinking rectangular background of the active menu entry
 func drawCursor(list *entry) {
 	w, h := window.GetFramebufferSize()
 	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
@@ -175,6 +187,8 @@ func drawCursor(list *entry) {
 	)
 }
 
+// genericRender renders a vertical list of menu entries
+// It also display values of settings if we are displaying a settings scene
 func genericRender(list *entry) {
 	w, h := window.GetFramebufferSize()
 
@@ -233,6 +247,7 @@ func contextReset() {
 	}
 }
 
+// fastForwardTweens finishes all the current animations in the queue
 func fastForwardTweens() {
 	for e, t := range menu.tweens {
 		var finished bool
@@ -243,6 +258,9 @@ func fastForwardTweens() {
 	}
 }
 
+// menuInit initializes the menu.
+// If a game is already running, it will warp the user to the quick menu.
+// If not, it will display the menu tabs
 func menuInit() {
 	w, _ := window.GetFramebufferSize()
 	menu.stack = []scene{}
