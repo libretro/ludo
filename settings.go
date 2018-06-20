@@ -18,7 +18,7 @@ var lock sync.Mutex
 // It serializes to JSON.
 // Tags are used to set a human readable label and a format for the settings value.
 var settings struct {
-	VideoFullscreen   bool    `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t"`
+	VideoFullscreen   bool    `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
 	VideoMonitorIndex int     `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	AudioVolume       float32 `json:"audio_volume" label:"Audio Volume" fmt:"%.1f"`
 }

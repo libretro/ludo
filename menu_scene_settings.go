@@ -26,6 +26,7 @@ func buildSettings() scene {
 			callbackValue: func() string {
 				return fmt.Sprintf(f.Tag("fmt"), f.Value())
 			},
+			callbackWidget: widgets[f.Tag("widget")],
 		})
 	}
 
@@ -33,6 +34,23 @@ func buildSettings() scene {
 
 	return &list
 }
+
+var widgets = map[string]func(*entry){
+	"switch": func(e *entry) {
+		icon := "on"
+		if e.callbackValue() == "false" {
+			icon = "off"
+		}
+		w, h := window.GetFramebufferSize()
+		drawImage(menu.icons[icon],
+			float32(w)-650*menu.ratio-128*menu.ratio,
+			float32(h)*e.yp-64*1.25*menu.ratio,
+			128*menu.ratio, 128*menu.ratio,
+			1.25, color{1, 1, 1, e.iconAlpha})
+	},
+}
+
+// Generic stuff
 
 func (s *screenSettings) Entry() *entry {
 	return &s.entry
