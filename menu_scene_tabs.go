@@ -35,23 +35,23 @@ func buildTabs() scene {
 		},
 	})
 
-	list.children = append(list.children, entry{
-		label:    "Super NES",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Nintendo - Super Nintendo Entertainment System",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
+	// list.children = append(list.children, entry{
+	// 	label:    "Super NES",
+	// 	subLabel: "10 Games - 5 Favorites",
+	// 	icon:     "Nintendo - Super Nintendo Entertainment System",
+	// 	callbackOK: func() {
+	// 		menu.stack = append(menu.stack, buildGameList())
+	// 	},
+	// })
 
-	list.children = append(list.children, entry{
-		label:    "Mega Drive - Genesis",
-		subLabel: "10 Games - 5 Favorites",
-		icon:     "Sega - Mega Drive - Genesis",
-		callbackOK: func() {
-			menu.stack = append(menu.stack, buildGameList())
-		},
-	})
+	// list.children = append(list.children, entry{
+	// 	label:    "Mega Drive - Genesis",
+	// 	subLabel: "10 Games - 5 Favorites",
+	// 	icon:     "Sega - Mega Drive - Genesis",
+	// 	callbackOK: func() {
+	// 		menu.stack = append(menu.stack, buildGameList())
+	// 	},
+	// })
 
 	list.children = append(list.children, entry{
 		label:    "Add games",
