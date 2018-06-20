@@ -2,19 +2,11 @@ package main
 
 import (
 	"fmt"
-	"image"
-	"image/draw"
-	"image/png"
 	"log"
-	"os"
-	"os/user"
-	"path/filepath"
-	"time"
 
 	"strings"
 	"unsafe"
 
-	"github.com/disintegration/imaging"
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/kivutar/glfont"
@@ -24,16 +16,19 @@ import (
 var window *glfw.Window
 
 var video struct {
-	program uint32
-	vao     uint32
-	vbo     uint32
-	texID   uint32
-	pitch   int32
-	pixFmt  uint32
-	pixType uint32
-	bpp     int32
-	geom    libretro.GameGeometry
-	font    *glfont.Font
+	program   uint32
+	vao       uint32
+	vbo       uint32
+	texID     uint32
+	white     uint32
+	pitch     int32
+	pixFmt    uint32
+	pixType   uint32
+	bpp       int32
+	geom      libretro.GameGeometry
+	font      *glfont.Font
+	winWidth  int
+	winHeight int
 }
 
 func videoSetPixelFormat(format uint32) bool {
@@ -70,37 +65,33 @@ func updateMaskUniform() {
 	}
 }
 
-func resizeToAspect(ratio float64, sw float64, sh float64) (dw float64, dh float64) {
-	if ratio <= 0 {
-		ratio = sw / sh
-	}
-
-	if sw/sh < 1.0 {
-		dw = dh * ratio
-		dh = sh
-	} else {
-		dw = sw
-		dh = dw / ratio
-	}
-	return
-}
-
-func coreRatioViewport(w *glfw.Window, fbWidth int, fbHeight int) {
+func coreRatioViewport(win *glfw.Window, fbWidth int, fbHeight int) {
 	// Scale the content to fit in the viewport.
-	width := float64(fbWidth)
-	height := float64(fbHeight)
-	viewWidth := width
-	viewHeight := width / video.geom.AspectRatio
-	if viewHeight > height {
-		viewHeight = height
-		viewWidth = height * video.geom.AspectRatio
+	fbw := float32(fbWidth)
+	fbh := float32(fbHeight)
+	w := fbw
+	h := fbw / float32(video.geom.AspectRatio)
+	if h > fbh {
+		w = fbh * float32(video.geom.AspectRatio)
+		h = fbh
 	}
 
 	// Place the content in the middle of the window.
-	vportX := (width - viewWidth) / 2
-	vportY := (height - viewHeight) / 2
+	x := (fbw - w) / 2
+	y := (fbh - h) / 2
 
-	gl.Viewport(int32(vportX), int32(vportY), int32(viewWidth), int32(viewHeight))
+	x1, y1, x2, y2, x3, y3, x4, y4 := xywhTo4points(x, y, w, h, fbh)
+
+	va := []float32{
+		//  X, Y, U, V
+		x1/fbw*2 - 1, y1/fbh*2 - 1, 0, 1, // left-bottom
+		x2/fbw*2 - 1, y2/fbh*2 - 1, 0, 0, // left-top
+		x3/fbw*2 - 1, y3/fbh*2 - 1, 1, 1, // right-bottom
+		x4/fbw*2 - 1, y4/fbh*2 - 1, 1, 0, // right-top
+	}
+
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 }
 
 func fullscreenViewport() {
@@ -108,9 +99,7 @@ func fullscreenViewport() {
 	gl.Viewport(0, 0, int32(w), int32(h))
 }
 
-func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
-	video.geom = geom
-
+func videoConfigure(fullscreen bool) {
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
@@ -126,9 +115,8 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 		width = vm.Width
 		height = vm.Height
 	} else {
-		nwidth, nheight := resizeToAspect(geom.AspectRatio, float64(geom.BaseWidth), float64(geom.BaseHeight))
-		width = int(nwidth * float64(settings.VideoScale))
-		height = int(nheight * float64(settings.VideoScale))
+		width = video.winWidth
+		height = video.winHeight
 	}
 
 	if window != nil {
@@ -209,7 +197,7 @@ func videoConfigure(geom libretro.GameGeometry, fullscreen bool) {
 		log.Println("[Video]: Failed to create the video texture")
 	}
 
-	video.pitch = int32(geom.BaseWidth) * video.bpp
+	video.pitch = int32(video.geom.BaseWidth) * video.bpp
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
@@ -225,28 +213,8 @@ func renderNotifications() {
 	video.font.UpdateResolution(w, h)
 	for i, n := range notifications {
 		video.font.SetColor(1.0, 1.0, 0.0, float32(n.frames)/120.0)
-		video.font.Printf(float32(menu.spacing), float32(h-menu.spacing*len(notifications)+menu.spacing*i), 0.5, n.message)
+		video.font.Printf(80, float32(h-80*len(notifications)+80*i), 0.7, n.message)
 	}
-}
-
-// Draw a textured quad on the screen
-func drawImage(image uint32, x, y, w, h int32) {
-	_, fbh := window.GetFramebufferSize()
-	gl.UseProgram(video.program)
-	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
-	gl.Uniform1f(maskUniform, 0.0)
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.Viewport(x, int32(fbh)-y-h, w, h)
-	gl.BindVertexArray(video.vao)
-	gl.BindTexture(gl.TEXTURE_2D, image)
-	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
-	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-	fullscreenViewport()
-	gl.BindVertexArray(0)
-	gl.BindTexture(gl.TEXTURE_2D, 0)
-	gl.UseProgram(0)
-	gl.Disable(gl.BLEND)
 }
 
 // Render the current frame
@@ -258,6 +226,7 @@ func videoRender() {
 
 	gl.UseProgram(video.program)
 	updateMaskUniform()
+	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), 1, 1, 1, 1)
 
 	gl.BindVertexArray(video.vao)
 
@@ -265,26 +234,6 @@ func videoRender() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-}
-
-func screenshotName() string {
-	name := filepath.Base(g.gamePath)
-	ext := filepath.Ext(name)
-	name = name[0 : len(name)-len(ext)]
-	date := time.Now().Format("2006-01-02-15-04-05")
-	return name + "@" + date + ".png"
-}
-
-func takeScreenshot() {
-	usr, _ := user.Current()
-	g.menuActive = false
-	videoRender()
-	fbw, fbh := window.GetFramebufferSize()
-	img := image.NewNRGBA(image.Rect(0, 0, fbw, fbh))
-	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
-	fd, _ := os.Create(usr.HomeDir + "/.playthemall/screenshots/" + screenshotName())
-	png.Encode(fd, imaging.FlipV(img))
-	g.menuActive = true
 }
 
 // Refresh the texture framebuffer
@@ -300,44 +249,6 @@ func videoRefresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
 	if data != nil {
 		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
 	}
-}
-
-func newImage(file string) uint32 {
-	imgFile, err := os.Open(file)
-	if err != nil {
-		return 0
-	}
-	img, _, err := image.Decode(imgFile)
-	if err != nil {
-		return 0
-	}
-
-	rgba := image.NewRGBA(img.Bounds())
-	if rgba.Stride != rgba.Rect.Size().X*4 {
-		return 0
-	}
-	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-
-	var texture uint32
-	gl.GenTextures(1, &texture)
-	gl.ActiveTexture(gl.TEXTURE1)
-	gl.BindTexture(gl.TEXTURE_2D, texture)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(
-		gl.TEXTURE_2D,
-		0,
-		gl.RGBA,
-		int32(rgba.Rect.Size().X),
-		int32(rgba.Rect.Size().Y),
-		0,
-		gl.RGBA,
-		gl.UNSIGNED_BYTE,
-		gl.Ptr(rgba.Pix))
-
-	return texture
 }
 
 func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
@@ -417,6 +328,7 @@ var fragmentShader = `
 
 uniform sampler2D tex;
 uniform float mask;
+uniform vec4 texColor;
 
 in vec2 fragTexCoord;
 
@@ -437,7 +349,7 @@ void main() {
 	vec4 c = vec4(0.2, 0.2, 0.4, 1.0);
 	vec4 color = texture(tex, fragTexCoord);
   vec4 grayscale = toGrayscale(color);
-	outputColor = mix(color, colorize(grayscale, c), mask);
+	outputColor = texColor * mix(color, colorize(grayscale, c), mask);
 }
 ` + "\x00"
 

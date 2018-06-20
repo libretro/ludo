@@ -12,6 +12,7 @@ import (
 
 // coreLoad loads a libretro core
 func coreLoad(sofile string) {
+	g.corePath = sofile
 	if g.coreRunning {
 		g.core.UnloadGame()
 		g.core.Deinit()
@@ -126,8 +127,7 @@ func coreLoadGame(filename string) {
 
 	avi := g.core.GetSystemAVInfo()
 
-	// Create the video window
-	videoConfigure(avi.Geometry, settings.VideoFullscreen)
+	video.geom = avi.Geometry
 
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
@@ -143,6 +143,6 @@ func coreLoadGame(filename string) {
 	g.coreRunning = true
 	g.menuActive = false
 	g.gamePath = filename
-	menuInit()
+
 	notifyAndLog("Core", "Game loaded: "+filename)
 }

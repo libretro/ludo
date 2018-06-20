@@ -29,10 +29,38 @@ func init() {
 	// Create base folders
 	usr, _ := user.Current()
 	os.Mkdir(usr.HomeDir+"/.playthemall/", 0777)
+	os.Mkdir(usr.HomeDir+"/.playthemall/playlists/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/savefiles/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/savestates/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/screenshots/", 0777)
 	os.Mkdir(usr.HomeDir+"/.playthemall/system/", 0777)
+}
+
+func runLoop() {
+	for !window.ShouldClose() {
+		glfw.SwapInterval(1)
+		glfw.PollEvents()
+		processNotifications()
+		if !g.menuActive {
+			if g.coreRunning {
+				g.core.Run()
+				if g.frameTimeCb.Callback != nil {
+					g.frameTimeCb.Callback(g.frameTimeCb.Reference)
+				}
+				if g.audioCb.Callback != nil {
+					g.audioCb.Callback()
+				}
+			}
+			videoRender()
+		} else {
+			inputPoll()
+			menuInput()
+			videoRender()
+			menuRender()
+		}
+		renderNotifications()
+		window.SwapBuffers()
+	}
 }
 
 func main() {
@@ -62,46 +90,21 @@ func main() {
 		coreLoad(g.corePath)
 	}
 
+	video.winWidth = 320 * 3
+	video.winHeight = 180 * 3
+
+	videoConfigure(settings.VideoFullscreen)
+
 	if len(gamePath) > 0 {
 		coreLoadGame(gamePath)
 	}
 
-	// No game running? display the menu with a dummy geometry
-	if !g.coreRunning {
-		geom := libretro.GameGeometry{
-			AspectRatio: 320.0 / 180.0,
-			BaseWidth:   320,
-			BaseHeight:  180,
-		}
-		videoConfigure(geom, settings.VideoFullscreen)
-		menuInit()
-		g.menuActive = true
-	}
+	menuInit(window)
 
-	for !window.ShouldClose() {
-		glfw.SwapInterval(1)
-		glfw.PollEvents()
-		processNotifications()
-		if !g.menuActive {
-			if g.coreRunning {
-				g.core.Run()
-				if g.frameTimeCb.Callback != nil {
-					g.frameTimeCb.Callback(g.frameTimeCb.Reference)
-				}
-				if g.audioCb.Callback != nil {
-					g.audioCb.Callback()
-				}
-			}
-			videoRender()
-		} else {
-			inputPoll()
-			menuInput()
-			videoRender()
-			renderMenuList()
-		}
-		renderNotifications()
-		window.SwapBuffers()
-	}
+	// No game running? display the menu
+	g.menuActive = !g.coreRunning
+
+	runLoop()
 
 	// Unload and deinit in the core.
 	if g.coreRunning {
