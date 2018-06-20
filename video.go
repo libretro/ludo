@@ -209,11 +209,11 @@ func videoConfigure(fullscreen bool) {
 
 func renderNotifications() {
 	fullscreenViewport()
-	w, h := window.GetFramebufferSize()
-	video.font.UpdateResolution(w, h)
+	fbw, fbh := window.GetFramebufferSize()
+	video.font.UpdateResolution(fbw, fbh)
 	for i, n := range notifications {
 		video.font.SetColor(1.0, 1.0, 0.0, float32(n.frames)/120.0)
-		video.font.Printf(80, float32(h-80*len(notifications)+80*i), 0.7, n.message)
+		video.font.Printf(80, float32(fbh-80*len(notifications)+80*i), 0.7, n.message)
 	}
 }
 
