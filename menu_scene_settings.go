@@ -36,7 +36,10 @@ func buildSettings() scene {
 	return &list
 }
 
+// Widgets to display settings values
 var widgets = map[string]func(*entry){
+
+	// On/Off switch for boolean settings
 	"switch": func(e *entry) {
 		icon := "on"
 		if e.value().(bool) {
@@ -49,6 +52,8 @@ var widgets = map[string]func(*entry){
 			128*menu.ratio, 128*menu.ratio,
 			1.25, color{1, 1, 1, e.iconAlpha})
 	},
+
+	// Range widget for audio volume and similat float settings
 	"range": func(e *entry) {
 		fbw, fbh := window.GetFramebufferSize()
 		x := float32(fbw) - 650*menu.ratio - 128*menu.ratio
