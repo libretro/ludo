@@ -21,6 +21,7 @@ var settings struct {
 	VideoFullscreen   bool    `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
 	VideoMonitorIndex int     `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	AudioVolume       float32 `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
+	ShowHiddenFiles   bool    `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
 }
 
 type settingCallbackIncrement func(*structs.Field, int)
@@ -55,6 +56,12 @@ var incrCallbacks = map[string]settingCallbackIncrement{
 		audioSetVolume(v)
 		saveSettings()
 	},
+	"ShowHiddenFiles": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+		saveSettings()
+	},
 }
 
 // loadSettings loads settings from the home directory.
@@ -68,6 +75,7 @@ func loadSettings() error {
 	settings.VideoFullscreen = false
 	settings.VideoMonitorIndex = 0
 	settings.AudioVolume = 0.5
+	settings.ShowHiddenFiles = true
 
 	usr, _ := user.Current()
 

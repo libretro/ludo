@@ -25,6 +25,12 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction entry)
 	for _, f := range files {
 		f := f
 		icon := "file"
+
+		// Check whether or not we are to display hidden files.
+		if f.Name()[:1] == "." && settings.ShowHiddenFiles {
+			continue
+		}
+
 		if f.IsDir() {
 			icon = "folder"
 		}
