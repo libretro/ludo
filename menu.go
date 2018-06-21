@@ -16,15 +16,17 @@ type entry struct {
 	labelAlpha      float32
 	icon            string
 	iconAlpha       float32
+	ptr             int
+	callbackOK      func()
+	value           func() interface{}
+	stringValue     func() string
+	widget          func(*entry)
+	incr            func(int)
+	children        []entry
 	cursor          struct {
 		alpha float32
 		yp    float32
 	}
-	ptr           int
-	callbackOK    func()
-	callbackValue func() string
-	callbackIncr  func(int)
-	children      []entry
 }
 
 // scene represents a page of the UI
@@ -215,12 +217,14 @@ func genericRender(list *entry) {
 				float32(h)*e.yp+fontOffset,
 				0.7*menu.ratio, e.label)
 
-			if e.callbackValue != nil {
-				lw := video.font.Width(0.7*menu.ratio, e.callbackValue())
+			if e.widget != nil {
+				e.widget(&e)
+			} else if e.stringValue != nil {
+				lw := video.font.Width(0.7*menu.ratio, e.stringValue())
 				video.font.Printf(
 					float32(w)-lw-650*menu.ratio,
 					float32(h)*e.yp+fontOffset,
-					0.7*menu.ratio, e.callbackValue())
+					0.7*menu.ratio, e.stringValue())
 			}
 		}
 	}
@@ -242,6 +246,8 @@ func contextReset() {
 		"screenshot": newImage("assets/screenshot.png"),
 		"add":        newImage("assets/add.png"),
 		"scan":       newImage("assets/scan.png"),
+		"on":         newImage("assets/on.png"),
+		"off":        newImage("assets/off.png"),
 		"Nintendo - Super Nintendo Entertainment System": newImage("assets/Nintendo - Super Nintendo Entertainment System.png"),
 		"Sega - Mega Drive - Genesis":                    newImage("assets/Sega - Mega Drive - Genesis.png"),
 	}

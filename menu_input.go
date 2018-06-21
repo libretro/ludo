@@ -41,15 +41,15 @@ func genericInput(list *entry) {
 
 	// Right
 	if released[0][libretro.DeviceIDJoypadRight] {
-		if list.children[list.ptr].callbackIncr != nil {
-			list.children[list.ptr].callbackIncr(1)
+		if list.children[list.ptr].incr != nil {
+			list.children[list.ptr].incr(1)
 		}
 	}
 
 	// Left
 	if released[0][libretro.DeviceIDJoypadLeft] {
-		if list.children[list.ptr].callbackIncr != nil {
-			list.children[list.ptr].callbackIncr(-1)
+		if list.children[list.ptr].incr != nil {
+			list.children[list.ptr].incr(-1)
 		}
 	}
 
