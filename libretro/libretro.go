@@ -80,9 +80,22 @@ type SystemAVInfo struct {
 }
 
 // Variable is a key value pair that represents a core option
-type Variable struct {
-	Key   string
-	Value string
+type Variable C.struct_retro_variable
+
+// Key returns the key of a Variable as a string
+func (v *Variable) Key() string {
+	return C.GoString(v.key)
+}
+
+// Value returns the value of a Variable as a string
+func (v *Variable) Value() string {
+	return C.GoString(v.value)
+}
+
+// SetValue sets the value of a Variable
+func (v *Variable) SetValue(val string) {
+	s := (**C.char)(&v.value)
+	*s = C.CString(val)
 }
 
 // FrameTimeCallback stores the frame time callback itself and the reference time
@@ -144,6 +157,8 @@ const (
 	EnvironmentGetSaveDirectory     = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
 	EnvironmentShutdown             = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
 	EnvironmentGetVariable          = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
+	EnvironmentSetVariables         = uint32(C.RETRO_ENVIRONMENT_SET_VARIABLES)
+	EnvironmentGetVariableUpdate    = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE)
 	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
 	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
 	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
@@ -457,12 +472,8 @@ func GetPixelFormat(data unsafe.Pointer) uint32 {
 }
 
 // GetVariable is an environment callback helper that returns a Variable
-func GetVariable(data unsafe.Pointer) Variable {
-	variable := (*C.struct_retro_variable)(data)
-	return Variable{
-		Key:   C.GoString(variable.key),
-		Value: C.GoString(variable.value),
-	}
+func GetVariable(data unsafe.Pointer) *Variable {
+	return (*Variable)(data)
 }
 
 // SetBool is an environment callback helper to set a boolean

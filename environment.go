@@ -26,6 +26,8 @@ func getTimeUsec() int64 {
 	return time.Now().UnixNano()
 }
 
+var options_updated bool = true
+
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
 	case libretro.EnvironmentGetUsername:
@@ -61,10 +63,22 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:
 		variable := libretro.GetVariable(data)
-		log.Println("[Env]: get variable:", variable.Key)
+		log.Println("[Env]: Get variable:", variable.Key(), variable.Value())
+		if variable.Key() == "snes9x_layer_1" {
+			variable.SetValue("disabled")
+			log.Println("Set to disabled")
+			return true
+		}
 		return false
+	case libretro.EnvironmentSetVariables:
+		log.Println("EnvironmentSetVariables")
+		return true
+	case libretro.EnvironmentGetVariableUpdate:
+		libretro.SetBool(data, options_updated)
+		options_updated = false
+		return true
 	default:
-		//fmt.Println("[Env]: command not implemented", cmd)
+		log.Println("[Env]: Not implemented:", cmd)
 		return false
 	}
 	return true
