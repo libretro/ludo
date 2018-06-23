@@ -9,6 +9,7 @@ func buildCoreOptions() scene {
 	list.label = "Core Options"
 
 	for _, v := range options_vars {
+		v := v
 		list.children = append(list.children, entry{
 			label: v.Desc(),
 			icon:  "subsetting",
