@@ -61,6 +61,15 @@ func buildQuickMenu() scene {
 		},
 	})
 
+	list.children = append(list.children, entry{
+		label: "Options",
+		icon:  "subsetting",
+		callbackOK: func() {
+			list.segueNext()
+			menu.stack = append(menu.stack, buildCoreOptions())
+		},
+	})
+
 	list.segueMount()
 
 	return &list

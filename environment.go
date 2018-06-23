@@ -27,7 +27,7 @@ func getTimeUsec() int64 {
 }
 
 var options_updated bool
-var options_vars []*libretro.Variable
+var options_vars []libretro.Variable
 
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
