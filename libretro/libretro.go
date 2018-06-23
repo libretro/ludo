@@ -40,6 +40,7 @@ int64_t coreGetTimeUsec_cgo();
 import "C"
 import (
 	"errors"
+	"strings"
 	"sync"
 	"unsafe"
 )
@@ -90,6 +91,20 @@ func (v *Variable) Key() string {
 // Value returns the value of a Variable as a string
 func (v *Variable) Value() string {
 	return C.GoString(v.value)
+}
+
+// Desc returns the description of a Variable as a string
+func (v *Variable) Desc() string {
+	val := v.Value()
+	s := strings.Split(val, "; ")
+	return s[0]
+}
+
+// Choices returns the description of a Variable as a string
+func (v *Variable) Choices() []string {
+	val := v.Value()
+	s := strings.Split(val, "; ")
+	return strings.Split(s[1], "|")
 }
 
 // SetValue sets the value of a Variable

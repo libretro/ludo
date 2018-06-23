@@ -10,8 +10,11 @@ func buildCoreOptions() scene {
 
 	for _, v := range options_vars {
 		list.children = append(list.children, entry{
-			label: v.Key(),
+			label: v.Desc(),
 			icon:  "subsetting",
+			stringValue: func() string {
+				return v.Choices()[0]
+			},
 		})
 	}
 
