@@ -475,6 +475,22 @@ func GetVariable(data unsafe.Pointer) *Variable {
 	return (*Variable)(data)
 }
 
+// GetVariables is an environment callback helper that returns the list of Variables needed by a core
+func GetVariables(data unsafe.Pointer) []*Variable {
+	var vars []*Variable
+
+	for {
+		v := (*C.struct_retro_variable)(data)
+		if v.key == nil || v.value == nil {
+			break
+		}
+		vars = append(vars, (*Variable)(v))
+		data = unsafe.Pointer(uintptr(data) + unsafe.Sizeof(v.key) + unsafe.Sizeof(v.value))
+	}
+
+	return vars
+}
+
 // SetBool is an environment callback helper to set a boolean
 func SetBool(data unsafe.Pointer, val bool) {
 	b := (*C.bool)(data)
