@@ -228,13 +228,6 @@ func Load(sofile string) (Core, error) {
 	core.symRetroUnserialize = core.DlSym("retro_unserialize")
 	mu.Unlock()
 
-	C.bridge_retro_set_environment(core.symRetroSetEnvironment, C.coreEnvironment_cgo)
-	C.bridge_retro_set_video_refresh(core.symRetroSetVideoRefresh, C.coreVideoRefresh_cgo)
-	C.bridge_retro_set_input_poll(core.symRetroSetInputPoll, C.coreInputPoll_cgo)
-	C.bridge_retro_set_input_state(core.symRetroSetInputState, C.coreInputState_cgo)
-	C.bridge_retro_set_audio_sample(core.symRetroSetAudioSample, C.coreAudioSample_cgo)
-	C.bridge_retro_set_audio_sample_batch(core.symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
-
 	return core, nil
 }
 
@@ -353,36 +346,42 @@ func (core *Core) UnloadGame() {
 // Must be called before Init
 func (core *Core) SetEnvironment(f environmentFunc) {
 	environment = f
+	C.bridge_retro_set_environment(core.symRetroSetEnvironment, C.coreEnvironment_cgo)
 }
 
 // SetVideoRefresh sets the video refresh callback.
 // Must be set before the first Run call
 func (core *Core) SetVideoRefresh(f videoRefreshFunc) {
 	videoRefresh = f
+	C.bridge_retro_set_video_refresh(core.symRetroSetVideoRefresh, C.coreVideoRefresh_cgo)
 }
 
 // SetAudioSample sets the audio sample callback.
 // Must be set before the first Run call
 func (core *Core) SetAudioSample(f audioSampleFunc) {
 	audioSample = f
+	C.bridge_retro_set_audio_sample(core.symRetroSetAudioSample, C.coreAudioSample_cgo)
 }
 
 // SetAudioSampleBatch sets the audio sample batch callback.
 // Must be set before the first Run call
 func (core *Core) SetAudioSampleBatch(f audioSampleBatchFunc) {
 	audioSampleBatch = f
+	C.bridge_retro_set_audio_sample_batch(core.symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
 }
 
 // SetInputPoll sets the input poll callback.
 // Must be set before the first Run call
 func (core *Core) SetInputPoll(f inputPollFunc) {
 	inputPoll = f
+	C.bridge_retro_set_input_poll(core.symRetroSetInputPoll, C.coreInputPoll_cgo)
 }
 
 // SetInputState sets the input state callback.
 // Must be set before the first Run call
 func (core *Core) SetInputState(f inputStateFunc) {
 	inputState = f
+	C.bridge_retro_set_input_state(core.symRetroSetInputState, C.coreInputState_cgo)
 }
 
 // BindLogCallback binds f to the log callback
