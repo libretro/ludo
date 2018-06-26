@@ -26,8 +26,10 @@ func getTimeUsec() int64 {
 	return time.Now().UnixNano()
 }
 
-var options_updated bool
-var options_vars []libretro.Variable
+var options struct {
+	Updated bool
+	Vars    []libretro.Variable
+}
 
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
@@ -70,12 +72,12 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		}
 		return false
 	case libretro.EnvironmentSetVariables:
-		options_vars = libretro.GetVariables(data)
-		options_updated = true
+		options.Vars = libretro.GetVariables(data)
+		options.Updated = true
 		return true
 	case libretro.EnvironmentGetVariableUpdate:
-		libretro.SetBool(data, options_updated)
-		options_updated = false
+		libretro.SetBool(data, options.Updated)
+		options.Updated = false
 		return true
 	default:
 		//log.Println("[Env]: Not implemented:", cmd)

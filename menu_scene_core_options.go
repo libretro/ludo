@@ -8,7 +8,7 @@ func buildCoreOptions() scene {
 	var list screenCoreOptions
 	list.label = "Core Options"
 
-	for _, v := range options_vars {
+	for _, v := range options.Vars {
 		v := v
 		list.children = append(list.children, entry{
 			label: v.Desc(),
