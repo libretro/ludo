@@ -78,7 +78,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		options_updated = false
 		return true
 	default:
-		log.Println("[Env]: Not implemented:", cmd)
+		//log.Println("[Env]: Not implemented:", cmd)
 		return false
 	}
 	return true
