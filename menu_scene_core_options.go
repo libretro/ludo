@@ -17,6 +17,16 @@ func buildCoreOptions() scene {
 			stringValue: func() string {
 				return v.Choices()[options.Choices[i]]
 			},
+			incr: func(direction int) {
+				options.Choices[i] += direction
+				if options.Choices[i] < 0 {
+					options.Choices[i] = len(options.Vars[i].Choices()) - 1
+				} else if options.Choices[i] > len(options.Vars[i].Choices())-1 {
+					options.Choices[i] = 0
+				}
+				options.Updated = true
+				saveOptions()
+			},
 		})
 	}
 
