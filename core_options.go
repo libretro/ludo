@@ -17,6 +17,7 @@ type Options struct {
 	Updated bool
 }
 
+// Instanciate a core options manager
 func newOptions(vars []libretro.Variable) *Options {
 	o := &Options{}
 	o.Vars = vars
@@ -26,10 +27,12 @@ func newOptions(vars []libretro.Variable) *Options {
 	return o
 }
 
+// Returns the number of choices for a given variable
 func (o *Options) numChoices(choiceIndex int) int {
 	return len(o.Vars[choiceIndex].Choices())
 }
 
+// Save core options to a file
 func (o *Options) save() error {
 	lock.Lock()
 	defer lock.Unlock()
@@ -55,6 +58,7 @@ func (o *Options) save() error {
 	return err
 }
 
+// Load core options from a file
 func (o *Options) load() error {
 	lock.Lock()
 	defer lock.Unlock()
