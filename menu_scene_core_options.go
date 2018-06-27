@@ -8,20 +8,19 @@ func buildCoreOptions() scene {
 	var list screenCoreOptions
 	list.label = "Core Options"
 
-	for _, v := range options.Vars {
+	for i, v := range options.Vars {
+		i := i
 		v := v
 		list.children = append(list.children, entry{
 			label: v.Desc(),
 			icon:  "subsetting",
 			stringValue: func() string {
-				return v.Choices()[0]
+				return v.Choices()[options.Choices[i]]
 			},
 		})
 	}
 
 	list.segueMount()
-
-	saveOptions()
 
 	return &list
 }

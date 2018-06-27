@@ -61,14 +61,18 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:
 		variable := libretro.GetVariable(data)
-		if variable.Key() == "snes9x_layer_1" {
-			variable.SetValue("disabled")
-			return true
+		for i, v := range options.Vars {
+			if variable.Key() == v.Key() {
+				variable.SetValue(v.Choices()[options.Choices[i]])
+				return true
+			}
 		}
 		return false
 	case libretro.EnvironmentSetVariables:
 		options.Vars = libretro.GetVariables(data)
+		options.Choices = make([]int, len(options.Vars))
 		options.Updated = true
+		loadOptions()
 		return true
 	case libretro.EnvironmentGetVariableUpdate:
 		libretro.SetBool(data, options.Updated)
