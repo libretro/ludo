@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func slurp(path string) ([]byte, error) {
@@ -51,4 +52,11 @@ func captureOutput(f func()) string {
 	f()
 	log.SetOutput(os.Stderr)
 	return buf.String()
+}
+
+func filename(path string) string {
+	name := filepath.Base(path)
+	ext := filepath.Ext(name)
+	name = name[0 : len(name)-len(ext)]
+	return name
 }

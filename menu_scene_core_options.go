@@ -21,6 +21,8 @@ func buildCoreOptions() scene {
 
 	list.segueMount()
 
+	saveOptions()
+
 	return &list
 }
 

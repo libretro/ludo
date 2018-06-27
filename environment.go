@@ -26,11 +26,6 @@ func getTimeUsec() int64 {
 	return time.Now().UnixNano()
 }
 
-var options struct {
-	Updated bool
-	Vars    []libretro.Variable
-}
-
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
 	case libretro.EnvironmentGetUsername:
