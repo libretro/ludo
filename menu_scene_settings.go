@@ -41,9 +41,9 @@ var widgets = map[string]func(*entry){
 
 	// On/Off switch for boolean settings
 	"switch": func(e *entry) {
-		icon := "on"
+		icon := "off"
 		if e.value().(bool) {
-			icon = "off"
+			icon = "on"
 		}
 		w, h := window.GetFramebufferSize()
 		drawImage(menu.icons[icon],
