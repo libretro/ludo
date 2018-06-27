@@ -10,21 +10,31 @@ import (
 	"github.com/kivutar/go-playthemall/libretro"
 )
 
-var options struct {
-	Updated bool
+// Options is a container type for core options internals
+type Options struct {
 	Vars    []libretro.Variable
 	Choices []int
+	Updated bool
 }
 
-func saveOptions() error {
+func newOptions(vars []libretro.Variable) *Options {
+	o := &Options{}
+	o.Vars = vars
+	o.Choices = make([]int, len(o.Vars))
+	o.Updated = true
+	o.load()
+	return o
+}
+
+func (o *Options) save() error {
 	lock.Lock()
 	defer lock.Unlock()
 
 	usr, _ := user.Current()
 
 	m := make(map[string]string)
-	for i, v := range options.Vars {
-		m[v.Key()] = v.Choices()[options.Choices[i]]
+	for i, v := range o.Vars {
+		m[v.Key()] = v.Choices()[o.Choices[i]]
 	}
 	b, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
@@ -41,7 +51,7 @@ func saveOptions() error {
 	return err
 }
 
-func loadOptions() error {
+func (o *Options) load() error {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -57,11 +67,11 @@ func loadOptions() error {
 	err = json.Unmarshal(b, &opts)
 
 	for optk, optv := range opts {
-		for i, variable := range options.Vars {
+		for i, variable := range o.Vars {
 			if variable.Key() == optk {
 				for j, c := range variable.Choices() {
 					if c == optv {
-						options.Choices[i] = j
+						o.Choices[i] = j
 					}
 				}
 			}

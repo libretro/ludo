@@ -21,6 +21,7 @@ var g struct {
 	verbose     bool
 	corePath    string
 	gamePath    string
+	options     *Options
 }
 
 func init() {

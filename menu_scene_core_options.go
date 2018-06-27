@@ -12,25 +12,25 @@ func buildCoreOptions() scene {
 	var list screenCoreOptions
 	list.label = "Core Options"
 
-	for i, v := range options.Vars {
+	for i, v := range g.options.Vars {
 		i := i
 		v := v
 		list.children = append(list.children, entry{
 			label: strings.Replace(v.Desc(), "%", "%%", -1),
 			icon:  "subsetting",
 			stringValue: func() string {
-				val := v.Choices()[options.Choices[i]]
+				val := v.Choices()[g.options.Choices[i]]
 				return strings.Replace(val, "%", "%%", -1)
 			},
 			incr: func(direction int) {
-				options.Choices[i] += direction
-				if options.Choices[i] < 0 {
-					options.Choices[i] = len(options.Vars[i].Choices()) - 1
-				} else if options.Choices[i] > len(options.Vars[i].Choices())-1 {
-					options.Choices[i] = 0
+				g.options.Choices[i] += direction
+				if g.options.Choices[i] < 0 {
+					g.options.Choices[i] = len(g.options.Vars[i].Choices()) - 1
+				} else if g.options.Choices[i] > len(g.options.Vars[i].Choices())-1 {
+					g.options.Choices[i] = 0
 				}
-				options.Updated = true
-				saveOptions()
+				g.options.Updated = true
+				g.options.save()
 			},
 		})
 	}

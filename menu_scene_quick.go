@@ -12,7 +12,7 @@ func buildQuickMenu() scene {
 		label: "Resume",
 		icon:  "resume",
 		callbackOK: func() {
-			g.menuActive = !g.menuActive
+			g.menuActive = false
 		},
 	})
 
