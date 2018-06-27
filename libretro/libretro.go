@@ -88,21 +88,16 @@ func (v *Variable) Key() string {
 	return C.GoString(v.key)
 }
 
-// Value returns the value of a Variable as a string
-func (v *Variable) Value() string {
-	return C.GoString(v.value)
-}
-
 // Desc returns the description of a Variable as a string
 func (v *Variable) Desc() string {
-	val := v.Value()
+	val := C.GoString(v.value)
 	s := strings.Split(val, "; ")
 	return s[0]
 }
 
-// Choices returns the description of a Variable as a string
+// Choices returns the list of possible choices for a given Variable
 func (v *Variable) Choices() []string {
-	val := v.Value()
+	val := C.GoString(v.value)
 	s := strings.Split(val, "; ")
 	return strings.Split(s[1], "|")
 }

@@ -1,5 +1,9 @@
 package main
 
+import (
+	"strings"
+)
+
 type screenCoreOptions struct {
 	entry
 }
@@ -12,7 +16,7 @@ func buildCoreOptions() scene {
 		i := i
 		v := v
 		list.children = append(list.children, entry{
-			label: v.Desc(),
+			label: strings.Replace(v.Desc(), "%", "%%", -1),
 			icon:  "subsetting",
 			stringValue: func() string {
 				return v.Choices()[options.Choices[i]]
