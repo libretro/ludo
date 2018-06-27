@@ -19,7 +19,8 @@ func buildCoreOptions() scene {
 			label: strings.Replace(v.Desc(), "%", "%%", -1),
 			icon:  "subsetting",
 			stringValue: func() string {
-				return v.Choices()[options.Choices[i]]
+				val := v.Choices()[options.Choices[i]]
+				return strings.Replace(val, "%", "%%", -1)
 			},
 			incr: func(direction int) {
 				options.Choices[i] += direction
