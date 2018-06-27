@@ -25,8 +25,8 @@ func buildCoreOptions() scene {
 			incr: func(direction int) {
 				g.options.Choices[i] += direction
 				if g.options.Choices[i] < 0 {
-					g.options.Choices[i] = len(g.options.Vars[i].Choices()) - 1
-				} else if g.options.Choices[i] > len(g.options.Vars[i].Choices())-1 {
+					g.options.Choices[i] = g.options.numChoices(i) - 1
+				} else if g.options.Choices[i] > g.options.numChoices(i)-1 {
 					g.options.Choices[i] = 0
 				}
 				g.options.Updated = true

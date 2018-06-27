@@ -26,6 +26,10 @@ func newOptions(vars []libretro.Variable) *Options {
 	return o
 }
 
+func (o *Options) numChoices(choiceIndex int) int {
+	return len(o.Vars[choiceIndex].Choices())
+}
+
 func (o *Options) save() error {
 	lock.Lock()
 	defer lock.Unlock()
