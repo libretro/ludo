@@ -40,6 +40,7 @@ int64_t coreGetTimeUsec_cgo();
 import "C"
 import (
 	"errors"
+	"strings"
 	"sync"
 	"unsafe"
 )
@@ -80,9 +81,31 @@ type SystemAVInfo struct {
 }
 
 // Variable is a key value pair that represents a core option
-type Variable struct {
-	Key   string
-	Value string
+type Variable C.struct_retro_variable
+
+// Key returns the key of a Variable as a string
+func (v *Variable) Key() string {
+	return C.GoString(v.key)
+}
+
+// Desc returns the description of a Variable as a string
+func (v *Variable) Desc() string {
+	val := C.GoString(v.value)
+	s := strings.Split(val, "; ")
+	return s[0]
+}
+
+// Choices returns the list of possible choices for a given Variable
+func (v *Variable) Choices() []string {
+	val := C.GoString(v.value)
+	s := strings.Split(val, "; ")
+	return strings.Split(s[1], "|")
+}
+
+// SetValue sets the value of a Variable
+func (v *Variable) SetValue(val string) {
+	s := (**C.char)(&v.value)
+	*s = C.CString(val)
 }
 
 // FrameTimeCallback stores the frame time callback itself and the reference time
@@ -144,6 +167,8 @@ const (
 	EnvironmentGetSaveDirectory     = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
 	EnvironmentShutdown             = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
 	EnvironmentGetVariable          = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
+	EnvironmentSetVariables         = uint32(C.RETRO_ENVIRONMENT_SET_VARIABLES)
+	EnvironmentGetVariableUpdate    = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE)
 	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
 	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
 	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
@@ -212,13 +237,6 @@ func Load(sofile string) (Core, error) {
 	core.symRetroSerialize = core.DlSym("retro_serialize")
 	core.symRetroUnserialize = core.DlSym("retro_unserialize")
 	mu.Unlock()
-
-	C.bridge_retro_set_environment(core.symRetroSetEnvironment, C.coreEnvironment_cgo)
-	C.bridge_retro_set_video_refresh(core.symRetroSetVideoRefresh, C.coreVideoRefresh_cgo)
-	C.bridge_retro_set_input_poll(core.symRetroSetInputPoll, C.coreInputPoll_cgo)
-	C.bridge_retro_set_input_state(core.symRetroSetInputState, C.coreInputState_cgo)
-	C.bridge_retro_set_audio_sample(core.symRetroSetAudioSample, C.coreAudioSample_cgo)
-	C.bridge_retro_set_audio_sample_batch(core.symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
 
 	return core, nil
 }
@@ -338,36 +356,42 @@ func (core *Core) UnloadGame() {
 // Must be called before Init
 func (core *Core) SetEnvironment(f environmentFunc) {
 	environment = f
+	C.bridge_retro_set_environment(core.symRetroSetEnvironment, C.coreEnvironment_cgo)
 }
 
 // SetVideoRefresh sets the video refresh callback.
 // Must be set before the first Run call
 func (core *Core) SetVideoRefresh(f videoRefreshFunc) {
 	videoRefresh = f
+	C.bridge_retro_set_video_refresh(core.symRetroSetVideoRefresh, C.coreVideoRefresh_cgo)
 }
 
 // SetAudioSample sets the audio sample callback.
 // Must be set before the first Run call
 func (core *Core) SetAudioSample(f audioSampleFunc) {
 	audioSample = f
+	C.bridge_retro_set_audio_sample(core.symRetroSetAudioSample, C.coreAudioSample_cgo)
 }
 
 // SetAudioSampleBatch sets the audio sample batch callback.
 // Must be set before the first Run call
 func (core *Core) SetAudioSampleBatch(f audioSampleBatchFunc) {
 	audioSampleBatch = f
+	C.bridge_retro_set_audio_sample_batch(core.symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
 }
 
 // SetInputPoll sets the input poll callback.
 // Must be set before the first Run call
 func (core *Core) SetInputPoll(f inputPollFunc) {
 	inputPoll = f
+	C.bridge_retro_set_input_poll(core.symRetroSetInputPoll, C.coreInputPoll_cgo)
 }
 
 // SetInputState sets the input state callback.
 // Must be set before the first Run call
 func (core *Core) SetInputState(f inputStateFunc) {
 	inputState = f
+	C.bridge_retro_set_input_state(core.symRetroSetInputState, C.coreInputState_cgo)
 }
 
 // BindLogCallback binds f to the log callback
@@ -457,12 +481,24 @@ func GetPixelFormat(data unsafe.Pointer) uint32 {
 }
 
 // GetVariable is an environment callback helper that returns a Variable
-func GetVariable(data unsafe.Pointer) Variable {
-	variable := (*C.struct_retro_variable)(data)
-	return Variable{
-		Key:   C.GoString(variable.key),
-		Value: C.GoString(variable.value),
+func GetVariable(data unsafe.Pointer) *Variable {
+	return (*Variable)(data)
+}
+
+// GetVariables is an environment callback helper that returns the list of Variables needed by a core
+func GetVariables(data unsafe.Pointer) []Variable {
+	var vars []Variable
+
+	for {
+		v := (*C.struct_retro_variable)(data)
+		if v.key == nil || v.value == nil {
+			break
+		}
+		vars = append(vars, *(*Variable)(v))
+		data = unsafe.Pointer(uintptr(data) + unsafe.Sizeof(v.key) + unsafe.Sizeof(v.value))
 	}
+
+	return vars
 }
 
 // SetBool is an environment callback helper to set a boolean

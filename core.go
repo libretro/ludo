@@ -17,6 +17,7 @@ func coreLoad(sofile string) {
 		g.core.UnloadGame()
 		g.core.Deinit()
 		g.gamePath = ""
+		g.coreRunning = false
 	}
 
 	g.core, _ = libretro.Load(sofile)
