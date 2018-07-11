@@ -4,6 +4,7 @@ import (
 	"os/user"
 
 	"github.com/kivutar/go-playthemall/libretro"
+	"github.com/kivutar/go-playthemall/rdb"
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -59,13 +60,16 @@ func buildTabs() scene {
 		icon:     "add",
 		callbackOK: func() {
 			usr, _ := user.Current()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, nil, entry{
-				label: "<Scan this directory>",
-				icon:  "scan",
-				callbackOK: func() {
-					notifyAndLog("Menu", "Not implemented yet.")
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil,
+				func(dir string) {
+					notifyAndLog("Menu", "Scanning %s", dir)
+					roms := allFilesIn(dir)
+					go rdb.Scan(roms, g.db.Find)
 				},
-			}))
+				entry{
+					label: "<Scan this directory>",
+					icon:  "scan",
+				}))
 		},
 	})
 

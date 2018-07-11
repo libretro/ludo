@@ -28,6 +28,18 @@ func slurp(path string) ([]byte, error) {
 	return bytes, nil
 }
 
+// allFilesIn recursively builds a list of the files in a given directory
+func allFilesIn(dir string) []string {
+	file := []string{}
+	filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if !f.IsDir() {
+			file = append(file, path)
+		}
+		return nil
+	})
+	return file
+}
+
 func stringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
