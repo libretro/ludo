@@ -28,6 +28,7 @@ type Game struct {
 	ROMName     string
 	Size        uint64
 	CRC32       uint32
+	System      string
 }
 
 const (
@@ -172,7 +173,7 @@ func ParseRDB(rdb []byte) RDB {
 }
 
 // Find loops over the RDBs in the DB and concurrently matches CRC32 checksums.
-func (db *DB) Find(rompath string, romname string, CRC32 uint32) {
+func (db *DB) Find(CRC32 uint32, games chan (Game)) {
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
 	// For every RDB in the DB
@@ -182,9 +183,7 @@ func (db *DB) Find(rompath string, romname string, CRC32 uint32) {
 			for _, game := range rdb {
 				// If the checksums match
 				if CRC32 == game.CRC32 {
-					// Write the playlist entry
-					// writePlaylistEntry(rompath, romname, game.Name, CRC32, system)
-					fmt.Println(rompath, romname, game.Name, CRC32, system)
+					games <- Game{Name: game.Name, CRC32: CRC32, System: system}
 				}
 			}
 			wg.Done()
@@ -195,7 +194,7 @@ func (db *DB) Find(rompath string, romname string, CRC32 uint32) {
 }
 
 // Scan scans a list of roms against the database
-func Scan(roms []string, cb func(rompath string, romname string, CRC32 uint32)) {
+func Scan(roms []string, games chan (Game), cb func(CRC32 uint32, games chan (Game))) {
 	for _, f := range roms {
 		ext := filepath.Ext(f)
 		switch ext {
@@ -205,7 +204,7 @@ func Scan(roms []string, cb func(rompath string, romname string, CRC32 uint32)) 
 			for _, rom := range z.File {
 				if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
-					cb(f, rom.Name, rom.CRC32)
+					cb(rom.CRC32, games)
 				}
 			}
 			z.Close()

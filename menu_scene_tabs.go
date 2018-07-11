@@ -64,7 +64,7 @@ func buildTabs() scene {
 				func(dir string) {
 					notifyAndLog("Menu", "Scanning %s", dir)
 					roms := allFilesIn(dir)
-					go rdb.Scan(roms, g.db.Find)
+					go rdb.Scan(roms, g.games, g.db.Find)
 				},
 				entry{
 					label: "<Scan this directory>",

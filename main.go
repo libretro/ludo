@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/user"
@@ -24,6 +25,7 @@ var g struct {
 	gamePath    string
 	options     *Options
 	db          rdb.DB
+	games       chan (rdb.Game)
 }
 
 func init() {
@@ -61,6 +63,11 @@ func runLoop() {
 			videoRender()
 			menuRender()
 		}
+		select {
+		case a := <-g.games:
+			fmt.Println(a)
+		default:
+		}
 		renderNotifications()
 		window.SwapBuffers()
 	}
@@ -88,6 +95,7 @@ func main() {
 	if err != nil {
 		log.Println("Can't load game database:", err)
 	}
+	g.games = make(chan (rdb.Game))
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
