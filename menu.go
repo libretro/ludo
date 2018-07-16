@@ -248,8 +248,6 @@ func contextReset() {
 		"scan":       newImage("assets/scan.png"),
 		"on":         newImage("assets/on.png"),
 		"off":        newImage("assets/off.png"),
-		"Nintendo - Super Nintendo Entertainment System": newImage("assets/Nintendo - Super Nintendo Entertainment System.png"),
-		"Sega - Mega Drive - Genesis":                    newImage("assets/Sega - Mega Drive - Genesis.png"),
 	}
 }
 

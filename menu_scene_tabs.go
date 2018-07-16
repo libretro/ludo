@@ -2,6 +2,7 @@ package main
 
 import (
 	"os/user"
+	"path/filepath"
 
 	"github.com/kivutar/go-playthemall/libretro"
 	colorful "github.com/lucasb-eyer/go-colorful"
@@ -35,23 +36,20 @@ func buildTabs() scene {
 		},
 	})
 
-	// list.children = append(list.children, entry{
-	// 	label:    "Super NES",
-	// 	subLabel: "10 Games - 5 Favorites",
-	// 	icon:     "Nintendo - Super Nintendo Entertainment System",
-	// 	callbackOK: func() {
-	// 		menu.stack = append(menu.stack, buildGameList())
-	// 	},
-	// })
-
-	// list.children = append(list.children, entry{
-	// 	label:    "Mega Drive - Genesis",
-	// 	subLabel: "10 Games - 5 Favorites",
-	// 	icon:     "Sega - Mega Drive - Genesis",
-	// 	callbackOK: func() {
-	// 		menu.stack = append(menu.stack, buildGameList())
-	// 	},
-	// })
+	usr, _ := user.Current()
+	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
+	for _, path := range paths {
+		filename := filename(path)
+		menu.icons[filename] = newImage("assets/" + filename + ".png")
+		list.children = append(list.children, entry{
+			label:    filename,
+			subLabel: "10 Games - 5 Favorites",
+			icon:     filename,
+			callbackOK: func() {
+				//menu.stack = append(menu.stack, buildPlaylist())
+			},
+		})
+	}
 
 	list.children = append(list.children, entry{
 		label:    "Add games",
@@ -205,11 +203,13 @@ func (tabs screenTabs) render() {
 
 		x := -menu.scroll*menu.ratio + stackWidth - e.width/2*menu.ratio + 400*menu.ratio - 400*e.yp*menu.ratio
 
-		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		lw := video.font.Width(0.7*menu.ratio, e.label)
-		video.font.Printf(x-lw/2, float32(h)*e.yp+180*menu.ratio, 0.7*menu.ratio, e.label)
-		lw = video.font.Width(0.4*menu.ratio, e.subLabel)
-		video.font.Printf(x-lw/2, float32(h)*e.yp+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
+		if e.labelAlpha > 0 {
+			video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
+			lw := video.font.Width(0.7*menu.ratio, e.label)
+			video.font.Printf(x-lw/2, float32(h)*e.yp+180*menu.ratio, 0.7*menu.ratio, e.label)
+			lw = video.font.Width(0.4*menu.ratio, e.subLabel)
+			video.font.Printf(x-lw/2, float32(h)*e.yp+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
+		}
 
 		drawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,
