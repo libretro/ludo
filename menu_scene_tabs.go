@@ -46,7 +46,7 @@ func buildTabs() scene {
 			subLabel: "10 Games - 5 Favorites",
 			icon:     filename,
 			callbackOK: func() {
-				//menu.stack = append(menu.stack, buildPlaylist())
+				menu.stack = append(menu.stack, buildPlaylist(path))
 			},
 		})
 	}
