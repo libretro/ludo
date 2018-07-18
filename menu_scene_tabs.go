@@ -87,13 +87,13 @@ func (tabs *screenTabs) segueMount() {
 		} else if i < tabs.ptr {
 			e.yp = 0.05
 			e.labelAlpha = 0
-			e.iconAlpha = 0.5
+			e.iconAlpha = 0.75
 			e.scale = 0.25
 			e.width = 128
 		} else if i > tabs.ptr {
 			e.yp = 0.95
 			e.labelAlpha = 0
-			e.iconAlpha = 0.5
+			e.iconAlpha = 0.75
 			e.scale = 0.25
 			e.width = 128
 		}
@@ -120,13 +120,13 @@ func (tabs *screenTabs) animate() {
 		} else if i < tabs.ptr {
 			yp = 0.05
 			labelAlpha = 0
-			iconAlpha = 0.5
+			iconAlpha = 0.75
 			scale = 0.25
 			width = 128
 		} else if i > tabs.ptr {
 			yp = 0.95
 			labelAlpha = 0
-			iconAlpha = 0.5
+			iconAlpha = 0.75
 			scale = 0.25
 			width = 128
 		}
