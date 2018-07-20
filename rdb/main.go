@@ -35,8 +35,8 @@ const (
 	mpfMap32  = 0xdf
 
 	mpfFixArray = 0x90
-	mpfArray16  = 0xdc
-	mpfArray32  = 0xdd
+	// mpfArray16  = 0xdc
+	// mpfArray32 = 0xdd
 
 	mpfFixStr = 0xa0
 	mpfStr8   = 0xd9
@@ -47,13 +47,13 @@ const (
 	mpfBin16 = 0xc5
 	mpfBin32 = 0xc6
 
-	mpfFalse = 0xc2
-	mpfTrue  = 0xc3
+	// mpfFalse = 0xc2
+	// mpfTrue = 0xc3
 
-	mpfInt8  = 0xd0
-	mpfInt16 = 0xd1
-	mpfInt32 = 0xd2
-	mpfInt64 = 0xd3
+	// mpfInt8  = 0xd0
+	// mpfInt16 = 0xd1
+	// mpfInt32 = 0xd2
+	// mpfInt64 = 0xd3
 
 	mpfUint8  = 0xcc
 	mpfUint16 = 0xcd
@@ -92,7 +92,7 @@ func setField(g *Entry, key string, value string) {
 	}
 }
 
-// Parse parses a .rdb file content and returns an array of Entrys
+// Parse parses a .rdb file content and returns an array of Entries
 func Parse(rdb []byte) RDB {
 	var output RDB
 	pos := 0x10
@@ -115,15 +115,16 @@ func Parse(rdb []byte) RDB {
 			pos++
 			iskey = true
 			continue
-		} else if fieldtype < mpfFixStr {
-			// len := fieldtype - mpfFixArray
+			// } else if fieldtype < mpfFixStr {
+			// 	len := fieldtype - mpfFixArray
 		} else if fieldtype < mpfNil {
 			len := int(rdb[pos]) - mpfFixStr
 			pos++
 			value = rdb[pos : pos+len]
 			pos += len
-		} else if fieldtype > mpfMap32 {
 		}
+		// else if fieldtype > mpfMap32 {
+		// }
 
 		switch fieldtype {
 		case mpfStr8, mpfStr16, mpfStr32:
