@@ -63,7 +63,8 @@ const (
 	mpfNil = 0xc0
 )
 
-func setField(g *Entry, key string, value string) {
+// SetField sets a field in the entry
+func (g *Entry) SetField(key string, value string) {
 	switch key {
 	case "name":
 		g.Name = string(value[:])
@@ -162,7 +163,7 @@ func Parse(rdb []byte) RDB {
 		if iskey {
 			key = string(value[:])
 		} else {
-			setField(&g, key, string(value[:]))
+			g.SetField(key, string(value[:]))
 		}
 		iskey = !iskey
 	}
