@@ -42,6 +42,7 @@ func buildTabs() scene {
 		path := path
 		filename := filename(path)
 		menu.icons[filename] = newImage("assets/" + filename + ".png")
+		menu.icons[filename+"-content"] = newImage("assets/" + filename + "-content.png")
 		list.children = append(list.children, entry{
 			label:    filename,
 			subLabel: "10 Games - 5 Favorites",

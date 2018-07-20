@@ -36,7 +36,7 @@ func buildPlaylist(path string) scene {
 
 		list.children = append(list.children, entry{
 			label: name,
-			icon:  "subsetting",
+			icon:  filename(path) + "-content",
 		})
 	}
 
