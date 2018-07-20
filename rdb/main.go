@@ -157,7 +157,6 @@ func Parse(rdb []byte) RDB {
 			value = rdb[pos : pos+len]
 			pos += len
 			iskey = true
-			continue
 		}
 
 		if iskey {
