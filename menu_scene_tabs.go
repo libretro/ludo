@@ -39,6 +39,7 @@ func buildTabs() scene {
 	usr, _ := user.Current()
 	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
 	for _, path := range paths {
+		path := path
 		filename := filename(path)
 		menu.icons[filename] = newImage("assets/" + filename + ".png")
 		list.children = append(list.children, entry{
