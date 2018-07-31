@@ -29,6 +29,14 @@ func Test_fillInternalBuf(t *testing.T) {
 			},
 			want: 1096,
 		},
+		{
+			name: "Fill the buffer fully",
+			args: args{
+				buf:  make([]byte, 4096),
+				size: 6000,
+			},
+			want: 6000,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
