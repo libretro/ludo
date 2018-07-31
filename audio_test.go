@@ -30,7 +30,7 @@ func Test_fillInternalBuf(t *testing.T) {
 			want: 1096,
 		},
 		{
-			name: "Fill the buffer fully",
+			name: "Early return to avoid out of range copy",
 			args: args{
 				buf:  make([]byte, 4096),
 				size: 6000,
