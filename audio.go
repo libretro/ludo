@@ -77,6 +77,10 @@ func alGetBuffer() al.Buffer {
 }
 
 func fillInternalBuf(buf []byte, size int32) int32 {
+	// This is a workaround for mednafen-psx
+	if size > bufSize {
+		return size
+	}
 	readSize := min(bufSize-audio.tmpBufPtr, size)
 	copy(audio.tmpBuf[audio.tmpBufPtr:], buf[audio.bufPtr:audio.bufPtr+readSize])
 	audio.tmpBufPtr += readSize
