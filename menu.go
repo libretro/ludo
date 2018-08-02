@@ -2,6 +2,8 @@ package main
 
 import (
 	"math"
+	"os/user"
+	"path/filepath"
 
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -248,6 +250,15 @@ func contextReset() {
 		"scan":       newImage("assets/scan.png"),
 		"on":         newImage("assets/on.png"),
 		"off":        newImage("assets/off.png"),
+	}
+
+	usr, _ := user.Current()
+	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
+	for _, path := range paths {
+		path := path
+		filename := filename(path)
+		menu.icons[filename] = newImage("assets/" + filename + ".png")
+		menu.icons[filename+"-content"] = newImage("assets/" + filename + "-content.png")
 	}
 }
 

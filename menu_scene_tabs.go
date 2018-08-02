@@ -41,8 +41,6 @@ func buildTabs() scene {
 	for _, path := range paths {
 		path := path
 		filename := filename(path)
-		menu.icons[filename] = newImage("assets/" + filename + ".png")
-		menu.icons[filename+"-content"] = newImage("assets/" + filename + "-content.png")
 		list.children = append(list.children, entry{
 			label:    filename,
 			subLabel: "10 Games - 5 Favorites",
@@ -188,7 +186,7 @@ func (tabs screenTabs) render() {
 	stackWidth := 132 * menu.ratio
 	for i, e := range tabs.children {
 
-		c := colorful.Hcl(float64(i%12)*30, 0.5, 0.5)
+		c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
 		var alpha float32 = 1
 		if i == 0 {
 			alpha = 0
