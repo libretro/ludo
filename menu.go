@@ -199,7 +199,7 @@ func genericRender(list *entry) {
 	drawCursor(list)
 
 	for _, e := range list.children {
-		if e.yp < -1.1 || e.yp > 1.1 {
+		if e.yp < -0.1 || e.yp > 1.1 {
 			continue
 		}
 
