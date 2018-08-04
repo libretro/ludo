@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/kivutar/go-playthemall/libretro"
+	"github.com/kivutar/go-playthemall/rdb"
 )
 
 // global state
@@ -22,6 +23,8 @@ var g struct {
 	corePath    string
 	gamePath    string
 	options     *Options
+	db          rdb.DB
+	tasks       []task
 }
 
 func init() {
@@ -80,6 +83,11 @@ func main() {
 		log.Println("[Settings]: Loading failed:", err)
 		log.Println("[Settings]: Using default settings")
 		saveSettings()
+	}
+
+	g.db, err = LoadDB("/Users/kivutar/libretro-database/rdb/")
+	if err != nil {
+		log.Println("Can't load game database:", err)
 	}
 
 	if err := glfw.Init(); err != nil {

@@ -12,16 +12,17 @@ type notification struct {
 
 var notifications []notification
 
-func notify(message string, frames int) {
+func notify(message string, frames int) int {
 	n := notification{
 		message,
 		frames,
 	}
 
 	notifications = append(notifications, n)
+	return len(notifications) - 1
 }
 
-func notifyAndLog(prefix, message string, vars ...interface{}) {
+func notifyAndLog(prefix, message string, vars ...interface{}) int {
 	var msg string
 	if len(vars) > 0 {
 		msg = fmt.Sprintf(message, vars...)
@@ -31,7 +32,7 @@ func notifyAndLog(prefix, message string, vars ...interface{}) {
 	if g.verbose {
 		log.Print("[" + prefix + "]: " + msg + "\n")
 	}
-	notify(msg, 240)
+	return notify(msg, 240)
 }
 
 func processNotifications() {

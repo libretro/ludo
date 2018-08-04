@@ -61,7 +61,7 @@ func drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4 float32, c col
 	gl.Uniform1f(maskUniform, 0)
 	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), c.r, c.b, c.g, c.a)
 	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
 	gl.BindVertexArray(video.vao)
 	gl.BindTexture(gl.TEXTURE_2D, image)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)

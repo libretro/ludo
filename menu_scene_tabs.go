@@ -2,6 +2,7 @@ package main
 
 import (
 	"os/user"
+	"path/filepath"
 
 	"github.com/kivutar/go-playthemall/libretro"
 	colorful "github.com/lucasb-eyer/go-colorful"
@@ -35,23 +36,20 @@ func buildTabs() scene {
 		},
 	})
 
-	// list.children = append(list.children, entry{
-	// 	label:    "Super NES",
-	// 	subLabel: "10 Games - 5 Favorites",
-	// 	icon:     "Nintendo - Super Nintendo Entertainment System",
-	// 	callbackOK: func() {
-	// 		menu.stack = append(menu.stack, buildGameList())
-	// 	},
-	// })
-
-	// list.children = append(list.children, entry{
-	// 	label:    "Mega Drive - Genesis",
-	// 	subLabel: "10 Games - 5 Favorites",
-	// 	icon:     "Sega - Mega Drive - Genesis",
-	// 	callbackOK: func() {
-	// 		menu.stack = append(menu.stack, buildGameList())
-	// 	},
-	// })
+	usr, _ := user.Current()
+	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
+	for _, path := range paths {
+		path := path
+		filename := filename(path)
+		list.children = append(list.children, entry{
+			label:    filename,
+			subLabel: "10 Games - 5 Favorites",
+			icon:     filename,
+			callbackOK: func() {
+				menu.stack = append(menu.stack, buildPlaylist(path))
+			},
+		})
+	}
 
 	list.children = append(list.children, entry{
 		label:    "Add games",
@@ -59,13 +57,11 @@ func buildTabs() scene {
 		icon:     "add",
 		callbackOK: func() {
 			usr, _ := user.Current()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, nil, entry{
-				label: "<Scan this directory>",
-				icon:  "scan",
-				callbackOK: func() {
-					notifyAndLog("Menu", "Not implemented yet.")
-				},
-			}))
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, ScanDir,
+				entry{
+					label: "<Scan this directory>",
+					icon:  "scan",
+				}))
 		},
 	})
 
@@ -91,13 +87,13 @@ func (tabs *screenTabs) segueMount() {
 		} else if i < tabs.ptr {
 			e.yp = 0.05
 			e.labelAlpha = 0
-			e.iconAlpha = 0.5
+			e.iconAlpha = 0.75
 			e.scale = 0.25
 			e.width = 128
 		} else if i > tabs.ptr {
 			e.yp = 0.95
 			e.labelAlpha = 0
-			e.iconAlpha = 0.5
+			e.iconAlpha = 0.75
 			e.scale = 0.25
 			e.width = 128
 		}
@@ -124,13 +120,13 @@ func (tabs *screenTabs) animate() {
 		} else if i < tabs.ptr {
 			yp = 0.05
 			labelAlpha = 0
-			iconAlpha = 0.5
+			iconAlpha = 0.75
 			scale = 0.25
 			width = 128
 		} else if i > tabs.ptr {
 			yp = 0.95
 			labelAlpha = 0
-			iconAlpha = 0.5
+			iconAlpha = 0.75
 			scale = 0.25
 			width = 128
 		}
@@ -190,7 +186,7 @@ func (tabs screenTabs) render() {
 	stackWidth := 132 * menu.ratio
 	for i, e := range tabs.children {
 
-		c := colorful.Hcl(float64(i%12)*30, 0.5, 0.5)
+		c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
 		var alpha float32 = 1
 		if i == 0 {
 			alpha = 0
@@ -207,11 +203,13 @@ func (tabs screenTabs) render() {
 
 		x := -menu.scroll*menu.ratio + stackWidth - e.width/2*menu.ratio + 400*menu.ratio - 400*e.yp*menu.ratio
 
-		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		lw := video.font.Width(0.7*menu.ratio, e.label)
-		video.font.Printf(x-lw/2, float32(h)*e.yp+180*menu.ratio, 0.7*menu.ratio, e.label)
-		lw = video.font.Width(0.4*menu.ratio, e.subLabel)
-		video.font.Printf(x-lw/2, float32(h)*e.yp+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
+		if e.labelAlpha > 0 {
+			video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
+			lw := video.font.Width(0.7*menu.ratio, e.label)
+			video.font.Printf(x-lw/2, float32(h)*e.yp+180*menu.ratio, 0.7*menu.ratio, e.label)
+			lw = video.font.Width(0.4*menu.ratio, e.subLabel)
+			video.font.Printf(x-lw/2, float32(h)*e.yp+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
+		}
 
 		drawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,
