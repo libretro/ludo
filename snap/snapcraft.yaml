@@ -1,6 +1,6 @@
 
-  name: your-registered-name
-  version: '0.1.0'
+  name: go-playthemall
+  version: git
   summary: A libretro frontend written in golang
   description: |
     A frontend for emulators. Allows browsing and playing your collection of classic video games.
@@ -9,6 +9,11 @@
   confinement: devmode # use 'strict' once you have the right plugs and slots
 
   parts:
-    my-part:
+    go-playthemall:
+      source: .
       plugin: go
-  
+      go-importpath: github.com/libretro/go-playthemall
+
+  apps:
+    go-playthemall:
+      command: go-playthemall
