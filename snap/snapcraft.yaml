@@ -1,0 +1,14 @@
+
+  name: your-registered-name
+  version: '0.1.0'
+  summary: A libretro frontend written in golang
+  description: |
+    A frontend for emulators. Allows browsing and playing your collection of classic video games.
+
+  grade: devel # must be 'stable' to release into candidate/stable channels
+  confinement: devmode # use 'strict' once you have the right plugs and slots
+
+  parts:
+    my-part:
+      plugin: go
+  
