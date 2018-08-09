@@ -1,6 +1,6 @@
 package main
 
-import "github.com/kivutar/go-playthemall/libretro"
+import "github.com/libretro/go-playthemall/libretro"
 
 var joyBinds = map[string]joybinds{
 	"Microsoft X-Box 360 pad": xbox360JoyBinds,

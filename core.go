@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kivutar/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/libretro"
 )
 
 // coreLoad loads a libretro core

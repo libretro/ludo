@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/kivutar/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/libretro"
 )
 
 func Test_coreLoad(t *testing.T) {

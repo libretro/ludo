@@ -10,7 +10,7 @@ import (
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/kivutar/glfont"
-	"github.com/kivutar/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/libretro"
 )
 
 var window *glfw.Window

@@ -6,7 +6,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/kivutar/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/libretro"
 )
 
 var logLevels = map[uint32]string{

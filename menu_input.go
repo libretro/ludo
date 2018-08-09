@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/kivutar/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/libretro"
 )
 
 func menuInput() {

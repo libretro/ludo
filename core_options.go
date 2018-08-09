@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/user"
 
-	"github.com/kivutar/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/libretro"
 )
 
 // Options is a container type for core options internals

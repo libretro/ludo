@@ -3,7 +3,7 @@ package main
 import (
 	"os/user"
 
-	"github.com/kivutar/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/libretro"
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
