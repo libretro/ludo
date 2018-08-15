@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/settings"
 	"github.com/libretro/go-playthemall/utils"
 )
 
@@ -30,7 +31,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction entry)
 		icon := "file"
 
 		// Check whether or not we are to display hidden files.
-		if f.Name()[:1] == "." && settings.ShowHiddenFiles {
+		if f.Name()[:1] == "." && settings.Settings.ShowHiddenFiles {
 			continue
 		}
 

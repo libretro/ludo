@@ -11,6 +11,7 @@ import (
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/notifications"
 	"github.com/libretro/go-playthemall/options"
+	"github.com/libretro/go-playthemall/settings"
 	"github.com/libretro/go-playthemall/state"
 )
 
@@ -67,11 +68,11 @@ func main() {
 		gamePath = args[0]
 	}
 
-	err := loadSettings()
+	err := settings.Load()
 	if err != nil {
 		log.Println("[Settings]: Loading failed:", err)
 		log.Println("[Settings]: Using default settings")
-		saveSettings()
+		settings.Save()
 	}
 
 	if err := glfw.Init(); err != nil {
@@ -86,7 +87,7 @@ func main() {
 	video.winWidth = 320 * 3
 	video.winHeight = 180 * 3
 
-	videoConfigure(settings.VideoFullscreen)
+	videoConfigure(settings.Settings.VideoFullscreen)
 
 	input.Init(window)
 

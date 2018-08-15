@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/libretro/go-playthemall/settings"
+
 	"github.com/fatih/structs"
 )
 
@@ -14,14 +16,14 @@ func buildSettings() scene {
 	var list screenSettings
 	list.label = "Settings"
 
-	fields := structs.Fields(&settings)
+	fields := structs.Fields(&settings.Settings)
 	for _, f := range fields {
 		f := f
 		list.children = append(list.children, entry{
 			label: f.Tag("label"),
 			icon:  "subsetting",
 			incr: func(direction int) {
-				incrCallbacks[f.Name()](f, direction)
+				settings.IncrCallbacks[f.Name()](f, direction)
 			},
 			value: f.Value,
 			stringValue: func() string {

@@ -4,6 +4,8 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/settings"
+	"github.com/libretro/go-playthemall/state"
 )
 
 const numPlayers = 5
@@ -142,15 +144,15 @@ func Poll() {
 	Pressed, Released = inputGetPressedReleased(NewState, OldState)
 
 	// Toggle the menu if menuActionMenuToggle is pressed
-	// if released[0][menuActionMenuToggle] && g.coreRunning {
-	// 	g.menuActive = !g.menuActive
-	// }
+	if Released[0][menuActionMenuToggle] && state.Global.CoreRunning {
+		state.Global.MenuActive = !state.Global.MenuActive
+	}
 
 	// Toggle fullscreen if menuActionFullscreenToggle is pressed
 	if Released[0][menuActionFullscreenToggle] {
-		// settings.VideoFullscreen = !settings.VideoFullscreen
-		// videoConfigure(settings.VideoFullscreen)
-		// saveSettings()
+		settings.Settings.VideoFullscreen = !settings.Settings.VideoFullscreen
+		//videoConfigure(settings.Settings.VideoFullscreen)
+		settings.Save()
 	}
 
 	// Close on escape

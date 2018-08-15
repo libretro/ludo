@@ -12,6 +12,7 @@ import (
 	"github.com/kivutar/glfont"
 	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/settings"
 	"github.com/libretro/go-playthemall/state"
 )
 
@@ -111,7 +112,7 @@ func videoConfigure(fullscreen bool) {
 	var m *glfw.Monitor
 
 	if fullscreen {
-		m = glfw.GetMonitors()[settings.VideoMonitorIndex]
+		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
 		vms := m.GetVideoModes()
 		vm := vms[len(vms)-1]
 		width = vm.Width

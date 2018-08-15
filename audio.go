@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/libretro/go-playthemall/settings"
 	"golang.org/x/mobile/exp/audio/al"
 )
 
@@ -39,7 +40,7 @@ func audioInit(rate int32) {
 	audio.buffers = al.GenBuffers(int(audio.numBuffers))
 	audio.resPtr = audio.numBuffers
 
-	audio.source.SetGain(settings.AudioVolume)
+	audio.source.SetGain(settings.Settings.AudioVolume)
 }
 
 func min(a, b int32) int32 {
