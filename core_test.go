@@ -7,10 +7,12 @@ import (
 	"testing"
 
 	"github.com/libretro/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/utils"
 )
 
 func Test_coreLoad(t *testing.T) {
-	g.verbose = true
+	state.Global.Verbose = true
 
 	exts := map[string]string{
 		"darwin":  ".dylib",
@@ -20,11 +22,11 @@ func Test_coreLoad(t *testing.T) {
 
 	ext := exts[runtime.GOOS]
 
-	out := captureOutput(func() { coreLoad("testdata/uzem_libretro" + ext) })
+	out := utils.CaptureOutput(func() { coreLoad("testdata/uzem_libretro" + ext) })
 
 	t.Run("The core is loaded", func(t *testing.T) {
-		if g.core == (libretro.Core{}) {
-			t.Errorf("got = %v, want not libretro.Core{}", g.core)
+		if state.Global.Core == (libretro.Core{}) {
+			t.Errorf("got = %v, want not libretro.Core{}", state.Global.Core)
 		}
 	})
 
@@ -42,10 +44,10 @@ func Test_coreLoad(t *testing.T) {
 		}
 	})
 
-	g.core.UnloadGame()
-	g.core.Deinit()
-	g.gamePath = ""
-	g.verbose = false
+	state.Global.Core.UnloadGame()
+	state.Global.Core.Deinit()
+	state.Global.GamePath = ""
+	state.Global.Verbose = false
 }
 
 func Test_coreGetGameInfo(t *testing.T) {

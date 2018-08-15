@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/libretro/go-playthemall/state"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
@@ -35,7 +36,7 @@ func Test_menuInit(t *testing.T) {
 		}
 	})
 
-	g.coreRunning = true
+	state.Global.CoreRunning = true
 	menuInit(ctx)
 
 	t.Run("Warps at the quick menu if a game is launched", func(t *testing.T) {

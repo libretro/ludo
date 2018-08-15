@@ -2,6 +2,9 @@ package notifications
 
 import (
 	"fmt"
+	"log"
+
+	"github.com/libretro/go-playthemall/state"
 )
 
 type Notification struct {
@@ -31,9 +34,9 @@ func DisplayAndLog(prefix, message string, vars ...interface{}) {
 	} else {
 		msg = message
 	}
-	// if g.verbose {
-	// 	log.Print("[" + prefix + "]: " + msg + "\n")
-	// }
+	if state.Global.Verbose {
+		log.Print("[" + prefix + "]: " + msg + "\n")
+	}
 	Display(msg, 240)
 }
 

@@ -1,30 +1,12 @@
 package notifications
 
 import (
-	"bytes"
-	"fmt"
-	"log"
-	"os"
 	"reflect"
 	"testing"
+
+	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/utils"
 )
-
-type logWriter struct {
-}
-
-func (writer logWriter) Write(bytes []byte) (int, error) {
-	return fmt.Print(string(bytes))
-}
-
-func captureOutput(f func()) string {
-	var buf bytes.Buffer
-	log.SetFlags(0)
-	log.SetOutput(new(logWriter))
-	log.SetOutput(&buf)
-	f()
-	log.SetOutput(os.Stderr)
-	return buf.String()
-}
 
 func Test_Display(t *testing.T) {
 	Clear()
@@ -57,8 +39,8 @@ func Test_DisplayAndLog(t *testing.T) {
 
 	Clear()
 	t.Run("Logs to stdout if verbose", func(t *testing.T) {
-		//g.verbose = true
-		got := captureOutput(func() { DisplayAndLog("Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
+		state.Global.Verbose = true
+		got := utils.CaptureOutput(func() { DisplayAndLog("Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
 		want := "[Test]: Joypad #3 loaded with name Foo.\n"
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
@@ -67,8 +49,8 @@ func Test_DisplayAndLog(t *testing.T) {
 
 	Clear()
 	t.Run("Logs nothing if not verbose", func(t *testing.T) {
-		//g.verbose = false
-		got := captureOutput(func() { DisplayAndLog("Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
+		state.Global.Verbose = false
+		got := utils.CaptureOutput(func() { DisplayAndLog("Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
 		want := ""
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)

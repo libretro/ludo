@@ -2,6 +2,9 @@ package utils
 
 import (
 	"bufio"
+	"bytes"
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -39,4 +42,21 @@ func Filename(path string) string {
 	ext := filepath.Ext(name)
 	name = name[0 : len(name)-len(ext)]
 	return name
+}
+
+type logWriter struct {
+}
+
+func (writer logWriter) Write(bytes []byte) (int, error) {
+	return fmt.Print(string(bytes))
+}
+
+func CaptureOutput(f func()) string {
+	var buf bytes.Buffer
+	log.SetFlags(0)
+	log.SetOutput(new(logWriter))
+	log.SetOutput(&buf)
+	f()
+	log.SetOutput(os.Stderr)
+	return buf.String()
 }
