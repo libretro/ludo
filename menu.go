@@ -3,6 +3,7 @@ package main
 import (
 	"math"
 
+	"github.com/libretro/go-playthemall/state"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
@@ -272,7 +273,7 @@ func menuInit(ctx Context) {
 	menu.tweens = make(map[*float32]*gween.Tween)
 	menu.ratio = float32(w) / 1920
 
-	if g.coreRunning {
+	if state.Global.CoreRunning {
 		menu.stack = append(menu.stack, buildTabs())
 		menu.stack[0].segueNext()
 		menu.stack = append(menu.stack, buildMainMenu())

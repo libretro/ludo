@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/state"
 )
 
 type screenQuick struct {
@@ -16,7 +17,7 @@ func buildQuickMenu() scene {
 		label: "Resume",
 		icon:  "resume",
 		callbackOK: func() {
-			g.menuActive = false
+			state.Global.MenuActive = false
 		},
 	})
 
@@ -24,8 +25,8 @@ func buildQuickMenu() scene {
 		label: "Reset",
 		icon:  "reset",
 		callbackOK: func() {
-			g.core.Reset()
-			g.menuActive = false
+			state.Global.Core.Reset()
+			state.Global.MenuActive = false
 		},
 	})
 
@@ -50,7 +51,7 @@ func buildQuickMenu() scene {
 			if err != nil {
 				notifications.DisplayAndLog("Menu", err.Error())
 			} else {
-				g.menuActive = false
+				state.Global.MenuActive = false
 				notifications.DisplayAndLog("Menu", "State loaded.")
 			}
 		},

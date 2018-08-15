@@ -10,6 +10,7 @@ import (
 
 	"github.com/fatih/structs"
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/libretro/go-playthemall/utils"
 )
 
 var settingsLock sync.Mutex
@@ -79,7 +80,7 @@ func loadSettings() error {
 
 	usr, _ := user.Current()
 
-	b, err := slurp(usr.HomeDir + "/.playthemall/settings.json")
+	b, err := utils.Slurp(usr.HomeDir + "/.playthemall/settings.json")
 	if err != nil {
 		return err
 	}

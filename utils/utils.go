@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"bufio"
@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-func slurp(path string) ([]byte, error) {
+func Slurp(path string) ([]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func slurp(path string) ([]byte, error) {
 	return bytes, nil
 }
 
-func stringInSlice(a string, list []string) bool {
+func StringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
 			return true
@@ -34,7 +34,7 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-func filename(path string) string {
+func Filename(path string) string {
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
 	name = name[0 : len(name)-len(ext)]

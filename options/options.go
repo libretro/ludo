@@ -1,4 +1,4 @@
-package main
+package options
 
 import (
 	"bytes"
@@ -9,7 +9,11 @@ import (
 	"sync"
 
 	"github.com/libretro/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/utils"
 )
+
+var lock sync.Mutex
 
 // Options is a container type for core options internals
 type Options struct {
@@ -18,10 +22,8 @@ type Options struct {
 	Updated bool
 }
 
-var lock sync.Mutex
-
-// Instanciate a core options manager
-func newOptions(vars []libretro.Variable) *Options {
+// New instanciate a core options manager
+func New(vars []libretro.Variable) *Options {
 	o := &Options{}
 	o.Vars = vars
 	o.Choices = make([]int, len(o.Vars))
@@ -30,13 +32,13 @@ func newOptions(vars []libretro.Variable) *Options {
 	return o
 }
 
-// Returns the number of choices for a given variable
-func (o *Options) numChoices(choiceIndex int) int {
+// NumChoices returns the number of choices for a given variable
+func (o *Options) NumChoices(choiceIndex int) int {
 	return len(o.Vars[choiceIndex].Choices())
 }
 
 // Save core options to a file
-func (o *Options) save() error {
+func (o *Options) Save() error {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -51,7 +53,7 @@ func (o *Options) save() error {
 		return err
 	}
 
-	name := filename(g.corePath)
+	name := utils.Filename(state.Global.CorePath)
 	f, err := os.Create(usr.HomeDir + "/.playthemall/" + name + ".json")
 	if err != nil {
 		return err
@@ -68,8 +70,8 @@ func (o *Options) load() error {
 
 	usr, _ := user.Current()
 
-	name := filename(g.corePath)
-	b, err := slurp(usr.HomeDir + "/.playthemall/" + name + ".json")
+	name := utils.Filename(state.Global.CorePath)
+	b, err := utils.Slurp(usr.HomeDir + "/.playthemall/" + name + ".json")
 	if err != nil {
 		return err
 	}

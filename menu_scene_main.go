@@ -4,6 +4,7 @@ import (
 	"os/user"
 
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/state"
 )
 
 type screenMain struct {
@@ -16,7 +17,7 @@ func buildMainMenu() scene {
 
 	usr, _ := user.Current()
 
-	if g.coreRunning {
+	if state.Global.CoreRunning {
 		list.children = append(list.children, entry{
 			label: "Quick Menu",
 			icon:  "subsetting",

@@ -10,34 +10,36 @@ import (
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/utils"
 )
 
 // coreLoad loads a libretro core
 func coreLoad(sofile string) {
-	g.corePath = sofile
-	if g.coreRunning {
-		g.core.UnloadGame()
-		g.core.Deinit()
-		g.gamePath = ""
-		g.coreRunning = false
+	state.Global.CorePath = sofile
+	if state.Global.CoreRunning {
+		state.Global.Core.UnloadGame()
+		state.Global.Core.Deinit()
+		state.Global.GamePath = ""
+		state.Global.CoreRunning = false
 	}
 
-	g.core, _ = libretro.Load(sofile)
-	g.core.SetEnvironment(environment)
-	g.core.SetVideoRefresh(videoRefresh)
-	g.core.SetInputPoll(input.Poll)
-	g.core.SetInputState(input.State)
-	g.core.SetAudioSample(audioSample)
-	g.core.SetAudioSampleBatch(audioSampleBatch)
-	g.core.Init()
+	state.Global.Core, _ = libretro.Load(sofile)
+	state.Global.Core.SetEnvironment(environment)
+	state.Global.Core.SetVideoRefresh(videoRefresh)
+	state.Global.Core.SetInputPoll(input.Poll)
+	state.Global.Core.SetInputState(input.State)
+	state.Global.Core.SetAudioSample(audioSample)
+	state.Global.Core.SetAudioSampleBatch(audioSampleBatch)
+	state.Global.Core.Init()
 
 	// Append the library name to the window title.
-	si := g.core.GetSystemInfo()
+	si := state.Global.Core.GetSystemInfo()
 	if len(si.LibraryName) > 0 {
 		if window != nil {
 			window.SetTitle("Play Them All - " + si.LibraryName)
 		}
-		if g.verbose {
+		if state.Global.Verbose {
 			log.Println("[Core]: Name:", si.LibraryName)
 			log.Println("[Core]: Version:", si.LibraryVersion)
 			log.Println("[Core]: Valid extensions:", si.ValidExtensions)
@@ -104,7 +106,7 @@ func coreGetGameInfo(filename string, blockExtract bool) (libretro.GameInfo, err
 
 // coreLoadGame loads a game. A core has to be loaded first.
 func coreLoadGame(filename string) {
-	si := g.core.GetSystemInfo()
+	si := state.Global.Core.GetSystemInfo()
 
 	gi, err := coreGetGameInfo(filename, si.BlockExtract)
 	if err != nil {
@@ -113,7 +115,7 @@ func coreLoadGame(filename string) {
 	}
 
 	if !si.NeedFullpath {
-		bytes, err := slurp(gi.Path)
+		bytes, err := utils.Slurp(gi.Path)
 		if err != nil {
 			notifications.DisplayAndLog("Core", err.Error())
 			return
@@ -121,14 +123,14 @@ func coreLoadGame(filename string) {
 		gi.SetData(bytes)
 	}
 
-	ok := g.core.LoadGame(gi)
+	ok := state.Global.Core.LoadGame(gi)
 	if !ok {
 		notifications.DisplayAndLog("Core", "Failed to load the content.")
-		g.coreRunning = false
+		state.Global.CoreRunning = false
 		return
 	}
 
-	avi := g.core.GetSystemAVInfo()
+	avi := state.Global.Core.GetSystemAVInfo()
 
 	video.geom = avi.Geometry
 
@@ -139,13 +141,13 @@ func coreLoadGame(filename string) {
 
 	input.Init(window)
 	audioInit(int32(avi.Timing.SampleRate))
-	if g.audioCb.SetState != nil {
-		g.audioCb.SetState(true)
+	if state.Global.AudioCb.SetState != nil {
+		state.Global.AudioCb.SetState(true)
 	}
 
-	g.coreRunning = true
-	g.menuActive = false
-	g.gamePath = filename
+	state.Global.CoreRunning = true
+	state.Global.MenuActive = false
+	state.Global.GamePath = filename
 
 	notifications.DisplayAndLog("Core", "Game loaded: "+filename)
 }

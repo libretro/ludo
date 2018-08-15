@@ -7,6 +7,8 @@ import (
 	"unsafe"
 
 	"github.com/libretro/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/options"
+	"github.com/libretro/go-playthemall/state"
 )
 
 var logLevels = map[uint32]string{
@@ -36,13 +38,13 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 			libretro.SetString(data, currentUser.Username)
 		}
 	case libretro.EnvironmentGetLogInterface:
-		g.core.BindLogCallback(data, logCallback)
+		state.Global.Core.BindLogCallback(data, logCallback)
 	case libretro.EnvironmentGetPerfInterface:
-		g.core.BindPerfCallback(data, getTimeUsec)
+		state.Global.Core.BindPerfCallback(data, getTimeUsec)
 	case libretro.EnvironmentSetFrameTimeCallback:
-		g.frameTimeCb = libretro.SetFrameTimeCallback(data)
+		state.Global.FrameTimeCb = libretro.SetFrameTimeCallback(data)
 	case libretro.EnvironmentSetAudioCallback:
-		g.audioCb = libretro.SetAudioCallback(data)
+		state.Global.AudioCb = libretro.SetAudioCallback(data)
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:
@@ -61,19 +63,19 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:
 		variable := libretro.GetVariable(data)
-		for i, v := range g.options.Vars {
+		for i, v := range opts.Vars {
 			if variable.Key() == v.Key() {
-				variable.SetValue(v.Choices()[g.options.Choices[i]])
+				variable.SetValue(v.Choices()[opts.Choices[i]])
 				return true
 			}
 		}
 		return false
 	case libretro.EnvironmentSetVariables:
-		g.options = newOptions(libretro.GetVariables(data))
+		opts = options.New(libretro.GetVariables(data))
 		return true
 	case libretro.EnvironmentGetVariableUpdate:
-		libretro.SetBool(data, g.options.Updated)
-		g.options.Updated = false
+		libretro.SetBool(data, opts.Updated)
+		opts.Updated = false
 		return true
 	default:
 		//log.Println("[Env]: Not implemented:", cmd)

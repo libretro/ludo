@@ -12,6 +12,7 @@ import (
 	"github.com/kivutar/glfont"
 	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/state"
 )
 
 var window *glfw.Window
@@ -33,7 +34,7 @@ var video struct {
 }
 
 func videoSetPixelFormat(format uint32) bool {
-	if g.verbose {
+	if state.Global.Verbose {
 		log.Printf("[Video]: Set Pixel Format: %v\n", format)
 	}
 
@@ -59,7 +60,7 @@ func videoSetPixelFormat(format uint32) bool {
 
 func updateMaskUniform() {
 	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
-	if g.menuActive {
+	if state.Global.MenuActive {
 		gl.Uniform1f(maskUniform, 1.0)
 	} else {
 		gl.Uniform1f(maskUniform, 0.0)
@@ -153,7 +154,7 @@ func videoConfigure(fullscreen bool) {
 		panic(err)
 	}
 
-	if g.verbose {
+	if state.Global.Verbose {
 		version := gl.GoStr(gl.GetString(gl.VERSION))
 		log.Println("[Video]: OpenGL version:", version)
 	}
@@ -194,7 +195,7 @@ func videoConfigure(fullscreen bool) {
 	gl.GenTextures(1, &video.texID)
 
 	gl.ActiveTexture(gl.TEXTURE0)
-	if video.texID == 0 && g.verbose {
+	if video.texID == 0 && state.Global.Verbose {
 		log.Println("[Video]: Failed to create the video texture")
 	}
 

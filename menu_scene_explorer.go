@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/utils"
 )
 
 type screenExplorer struct {
@@ -43,7 +44,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction entry)
 				if f.IsDir() {
 					list.segueNext()
 					menu.stack = append(menu.stack, buildExplorer(path+"/"+f.Name()+"/", exts, cb, dirAction))
-				} else if cb != nil && (exts == nil || stringInSlice(filepath.Ext(f.Name()), exts)) {
+				} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(f.Name()), exts)) {
 					cb(path + "/" + f.Name())
 				}
 			},

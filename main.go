@@ -9,22 +9,12 @@ import (
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/go-playthemall/input"
-	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/options"
+	"github.com/libretro/go-playthemall/state"
 )
 
-// global state
-var g struct {
-	core        libretro.Core
-	frameTimeCb libretro.FrameTimeCallback
-	audioCb     libretro.AudioCallback
-	coreRunning bool
-	menuActive  bool
-	verbose     bool
-	corePath    string
-	gamePath    string
-	options     *Options
-}
+var opts *options.Options
 
 func init() {
 	// GLFW event handling must run on the main OS thread
@@ -44,14 +34,14 @@ func runLoop() {
 		glfw.SwapInterval(1)
 		glfw.PollEvents()
 		notifications.Process()
-		if !g.menuActive {
-			if g.coreRunning {
-				g.core.Run()
-				if g.frameTimeCb.Callback != nil {
-					g.frameTimeCb.Callback(g.frameTimeCb.Reference)
+		if !state.Global.MenuActive {
+			if state.Global.CoreRunning {
+				state.Global.Core.Run()
+				if state.Global.FrameTimeCb.Callback != nil {
+					state.Global.FrameTimeCb.Callback(state.Global.FrameTimeCb.Reference)
 				}
-				if g.audioCb.Callback != nil {
-					g.audioCb.Callback()
+				if state.Global.AudioCb.Callback != nil {
+					state.Global.AudioCb.Callback()
 				}
 			}
 			videoRender()
@@ -67,8 +57,8 @@ func runLoop() {
 }
 
 func main() {
-	flag.StringVar(&g.corePath, "L", "", "Path to the libretro core")
-	flag.BoolVar(&g.verbose, "v", false, "Verbose logs")
+	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
+	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
 	flag.Parse()
 	args := flag.Args()
 
@@ -89,8 +79,8 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	if len(g.corePath) > 0 {
-		coreLoad(g.corePath)
+	if len(state.Global.CorePath) > 0 {
+		coreLoad(state.Global.CorePath)
 	}
 
 	video.winWidth = 320 * 3
@@ -107,13 +97,13 @@ func main() {
 	menuInit(window)
 
 	// No game running? display the menu
-	g.menuActive = !g.coreRunning
+	state.Global.MenuActive = !state.Global.CoreRunning
 
 	runLoop()
 
 	// Unload and deinit in the core.
-	if g.coreRunning {
-		g.core.UnloadGame()
-		g.core.Deinit()
+	if state.Global.CoreRunning {
+		state.Global.Core.UnloadGame()
+		state.Global.Core.Deinit()
 	}
 }
