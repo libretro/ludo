@@ -11,6 +11,7 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/kivutar/glfont"
 	"github.com/libretro/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/notifications"
 )
 
 var window *glfw.Window
@@ -211,9 +212,9 @@ func renderNotifications() {
 	fullscreenViewport()
 	fbw, fbh := window.GetFramebufferSize()
 	video.font.UpdateResolution(fbw, fbh)
-	for i, n := range notifications {
-		video.font.SetColor(1.0, 1.0, 0.0, float32(n.frames)/120.0)
-		video.font.Printf(80, float32(fbh-80*len(notifications)+80*i), 0.7, n.message)
+	for i, n := range notifications.List() {
+		video.font.SetColor(1.0, 1.0, 0.0, float32(n.Frames)/120.0)
+		video.font.Printf(80, float32(fbh-80*len(notifications.List())+80*i), 0.7, n.Message)
 	}
 }
 

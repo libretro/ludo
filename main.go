@@ -8,7 +8,9 @@ import (
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/notifications"
 )
 
 // global state
@@ -41,7 +43,7 @@ func runLoop() {
 	for !window.ShouldClose() {
 		glfw.SwapInterval(1)
 		glfw.PollEvents()
-		processNotifications()
+		notifications.Process()
 		if !g.menuActive {
 			if g.coreRunning {
 				g.core.Run()
@@ -54,7 +56,7 @@ func runLoop() {
 			}
 			videoRender()
 		} else {
-			inputPoll()
+			input.Poll()
 			menuInput()
 			videoRender()
 			menuRender()
@@ -95,6 +97,8 @@ func main() {
 	video.winHeight = 180 * 3
 
 	videoConfigure(settings.VideoFullscreen)
+
+	input.Init(window)
 
 	if len(gamePath) > 0 {
 		coreLoadGame(gamePath)

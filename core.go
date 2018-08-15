@@ -7,7 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/notifications"
 )
 
 // coreLoad loads a libretro core
@@ -23,8 +25,8 @@ func coreLoad(sofile string) {
 	g.core, _ = libretro.Load(sofile)
 	g.core.SetEnvironment(environment)
 	g.core.SetVideoRefresh(videoRefresh)
-	g.core.SetInputPoll(inputPoll)
-	g.core.SetInputState(inputState)
+	g.core.SetInputPoll(input.Poll)
+	g.core.SetInputState(input.State)
 	g.core.SetAudioSample(audioSample)
 	g.core.SetAudioSampleBatch(audioSampleBatch)
 	g.core.Init()
@@ -44,7 +46,7 @@ func coreLoad(sofile string) {
 		}
 	}
 
-	notifyAndLog("Core", "Core loaded: "+si.LibraryName)
+	notifications.DisplayAndLog("Core", "Core loaded: "+si.LibraryName)
 }
 
 // coreUnzipGame unzips a rom to tmpdir and returns the path and size of the extracted rom
@@ -106,14 +108,14 @@ func coreLoadGame(filename string) {
 
 	gi, err := coreGetGameInfo(filename, si.BlockExtract)
 	if err != nil {
-		notifyAndLog("Core", err.Error())
+		notifications.DisplayAndLog("Core", err.Error())
 		return
 	}
 
 	if !si.NeedFullpath {
 		bytes, err := slurp(gi.Path)
 		if err != nil {
-			notifyAndLog("Core", err.Error())
+			notifications.DisplayAndLog("Core", err.Error())
 			return
 		}
 		gi.SetData(bytes)
@@ -121,7 +123,7 @@ func coreLoadGame(filename string) {
 
 	ok := g.core.LoadGame(gi)
 	if !ok {
-		notifyAndLog("Core", "Failed to load the content.")
+		notifications.DisplayAndLog("Core", "Failed to load the content.")
 		g.coreRunning = false
 		return
 	}
@@ -135,7 +137,7 @@ func coreLoadGame(filename string) {
 		window.SetTitle("Play Them All - " + si.LibraryName)
 	}
 
-	inputInit()
+	input.Init(window)
 	audioInit(int32(avi.Timing.SampleRate))
 	if g.audioCb.SetState != nil {
 		g.audioCb.SetState(true)
@@ -145,5 +147,5 @@ func coreLoadGame(filename string) {
 	g.menuActive = false
 	g.gamePath = filename
 
-	notifyAndLog("Core", "Game loaded: "+filename)
+	notifications.DisplayAndLog("Core", "Game loaded: "+filename)
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"io/ioutil"
 	"path/filepath"
+
+	"github.com/libretro/go-playthemall/notifications"
 )
 
 type screenExplorer struct {
@@ -15,7 +17,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction entry)
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		notifyAndLog("Menu", err.Error())
+		notifications.DisplayAndLog("Menu", err.Error())
 	}
 
 	if dirAction.label != "" {

@@ -2,9 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -35,23 +32,6 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
-}
-
-type logWriter struct {
-}
-
-func (writer logWriter) Write(bytes []byte) (int, error) {
-	return fmt.Print(string(bytes))
-}
-
-func captureOutput(f func()) string {
-	var buf bytes.Buffer
-	log.SetFlags(0)
-	log.SetOutput(new(logWriter))
-	log.SetOutput(&buf)
-	f()
-	log.SetOutput(os.Stderr)
-	return buf.String()
 }
 
 func filename(path string) string {

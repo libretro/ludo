@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/libretro/go-playthemall/notifications"
+)
+
 type screenQuick struct {
 	entry
 }
@@ -31,9 +35,9 @@ func buildQuickMenu() scene {
 		callbackOK: func() {
 			err := saveState()
 			if err != nil {
-				notifyAndLog("Menu", err.Error())
+				notifications.DisplayAndLog("Menu", err.Error())
 			} else {
-				notifyAndLog("Menu", "State saved.")
+				notifications.DisplayAndLog("Menu", "State saved.")
 			}
 		},
 	})
@@ -44,10 +48,10 @@ func buildQuickMenu() scene {
 		callbackOK: func() {
 			err := loadState()
 			if err != nil {
-				notifyAndLog("Menu", err.Error())
+				notifications.DisplayAndLog("Menu", err.Error())
 			} else {
 				g.menuActive = false
-				notifyAndLog("Menu", "State loaded.")
+				notifications.DisplayAndLog("Menu", "State loaded.")
 			}
 		},
 	})
@@ -57,7 +61,7 @@ func buildQuickMenu() scene {
 		icon:  "screenshot",
 		callbackOK: func() {
 			takeScreenshot()
-			notifyAndLog("Menu", "Took a screenshot.")
+			notifications.DisplayAndLog("Menu", "Took a screenshot.")
 		},
 	})
 

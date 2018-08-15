@@ -3,6 +3,9 @@ package main
 import (
 	"os/user"
 
+	"github.com/libretro/go-playthemall/notifications"
+
+	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/tanema/gween"
@@ -63,7 +66,7 @@ func buildTabs() scene {
 				label: "<Scan this directory>",
 				icon:  "scan",
 				callbackOK: func() {
-					notifyAndLog("Menu", "Not implemented yet.")
+					notifications.DisplayAndLog("Menu", "Not implemented yet.")
 				},
 			}))
 		},
@@ -156,7 +159,7 @@ func (tabs *screenTabs) update() {
 	}
 
 	// Right
-	if newState[0][libretro.DeviceIDJoypadRight] && menu.inputCooldown == 0 {
+	if input.NewState[0][libretro.DeviceIDJoypadRight] && menu.inputCooldown == 0 {
 		tabs.ptr++
 		if tabs.ptr >= len(tabs.children) {
 			tabs.ptr = 0
@@ -166,7 +169,7 @@ func (tabs *screenTabs) update() {
 	}
 
 	// Left
-	if newState[0][libretro.DeviceIDJoypadLeft] && menu.inputCooldown == 0 {
+	if input.NewState[0][libretro.DeviceIDJoypadLeft] && menu.inputCooldown == 0 {
 		tabs.ptr--
 		if tabs.ptr < 0 {
 			tabs.ptr = len(tabs.children) - 1
@@ -176,7 +179,7 @@ func (tabs *screenTabs) update() {
 	}
 
 	// OK
-	if released[0][libretro.DeviceIDJoypadA] {
+	if input.Released[0][libretro.DeviceIDJoypadA] {
 		if tabs.children[tabs.ptr].callbackOK != nil {
 			tabs.segueNext()
 			tabs.children[tabs.ptr].callbackOK()

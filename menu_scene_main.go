@@ -2,6 +2,8 @@ package main
 
 import (
 	"os/user"
+
+	"github.com/libretro/go-playthemall/notifications"
 )
 
 type screenMain struct {
@@ -61,7 +63,7 @@ func buildMainMenu() scene {
 		label: "Help",
 		icon:  "subsetting",
 		callbackOK: func() {
-			notifyAndLog("Menu", "Not implemented yet.")
+			notifications.DisplayAndLog("Menu", "Not implemented yet.")
 		},
 	})
 

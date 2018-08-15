@@ -12,7 +12,7 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
-var lock sync.Mutex
+var settingsLock sync.Mutex
 
 // settings is the list of available settings for the program.
 // It serializes to JSON.
@@ -24,11 +24,11 @@ var settings struct {
 	ShowHiddenFiles   bool    `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
 }
 
-type settingCallbackIncrement func(*structs.Field, int)
+type callbackIncrement func(*structs.Field, int)
 
 // incrCallbacks is a map of callbacks called when a setting value
 // is incremented or decremented
-var incrCallbacks = map[string]settingCallbackIncrement{
+var incrCallbacks = map[string]callbackIncrement{
 	"VideoFullscreen": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v
@@ -68,8 +68,8 @@ var incrCallbacks = map[string]settingCallbackIncrement{
 // If the settings file doesn't exists, it will return an error and
 // set all the settings to their default value.
 func loadSettings() error {
-	lock.Lock()
-	defer lock.Unlock()
+	settingsLock.Lock()
+	defer settingsLock.Unlock()
 
 	// Set default values
 	settings.VideoFullscreen = false
@@ -89,8 +89,8 @@ func loadSettings() error {
 
 // saveSettings saves the current configuration to the home directory
 func saveSettings() error {
-	lock.Lock()
-	defer lock.Unlock()
+	settingsLock.Lock()
+	defer settingsLock.Unlock()
 
 	usr, _ := user.Current()
 

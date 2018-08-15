@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/user"
+	"sync"
 
 	"github.com/libretro/go-playthemall/libretro"
 )
@@ -16,6 +17,8 @@ type Options struct {
 	Choices []int
 	Updated bool
 }
+
+var lock sync.Mutex
 
 // Instanciate a core options manager
 func newOptions(vars []libretro.Variable) *Options {
