@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/libretro/go-playthemall/audio"
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
@@ -29,8 +30,8 @@ func coreLoad(sofile string) {
 	state.Global.Core.SetVideoRefresh(videoRefresh)
 	state.Global.Core.SetInputPoll(input.Poll)
 	state.Global.Core.SetInputState(input.State)
-	state.Global.Core.SetAudioSample(audioSample)
-	state.Global.Core.SetAudioSampleBatch(audioSampleBatch)
+	state.Global.Core.SetAudioSample(audio.Sample)
+	state.Global.Core.SetAudioSampleBatch(audio.SampleBatch)
 	state.Global.Core.Init()
 
 	// Append the library name to the window title.
@@ -140,7 +141,7 @@ func coreLoadGame(filename string) {
 	}
 
 	input.Init(window)
-	audioInit(int32(avi.Timing.SampleRate))
+	audio.Init(int32(avi.Timing.SampleRate))
 	if state.Global.AudioCb.SetState != nil {
 		state.Global.AudioCb.SetState(true)
 	}

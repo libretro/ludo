@@ -1,4 +1,4 @@
-package main
+package audio
 
 import (
 	"log"
@@ -21,11 +21,11 @@ var audio struct {
 	resPtr     int32
 }
 
-func audioSetVolume(vol float32) {
+func SetVolume(vol float32) {
 	audio.source.SetGain(vol)
 }
 
-func audioInit(rate int32) {
+func Init(rate int32) {
 	err := al.OpenDevice()
 	if err != nil {
 		log.Println(err)
@@ -88,7 +88,7 @@ func fillInternalBuf(buf []byte, size int32) int32 {
 	return readSize
 }
 
-func audioWrite(buf []byte, size int32) int32 {
+func write(buf []byte, size int32) int32 {
 	written := int32(0)
 
 	for size > 0 {
@@ -119,11 +119,11 @@ func audioWrite(buf []byte, size int32) int32 {
 	return written
 }
 
-func audioSample(left int16, right int16) {
+func Sample(left int16, right int16) {
 	buf := []byte{byte(left), byte(right)}
-	audioWrite(buf, 4)
+	write(buf, 4)
 }
 
-func audioSampleBatch(buf []byte, size int32) int32 {
-	return audioWrite(buf, size*4)
+func SampleBatch(buf []byte, size int32) int32 {
+	return write(buf, size*4)
 }
