@@ -1,9 +1,9 @@
-package main
+package audio
 
 import "testing"
 
 func Test_fillInternalBuf(t *testing.T) {
-	audioInit(48000)
+	Init(48000)
 	type args struct {
 		buf  []byte
 		size int32
