@@ -1,4 +1,4 @@
-package main
+package menu
 
 import (
 	"reflect"
@@ -18,7 +18,7 @@ func (m CtxMock) GetFramebufferSize() (width, height int) {
 func Test_menuInit(t *testing.T) {
 
 	var ctx CtxMock
-	menuInit(ctx)
+	Init(ctx)
 
 	t.Run("Starts with a single scene if no game is running", func(t *testing.T) {
 		got := len(menu.stack)

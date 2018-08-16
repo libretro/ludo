@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"archive/zip"
@@ -7,16 +7,27 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/libretro/go-playthemall/options"
+
 	"github.com/libretro/go-playthemall/audio"
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/utils"
+	"github.com/libretro/go-playthemall/video"
 )
 
-// coreLoad loads a libretro core
-func coreLoad(sofile string) {
+var vid *video.Video
+var opts *options.Options
+
+func Init(v *video.Video, o *options.Options) {
+	vid = v
+	opts = o
+}
+
+// Load loads a libretro core
+func Load(sofile string) {
 	state.Global.CorePath = sofile
 	if state.Global.CoreRunning {
 		state.Global.Core.UnloadGame()
@@ -105,8 +116,8 @@ func coreGetGameInfo(filename string, blockExtract bool) (libretro.GameInfo, err
 	return libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
 }
 
-// coreLoadGame loads a game. A core has to be loaded first.
-func coreLoadGame(filename string) {
+// LoadGame loads a game. A core has to be loaded first.
+func LoadGame(filename string) {
 	si := state.Global.Core.GetSystemInfo()
 
 	gi, err := coreGetGameInfo(filename, si.BlockExtract)
@@ -140,7 +151,7 @@ func coreLoadGame(filename string) {
 		vid.Window.SetTitle("Play Them All - " + si.LibraryName)
 	}
 
-	input.Init(vid.Window)
+	input.Init(vid)
 	audio.Init(int32(avi.Timing.SampleRate))
 	if state.Global.AudioCb.SetState != nil {
 		state.Global.AudioCb.SetState(true)

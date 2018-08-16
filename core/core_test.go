@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"os"
@@ -22,7 +22,7 @@ func Test_coreLoad(t *testing.T) {
 
 	ext := exts[runtime.GOOS]
 
-	out := utils.CaptureOutput(func() { coreLoad("testdata/uzem_libretro" + ext) })
+	out := utils.CaptureOutput(func() { Load("testdata/uzem_libretro" + ext) })
 
 	t.Run("The core is loaded", func(t *testing.T) {
 		if state.Global.Core == (libretro.Core{}) {

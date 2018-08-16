@@ -1,13 +1,18 @@
-package main
+package menu
 
 import (
 	"math"
+
+	"github.com/libretro/go-playthemall/options"
 
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/video"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
+
+var vid *video.Video
+var opts *options.Options
 
 // entry is a menu entry. It can also represent a scene.
 // The menu data is a tree of entries.
@@ -64,8 +69,8 @@ func updateTweens(dt float32) {
 	}
 }
 
-// menuRender takes care of rendering the menu
-func menuRender() {
+// Render takes care of rendering the menu
+func Render() {
 	menu.t += 0.1
 	w, _ := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
@@ -232,7 +237,7 @@ func genericRender(list *entry) {
 	}
 }
 
-func contextReset() {
+func ContextReset() {
 	menu.icons = map[string]uint32{
 		"main":       video.NewImage("assets/main.png"),
 		"file":       video.NewImage("assets/file.png"),
@@ -263,11 +268,14 @@ type Context interface {
 	GetFramebufferSize() (width, height int)
 }
 
-// menuInit initializes the menu.
+// Init initializes the menu.
 // If a game is already running, it will warp the user to the quick menu.
 // If not, it will display the menu tabs
-func menuInit(ctx Context) {
-	w, _ := ctx.GetFramebufferSize()
+func Init(v *video.Video, o *options.Options) {
+	vid = v
+	opts = o
+
+	w, _ := v.Window.GetFramebufferSize()
 	menu.stack = []scene{}
 	menu.tweens = make(map[*float32]*gween.Tween)
 	menu.ratio = float32(w) / 1920

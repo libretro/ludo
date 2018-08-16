@@ -1,8 +1,9 @@
-package main
+package menu
 
 import (
 	"os/user"
 
+	"github.com/libretro/go-playthemall/core"
 	"github.com/libretro/go-playthemall/notifications"
 	"github.com/libretro/go-playthemall/state"
 )
@@ -36,7 +37,7 @@ func buildMainMenu() scene {
 			menu.stack = append(menu.stack, buildExplorer(
 				usr.HomeDir,
 				[]string{".dll", ".dylib", ".so"},
-				coreLoad,
+				core.Load,
 				entry{},
 			))
 		},
@@ -47,7 +48,7 @@ func buildMainMenu() scene {
 		icon:  "subsetting",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, coreLoadGame, entry{}))
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, core.LoadGame, entry{}))
 		},
 	})
 

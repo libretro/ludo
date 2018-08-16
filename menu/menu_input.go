@@ -1,11 +1,11 @@
-package main
+package menu
 
 import (
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
 )
 
-func menuInput() {
+func Input() {
 	currentMenu := menu.stack[len(menu.stack)-1]
 	currentMenu.update()
 }

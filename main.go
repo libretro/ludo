@@ -8,7 +8,9 @@ import (
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/libretro/go-playthemall/core"
 	"github.com/libretro/go-playthemall/input"
+	"github.com/libretro/go-playthemall/menu"
 	"github.com/libretro/go-playthemall/notifications"
 	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/settings"
@@ -50,9 +52,9 @@ func runLoop() {
 			vid.Render()
 		} else {
 			input.Poll()
-			menuInput()
+			menu.Input()
 			vid.Render()
-			menuRender()
+			menu.Render()
 		}
 		vid.RenderNotifications()
 		vid.Window.SwapBuffers()
@@ -83,19 +85,21 @@ func main() {
 	defer glfw.Terminate()
 
 	if len(state.Global.CorePath) > 0 {
-		coreLoad(state.Global.CorePath)
+		core.Load(state.Global.CorePath)
 	}
 
 	vid = video.Init(settings.Settings.VideoFullscreen)
-	contextReset()
+	menu.ContextReset()
 
-	input.Init(vid.Window)
+	core.Init(vid, opts)
+
+	input.Init(vid)
 
 	if len(gamePath) > 0 {
-		coreLoadGame(gamePath)
+		core.LoadGame(gamePath)
 	}
 
-	menuInit(vid.Window)
+	menu.Init(vid, opts)
 
 	// No game running? display the menu
 	state.Global.MenuActive = !state.Global.CoreRunning

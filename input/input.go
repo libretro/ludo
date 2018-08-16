@@ -6,6 +6,7 @@ import (
 	"github.com/libretro/go-playthemall/notifications"
 	"github.com/libretro/go-playthemall/settings"
 	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/video"
 )
 
 const numPlayers = 5
@@ -66,18 +67,10 @@ func joystickCallback(joy int, event int) {
 	}
 }
 
-type keygetter interface {
-	GetKey(glfw.Key) glfw.Action
-}
+var vid *video.Video
 
-type displayLogger interface {
-	DisplayAndLog(prefix, message string, vars ...interface{})
-}
-
-var window keygetter
-
-func Init(w keygetter) {
-	window = w
+func Init(v *video.Video) {
+	vid = v
 	glfw.SetJoystickCallback(joystickCallback)
 }
 
@@ -119,7 +112,7 @@ func inputPollJoypads(state inputstate) inputstate {
 // Process keyboard keys
 func inputPollKeyboard(state inputstate) inputstate {
 	for k, v := range keyBinds {
-		if window.GetKey(k) == glfw.Press {
+		if vid.Window.GetKey(k) == glfw.Press {
 			state[0][v] = true
 		}
 	}
@@ -151,13 +144,13 @@ func Poll() {
 	// Toggle fullscreen if menuActionFullscreenToggle is pressed
 	if Released[0][menuActionFullscreenToggle] {
 		settings.Settings.VideoFullscreen = !settings.Settings.VideoFullscreen
-		//videoConfigure(settings.Settings.VideoFullscreen)
+		vid = video.Init(settings.Settings.VideoFullscreen)
 		settings.Save()
 	}
 
 	// Close on escape
 	if Pressed[0][menuActionShouldClose] {
-		//window.SetShouldClose(true)
+		vid.Window.SetShouldClose(true)
 	}
 
 	// Store the old input state for comparisions
