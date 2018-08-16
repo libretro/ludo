@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/savestates"
 	"github.com/libretro/go-playthemall/state"
 )
 
@@ -34,7 +35,7 @@ func buildQuickMenu() scene {
 		label: "Save State",
 		icon:  "savestate",
 		callbackOK: func() {
-			err := saveState()
+			err := savestates.Save()
 			if err != nil {
 				notifications.DisplayAndLog("Menu", err.Error())
 			} else {
@@ -47,7 +48,7 @@ func buildQuickMenu() scene {
 		label: "Load State",
 		icon:  "loadstate",
 		callbackOK: func() {
-			err := loadState()
+			err := savestates.Load()
 			if err != nil {
 				notifications.DisplayAndLog("Menu", err.Error())
 			} else {
