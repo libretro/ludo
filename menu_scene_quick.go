@@ -62,7 +62,7 @@ func buildQuickMenu() scene {
 		label: "Take Screenshot",
 		icon:  "screenshot",
 		callbackOK: func() {
-			takeScreenshot()
+			vid.TakeScreenshot()
 			notifications.DisplayAndLog("Menu", "Took a screenshot.")
 		},
 	})

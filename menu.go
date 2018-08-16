@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/video"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
@@ -66,10 +67,10 @@ func updateTweens(dt float32) {
 // menuRender takes care of rendering the menu
 func menuRender() {
 	menu.t += 0.1
-	w, _ := window.GetFramebufferSize()
+	w, _ := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
-	fullscreenViewport()
+	vid.FullscreenViewport()
 
 	updateTweens(1.0 / 60.0)
 
@@ -179,21 +180,21 @@ func genericSegueNext(list *entry) {
 
 // drawCursor draws the blinking rectangular background of the active menu entry
 func drawCursor(list *entry) {
-	w, h := window.GetFramebufferSize()
+	w, h := vid.Window.GetFramebufferSize()
 	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
-	drawQuad(
+	vid.DrawQuad(
 		60*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		60*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
 		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
-		color{1, 1, 1, alpha},
+		video.Color{1, 1, 1, alpha},
 	)
 }
 
 // genericRender renders a vertical list of menu entries
 // It also display values of settings if we are displaying a settings scene
 func genericRender(list *entry) {
-	w, h := window.GetFramebufferSize()
+	w, h := vid.Window.GetFramebufferSize()
 
 	drawCursor(list)
 
@@ -204,16 +205,16 @@ func genericRender(list *entry) {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		drawImage(menu.icons[e.icon],
+		vid.DrawImage(menu.icons[e.icon],
 			120*menu.ratio-64*e.scale*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			e.scale, color{1, 1, 1, e.iconAlpha})
+			e.scale, video.Color{1, 1, 1, e.iconAlpha})
 
 		if e.labelAlpha > 0 {
 
-			video.font.SetColor(1, 1, 1, e.labelAlpha)
-			video.font.Printf(
+			vid.Font.SetColor(1, 1, 1, e.labelAlpha)
+			vid.Font.Printf(
 				200*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.7*menu.ratio, e.label)
@@ -221,8 +222,8 @@ func genericRender(list *entry) {
 			if e.widget != nil {
 				e.widget(&e)
 			} else if e.stringValue != nil {
-				lw := video.font.Width(0.7*menu.ratio, e.stringValue())
-				video.font.Printf(
+				lw := vid.Font.Width(0.7*menu.ratio, e.stringValue())
+				vid.Font.Printf(
 					float32(w)-lw-650*menu.ratio,
 					float32(h)*e.yp+fontOffset,
 					0.7*menu.ratio, e.stringValue())
@@ -232,25 +233,23 @@ func genericRender(list *entry) {
 }
 
 func contextReset() {
-	video.white = newWhite()
-
 	menu.icons = map[string]uint32{
-		"main":       newImage("assets/main.png"),
-		"file":       newImage("assets/file.png"),
-		"folder":     newImage("assets/folder.png"),
-		"subsetting": newImage("assets/subsetting.png"),
-		"setting":    newImage("assets/setting.png"),
-		"resume":     newImage("assets/resume.png"),
-		"reset":      newImage("assets/reset.png"),
-		"loadstate":  newImage("assets/loadstate.png"),
-		"savestate":  newImage("assets/savestate.png"),
-		"screenshot": newImage("assets/screenshot.png"),
-		"add":        newImage("assets/add.png"),
-		"scan":       newImage("assets/scan.png"),
-		"on":         newImage("assets/on.png"),
-		"off":        newImage("assets/off.png"),
-		"Nintendo - Super Nintendo Entertainment System": newImage("assets/Nintendo - Super Nintendo Entertainment System.png"),
-		"Sega - Mega Drive - Genesis":                    newImage("assets/Sega - Mega Drive - Genesis.png"),
+		"main":       video.NewImage("assets/main.png"),
+		"file":       video.NewImage("assets/file.png"),
+		"folder":     video.NewImage("assets/folder.png"),
+		"subsetting": video.NewImage("assets/subsetting.png"),
+		"setting":    video.NewImage("assets/setting.png"),
+		"resume":     video.NewImage("assets/resume.png"),
+		"reset":      video.NewImage("assets/reset.png"),
+		"loadstate":  video.NewImage("assets/loadstate.png"),
+		"savestate":  video.NewImage("assets/savestate.png"),
+		"screenshot": video.NewImage("assets/screenshot.png"),
+		"add":        video.NewImage("assets/add.png"),
+		"scan":       video.NewImage("assets/scan.png"),
+		"on":         video.NewImage("assets/on.png"),
+		"off":        video.NewImage("assets/off.png"),
+		"Nintendo - Super Nintendo Entertainment System": video.NewImage("assets/Nintendo - Super Nintendo Entertainment System.png"),
+		"Sega - Mega Drive - Genesis":                    video.NewImage("assets/Sega - Mega Drive - Genesis.png"),
 	}
 }
 

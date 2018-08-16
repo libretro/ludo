@@ -1,4 +1,4 @@
-package main
+package video
 
 import (
 	"fmt"
@@ -16,25 +16,135 @@ import (
 	"github.com/libretro/go-playthemall/state"
 )
 
-var window *glfw.Window
+type Video struct {
+	Window *glfw.Window
+	Geom   libretro.GameGeometry
+	Font   *glfont.Font
 
-var video struct {
-	program   uint32
-	vao       uint32
-	vbo       uint32
-	texID     uint32
-	white     uint32
-	pitch     int32
-	pixFmt    uint32
-	pixType   uint32
-	bpp       int32
-	geom      libretro.GameGeometry
-	font      *glfont.Font
-	winWidth  int
-	winHeight int
+	program uint32
+	vao     uint32
+	vbo     uint32
+	texID   uint32
+	white   uint32
+	pitch   int32
+	pixFmt  uint32
+	pixType uint32
+	bpp     int32
 }
 
-func videoSetPixelFormat(format uint32) bool {
+func Init(fullscreen bool) *Video {
+	vid := &Video{}
+
+	glfw.WindowHint(glfw.ContextVersionMajor, 4)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+
+	var width, height int
+	var m *glfw.Monitor
+
+	if fullscreen {
+		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
+		vms := m.GetVideoModes()
+		vm := vms[len(vms)-1]
+		width = vm.Width
+		height = vm.Height
+	} else {
+		width = 320 * 3
+		height = 180 * 3
+	}
+
+	if vid.Window != nil {
+		vid.Window.Destroy()
+	}
+
+	var err error
+	vid.Window, err = glfw.CreateWindow(width, height, "Play Them All", m, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	vid.Window.MakeContextCurrent()
+
+	// Force a minimum size for the window.
+	vid.Window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
+
+	if fullscreen {
+		vid.Window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
+	}
+
+	// Initialize Glow
+	if err := gl.Init(); err != nil {
+		panic(err)
+	}
+
+	fbw, fbh := vid.Window.GetFramebufferSize()
+	vid.coreRatioViewport(fbw, fbh)
+
+	//load font (fontfile, font scale, window width, window height
+	vid.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh)
+	if err != nil {
+		panic(err)
+	}
+
+	if state.Global.Verbose {
+		version := gl.GoStr(gl.GetString(gl.VERSION))
+		log.Println("[Video]: OpenGL version:", version)
+	}
+
+	// Configure the vertex and fragment shaders
+	vid.program, err = newProgram(vertexShader, fragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	gl.UseProgram(vid.program)
+
+	textureUniform := gl.GetUniformLocation(vid.program, gl.Str("tex\x00"))
+	gl.Uniform1i(textureUniform, 0)
+
+	gl.BindFragDataLocation(vid.program, 0, gl.Str("outputColor\x00"))
+
+	// Configure the vertex data
+	gl.GenVertexArrays(1, &vid.vao)
+	gl.BindVertexArray(vid.vao)
+
+	gl.GenBuffers(1, &vid.vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vid.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
+
+	vertAttrib := uint32(gl.GetAttribLocation(vid.program, gl.Str("vert\x00")))
+	gl.EnableVertexAttribArray(vertAttrib)
+	gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
+
+	texCoordAttrib := uint32(gl.GetAttribLocation(vid.program, gl.Str("vertTexCoord\x00")))
+	gl.EnableVertexAttribArray(texCoordAttrib)
+	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
+
+	if vid.pixFmt == 0 {
+		vid.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+	}
+
+	gl.GenTextures(1, &vid.texID)
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	if vid.texID == 0 && state.Global.Verbose {
+		log.Println("[Video]: Failed to create the vid texture")
+	}
+
+	vid.pitch = int32(vid.Geom.BaseWidth) * vid.bpp
+
+	gl.BindTexture(gl.TEXTURE_2D, vid.texID)
+
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+
+	vid.white = newWhite()
+
+	return vid
+}
+
+func (video *Video) SetPixelFormat(format uint32) bool {
 	if state.Global.Verbose {
 		log.Printf("[Video]: Set Pixel Format: %v\n", format)
 	}
@@ -59,7 +169,7 @@ func videoSetPixelFormat(format uint32) bool {
 	return true
 }
 
-func updateMaskUniform() {
+func (video *Video) updateMaskUniform() {
 	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
 	if state.Global.MenuActive {
 		gl.Uniform1f(maskUniform, 1.0)
@@ -68,14 +178,14 @@ func updateMaskUniform() {
 	}
 }
 
-func coreRatioViewport(win *glfw.Window, fbWidth int, fbHeight int) {
+func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
 	w := fbw
-	h := fbw / float32(video.geom.AspectRatio)
+	h := fbw / float32(video.Geom.AspectRatio)
 	if h > fbh {
-		w = fbh * float32(video.geom.AspectRatio)
+		w = fbh * float32(video.Geom.AspectRatio)
 		h = fbh
 	}
 
@@ -83,7 +193,7 @@ func coreRatioViewport(win *glfw.Window, fbWidth int, fbHeight int) {
 	x := (fbw - w) / 2
 	y := (fbh - h) / 2
 
-	x1, y1, x2, y2, x3, y3, x4, y4 := xywhTo4points(x, y, w, h, fbh)
+	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, fbh)
 
 	va := []float32{
 		//  X, Y, U, V
@@ -97,138 +207,30 @@ func coreRatioViewport(win *glfw.Window, fbWidth int, fbHeight int) {
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 }
 
-func fullscreenViewport() {
-	w, h := window.GetFramebufferSize()
+func (video *Video) FullscreenViewport() {
+	w, h := video.Window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(w), int32(h))
 }
 
-func videoConfigure(fullscreen bool) {
-	glfw.WindowHint(glfw.ContextVersionMajor, 4)
-	glfw.WindowHint(glfw.ContextVersionMinor, 1)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-
-	var width, height int
-	var m *glfw.Monitor
-
-	if fullscreen {
-		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
-		vms := m.GetVideoModes()
-		vm := vms[len(vms)-1]
-		width = vm.Width
-		height = vm.Height
-	} else {
-		width = video.winWidth
-		height = video.winHeight
-	}
-
-	if window != nil {
-		window.Destroy()
-	}
-
-	var err error
-	window, err = glfw.CreateWindow(width, height, "Play Them All", m, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	window.MakeContextCurrent()
-
-	// Force a minimum size for the window.
-	window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
-
-	if fullscreen {
-		window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
-	}
-
-	// Initialize Glow
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-
-	fbw, fbh := window.GetFramebufferSize()
-	coreRatioViewport(window, fbw, fbh)
-
-	//load font (fontfile, font scale, window width, window height
-	video.font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh)
-	if err != nil {
-		panic(err)
-	}
-
-	if state.Global.Verbose {
-		version := gl.GoStr(gl.GetString(gl.VERSION))
-		log.Println("[Video]: OpenGL version:", version)
-	}
-
-	// Configure the vertex and fragment shaders
-	video.program, err = newProgram(vertexShader, fragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	gl.UseProgram(video.program)
-
-	textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
-	gl.Uniform1i(textureUniform, 0)
-
-	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
-
-	// Configure the vertex data
-	gl.GenVertexArrays(1, &video.vao)
-	gl.BindVertexArray(video.vao)
-
-	gl.GenBuffers(1, &video.vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
-
-	vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
-	gl.EnableVertexAttribArray(vertAttrib)
-	gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
-
-	texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
-	gl.EnableVertexAttribArray(texCoordAttrib)
-	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
-
-	if video.pixFmt == 0 {
-		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-	}
-
-	gl.GenTextures(1, &video.texID)
-
-	gl.ActiveTexture(gl.TEXTURE0)
-	if video.texID == 0 && state.Global.Verbose {
-		log.Println("[Video]: Failed to create the video texture")
-	}
-
-	video.pitch = int32(video.geom.BaseWidth) * video.bpp
-
-	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-
-	contextReset()
-}
-
-func renderNotifications() {
-	fullscreenViewport()
-	fbw, fbh := window.GetFramebufferSize()
-	video.font.UpdateResolution(fbw, fbh)
+func (video *Video) RenderNotifications() {
+	video.FullscreenViewport()
+	fbw, fbh := video.Window.GetFramebufferSize()
+	video.Font.UpdateResolution(fbw, fbh)
 	for i, n := range notifications.List() {
-		video.font.SetColor(1.0, 1.0, 0.0, float32(n.Frames)/120.0)
-		video.font.Printf(80, float32(fbh-80*len(notifications.List())+80*i), 0.7, n.Message)
+		video.Font.SetColor(1.0, 1.0, 0.0, float32(n.Frames)/120.0)
+		video.Font.Printf(80, float32(fbh-80*len(notifications.List())+80*i), 0.7, n.Message)
 	}
 }
 
 // Render the current frame
-func videoRender() {
+func (video *Video) Render() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
-	fbw, fbh := window.GetFramebufferSize()
-	coreRatioViewport(window, fbw, fbh)
+	fbw, fbh := video.Window.GetFramebufferSize()
+	video.coreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
-	updateMaskUniform()
+	video.updateMaskUniform()
 	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), 1, 1, 1, 1)
 
 	gl.BindVertexArray(video.vao)
@@ -240,7 +242,7 @@ func videoRender() {
 }
 
 // Refresh the texture framebuffer
-func videoRefresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
+func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
 

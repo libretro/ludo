@@ -4,6 +4,7 @@ import (
 	"os/user"
 
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/video"
 
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
@@ -188,7 +189,7 @@ func (tabs *screenTabs) update() {
 }
 
 func (tabs screenTabs) render() {
-	_, h := window.GetFramebufferSize()
+	_, h := vid.Window.GetFramebufferSize()
 
 	stackWidth := 132 * menu.ratio
 	for i, e := range tabs.children {
@@ -199,25 +200,25 @@ func (tabs screenTabs) render() {
 			alpha = 0
 		}
 
-		drawQuad(
+		vid.DrawQuad(
 			-menu.scroll*menu.ratio+stackWidth, 0,
 			-menu.scroll*menu.ratio+stackWidth+e.width*menu.ratio, 0,
 			-menu.scroll*menu.ratio+stackWidth+400*menu.ratio, float32(h),
 			-menu.scroll*menu.ratio+stackWidth+400*menu.ratio+e.width*menu.ratio, float32(h),
-			color{float32(c.R), float32(c.G), float32(c.B), alpha})
+			video.Color{float32(c.R), float32(c.G), float32(c.B), alpha})
 
 		stackWidth += e.width * menu.ratio
 
 		x := -menu.scroll*menu.ratio + stackWidth - e.width/2*menu.ratio + 400*menu.ratio - 400*e.yp*menu.ratio
 
-		video.font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		lw := video.font.Width(0.7*menu.ratio, e.label)
-		video.font.Printf(x-lw/2, float32(h)*e.yp+180*menu.ratio, 0.7*menu.ratio, e.label)
-		lw = video.font.Width(0.4*menu.ratio, e.subLabel)
-		video.font.Printf(x-lw/2, float32(h)*e.yp+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
+		vid.Font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
+		lw := vid.Font.Width(0.7*menu.ratio, e.label)
+		vid.Font.Printf(x-lw/2, float32(h)*e.yp+180*menu.ratio, 0.7*menu.ratio, e.label)
+		lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
+		vid.Font.Printf(x-lw/2, float32(h)*e.yp+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
 
-		drawImage(menu.icons[e.icon],
+		vid.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, color{1, 1, 1, e.iconAlpha})
+			256*menu.ratio, 256*menu.ratio, e.scale, video.Color{1, 1, 1, e.iconAlpha})
 	}
 }

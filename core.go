@@ -27,7 +27,7 @@ func coreLoad(sofile string) {
 
 	state.Global.Core, _ = libretro.Load(sofile)
 	state.Global.Core.SetEnvironment(environment)
-	state.Global.Core.SetVideoRefresh(videoRefresh)
+	state.Global.Core.SetVideoRefresh(vid.Refresh)
 	state.Global.Core.SetInputPoll(input.Poll)
 	state.Global.Core.SetInputState(input.State)
 	state.Global.Core.SetAudioSample(audio.Sample)
@@ -37,8 +37,8 @@ func coreLoad(sofile string) {
 	// Append the library name to the window title.
 	si := state.Global.Core.GetSystemInfo()
 	if len(si.LibraryName) > 0 {
-		if window != nil {
-			window.SetTitle("Play Them All - " + si.LibraryName)
+		if vid.Window != nil {
+			vid.Window.SetTitle("Play Them All - " + si.LibraryName)
 		}
 		if state.Global.Verbose {
 			log.Println("[Core]: Name:", si.LibraryName)
@@ -133,14 +133,14 @@ func coreLoadGame(filename string) {
 
 	avi := state.Global.Core.GetSystemAVInfo()
 
-	video.geom = avi.Geometry
+	vid.Geom = avi.Geometry
 
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
-		window.SetTitle("Play Them All - " + si.LibraryName)
+		vid.Window.SetTitle("Play Them All - " + si.LibraryName)
 	}
 
-	input.Init(window)
+	input.Init(vid.Window)
 	audio.Init(int32(avi.Timing.SampleRate))
 	if state.Global.AudioCb.SetState != nil {
 		state.Global.AudioCb.SetState(true)

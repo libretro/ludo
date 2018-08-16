@@ -13,9 +13,11 @@ import (
 	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/settings"
 	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/video"
 )
 
 var opts *options.Options
+var vid *video.Video
 
 func init() {
 	// GLFW event handling must run on the main OS thread
@@ -31,7 +33,7 @@ func init() {
 }
 
 func runLoop() {
-	for !window.ShouldClose() {
+	for !vid.Window.ShouldClose() {
 		glfw.SwapInterval(1)
 		glfw.PollEvents()
 		notifications.Process()
@@ -45,15 +47,15 @@ func runLoop() {
 					state.Global.AudioCb.Callback()
 				}
 			}
-			videoRender()
+			vid.Render()
 		} else {
 			input.Poll()
 			menuInput()
-			videoRender()
+			vid.Render()
 			menuRender()
 		}
-		renderNotifications()
-		window.SwapBuffers()
+		vid.RenderNotifications()
+		vid.Window.SwapBuffers()
 	}
 }
 
@@ -84,18 +86,16 @@ func main() {
 		coreLoad(state.Global.CorePath)
 	}
 
-	video.winWidth = 320 * 3
-	video.winHeight = 180 * 3
+	vid = video.Init(settings.Settings.VideoFullscreen)
+	contextReset()
 
-	videoConfigure(settings.Settings.VideoFullscreen)
-
-	input.Init(window)
+	input.Init(vid.Window)
 
 	if len(gamePath) > 0 {
 		coreLoadGame(gamePath)
 	}
 
-	menuInit(window)
+	menuInit(vid.Window)
 
 	// No game running? display the menu
 	state.Global.MenuActive = !state.Global.CoreRunning

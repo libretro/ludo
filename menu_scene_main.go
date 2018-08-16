@@ -72,7 +72,7 @@ func buildMainMenu() scene {
 		label: "Quit",
 		icon:  "subsetting",
 		callbackOK: func() {
-			window.SetShouldClose(true)
+			vid.Window.SetShouldClose(true)
 		},
 	})
 

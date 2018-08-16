@@ -1,4 +1,4 @@
-package main
+package video
 
 import (
 	"image"
@@ -21,11 +21,11 @@ func screenshotName() string {
 	return name + "@" + date + ".png"
 }
 
-func takeScreenshot() {
+func (video *Video) TakeScreenshot() {
 	usr, _ := user.Current()
 	state.Global.MenuActive = false
-	videoRender()
-	fbw, fbh := window.GetFramebufferSize()
+	video.Render()
+	fbw, fbh := video.Window.GetFramebufferSize()
 	img := image.NewNRGBA(image.Rect(0, 0, fbw, fbh))
 	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 	fd, _ := os.Create(usr.HomeDir + "/.playthemall/screenshots/" + screenshotName())

@@ -1,4 +1,4 @@
-package main
+package video
 
 import (
 	"image"
@@ -8,11 +8,11 @@ import (
 	"github.com/go-gl/gl/all-core/gl"
 )
 
-type color struct {
-	r, g, b, a float32
+type Color struct {
+	R, G, B, A float32
 }
 
-func xywhTo4points(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 float32) {
+func XYWHTo4points(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 float32) {
 	x1 = x
 	x2 = x
 	x3 = x + w
@@ -24,27 +24,27 @@ func xywhTo4points(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 floa
 	return
 }
 
-// Draw an image with x, y, w, h
-func drawImage(image uint32, x, y, w, h float32, scale float32, c color) {
-	_, fbh := window.GetFramebufferSize()
+// DrawImage draws an image with x, y, w, h
+func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c Color) {
+	_, fbh := video.Window.GetFramebufferSize()
 	ffbh := float32(fbh)
 
 	w *= scale
 	h *= scale
 
-	x1, y1, x2, y2, x3, y3, x4, y4 := xywhTo4points(x, y, w, h, ffbh)
+	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, ffbh)
 
-	drawTextureQuad(image, x1, y1, x2, y2, x3, y3, x4, y4, c)
+	video.drawTextureQuad(image, x1, y1, x2, y2, x3, y3, x4, y4, c)
 }
 
-// Draw a colored quad
-func drawQuad(x1, y1, x2, y2, x3, y3, x4, y4 float32, c color) {
-	drawTextureQuad(video.white, x1, y1, x2, y2, x3, y3, x4, y4, c)
+// DrawQuad draws a colored quad
+func (video *Video) DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4 float32, c Color) {
+	video.drawTextureQuad(video.white, x1, y1, x2, y2, x3, y3, x4, y4, c)
 }
 
 // Draw a texture on a polygon
-func drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4 float32, c color) {
-	fbw, fbh := window.GetFramebufferSize()
+func (video *Video) drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4 float32, c Color) {
+	fbw, fbh := video.Window.GetFramebufferSize()
 	ffbw := float32(fbw)
 	ffbh := float32(fbh)
 
@@ -59,7 +59,7 @@ func drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4 float32, c col
 	gl.UseProgram(video.program)
 	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
 	gl.Uniform1f(maskUniform, 0)
-	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), c.r, c.b, c.g, c.a)
+	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), c.R, c.G, c.B, c.A)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BindVertexArray(video.vao)
@@ -96,7 +96,7 @@ func textureLoad(rgba *image.RGBA) uint32 {
 	return texture
 }
 
-func newImage(file string) uint32 {
+func NewImage(file string) uint32 {
 	imgFile, err := os.Open(file)
 	if err != nil {
 		return 0
