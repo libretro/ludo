@@ -56,6 +56,7 @@ var (
 	Pressed  inputstate // keys just pressed during this frame
 )
 
+// joystickCallback is triggered when a joypad is plugged.
 func joystickCallback(joy int, event int) {
 	switch event {
 	case 262145:
@@ -74,8 +75,8 @@ func Init(v *video.Video) {
 	glfw.SetJoystickCallback(joystickCallback)
 }
 
-// Reset all retropad buttons to false
-func inputPollReset(state inputstate) inputstate {
+// Resets all retropad buttons to false
+func reset(state inputstate) inputstate {
 	for p := range state {
 		for k := range state[p] {
 			state[p][k] = false
@@ -84,8 +85,8 @@ func inputPollReset(state inputstate) inputstate {
 	return state
 }
 
-// Process joypads of all players
-func inputPollJoypads(state inputstate) inputstate {
+// pollJoypads process joypads of all players
+func pollJoypads(state inputstate) inputstate {
 	for p := range state {
 		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
 		axisState := glfw.GetJoystickAxes(glfw.Joystick(p))
@@ -109,8 +110,8 @@ func inputPollJoypads(state inputstate) inputstate {
 	return state
 }
 
-// Process keyboard keys
-func inputPollKeyboard(state inputstate) inputstate {
+// pollKeyboard processes keyboard keys
+func pollKeyboard(state inputstate) inputstate {
 	for k, v := range keyBinds {
 		if vid.Window.GetKey(k) == glfw.Press {
 			state[0][v] = true
@@ -120,7 +121,7 @@ func inputPollKeyboard(state inputstate) inputstate {
 }
 
 // Compute the keys pressed or released during this frame
-func inputGetPressedReleased(new inputstate, old inputstate) (inputstate, inputstate) {
+func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate) {
 	for p := range new {
 		for k := range new[p] {
 			Pressed[p][k] = new[p][k] && !old[p][k]
@@ -130,11 +131,12 @@ func inputGetPressedReleased(new inputstate, old inputstate) (inputstate, inputs
 	return Pressed, Released
 }
 
+// Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
-	NewState = inputPollReset(NewState)
-	NewState = inputPollJoypads(NewState)
-	NewState = inputPollKeyboard(NewState)
-	Pressed, Released = inputGetPressedReleased(NewState, OldState)
+	NewState = reset(NewState)
+	NewState = pollJoypads(NewState)
+	NewState = pollKeyboard(NewState)
+	Pressed, Released = getPressedReleased(NewState, OldState)
 
 	// Toggle the menu if menuActionMenuToggle is pressed
 	if Released[0][menuActionMenuToggle] && state.Global.CoreRunning {

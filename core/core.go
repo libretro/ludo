@@ -21,6 +21,8 @@ import (
 var vid *video.Video
 var opts *options.Options
 
+// Init is there mainly for dependency injection.
+// Call Init before calling other functions of this package.
 func Init(v *video.Video, o *options.Options) {
 	vid = v
 	opts = o
@@ -94,33 +96,11 @@ func coreUnzipGame(filename string) (string, int64, error) {
 	return path, size, nil
 }
 
-// coreGetGameInfo opens a rom and return the libretro.GameInfo needed to launch it
-func coreGetGameInfo(filename string, blockExtract bool) (libretro.GameInfo, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return libretro.GameInfo{}, err
-	}
-
-	fi, err := file.Stat()
-	if err != nil {
-		return libretro.GameInfo{}, err
-	}
-
-	if filepath.Ext(filename) == ".zip" && !blockExtract {
-		path, size, err := coreUnzipGame(filename)
-		if err != nil {
-			return libretro.GameInfo{}, err
-		}
-		return libretro.GameInfo{Path: path, Size: size}, nil
-	}
-	return libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
-}
-
 // LoadGame loads a game. A core has to be loaded first.
 func LoadGame(filename string) {
 	si := state.Global.Core.GetSystemInfo()
 
-	gi, err := coreGetGameInfo(filename, si.BlockExtract)
+	gi, err := getGameInfo(filename, si.BlockExtract)
 	if err != nil {
 		notifications.DisplayAndLog("Core", err.Error())
 		return
@@ -162,4 +142,26 @@ func LoadGame(filename string) {
 	state.Global.GamePath = filename
 
 	notifications.DisplayAndLog("Core", "Game loaded: "+filename)
+}
+
+// getGameInfo opens a rom and return the libretro.GameInfo needed to launch it
+func getGameInfo(filename string, blockExtract bool) (libretro.GameInfo, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return libretro.GameInfo{}, err
+	}
+
+	fi, err := file.Stat()
+	if err != nil {
+		return libretro.GameInfo{}, err
+	}
+
+	if filepath.Ext(filename) == ".zip" && !blockExtract {
+		path, size, err := coreUnzipGame(filename)
+		if err != nil {
+			return libretro.GameInfo{}, err
+		}
+		return libretro.GameInfo{Path: path, Size: size}, nil
+	}
+	return libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
 }
