@@ -84,16 +84,16 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	if len(state.Global.CorePath) > 0 {
-		core.Load(state.Global.CorePath)
-	}
-
 	vid = video.Init(settings.Settings.VideoFullscreen)
 	menu.ContextReset()
 
 	core.Init(vid, opts)
 
 	input.Init(vid)
+
+	if len(state.Global.CorePath) > 0 {
+		core.Load(state.Global.CorePath)
+	}
 
 	if len(gamePath) > 0 {
 		core.LoadGame(gamePath)
