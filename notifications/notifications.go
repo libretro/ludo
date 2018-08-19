@@ -7,6 +7,7 @@ import (
 	"github.com/libretro/go-playthemall/state"
 )
 
+// Notification is a message that will be displayed on the screen during a number of frames.
 type Notification struct {
 	Message string
 	Frames  int
@@ -14,10 +15,12 @@ type Notification struct {
 
 var notifications []Notification
 
+// List lists the current notifications.
 func List() []Notification {
 	return notifications
 }
 
+// Display creates a new notification.
 func Display(message string, frames int) {
 	n := Notification{
 		message,
@@ -27,6 +30,7 @@ func Display(message string, frames int) {
 	notifications = append(notifications, n)
 }
 
+// DisplayAndLog creates a new notification and also logs the message to stdout.
 func DisplayAndLog(prefix, message string, vars ...interface{}) {
 	var msg string
 	if len(vars) > 0 {
@@ -40,6 +44,7 @@ func DisplayAndLog(prefix, message string, vars ...interface{}) {
 	Display(msg, 240)
 }
 
+// Process iterates over the notifications, update them, delete the old ones.
 func Process() {
 	deleted := 0
 	for i := range notifications {
@@ -52,6 +57,7 @@ func Process() {
 	}
 }
 
+// Clear empties the notification list
 func Clear() {
 	notifications = []Notification{}
 }

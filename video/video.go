@@ -31,6 +31,7 @@ type WindowInterface interface {
 	SwapBuffers()
 }
 
+// Video holds the state of the video package
 type Video struct {
 	Window WindowInterface
 	Geom   libretro.GameGeometry
@@ -47,6 +48,7 @@ type Video struct {
 	bpp     int32
 }
 
+// Init instanciates the video package
 func Init(fullscreen bool) *Video {
 	vid := &Video{}
 
@@ -96,7 +98,7 @@ func Init(fullscreen bool) *Video {
 	fbw, fbh := vid.Window.GetFramebufferSize()
 	vid.CoreRatioViewport(fbw, fbh)
 
-	//load font (fontfile, font scale, window width, window height
+	// LoadFont (fontfile, font scale, window width, window height)
 	vid.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh)
 	if err != nil {
 		panic(err)
@@ -136,6 +138,7 @@ func Init(fullscreen bool) *Video {
 	gl.EnableVertexAttribArray(texCoordAttrib)
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
+	// Sets a default pixel format
 	if vid.pixFmt == 0 {
 		vid.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 	}
@@ -159,6 +162,8 @@ func Init(fullscreen bool) *Video {
 	return vid
 }
 
+// SetPixelFormat is a callback passed to the libretro implementation.
+// It allows the core or the game to tell us which pixel format should be used for the display.
 func (video *Video) SetPixelFormat(format uint32) bool {
 	if state.Global.Verbose {
 		log.Printf("[Video]: Set Pixel Format: %v\n", format)

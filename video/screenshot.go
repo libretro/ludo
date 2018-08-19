@@ -21,6 +21,7 @@ func screenshotName() string {
 	return name + "@" + date + ".png"
 }
 
+// TakeScreenshot captures the ouput of video.Render and writes it to a file
 func (video *Video) TakeScreenshot() {
 	usr, _ := user.Current()
 	state.Global.MenuActive = false

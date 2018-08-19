@@ -8,10 +8,12 @@ import (
 	"github.com/go-gl/gl/all-core/gl"
 )
 
+// Color is an RGBA type that we use in the menu
 type Color struct {
 	R, G, B, A float32
 }
 
+// XYWHTo4points converts coordinates from (x, y, width, height) to (x1, y1, x2, y2, x3, y3, x4, y4)
 func XYWHTo4points(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 float32) {
 	x1 = x
 	x2 = x
@@ -96,6 +98,7 @@ func textureLoad(rgba *image.RGBA) uint32 {
 	return texture
 }
 
+// NewImage opens an image file, upload it the the GPU and returns the texture id
 func NewImage(file string) uint32 {
 	imgFile, err := os.Open(file)
 	if err != nil {
