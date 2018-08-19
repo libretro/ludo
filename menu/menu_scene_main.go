@@ -12,7 +12,7 @@ type screenMain struct {
 	entry
 }
 
-func buildMainMenu() scene {
+func buildMainMenu() Scene {
 	var list screenMain
 	list.label = "Main Menu"
 

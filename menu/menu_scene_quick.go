@@ -10,7 +10,7 @@ type screenQuick struct {
 	entry
 }
 
-func buildQuickMenu() scene {
+func buildQuickMenu() Scene {
 	var list screenQuick
 	list.label = "Quick Menu"
 

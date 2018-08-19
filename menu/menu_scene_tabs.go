@@ -17,7 +17,7 @@ type screenTabs struct {
 	entry
 }
 
-func buildTabs() scene {
+func buildTabs() Scene {
 	var list screenTabs
 	list.label = "Play Them All"
 

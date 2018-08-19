@@ -36,9 +36,9 @@ type entry struct {
 	}
 }
 
-// scene represents a page of the UI
-// A scene is typically an entry displaying its own children
-type scene interface {
+// Scene represents a page of the UI
+// A Scene is typically an entry displaying its own children
+type Scene interface {
 	segueMount()
 	segueNext()
 	segueBack()
@@ -47,9 +47,9 @@ type scene interface {
 	Entry() *entry
 }
 
-// menu is a global struct holding the menu state
+// menu is a package level struct holding the menu state
 var menu struct {
-	stack         []scene
+	stack         []Scene
 	icons         map[string]uint32
 	inputCooldown int
 	tweens        map[*float32]*gween.Tween
@@ -237,6 +237,8 @@ func genericRender(list *entry) {
 	}
 }
 
+// ContextReset uploads the UI images to the GPU.
+// It should be called after each time the window is recreated.
 func ContextReset() {
 	menu.icons = map[string]uint32{
 		"main":       video.NewImage("assets/main.png"),
@@ -276,7 +278,7 @@ func Init(v *video.Video, o *options.Options) {
 	opts = o
 
 	w, _ := v.Window.GetFramebufferSize()
-	menu.stack = []scene{}
+	menu.stack = []Scene{}
 	menu.tweens = make(map[*float32]*gween.Tween)
 	menu.ratio = float32(w) / 1920
 

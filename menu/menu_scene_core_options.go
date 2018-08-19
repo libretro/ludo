@@ -8,7 +8,7 @@ type screenCoreOptions struct {
 	entry
 }
 
-func buildCoreOptions() scene {
+func buildCoreOptions() Scene {
 	var list screenCoreOptions
 	list.label = "Core Options"
 
