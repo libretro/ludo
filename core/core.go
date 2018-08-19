@@ -7,12 +7,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/libretro/go-playthemall/options"
-
 	"github.com/libretro/go-playthemall/audio"
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/utils"
 	"github.com/libretro/go-playthemall/video"

@@ -4,21 +4,35 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/video"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
 
-type CtxMock struct{}
+type WindowMock struct{}
 
-func (m CtxMock) GetFramebufferSize() (width, height int) {
-	return 320, 240
-}
+func (m WindowMock) GetFramebufferSize() (width, height int)     { return 320, 240 }
+func (m WindowMock) Destroy()                                    {}
+func (m WindowMock) MakeContextCurrent()                         {}
+func (m WindowMock) SetSizeLimits(minw, minh, maxw, maxh int)    {}
+func (m WindowMock) SetInputMode(mode glfw.InputMode, value int) {}
+func (m WindowMock) GetKey(key glfw.Key) glfw.Action             { return 0 }
+func (m WindowMock) SetShouldClose(bool)                         {}
+func (m WindowMock) ShouldClose() bool                           { return false }
+func (m WindowMock) SetTitle(string)                             {}
+func (m WindowMock) SwapBuffers()                                {}
 
-func Test_menuInit(t *testing.T) {
+func Test_Init(t *testing.T) {
 
-	var ctx CtxMock
-	Init(ctx)
+	var vid = &video.Video{
+		Window: &WindowMock{},
+	}
+	var opts *options.Options
+
+	Init(vid, opts)
 
 	t.Run("Starts with a single scene if no game is running", func(t *testing.T) {
 		got := len(menu.stack)
@@ -37,7 +51,7 @@ func Test_menuInit(t *testing.T) {
 	})
 
 	state.Global.CoreRunning = true
-	menuInit(ctx)
+	Init(vid, opts)
 
 	t.Run("Warps at the quick menu if a game is launched", func(t *testing.T) {
 		got := len(menu.stack)

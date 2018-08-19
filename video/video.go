@@ -16,8 +16,21 @@ import (
 	"github.com/libretro/go-playthemall/state"
 )
 
+type WindowInterface interface {
+	GetFramebufferSize() (width, height int)
+	Destroy()
+	MakeContextCurrent()
+	SetSizeLimits(minw, minh, maxw, maxh int)
+	SetInputMode(mode glfw.InputMode, value int)
+	GetKey(key glfw.Key) glfw.Action
+	SetShouldClose(bool)
+	ShouldClose() bool
+	SetTitle(string)
+	SwapBuffers()
+}
+
 type Video struct {
-	Window *glfw.Window
+	Window WindowInterface
 	Geom   libretro.GameGeometry
 	Font   *glfont.Font
 

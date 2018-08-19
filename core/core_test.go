@@ -6,10 +6,26 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/utils"
+	"github.com/libretro/go-playthemall/video"
 )
+
+type WindowMock struct{}
+
+func (m WindowMock) GetFramebufferSize() (width, height int)     { return 320, 240 }
+func (m WindowMock) Destroy()                                    {}
+func (m WindowMock) MakeContextCurrent()                         {}
+func (m WindowMock) SetSizeLimits(minw, minh, maxw, maxh int)    {}
+func (m WindowMock) SetInputMode(mode glfw.InputMode, value int) {}
+func (m WindowMock) GetKey(key glfw.Key) glfw.Action             { return 0 }
+func (m WindowMock) SetShouldClose(bool)                         {}
+func (m WindowMock) ShouldClose() bool                           { return false }
+func (m WindowMock) SetTitle(string)                             {}
+func (m WindowMock) SwapBuffers()                                {}
 
 func Test_coreLoad(t *testing.T) {
 	state.Global.Verbose = true
@@ -21,6 +37,12 @@ func Test_coreLoad(t *testing.T) {
 	}
 
 	ext := exts[runtime.GOOS]
+
+	var vid = &video.Video{
+		Window: &WindowMock{},
+	}
+	var opts *options.Options
+	Init(vid, opts)
 
 	out := utils.CaptureOutput(func() { Load("testdata/uzem_libretro" + ext) })
 
@@ -50,7 +72,7 @@ func Test_coreLoad(t *testing.T) {
 	state.Global.Verbose = false
 }
 
-func Test_coreGetGameInfo(t *testing.T) {
+func Test_getGameInfo(t *testing.T) {
 	type args struct {
 		filename     string
 		blockExtract bool
@@ -115,19 +137,19 @@ func Test_coreGetGameInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := coreGetGameInfo(tt.args.filename, tt.args.blockExtract)
+			got, err := getGameInfo(tt.args.filename, tt.args.blockExtract)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("coreGetGameInfo() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("getGameInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("coreGetGameInfo() = %v, want %v", got, tt.want)
+				t.Errorf("getGameInfo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_coreUnzipGame(t *testing.T) {
+func Test_unzipGame(t *testing.T) {
 	type args struct {
 		filename string
 	}
@@ -162,16 +184,16 @@ func Test_coreUnzipGame(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := coreUnzipGame(tt.args.filename)
+			got, got1, err := unzipGame(tt.args.filename)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("coreUnzipGame() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("unzipGame() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("coreUnzipGame() got = %v, want %v", got, tt.want)
+				t.Errorf("unzipGame() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("coreUnzipGame() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("unzipGame() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
