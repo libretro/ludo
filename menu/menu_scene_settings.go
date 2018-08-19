@@ -53,7 +53,7 @@ var widgets = map[string]func(*entry){
 			float32(w)-650*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			1.25, video.Color{1, 1, 1, e.iconAlpha})
+			1.25, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 	},
 
 	// Range widget for audio volume and similat float settings
@@ -64,11 +64,11 @@ var widgets = map[string]func(*entry){
 		w := 256 * e.scale * menu.ratio
 		h := 6 * menu.ratio
 		x1, y1, x2, y2, x3, y3, x4, y4 := video.XYWHTo4points(x, y, w, h, float32(fbh))
-		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{1, 1, 1, e.iconAlpha / 4})
+		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha / 4})
 
 		w = 256 * e.scale * menu.ratio * e.value().(float32)
 		x1, y1, x2, y2, x3, y3, x4, y4 = video.XYWHTo4points(x, y, w, h, float32(fbh))
-		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{1, 1, 1, e.iconAlpha})
+		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 	},
 }
 

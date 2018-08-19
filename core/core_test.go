@@ -38,11 +38,7 @@ func Test_coreLoad(t *testing.T) {
 
 	ext := exts[runtime.GOOS]
 
-	var vid = &video.Video{
-		Window: &WindowMock{},
-	}
-	var opts *options.Options
-	Init(vid, opts)
+	Init(&video.Video{Window: &WindowMock{}}, &options.Options{})
 
 	out := utils.CaptureOutput(func() { Load("testdata/uzem_libretro" + ext) })
 

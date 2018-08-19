@@ -75,7 +75,7 @@ func Render() {
 	w, _ := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
-	vid.FullscreenViewport()
+	vid.FullViewport()
 
 	updateTweens(1.0 / 60.0)
 
@@ -192,7 +192,7 @@ func drawCursor(list *entry) {
 		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		60*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
 		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
-		video.Color{1, 1, 1, alpha},
+		video.Color{R: 1, G: 1, B: 1, A: alpha},
 	)
 }
 
@@ -214,7 +214,7 @@ func genericRender(list *entry) {
 			120*menu.ratio-64*e.scale*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			e.scale, video.Color{1, 1, 1, e.iconAlpha})
+			e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 
 		if e.labelAlpha > 0 {
 

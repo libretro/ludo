@@ -219,6 +219,6 @@ func (tabs screenTabs) render() {
 
 		vid.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, video.Color{1, 1, 1, e.iconAlpha})
+			256*menu.ratio, 256*menu.ratio, e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 	}
 }

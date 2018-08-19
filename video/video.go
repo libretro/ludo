@@ -220,13 +220,15 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) {
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 }
 
-func (video *Video) FullscreenViewport() {
+// FullViewport configures the GL viewport to take all the available space in the window
+func (video *Video) FullViewport() {
 	w, h := video.Window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(w), int32(h))
 }
 
+// RenderNotifications draws the list of notification messages on the viewport
 func (video *Video) RenderNotifications() {
-	video.FullscreenViewport()
+	video.FullViewport()
 	fbw, fbh := video.Window.GetFramebufferSize()
 	video.Font.UpdateResolution(fbw, fbh)
 	for i, n := range notifications.List() {
