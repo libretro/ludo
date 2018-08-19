@@ -16,6 +16,8 @@ import (
 	"github.com/libretro/go-playthemall/state"
 )
 
+// WindowInterface lists all the methods from glfw.Window that we are using.
+// It is there only to allow mocking during tests.
 type WindowInterface interface {
 	GetFramebufferSize() (width, height int)
 	Destroy()
@@ -92,7 +94,7 @@ func Init(fullscreen bool) *Video {
 	}
 
 	fbw, fbh := vid.Window.GetFramebufferSize()
-	vid.coreRatioViewport(fbw, fbh)
+	vid.CoreRatioViewport(fbw, fbh)
 
 	//load font (fontfile, font scale, window width, window height
 	vid.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh)
@@ -191,7 +193,9 @@ func (video *Video) updateMaskUniform() {
 	}
 }
 
-func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) {
+// CoreRatioViewport configures the vertex array to display the game at the center of the window
+// while preserving the original ascpect ratio of the game or core
+func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
@@ -242,7 +246,7 @@ func (video *Video) Render() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	video.coreRatioViewport(fbw, fbh)
+	video.CoreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
 	video.updateMaskUniform()
