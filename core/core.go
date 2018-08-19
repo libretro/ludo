@@ -65,8 +65,8 @@ func Load(sofile string) {
 	notifications.DisplayAndLog("Core", "Core loaded: "+si.LibraryName)
 }
 
-// coreUnzipGame unzips a rom to tmpdir and returns the path and size of the extracted rom
-func coreUnzipGame(filename string) (string, int64, error) {
+// unzipGame unzips a rom to tmpdir and returns the path and size of the extracted rom
+func unzipGame(filename string) (string, int64, error) {
 	r, err := zip.OpenReader(filename)
 	if err != nil {
 		return "", 0, err
@@ -157,7 +157,7 @@ func getGameInfo(filename string, blockExtract bool) (libretro.GameInfo, error) 
 	}
 
 	if filepath.Ext(filename) == ".zip" && !blockExtract {
-		path, size, err := coreUnzipGame(filename)
+		path, size, err := unzipGame(filename)
 		if err != nil {
 			return libretro.GameInfo{}, err
 		}
