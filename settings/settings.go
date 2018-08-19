@@ -15,8 +15,7 @@ import (
 
 var lock sync.Mutex
 
-// settings is the list of available settings for the program.
-// It serializes to JSON.
+// Settings is the list of available settings for the program. It serializes to JSON.
 // Tags are used to set a human readable label and a format for the settings value.
 var Settings struct {
 	VideoFullscreen   bool    `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`

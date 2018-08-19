@@ -70,6 +70,7 @@ func joystickCallback(joy int, event int) {
 
 var vid *video.Video
 
+// Init initializes the input package
 func Init(v *video.Video) {
 	vid = v
 	glfw.SetJoystickCallback(joystickCallback)

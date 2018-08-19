@@ -52,7 +52,7 @@ func runLoop() {
 			vid.Render()
 		} else {
 			input.Poll()
-			menu.Input()
+			menu.Update()
 			vid.Render()
 			menu.Render()
 		}
