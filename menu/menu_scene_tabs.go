@@ -205,7 +205,7 @@ func (tabs screenTabs) render() {
 			-menu.scroll*menu.ratio+stackWidth+e.width*menu.ratio, 0,
 			-menu.scroll*menu.ratio+stackWidth+400*menu.ratio, float32(h),
 			-menu.scroll*menu.ratio+stackWidth+400*menu.ratio+e.width*menu.ratio, float32(h),
-			video.Color{R: float32(c.R), G: float32(c.G), B: float32(c.B), A: alpha})
+			video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: alpha})
 
 		stackWidth += e.width * menu.ratio
 
