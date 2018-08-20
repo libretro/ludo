@@ -147,7 +147,7 @@ func Poll() {
 	// Toggle fullscreen if menuActionFullscreenToggle is pressed
 	if Released[0][menuActionFullscreenToggle] {
 		settings.Settings.VideoFullscreen = !settings.Settings.VideoFullscreen
-		vid = video.Init(settings.Settings.VideoFullscreen)
+		vid.Reconfigure(settings.Settings.VideoFullscreen)
 		settings.Save()
 	}
 

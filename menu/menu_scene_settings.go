@@ -82,7 +82,8 @@ var incrCallbacks = map[string]callbackIncrement{
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
-		vid = video.Init(settings.Settings.VideoFullscreen)
+		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		ContextReset()
 		settings.Save()
 	},
 	"VideoMonitorIndex": func(f *structs.Field, direction int) {
@@ -95,7 +96,8 @@ var incrCallbacks = map[string]callbackIncrement{
 			v = len(glfw.GetMonitors()) - 1
 		}
 		f.Set(v)
-		vid = video.Init(settings.Settings.VideoFullscreen)
+		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		ContextReset()
 		settings.Save()
 	},
 	"AudioVolume": func(f *structs.Field, direction int) {

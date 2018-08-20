@@ -51,7 +51,20 @@ type Video struct {
 // Init instanciates the video package
 func Init(fullscreen bool) *Video {
 	vid := &Video{}
+	vid.Configure(fullscreen)
+	return vid
+}
 
+// Reconfigure destroys and recreates the window with new attributes
+func (video *Video) Reconfigure(fullscreen bool) {
+	if video.Window != nil {
+		video.Window.Destroy()
+	}
+	video.Configure(fullscreen)
+}
+
+// Configure instanciates the video package
+func (video *Video) Configure(fullscreen bool) {
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
@@ -71,23 +84,19 @@ func Init(fullscreen bool) *Video {
 		height = 180 * 3
 	}
 
-	if vid.Window != nil {
-		vid.Window.Destroy()
-	}
-
 	var err error
-	vid.Window, err = glfw.CreateWindow(width, height, "Play Them All", m, nil)
+	video.Window, err = glfw.CreateWindow(width, height, "Play Them All", m, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	vid.Window.MakeContextCurrent()
+	video.Window.MakeContextCurrent()
 
 	// Force a minimum size for the window.
-	vid.Window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
+	video.Window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
 
 	if fullscreen {
-		vid.Window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
+		video.Window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
 	}
 
 	// Initialize Glow
@@ -95,11 +104,11 @@ func Init(fullscreen bool) *Video {
 		panic(err)
 	}
 
-	fbw, fbh := vid.Window.GetFramebufferSize()
-	vid.CoreRatioViewport(fbw, fbh)
+	fbw, fbh := video.Window.GetFramebufferSize()
+	video.CoreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
-	vid.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh)
+	video.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh)
 	if err != nil {
 		panic(err)
 	}
@@ -110,56 +119,54 @@ func Init(fullscreen bool) *Video {
 	}
 
 	// Configure the vertex and fragment shaders
-	vid.program, err = newProgram(vertexShader, fragmentShader)
+	video.program, err = newProgram(vertexShader, fragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	gl.UseProgram(vid.program)
+	gl.UseProgram(video.program)
 
-	textureUniform := gl.GetUniformLocation(vid.program, gl.Str("tex\x00"))
+	textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
 	gl.Uniform1i(textureUniform, 0)
 
-	gl.BindFragDataLocation(vid.program, 0, gl.Str("outputColor\x00"))
+	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
 
 	// Configure the vertex data
-	gl.GenVertexArrays(1, &vid.vao)
-	gl.BindVertexArray(vid.vao)
+	gl.GenVertexArrays(1, &video.vao)
+	gl.BindVertexArray(video.vao)
 
-	gl.GenBuffers(1, &vid.vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vid.vbo)
+	gl.GenBuffers(1, &video.vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
 
-	vertAttrib := uint32(gl.GetAttribLocation(vid.program, gl.Str("vert\x00")))
+	vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
 	gl.EnableVertexAttribArray(vertAttrib)
 	gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
 
-	texCoordAttrib := uint32(gl.GetAttribLocation(vid.program, gl.Str("vertTexCoord\x00")))
+	texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
 	gl.EnableVertexAttribArray(texCoordAttrib)
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
 	// Sets a default pixel format
-	if vid.pixFmt == 0 {
-		vid.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+	if video.pixFmt == 0 {
+		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 	}
 
-	gl.GenTextures(1, &vid.texID)
+	gl.GenTextures(1, &video.texID)
 
 	gl.ActiveTexture(gl.TEXTURE0)
-	if vid.texID == 0 && state.Global.Verbose {
+	if video.texID == 0 && state.Global.Verbose {
 		log.Println("[Video]: Failed to create the vid texture")
 	}
 
-	vid.pitch = int32(vid.Geom.BaseWidth) * vid.bpp
+	video.pitch = int32(video.Geom.BaseWidth) * video.bpp
 
-	gl.BindTexture(gl.TEXTURE_2D, vid.texID)
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
-	vid.white = newWhite()
-
-	return vid
+	video.white = newWhite()
 }
 
 // SetPixelFormat is a callback passed to the libretro implementation.
