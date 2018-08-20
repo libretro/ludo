@@ -3,12 +3,13 @@ package menu
 import (
 	"os/user"
 
+	"github.com/libretro/go-playthemall/input"
+	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
 	"github.com/libretro/go-playthemall/video"
 
-	"github.com/libretro/go-playthemall/input"
-	"github.com/libretro/go-playthemall/libretro"
 	colorful "github.com/lucasb-eyer/go-colorful"
+
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )

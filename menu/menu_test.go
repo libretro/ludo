@@ -5,9 +5,11 @@ import (
 	"testing"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
+
 	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/video"
+
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )

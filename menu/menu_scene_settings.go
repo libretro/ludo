@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
+
 	"github.com/libretro/go-playthemall/audio"
 	"github.com/libretro/go-playthemall/settings"
 	"github.com/libretro/go-playthemall/video"

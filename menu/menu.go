@@ -4,9 +4,9 @@ import (
 	"math"
 
 	"github.com/libretro/go-playthemall/options"
-
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/video"
+
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
