@@ -260,19 +260,19 @@ func ContextReset() {
 	}
 }
 
-// fastForwardTweens finishes all the current animations in the queue
+// fastForwardTweens finishes all the current animations in the queue.
 func fastForwardTweens() {
 	updateTweens(10)
 }
 
-// Context is used to mock GLFW windows
+// Context is used to mock GLFW windows.
 type Context interface {
 	GetFramebufferSize() (width, height int)
 }
 
 // Init initializes the menu.
 // If a game is already running, it will warp the user to the quick menu.
-// If not, it will display the menu tabs
+// If not, it will display the menu tabs.
 func Init(v *video.Video, o *options.Options) {
 	vid = v
 	opts = o
