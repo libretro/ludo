@@ -265,11 +265,6 @@ func fastForwardTweens() {
 	updateTweens(10)
 }
 
-// Context is used to mock GLFW windows.
-type Context interface {
-	GetFramebufferSize() (width, height int)
-}
-
 // Init initializes the menu.
 // If a game is already running, it will warp the user to the quick menu.
 // If not, it will display the menu tabs.

@@ -148,6 +148,7 @@ func Poll() {
 	if Released[0][menuActionFullscreenToggle] {
 		settings.Settings.VideoFullscreen = !settings.Settings.VideoFullscreen
 		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		// TODO context reset
 		settings.Save()
 	}
 
