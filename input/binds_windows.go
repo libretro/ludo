@@ -16,7 +16,7 @@ var xbox360JoyBinds = joybinds{
 	bind{btn, 5, 0, 0}:      libretro.DeviceIDJoypadR,
 	bind{btn, 6, 0, 0}:      libretro.DeviceIDJoypadSelect,
 	bind{btn, 7, 0, 0}:      libretro.DeviceIDJoypadStart,
-	bind{btn, 8, 0, 0}:      menuActionMenuToggle,
+	bind{btn, 8, 0, 0}:      ActionMenuToggle,
 	bind{btn, 9, 0, 0}:      libretro.DeviceIDJoypadL3,
 	bind{btn, 10, 0, 0}:     libretro.DeviceIDJoypadR3,
 	bind{axis, 6, -1, -0.5}: libretro.DeviceIDJoypadLeft,

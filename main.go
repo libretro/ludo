@@ -56,6 +56,7 @@ func runLoop() {
 			vid.Render()
 			menu.Render()
 		}
+		input.ProcessActions()
 		vid.RenderNotifications()
 		vid.Window.SwapBuffers()
 	}

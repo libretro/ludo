@@ -4,21 +4,12 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/go-playthemall/libretro"
 	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/settings"
-	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/video"
 )
 
 const numPlayers = 5
 
 type joybinds map[bind]uint32
-
-const (
-	menuActionMenuToggle       uint32 = libretro.DeviceIDJoypadR3 + 1
-	menuActionFullscreenToggle uint32 = libretro.DeviceIDJoypadR3 + 2
-	menuActionShouldClose      uint32 = libretro.DeviceIDJoypadR3 + 3
-	menuActionLast             uint32 = libretro.DeviceIDJoypadR3 + 4
-)
 
 var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyX:         libretro.DeviceIDJoypadA,
@@ -31,9 +22,9 @@ var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyRight:     libretro.DeviceIDJoypadRight,
 	glfw.KeyEnter:     libretro.DeviceIDJoypadStart,
 	glfw.KeyBackspace: libretro.DeviceIDJoypadSelect,
-	glfw.KeyP:         menuActionMenuToggle,
-	glfw.KeyF:         menuActionFullscreenToggle,
-	glfw.KeyEscape:    menuActionShouldClose,
+	glfw.KeyP:         ActionMenuToggle,
+	glfw.KeyF:         ActionFullscreenToggle,
+	glfw.KeyEscape:    ActionShouldClose,
 }
 
 const btn = 0
@@ -46,7 +37,7 @@ type bind struct {
 	threshold float32
 }
 
-type inputstate [numPlayers][menuActionLast]bool
+type inputstate [numPlayers][ActionLast]bool
 
 // Input state for all the players
 var (
@@ -138,24 +129,6 @@ func Poll() {
 	NewState = pollJoypads(NewState)
 	NewState = pollKeyboard(NewState)
 	Pressed, Released = getPressedReleased(NewState, OldState)
-
-	// Toggle the menu if menuActionMenuToggle is pressed
-	if Released[0][menuActionMenuToggle] && state.Global.CoreRunning {
-		state.Global.MenuActive = !state.Global.MenuActive
-	}
-
-	// Toggle fullscreen if menuActionFullscreenToggle is pressed
-	if Released[0][menuActionFullscreenToggle] {
-		settings.Settings.VideoFullscreen = !settings.Settings.VideoFullscreen
-		vid.Reconfigure(settings.Settings.VideoFullscreen)
-		// TODO context reset
-		settings.Save()
-	}
-
-	// Close on escape
-	if Pressed[0][menuActionShouldClose] {
-		vid.Window.SetShouldClose(true)
-	}
 
 	// Store the old input state for comparisions
 	OldState = NewState
