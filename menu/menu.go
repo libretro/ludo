@@ -2,9 +2,12 @@ package menu
 
 import (
 	"math"
+	"os/user"
+	"path/filepath"
 
 	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/utils"
 	"github.com/libretro/go-playthemall/video"
 
 	"github.com/tanema/gween"
@@ -204,7 +207,7 @@ func genericRender(list *entry) {
 	drawCursor(list)
 
 	for _, e := range list.children {
-		if e.yp < -1.1 || e.yp > 1.1 {
+		if e.yp < -0.1 || e.yp > 1.1 {
 			continue
 		}
 
@@ -255,8 +258,15 @@ func ContextReset() {
 		"scan":       video.NewImage("assets/scan.png"),
 		"on":         video.NewImage("assets/on.png"),
 		"off":        video.NewImage("assets/off.png"),
-		"Nintendo - Super Nintendo Entertainment System": video.NewImage("assets/Nintendo - Super Nintendo Entertainment System.png"),
-		"Sega - Mega Drive - Genesis":                    video.NewImage("assets/Sega - Mega Drive - Genesis.png"),
+	}
+
+	usr, _ := user.Current()
+	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
+	for _, path := range paths {
+		path := path
+		filename := utils.Filename(path)
+		menu.icons[filename] = video.NewImage("assets/" + filename + ".png")
+		menu.icons[filename+"-content"] = video.NewImage("assets/" + filename + "-content.png")
 	}
 }
 

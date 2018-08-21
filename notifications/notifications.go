@@ -21,17 +21,19 @@ func List() []Notification {
 }
 
 // Display creates a new notification.
-func Display(message string, frames int) {
+func Display(message string, frames int) int {
 	n := Notification{
 		message,
 		frames,
 	}
 
 	notifications = append(notifications, n)
+
+	return len(notifications) - 1
 }
 
 // DisplayAndLog creates a new notification and also logs the message to stdout.
-func DisplayAndLog(prefix, message string, vars ...interface{}) {
+func DisplayAndLog(prefix, message string, vars ...interface{}) int {
 	var msg string
 	if len(vars) > 0 {
 		msg = fmt.Sprintf(message, vars...)
@@ -41,7 +43,7 @@ func DisplayAndLog(prefix, message string, vars ...interface{}) {
 	if state.Global.Verbose {
 		log.Print("[" + prefix + "]: " + msg + "\n")
 	}
-	Display(msg, 240)
+	return Display(msg, 240)
 }
 
 // Process iterates over the notifications, update them, delete the old ones.

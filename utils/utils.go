@@ -55,3 +55,15 @@ func CaptureOutput(f func()) string {
 	log.SetOutput(os.Stderr)
 	return buf.String()
 }
+
+// AllFilesIn recursively builds a list of the files in a given directory
+func AllFilesIn(dir string) []string {
+	file := []string{}
+	filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if !f.IsDir() {
+			file = append(file, path)
+		}
+		return nil
+	})
+	return file
+}
