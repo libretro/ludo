@@ -47,8 +47,8 @@ type Scene interface {
 	Entry() *entry
 }
 
-// menu is a package level struct holding the menu state
-var menu struct {
+// Menu is a type holding the menu state, the stack of scenes, tweens, etc
+type Menu struct {
 	stack         []Scene
 	icons         map[string]uint32
 	inputCooldown int
@@ -57,6 +57,8 @@ var menu struct {
 	ratio         float32
 	t             float64
 }
+
+var menu *Menu
 
 // updateTweens loops over the animation queue and updade them so we can see progress
 func updateTweens(dt float32) {
@@ -239,7 +241,7 @@ func genericRender(list *entry) {
 
 // ContextReset uploads the UI images to the GPU.
 // It should be called after each time the window is recreated.
-func ContextReset() {
+func (menu *Menu) ContextReset() {
 	menu.icons = map[string]uint32{
 		"main":       video.NewImage("assets/main.png"),
 		"file":       video.NewImage("assets/file.png"),
@@ -268,11 +270,12 @@ func fastForwardTweens() {
 // Init initializes the menu.
 // If a game is already running, it will warp the user to the quick menu.
 // If not, it will display the menu tabs.
-func Init(v *video.Video, o *options.Options) {
+func Init(v *video.Video, o *options.Options) *Menu {
 	vid = v
 	opts = o
 
 	w, _ := v.Window.GetFramebufferSize()
+	menu = &Menu{}
 	menu.stack = []Scene{}
 	menu.tweens = make(map[*float32]*gween.Tween)
 	menu.ratio = float32(w) / 1920
@@ -287,4 +290,6 @@ func Init(v *video.Video, o *options.Options) {
 	} else {
 		menu.stack = append(menu.stack, buildTabs())
 	}
+
+	return menu
 }

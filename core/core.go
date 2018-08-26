@@ -17,14 +17,20 @@ import (
 	"github.com/libretro/go-playthemall/video"
 )
 
+type ContextReseter interface {
+	ContextReset()
+}
+
 var vid *video.Video
 var opts *options.Options
+var menu ContextReseter
 
 // Init is there mainly for dependency injection.
 // Call Init before calling other functions of this package.
-func Init(v *video.Video, o *options.Options) {
+func Init(v *video.Video, o *options.Options, m ContextReseter) {
 	vid = v
 	opts = o
+	menu = m
 }
 
 // Load loads a libretro core
@@ -130,7 +136,7 @@ func LoadGame(filename string) {
 		vid.Window.SetTitle("Play Them All - " + si.LibraryName)
 	}
 
-	input.Init(vid)
+	input.Init(vid, menu)
 	audio.Init(int32(avi.Timing.SampleRate))
 	if state.Global.AudioCb.SetState != nil {
 		state.Global.AudioCb.SetState(true)

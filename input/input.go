@@ -59,11 +59,17 @@ func joystickCallback(joy int, event int) {
 	}
 }
 
+type ContextReseter interface {
+	ContextReset()
+}
+
 var vid *video.Video
+var menu ContextReseter
 
 // Init initializes the input package
-func Init(v *video.Video) {
+func Init(v *video.Video, m ContextReseter) {
 	vid = v
+	menu = m
 	glfw.SetJoystickCallback(joystickCallback)
 }
 

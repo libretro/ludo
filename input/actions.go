@@ -34,7 +34,7 @@ func ProcessActions() {
 	if Released[0][ActionFullscreenToggle] {
 		settings.Settings.VideoFullscreen = !settings.Settings.VideoFullscreen
 		vid.Reconfigure(settings.Settings.VideoFullscreen)
-		// TODO context reset
+		menu.ContextReset()
 		settings.Save()
 	}
 
