@@ -17,6 +17,8 @@ import (
 	"github.com/libretro/go-playthemall/video"
 )
 
+// MenuInterface allows passing a *menu.Menu to the core package while avoiding
+// cyclic dependencies.
 type MenuInterface interface {
 	ContextReset()
 	UpdateOptions(*options.Options)

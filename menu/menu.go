@@ -267,6 +267,8 @@ func fastForwardTweens() {
 	updateTweens(10)
 }
 
+// UpdateOptions updates the menu with the core options of the newly loaded
+// libretro core.
 func (menu *Menu) UpdateOptions(o *options.Options) {
 	opts = o
 }

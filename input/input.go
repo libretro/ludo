@@ -59,6 +59,8 @@ func joystickCallback(joy int, event int) {
 	}
 }
 
+// ContextReseter is an interface to to allow reloading icons after the
+// window is recreated when switching fullscreen
 type ContextReseter interface {
 	ContextReset()
 }
