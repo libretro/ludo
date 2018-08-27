@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 
-	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/video"
 
@@ -32,9 +31,8 @@ func Test_Init(t *testing.T) {
 	var vid = &video.Video{
 		Window: &WindowMock{},
 	}
-	var opts *options.Options
 
-	Init(vid, opts)
+	Init(vid)
 
 	t.Run("Starts with a single scene if no game is running", func(t *testing.T) {
 		got := len(menu.stack)
@@ -53,7 +51,7 @@ func Test_Init(t *testing.T) {
 	})
 
 	state.Global.CoreRunning = true
-	Init(vid, opts)
+	Init(vid)
 
 	t.Run("Warps at the quick menu if a game is launched", func(t *testing.T) {
 		got := len(menu.stack)

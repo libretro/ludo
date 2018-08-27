@@ -267,12 +267,15 @@ func fastForwardTweens() {
 	updateTweens(10)
 }
 
+func (menu *Menu) UpdateOptions(o *options.Options) {
+	opts = o
+}
+
 // Init initializes the menu.
 // If a game is already running, it will warp the user to the quick menu.
 // If not, it will display the menu tabs.
-func Init(v *video.Video, o *options.Options) *Menu {
+func Init(v *video.Video) *Menu {
 	vid = v
-	opts = o
 
 	w, _ := v.Window.GetFramebufferSize()
 	menu = &Menu{}

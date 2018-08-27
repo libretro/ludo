@@ -27,6 +27,11 @@ func (m WindowMock) ShouldClose() bool                           { return false 
 func (m WindowMock) SetTitle(string)                             {}
 func (m WindowMock) SwapBuffers()                                {}
 
+type MenuMock struct{}
+
+func (m MenuMock) ContextReset()                    {}
+func (m MenuMock) UpdateOptions(o *options.Options) {}
+
 func Test_coreLoad(t *testing.T) {
 	state.Global.Verbose = true
 
@@ -38,7 +43,7 @@ func Test_coreLoad(t *testing.T) {
 
 	ext := exts[runtime.GOOS]
 
-	Init(&video.Video{Window: &WindowMock{}}, &options.Options{})
+	Init(&video.Video{Window: &WindowMock{}}, &MenuMock{})
 
 	out := utils.CaptureOutput(func() { Load("testdata/uzem_libretro" + ext) })
 

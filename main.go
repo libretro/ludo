@@ -12,13 +12,11 @@ import (
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/menu"
 	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/settings"
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/video"
 )
 
-var opts *options.Options
 var vid *video.Video
 
 func init() {
@@ -87,10 +85,10 @@ func main() {
 
 	vid = video.Init(settings.Settings.VideoFullscreen)
 
-	m := menu.Init(vid, opts)
+	m := menu.Init(vid)
 	m.ContextReset()
 
-	core.Init(vid, opts, m)
+	core.Init(vid, m)
 
 	input.Init(vid, m)
 

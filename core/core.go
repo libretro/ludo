@@ -17,19 +17,19 @@ import (
 	"github.com/libretro/go-playthemall/video"
 )
 
-type ContextReseter interface {
+type MenuInterface interface {
 	ContextReset()
+	UpdateOptions(*options.Options)
 }
 
 var vid *video.Video
 var opts *options.Options
-var menu ContextReseter
+var menu MenuInterface
 
 // Init is there mainly for dependency injection.
 // Call Init before calling other functions of this package.
-func Init(v *video.Video, o *options.Options, m ContextReseter) {
+func Init(v *video.Video, m MenuInterface) {
 	vid = v
-	opts = o
 	menu = m
 }
 
@@ -66,6 +66,8 @@ func Load(sofile string) {
 			log.Println("[Core]: Block extract:", si.BlockExtract)
 		}
 	}
+
+	menu.UpdateOptions(opts)
 
 	notifications.DisplayAndLog("Core", "Core loaded: "+si.LibraryName)
 }
