@@ -52,10 +52,10 @@ var (
 
 // joystickCallback is triggered when a joypad is plugged.
 func joystickCallback(joy int, event int) {
-	switch event {
-	case 262145:
+	switch glfw.MonitorEvent(event) {
+	case glfw.Connected:
 		notifications.DisplayAndLog("Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
-	case 262146:
+	case glfw.Disconnected:
 		notifications.DisplayAndLog("Input", "Joystick #%d unplugged.", joy)
 	default:
 		notifications.DisplayAndLog("Input", "Joystick #%d unhandled event: %d.", joy, event)
