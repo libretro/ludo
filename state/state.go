@@ -1,3 +1,5 @@
+// Package state holds the global state of the app. It is a separate package
+// so we can import it from anywhere.
 package state
 
 import "github.com/libretro/go-playthemall/libretro"
