@@ -1,3 +1,5 @@
+// Package settings defines the app settings and functions to save and load
+// those.
 package settings
 
 import (
