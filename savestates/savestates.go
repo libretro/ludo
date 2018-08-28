@@ -1,3 +1,5 @@
+// Package savestates takes care of serializing and unserializing the game RAM
+// to the host filesystem.
 package savestates
 
 import (

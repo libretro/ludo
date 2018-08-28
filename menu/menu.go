@@ -1,3 +1,6 @@
+// Package menu is the graphical interface allowing to browse games, launch
+// games, configure settings, and display a contextual menu to interract with
+// the running game.
 package menu
 
 import (
