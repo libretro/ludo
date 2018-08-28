@@ -17,8 +17,6 @@ import (
 	"github.com/libretro/go-playthemall/video"
 )
 
-var vid *video.Video
-
 func init() {
 	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
@@ -32,9 +30,8 @@ func init() {
 	os.Mkdir(usr.HomeDir+"/.playthemall/system/", 0777)
 }
 
-func runLoop() {
+func runLoop(vid *video.Video) {
 	for !vid.Window.ShouldClose() {
-		glfw.SwapInterval(1)
 		glfw.PollEvents()
 		notifications.Process()
 		if !state.Global.MenuActive {
@@ -56,6 +53,7 @@ func runLoop() {
 		}
 		input.ProcessActions()
 		vid.RenderNotifications()
+		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
 	}
 }
@@ -83,7 +81,7 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	vid = video.Init(settings.Settings.VideoFullscreen)
+	vid := video.Init(settings.Settings.VideoFullscreen)
 
 	m := menu.Init(vid)
 	m.ContextReset()
@@ -103,7 +101,7 @@ func main() {
 	// No game running? display the menu
 	state.Global.MenuActive = !state.Global.CoreRunning
 
-	runLoop()
+	runLoop(vid)
 
 	// Unload and deinit in the core.
 	if state.Global.CoreRunning {
