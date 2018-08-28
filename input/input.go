@@ -1,3 +1,6 @@
+// Package input exposes the two input callbacks Poll and State needed by the
+// libretro implementation. It uses GLFW to access keyboard and joypad, and
+// takes care of binding and auto configuring joypads.
 package input
 
 import (

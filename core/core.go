@@ -1,3 +1,5 @@
+// Package core takes care of instanciating the libretro core, setting the
+// input, audio, video, environment callbacks needed to play the games.
 package core
 
 import (
