@@ -8,6 +8,24 @@ import (
 	"github.com/libretro/go-playthemall/utils"
 )
 
+func Test_List(t *testing.T) {
+	Clear()
+	t.Run("Returns the notifications", func(t *testing.T) {
+		Display("Test1", 240)
+		Display("Test2", 240)
+		Display("Test3", 240)
+		got := List()
+		want := []Notification{
+			Notification{Message: "Test1", Frames: 240},
+			Notification{Message: "Test2", Frames: 240},
+			Notification{Message: "Test3", Frames: 240},
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+}
+
 func Test_Display(t *testing.T) {
 	Clear()
 	t.Run("Stacks notifications correctly", func(t *testing.T) {
@@ -32,6 +50,16 @@ func Test_DisplayAndLog(t *testing.T) {
 		DisplayAndLog("Tests", "Joypad #%d loaded with name %s.", 3, "Foo")
 		got := notifications[0].Message
 		want := "Joypad #3 loaded with name Foo."
+		if got != want {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+
+	Clear()
+	t.Run("Format simple message properly", func(t *testing.T) {
+		DisplayAndLog("Tests", "Hello world.")
+		got := notifications[0].Message
+		want := "Hello world."
 		if got != want {
 			t.Errorf("got = %v, want %v", got, want)
 		}

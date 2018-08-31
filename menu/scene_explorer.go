@@ -13,7 +13,7 @@ type screenExplorer struct {
 	entry
 }
 
-func buildExplorer(path string, exts []string, cb func(string), dirAction entry) Scene {
+func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
 	var list screenExplorer
 	list.label = "Explorer"
 
@@ -22,9 +22,9 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction entry)
 		notifications.DisplayAndLog("Menu", err.Error())
 	}
 
-	if dirAction.label != "" {
+	if dirAction != nil && dirAction.label != "" {
 		dirAction.callbackOK = func() { cb(path) }
-		list.children = append(list.children, dirAction)
+		list.children = append(list.children, *dirAction)
 	}
 
 	for _, f := range files {

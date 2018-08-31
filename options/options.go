@@ -1,3 +1,6 @@
+// Package options deals with configuration at the libretro core level. Each
+// core exports a list of variables that can take different values. This package
+// can list them, load them, and save them.
 package options
 
 import (

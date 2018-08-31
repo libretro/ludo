@@ -12,15 +12,11 @@ import (
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/menu"
 	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/scanner"
 	"github.com/libretro/go-playthemall/settings"
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/video"
 )
-
-var opts *options.Options
-var vid *video.Video
 
 func init() {
 	// GLFW event handling must run on the main OS thread
@@ -35,9 +31,8 @@ func init() {
 	os.Mkdir(usr.HomeDir+"/.playthemall/system/", 0777)
 }
 
-func runLoop() {
+func runLoop(vid *video.Video) {
 	for !vid.Window.ShouldClose() {
-		glfw.SwapInterval(1)
 		glfw.PollEvents()
 		notifications.Process()
 		if !state.Global.MenuActive {
@@ -59,6 +54,7 @@ func runLoop() {
 		}
 		input.ProcessActions()
 		vid.RenderNotifications()
+		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
 	}
 }
@@ -91,12 +87,14 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	vid = video.Init(settings.Settings.VideoFullscreen)
-	menu.ContextReset()
+	vid := video.Init(settings.Settings.VideoFullscreen)
 
-	core.Init(vid, opts)
+	m := menu.Init(vid)
+	m.ContextReset()
 
-	input.Init(vid)
+	core.Init(vid, m)
+
+	input.Init(vid, m)
 
 	if len(state.Global.CorePath) > 0 {
 		core.Load(state.Global.CorePath)
@@ -106,12 +104,10 @@ func main() {
 		core.LoadGame(gamePath)
 	}
 
-	menu.Init(vid, opts)
-
 	// No game running? display the menu
 	state.Global.MenuActive = !state.Global.CoreRunning
 
-	runLoop()
+	runLoop(vid)
 
 	// Unload and deinit in the core.
 	if state.Global.CoreRunning {

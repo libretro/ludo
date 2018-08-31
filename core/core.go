@@ -1,3 +1,5 @@
+// Package core takes care of instanciating the libretro core, setting the
+// input, audio, video, environment callbacks needed to play the games.
 package core
 
 import (
@@ -17,14 +19,22 @@ import (
 	"github.com/libretro/go-playthemall/video"
 )
 
+// MenuInterface allows passing a *menu.Menu to the core package while avoiding
+// cyclic dependencies.
+type MenuInterface interface {
+	ContextReset()
+	UpdateOptions(*options.Options)
+}
+
 var vid *video.Video
 var opts *options.Options
+var menu MenuInterface
 
 // Init is there mainly for dependency injection.
 // Call Init before calling other functions of this package.
-func Init(v *video.Video, o *options.Options) {
+func Init(v *video.Video, m MenuInterface) {
 	vid = v
-	opts = o
+	menu = m
 }
 
 // Load loads a libretro core
@@ -60,6 +70,8 @@ func Load(sofile string) {
 			log.Println("[Core]: Block extract:", si.BlockExtract)
 		}
 	}
+
+	menu.UpdateOptions(opts)
 
 	notifications.DisplayAndLog("Core", "Core loaded: "+si.LibraryName)
 }
@@ -130,7 +142,7 @@ func LoadGame(filename string) {
 		vid.Window.SetTitle("Play Them All - " + si.LibraryName)
 	}
 
-	input.Init(vid)
+	input.Init(vid, menu)
 	audio.Init(int32(avi.Timing.SampleRate))
 	if state.Global.AudioCb.SetState != nil {
 		state.Global.AudioCb.SetState(true)

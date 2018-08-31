@@ -1,3 +1,6 @@
+// Package input exposes the two input callbacks Poll and State needed by the
+// libretro implementation. It uses GLFW to access keyboard and joypad, and
+// takes care of binding and auto configuring joypads.
 package input
 
 import (
@@ -49,21 +52,29 @@ var (
 
 // joystickCallback is triggered when a joypad is plugged.
 func joystickCallback(joy int, event int) {
-	switch event {
-	case 262145:
+	switch glfw.MonitorEvent(event) {
+	case glfw.Connected:
 		notifications.DisplayAndLog("Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
-	case 262146:
+	case glfw.Disconnected:
 		notifications.DisplayAndLog("Input", "Joystick #%d unplugged.", joy)
 	default:
 		notifications.DisplayAndLog("Input", "Joystick #%d unhandled event: %d.", joy, event)
 	}
 }
 
+// ContextReseter is an interface to to allow reloading icons after the
+// window is recreated when switching fullscreen
+type ContextReseter interface {
+	ContextReset()
+}
+
 var vid *video.Video
+var menu ContextReseter
 
 // Init initializes the input package
-func Init(v *video.Video) {
+func Init(v *video.Video, m ContextReseter) {
 	vid = v
+	menu = m
 	glfw.SetJoystickCallback(joystickCallback)
 }
 

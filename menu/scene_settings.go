@@ -84,7 +84,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		v = !v
 		f.Set(v)
 		vid.Reconfigure(settings.Settings.VideoFullscreen)
-		ContextReset()
+		menu.ContextReset()
 		settings.Save()
 	},
 	"VideoMonitorIndex": func(f *structs.Field, direction int) {
@@ -98,7 +98,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		}
 		f.Set(v)
 		vid.Reconfigure(settings.Settings.VideoFullscreen)
-		ContextReset()
+		menu.ContextReset()
 		settings.Save()
 	},
 	"AudioVolume": func(f *structs.Field, direction int) {

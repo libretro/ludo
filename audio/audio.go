@@ -1,3 +1,5 @@
+// Package audio uses OpenAL to play game audio by exposing the two audio
+// callbacks Sample and SampleBatch for the libretro implementation.
 package audio
 
 import (
@@ -86,6 +88,9 @@ func fillInternalBuf(buf []byte, size int32) int32 {
 		return size
 	}
 	readSize := min(bufSize-audio.tmpBufPtr, size)
+	if readSize > int32(len(buf)) {
+		return size
+	}
 	copy(audio.tmpBuf[audio.tmpBufPtr:], buf[audio.bufPtr:audio.bufPtr+readSize])
 	audio.tmpBufPtr += readSize
 	return readSize

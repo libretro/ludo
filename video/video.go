@@ -1,3 +1,6 @@
+// Package video takes care on the game display. It also creates the window
+// using GLFW. It exports the Refresh callback used by the libretro
+// implementation.
 package video
 
 import (
