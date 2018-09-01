@@ -357,8 +357,8 @@ in vec2 vertTexCoord;
 out vec2 fragTexCoord;
 
 void main() {
-    fragTexCoord = vertTexCoord;
-    gl_Position = vec4(vert, 0, 1);
+  fragTexCoord = vertTexCoord;
+  gl_Position = vec4(vert, 0, 1);
 }
 ` + "\x00"
 
@@ -373,22 +373,22 @@ in vec2 fragTexCoord;
 
 out vec4 outputColor;
 
-vec4 toGrayscale(in vec4 color)
-{
-  float average = (color.r + color.g + color.b) / 3.0;
+vec4 grayscale(in vec4 c) {
+  float average = (c.r + c.g + c.b) / 3.0;
   return vec4(average, average, average, 1.0);
 }
 
-vec4 colorize(in vec4 grayscale, in vec4 color)
-{
-  return (grayscale * color);
+vec4 darken(in vec4 c) {
+  return vec4(c.r/4, c.g/4, c.b/4, 1.0);
+}
+
+vec4 demultiply(in vec4 c) {
+	return vec4(c.rgb/c.a, c.a);
 }
 
 void main() {
-  vec4 c = vec4(0.2, 0.2, 0.4, 1.0);
-  vec4 color = texture(tex, fragTexCoord);
-  vec4 grayscale = toGrayscale(color);
-  outputColor = texColor * mix(vec4(color.rgb/color.a, color.a), colorize(grayscale, c), mask);
+  vec4 color = demultiply(texture(tex, fragTexCoord));
+  outputColor = texColor * mix(color, darken(grayscale(color)), mask);
 }
 ` + "\x00"
 
