@@ -381,14 +381,14 @@ vec4 toGrayscale(in vec4 color)
 
 vec4 colorize(in vec4 grayscale, in vec4 color)
 {
-	return (grayscale * color);
+  return (grayscale * color);
 }
 
 void main() {
-	vec4 c = vec4(0.2, 0.2, 0.4, 1.0);
-	vec4 color = texture(tex, fragTexCoord);
+  vec4 c = vec4(0.2, 0.2, 0.4, 1.0);
+  vec4 color = texture(tex, fragTexCoord);
   vec4 grayscale = toGrayscale(color);
-	outputColor = texColor * mix(color, colorize(grayscale, c), mask);
+  outputColor = texColor * mix(vec4(color.rgb/color.a, color.a), colorize(grayscale, c), mask);
 }
 ` + "\x00"
 
