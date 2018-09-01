@@ -46,7 +46,9 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 				if f.IsDir() {
 					list.segueNext()
 					newPath := path + "/" + f.Name()
-					dirAction.callbackOK = func() { cb(newPath) }
+					if dirAction != nil {
+						dirAction.callbackOK = func() { cb(newPath) }
+					}
 					menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
 				} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(f.Name()), exts)) {
 					cb(path + "/" + f.Name())
