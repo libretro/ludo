@@ -5,9 +5,12 @@ package menu
 
 import (
 	"math"
+	"os/user"
+	"path/filepath"
 
 	"github.com/libretro/go-playthemall/options"
 	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/go-playthemall/utils"
 	"github.com/libretro/go-playthemall/video"
 
 	"github.com/tanema/gween"
@@ -104,7 +107,7 @@ func genericSegueMount(list *entry) {
 			e.yp = 0.5 + 0.3
 			e.labelAlpha = 0
 			e.iconAlpha = 0
-			e.scale = 1.0
+			e.scale = 0.5
 		} else if i < list.ptr {
 			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
 			e.labelAlpha = 0
@@ -133,7 +136,7 @@ func genericAnimate(list *entry) {
 			yp = 0.5
 			labelAlpha = 1.0
 			iconAlpha = 1.0
-			scale = 1.0
+			scale = 0.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
 			labelAlpha = 0.5
@@ -209,7 +212,7 @@ func genericRender(list *entry) {
 	drawCursor(list)
 
 	for _, e := range list.children {
-		if e.yp < -1.1 || e.yp > 1.1 {
+		if e.yp < -0.1 || e.yp > 1.1 {
 			continue
 		}
 
@@ -260,8 +263,15 @@ func (menu *Menu) ContextReset() {
 		"scan":       video.NewImage("assets/scan.png"),
 		"on":         video.NewImage("assets/on.png"),
 		"off":        video.NewImage("assets/off.png"),
-		"Nintendo - Super Nintendo Entertainment System": video.NewImage("assets/Nintendo - Super Nintendo Entertainment System.png"),
-		"Sega - Mega Drive - Genesis":                    video.NewImage("assets/Sega - Mega Drive - Genesis.png"),
+	}
+
+	usr, _ := user.Current()
+	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
+	for _, path := range paths {
+		path := path
+		filename := utils.Filename(path)
+		menu.icons[filename] = video.NewImage("assets/" + filename + ".png")
+		menu.icons[filename+"-content"] = video.NewImage("assets/" + filename + "-content.png")
 	}
 }
 

@@ -2,10 +2,12 @@ package menu
 
 import (
 	"os/user"
+	"path/filepath"
 
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/scanner"
+	"github.com/libretro/go-playthemall/utils"
 	"github.com/libretro/go-playthemall/video"
 
 	colorful "github.com/lucasb-eyer/go-colorful"
@@ -40,23 +42,20 @@ func buildTabs() Scene {
 		},
 	})
 
-	// list.children = append(list.children, entry{
-	// 	label:    "Super NES",
-	// 	subLabel: "10 Games - 5 Favorites",
-	// 	icon:     "Nintendo - Super Nintendo Entertainment System",
-	// 	callbackOK: func() {
-	// 		menu.stack = append(menu.stack, buildGameList())
-	// 	},
-	// })
-
-	// list.children = append(list.children, entry{
-	// 	label:    "Mega Drive - Genesis",
-	// 	subLabel: "10 Games - 5 Favorites",
-	// 	icon:     "Sega - Mega Drive - Genesis",
-	// 	callbackOK: func() {
-	// 		menu.stack = append(menu.stack, buildGameList())
-	// 	},
-	// })
+	usr, _ := user.Current()
+	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
+	for _, path := range paths {
+		path := path
+		filename := utils.Filename(path)
+		list.children = append(list.children, entry{
+			label:    filename,
+			subLabel: "10 Games - 5 Favorites",
+			icon:     filename,
+			callbackOK: func() {
+				menu.stack = append(menu.stack, buildPlaylist(path))
+			},
+		})
+	}
 
 	list.children = append(list.children, entry{
 		label:    "Add games",
@@ -64,13 +63,11 @@ func buildTabs() Scene {
 		icon:     "add",
 		callbackOK: func() {
 			usr, _ := user.Current()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, nil, &entry{
-				label: "<Scan this directory>",
-				icon:  "scan",
-				callbackOK: func() {
-					notifications.DisplayAndLog("Menu", "Not implemented yet.")
-				},
-			}))
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, scanner.ScanDir,
+				&entry{
+					label: "<Scan this directory>",
+					icon:  "scan",
+				}))
 		},
 	})
 
@@ -195,7 +192,7 @@ func (tabs screenTabs) render() {
 	stackWidth := 132 * menu.ratio
 	for i, e := range tabs.children {
 
-		c := colorful.Hcl(float64(i%12)*30, 0.5, 0.5)
+		c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
 		var alpha float32 = 1
 		if i == 0 {
 			alpha = 0
@@ -212,11 +209,13 @@ func (tabs screenTabs) render() {
 
 		x := -menu.scroll*menu.ratio + stackWidth - e.width/2*menu.ratio + 400*menu.ratio - 400*e.yp*menu.ratio
 
-		vid.Font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
-		lw := vid.Font.Width(0.7*menu.ratio, e.label)
-		vid.Font.Printf(x-lw/2, float32(h)*e.yp+180*menu.ratio, 0.7*menu.ratio, e.label)
-		lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
-		vid.Font.Printf(x-lw/2, float32(h)*e.yp+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
+		if e.labelAlpha > 0 {
+			vid.Font.SetColor(1.0, 1.0, 1.0, e.labelAlpha)
+			lw := vid.Font.Width(0.7*menu.ratio, e.label)
+			vid.Font.Printf(x-lw/2, float32(h)*e.yp+180*menu.ratio, 0.7*menu.ratio, e.label)
+			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
+			vid.Font.Printf(x-lw/2, float32(h)*e.yp+260*menu.ratio, 0.4*menu.ratio, e.subLabel)
+		}
 
 		vid.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,

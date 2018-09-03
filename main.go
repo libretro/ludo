@@ -12,6 +12,7 @@ import (
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/menu"
 	"github.com/libretro/go-playthemall/notifications"
+	"github.com/libretro/go-playthemall/scanner"
 	"github.com/libretro/go-playthemall/settings"
 	"github.com/libretro/go-playthemall/state"
 	"github.com/libretro/go-playthemall/video"
@@ -74,6 +75,11 @@ func main() {
 		log.Println("[Settings]: Loading failed:", err)
 		log.Println("[Settings]: Using default settings")
 		settings.Save()
+	}
+
+	state.Global.DB, err = scanner.LoadDB("/Users/kivutar/libretro-database/rdb/")
+	if err != nil {
+		log.Println("Can't load game database:", err)
 	}
 
 	if err := glfw.Init(); err != nil {

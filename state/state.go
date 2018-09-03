@@ -2,7 +2,11 @@
 // so we can import it from anywhere.
 package state
 
-import "github.com/libretro/go-playthemall/libretro"
+import (
+	"github.com/libretro/go-playthemall/libretro"
+	"github.com/libretro/go-playthemall/rdb"
+	"github.com/libretro/go-playthemall/tasks"
+)
 
 // State is a type for the global state of the app
 type State struct {
@@ -14,6 +18,8 @@ type State struct {
 	Verbose     bool
 	CorePath    string // Path of the current libretro core
 	GamePath    string // Path of the current game
+	DB          rdb.DB
+	Tasks       []tasks.Task
 }
 
 // Global state
