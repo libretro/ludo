@@ -1,12 +1,12 @@
 # go-playthemall [![Build Status](https://travis-ci.org/libretro/go-playthemall.svg?branch=master)](https://travis-ci.org/libretro/go-playthemall) [![Build status](https://ci.appveyor.com/api/projects/status/dndcl5m1pepnhbdk?svg=true)](https://ci.appveyor.com/project/libretro/go-playthemall-tfah4)
 
-go-playthemall is an attempt to write a libretro frontend written in go.
+go-playthemall is a work in progress libretro frontend written in go.
 
-<img src="assets/illustration.png" height="373" />
+<img src="assets/illustration.png" />
 
 It is able to launch most non GL libretro cores.
 
-It is tested on OSX, Linux and Windows.
+It works on OSX, Linux and Windows.
 
 ## Dependencies
 
