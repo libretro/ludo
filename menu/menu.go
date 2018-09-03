@@ -107,7 +107,7 @@ func genericSegueMount(list *entry) {
 			e.yp = 0.5 + 0.3
 			e.labelAlpha = 0
 			e.iconAlpha = 0
-			e.scale = 1.0
+			e.scale = 0.5
 		} else if i < list.ptr {
 			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
 			e.labelAlpha = 0
@@ -136,7 +136,7 @@ func genericAnimate(list *entry) {
 			yp = 0.5
 			labelAlpha = 1.0
 			iconAlpha = 1.0
-			scale = 1.0
+			scale = 0.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
 			labelAlpha = 0.5
