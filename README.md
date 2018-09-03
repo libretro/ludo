@@ -1,4 +1,4 @@
-# go-playthemall [![Build Status](https://travis-ci.org/libretro/go-playthemall.svg?branch=master)](https://travis-ci.org/libretro/go-playthemall) [![Build status](https://ci.appveyor.com/api/projects/status/dndcl5m1pepnhbdk?svg=true)](https://ci.appveyor.com/project/libretro/go-playthemall-tfah4)
+# go-playthemall [![Build Status](https://travis-ci.org/libretro/go-playthemall.svg?branch=master)](https://travis-ci.org/libretro/go-playthemall) [![Build status](https://ci.appveyor.com/api/projects/status/dndcl5m1pepnhbdk?svg=true)](https://ci.appveyor.com/project/libretro/go-playthemall-tfah4) [![GoDoc](https://godoc.org/github.com/libretro/go-playthemall?status.svg)](https://godoc.org/github.com/libretro/go-playthemall)
 
 go-playthemall is a work in progress libretro frontend written in go.
 
