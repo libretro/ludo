@@ -3,7 +3,6 @@ package core
 import (
 	"os"
 	"reflect"
-	"runtime"
 	"testing"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
@@ -35,13 +34,7 @@ func (m MenuMock) UpdateOptions(o *options.Options) {}
 func Test_coreLoad(t *testing.T) {
 	state.Global.Verbose = true
 
-	exts := map[string]string{
-		"darwin":  ".dylib",
-		"linux":   ".so",
-		"windows": ".dll",
-	}
-
-	ext := exts[runtime.GOOS]
+	ext := utils.CoreExt()
 
 	Init(&video.Video{Window: &WindowMock{}}, &MenuMock{})
 

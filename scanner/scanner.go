@@ -44,7 +44,7 @@ func ScanDir(dir string) {
 			for game := range scannedGames {
 				i++
 				lpl, _ := os.OpenFile(usr.HomeDir+"/.playthemall/playlists/"+game.System+".lpl", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-				lpl.WriteString(game.Path + "#" + game.ROMName + "\n")
+				lpl.WriteString(game.Path + "\n")
 				lpl.WriteString(game.Name + "\n")
 				lpl.WriteString("DETECT\n")
 				lpl.WriteString("DETECT\n")
