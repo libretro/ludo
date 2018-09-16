@@ -26,6 +26,26 @@ var Settings struct {
 	CoreForPlaylist   map[string]string `json:"core_for_playlist"`
 }
 
+func setDefaults() {
+	Settings.VideoFullscreen = false
+	Settings.VideoMonitorIndex = 0
+	Settings.AudioVolume = 0.5
+	Settings.ShowHiddenFiles = true
+	Settings.CoreForPlaylist = map[string]string{
+		"FB Alpha - Arcade Games":                        "fbalpha_libretro",
+		"Nintendo - Game Boy Advance":                    "mgba_libretro",
+		"Nintendo - Game Boy Color":                      "gambatte_libretro",
+		"Nintendo - Game Boy":                            "gambatte_libretro",
+		"Nintendo - Nintendo Entertainment System":       "nestopia_libretro",
+		"Nintendo - Super Nintendo Entertainment System": "snes9x_libretro",
+		"Sega - 32X":                      "picodrive_libretro",
+		"Sega - Game Gear":                "picodrive_libretro",
+		"Sega - Master System - Mark III": "genesis_plus_gx_libretro",
+		"Sega - Mega Drive - Genesis":     "genesis_plus_gx_libretro",
+		"Sony - PlayStation":              "mednafen_psx_libretro",
+	}
+}
+
 // Load loads settings from the home directory.
 // If the settings file doesn't exists, it will return an error and
 // set all the settings to their default value.
@@ -34,15 +54,7 @@ func Load() error {
 	defer lock.Unlock()
 
 	// Set default values
-	Settings.VideoFullscreen = false
-	Settings.VideoMonitorIndex = 0
-	Settings.AudioVolume = 0.5
-	Settings.ShowHiddenFiles = true
-	Settings.CoreForPlaylist = map[string]string{
-		"Nintendo - Super Nintendo Entertainment System": "snes9x_libretro",
-		"Sega - Master System - Mark III":                "genesis_plus_gx_libretro",
-		"Sega - Mega Drive - Genesis":                    "genesis_plus_gx_libretro",
-	}
+	setDefaults()
 
 	usr, _ := user.Current()
 
