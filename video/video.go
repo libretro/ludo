@@ -382,12 +382,8 @@ vec4 darken(in vec4 c) {
   return vec4(c.r/4, c.g/4, c.b/4, 1.0);
 }
 
-vec4 demultiply(in vec4 c) {
-	return vec4(c.rgb/c.a, c.a);
-}
-
 void main() {
-  vec4 color = demultiply(texture(tex, fragTexCoord));
+  vec4 color = texture(tex, fragTexCoord);
   outputColor = texColor * mix(color, darken(grayscale(color)), mask);
 }
 ` + "\x00"
