@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 // Slurp reads a file completely and returns the content as a []byte.
@@ -67,4 +68,15 @@ func AllFilesIn(dir string) []string {
 		return nil
 	})
 	return file
+}
+
+// CoreExt returns the libretro core extension for the current OS
+func CoreExt() string {
+	exts := map[string]string{
+		"darwin":  ".dylib",
+		"linux":   ".so",
+		"windows": ".dll",
+	}
+
+	return exts[runtime.GOOS]
 }

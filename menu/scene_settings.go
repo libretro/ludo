@@ -23,6 +23,10 @@ func buildSettings() Scene {
 	fields := structs.Fields(&settings.Settings)
 	for _, f := range fields {
 		f := f
+		// Don't expose settings without label
+		if f.Tag("label") == "" {
+			continue
+		}
 		list.children = append(list.children, entry{
 			label: f.Tag("label"),
 			icon:  "subsetting",
