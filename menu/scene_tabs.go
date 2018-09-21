@@ -3,6 +3,8 @@ package menu
 import (
 	"os/user"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/libretro/go-playthemall/input"
 	"github.com/libretro/go-playthemall/libretro"
@@ -44,11 +46,12 @@ func buildTabs() Scene {
 
 	usr, _ := user.Current()
 	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
+
 	for _, path := range paths {
 		path := path
 		filename := utils.Filename(path)
 		list.children = append(list.children, entry{
-			label:    filename,
+			label:    playlistShortName(filename),
 			subLabel: "10 Games - 5 Favorites",
 			icon:     filename,
 			callbackOK: func() {
@@ -74,6 +77,15 @@ func buildTabs() Scene {
 	list.segueMount()
 
 	return &list
+}
+
+func playlistShortName(in string) string {
+	if len(in) < 20 {
+		return in
+	}
+	r, _ := regexp.Compile(`(.*?) - (.*)`)
+	out := r.ReplaceAllString(in, "$2")
+	return strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
 }
 
 func (tabs *screenTabs) Entry() *entry {
