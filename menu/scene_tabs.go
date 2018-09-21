@@ -85,7 +85,9 @@ func playlistShortName(in string) string {
 	}
 	r, _ := regexp.Compile(`(.*?) - (.*)`)
 	out := r.ReplaceAllString(in, "$2")
-	return strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
+	out = strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
+	out = strings.Replace(out, "PC Engine", "PCE", -1)
+	return out
 }
 
 func (tabs *screenTabs) Entry() *entry {
