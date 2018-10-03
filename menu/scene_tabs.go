@@ -99,9 +99,8 @@ func playlistCount(path string) int {
 	c, _ := utils.LinesInFile(file)
 	if c > 0 {
 		return c / 6
-	} else {
-		return 0
 	}
+	return 0
 }
 
 func (tabs *screenTabs) Entry() *entry {
