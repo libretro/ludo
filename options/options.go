@@ -11,9 +11,9 @@ import (
 	"os/user"
 	"sync"
 
-	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/state"
-	"github.com/libretro/go-playthemall/utils"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 )
 
 var lock sync.Mutex
@@ -57,7 +57,7 @@ func (o *Options) Save() error {
 	}
 
 	name := utils.Filename(state.Global.CorePath)
-	f, err := os.Create(usr.HomeDir + "/.playthemall/" + name + ".json")
+	f, err := os.Create(usr.HomeDir + "/.ludo/" + name + ".json")
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (o *Options) load() error {
 	usr, _ := user.Current()
 
 	name := utils.Filename(state.Global.CorePath)
-	b, err := utils.Slurp(usr.HomeDir + "/.playthemall/" + name + ".json")
+	b, err := utils.Slurp(usr.HomeDir + "/.ludo/" + name + ".json")
 	if err != nil {
 		return err
 	}

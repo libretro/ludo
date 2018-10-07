@@ -10,7 +10,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/go-gl/gl/all-core/gl"
-	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/ludo/state"
 )
 
 func screenshotName() string {
@@ -29,7 +29,7 @@ func (video *Video) TakeScreenshot() {
 	fbw, fbh := video.Window.GetFramebufferSize()
 	img := image.NewNRGBA(image.Rect(0, 0, fbw, fbh))
 	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
-	fd, _ := os.Create(usr.HomeDir + "/.playthemall/screenshots/" + screenshotName())
+	fd, _ := os.Create(usr.HomeDir + "/.ludo/screenshots/" + screenshotName())
 	png.Encode(fd, imaging.FlipV(img))
 	state.Global.MenuActive = true
 }

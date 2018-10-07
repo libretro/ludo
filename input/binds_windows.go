@@ -1,6 +1,6 @@
 package input
 
-import "github.com/libretro/go-playthemall/libretro"
+import "github.com/libretro/ludo/libretro"
 
 var joyBinds = map[string]joybinds{
 	"Microsoft X-Box 360 pad": xbox360JoyBinds,

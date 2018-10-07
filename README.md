@@ -1,6 +1,6 @@
-# go-playthemall [![Build Status](https://travis-ci.org/libretro/go-playthemall.svg?branch=master)](https://travis-ci.org/libretro/go-playthemall) [![Build status](https://ci.appveyor.com/api/projects/status/dndcl5m1pepnhbdk?svg=true)](https://ci.appveyor.com/project/libretro/go-playthemall-tfah4) [![GoDoc](https://godoc.org/github.com/libretro/go-playthemall?status.svg)](https://godoc.org/github.com/libretro/go-playthemall)
+# ludo [![Build Status](https://travis-ci.org/libretro/ludo.svg?branch=master)](https://travis-ci.org/libretro/ludo) [![Build status](https://ci.appveyor.com/api/projects/status/dndcl5m1pepnhbdk?svg=true)](https://ci.appveyor.com/project/libretro/ludo-tfah4) [![GoDoc](https://godoc.org/github.com/libretro/ludo?status.svg)](https://godoc.org/github.com/libretro/ludo)
 
-go-playthemall is a work in progress libretro frontend written in go.
+Ludo is a work in progress libretro frontend written in go.
 
 <img src="assets/illustration.png" />
 
@@ -26,10 +26,10 @@ On Windows, setup openal headers and dll in mingw-w64 `include` and `lib` folder
 
 ## Building
 
-    go get github.com/libretro/go-playthemall
-    cd $GOPATH/src/github.com/libretro/go-playthemall
+    go get github.com/libretro/ludo
+    cd $GOPATH/src/github.com/libretro/ludo
     go build
 
 ## Running
 
-    ./go-playthemall -L nestopia_libretro.so mario3.nes
+    ./ludo -L nestopia_libretro.so mario3.nes

@@ -8,10 +8,10 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/libretro/go-playthemall/options"
-	"github.com/libretro/go-playthemall/state"
-	"github.com/libretro/go-playthemall/utils"
-	"github.com/libretro/go-playthemall/video"
+	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
+	"github.com/libretro/ludo/video"
 
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -266,7 +266,7 @@ func (menu *Menu) ContextReset() {
 	}
 
 	usr, _ := user.Current()
-	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
+	paths, _ := filepath.Glob(usr.HomeDir + "/.ludo/playlists/*.lpl")
 	for _, path := range paths {
 		path := path
 		filename := utils.Filename(path)

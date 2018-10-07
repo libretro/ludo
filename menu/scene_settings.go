@@ -5,9 +5,9 @@ import (
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 
-	"github.com/libretro/go-playthemall/audio"
-	"github.com/libretro/go-playthemall/settings"
-	"github.com/libretro/go-playthemall/video"
+	"github.com/libretro/ludo/audio"
+	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/video"
 
 	"github.com/fatih/structs"
 )

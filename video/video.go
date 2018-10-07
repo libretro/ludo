@@ -13,10 +13,10 @@ import (
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/kivutar/glfont"
-	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/settings"
-	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/state"
 )
 
 // WindowInterface lists all the methods from glfw.Window that we are using.
@@ -88,7 +88,7 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	var err error
-	video.Window, err = glfw.CreateWindow(width, height, "Play Them All", m, nil)
+	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
 	if err != nil {
 		panic(err)
 	}

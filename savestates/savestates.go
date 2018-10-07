@@ -7,7 +7,7 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/ludo/state"
 )
 
 func name() string {
@@ -25,14 +25,14 @@ func Save() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(usr.HomeDir+"/.playthemall/savestates/"+name(), bytes, 0644)
+	return ioutil.WriteFile(usr.HomeDir+"/.ludo/savestates/"+name(), bytes, 0644)
 }
 
 // Load the state from the filesystem
 func Load() error {
 	usr, _ := user.Current()
 	s := state.Global.Core.SerializeSize()
-	bytes, err := ioutil.ReadFile(usr.HomeDir + "/.playthemall/savestates/" + name())
+	bytes, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/savestates/" + name())
 	if err != nil {
 		return err
 	}

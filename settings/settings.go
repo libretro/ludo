@@ -11,7 +11,7 @@ import (
 	"os/user"
 	"sync"
 
-	"github.com/libretro/go-playthemall/utils"
+	"github.com/libretro/ludo/utils"
 )
 
 var lock sync.Mutex
@@ -76,7 +76,7 @@ func Load() error {
 
 	usr, _ := user.Current()
 
-	b, err := utils.Slurp(usr.HomeDir + "/.playthemall/settings.json")
+	b, err := utils.Slurp(usr.HomeDir + "/.ludo/settings.json")
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func Save() error {
 	usr, _ := user.Current()
 
 	b, _ := json.MarshalIndent(Settings, "", "  ")
-	f, err := os.Create(usr.HomeDir + "/.playthemall/settings.json")
+	f, err := os.Create(usr.HomeDir + "/.ludo/settings.json")
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func Save() error {
 // a given playlist
 func CoreForPlaylist(playlist string) (string, error) {
 	usr, _ := user.Current()
-	coresPath := usr.HomeDir + "/.playthemall/cores/"
+	coresPath := usr.HomeDir + "/.ludo/cores/"
 	c := Settings.CoreForPlaylist[playlist]
 	if c != "" {
 		return coresPath + c + utils.CoreExt(), nil

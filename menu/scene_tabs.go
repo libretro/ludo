@@ -8,11 +8,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/libretro/go-playthemall/input"
-	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/scanner"
-	"github.com/libretro/go-playthemall/utils"
-	"github.com/libretro/go-playthemall/video"
+	"github.com/libretro/ludo/input"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/scanner"
+	"github.com/libretro/ludo/utils"
+	"github.com/libretro/ludo/video"
 
 	colorful "github.com/lucasb-eyer/go-colorful"
 
@@ -26,7 +26,7 @@ type screenTabs struct {
 
 func buildTabs() Scene {
 	var list screenTabs
-	list.label = "Play Them All"
+	list.label = "Ludo"
 
 	list.children = append(list.children, entry{
 		label:    "Main Menu",
@@ -39,7 +39,7 @@ func buildTabs() Scene {
 
 	list.children = append(list.children, entry{
 		label:    "Settings",
-		subLabel: "Configure Play Them All",
+		subLabel: "Configure Ludo",
 		icon:     "setting",
 		callbackOK: func() {
 			menu.stack = append(menu.stack, buildSettings())
@@ -47,7 +47,7 @@ func buildTabs() Scene {
 	})
 
 	usr, _ := user.Current()
-	paths, _ := filepath.Glob(usr.HomeDir + "/.playthemall/playlists/*.lpl")
+	paths, _ := filepath.Glob(usr.HomeDir + "/.ludo/playlists/*.lpl")
 
 	for _, path := range paths {
 		path := path

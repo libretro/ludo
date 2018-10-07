@@ -5,9 +5,9 @@ package input
 
 import (
 	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/video"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/video"
 )
 
 const numPlayers = 5

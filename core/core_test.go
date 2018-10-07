@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/options"
-	"github.com/libretro/go-playthemall/state"
-	"github.com/libretro/go-playthemall/utils"
-	"github.com/libretro/go-playthemall/video"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
+	"github.com/libretro/ludo/video"
 )
 
 type WindowMock struct{}

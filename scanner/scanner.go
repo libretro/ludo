@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/rdb"
-	"github.com/libretro/go-playthemall/state"
-	"github.com/libretro/go-playthemall/tasks"
-	"github.com/libretro/go-playthemall/utils"
+	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/rdb"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/tasks"
+	"github.com/libretro/ludo/utils"
 )
 
 // LoadDB loops over the RDBs in a given directory and parses them
@@ -43,7 +43,7 @@ func ScanDir(dir string) {
 			i := 0
 			for game := range scannedGames {
 				i++
-				lpl, _ := os.OpenFile(usr.HomeDir+"/.playthemall/playlists/"+game.System+".lpl", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+				lpl, _ := os.OpenFile(usr.HomeDir+"/.ludo/playlists/"+game.System+".lpl", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 				lpl.WriteString(game.Path + "\n")
 				lpl.WriteString(game.Name + "\n")
 				lpl.WriteString("DETECT\n")

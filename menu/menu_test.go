@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 
-	"github.com/libretro/go-playthemall/state"
-	"github.com/libretro/go-playthemall/video"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/video"
 
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -45,7 +45,7 @@ func Test_Init(t *testing.T) {
 
 	t.Run("Starts on the tabs scene if no game is running", func(t *testing.T) {
 		got := menu.stack[0].Entry().label
-		want := "Play Them All"
+		want := "Ludo"
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
 		}
