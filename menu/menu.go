@@ -196,10 +196,10 @@ func drawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
 	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
 	vid.DrawQuad(
-		60*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		60*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
-		float32(w)-610*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
+		470*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
+		float32(w)-100*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
+		470*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
+		float32(w)-100*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
 		video.Color{R: 1, G: 1, B: 1, A: alpha},
 	)
 }
@@ -219,7 +219,7 @@ func genericRender(list *entry) {
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
 		vid.DrawImage(menu.icons[e.icon],
-			120*menu.ratio-64*e.scale*menu.ratio,
+			520*menu.ratio-64*e.scale*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
 			e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
@@ -228,7 +228,7 @@ func genericRender(list *entry) {
 
 			vid.Font.SetColor(1, 1, 1, e.labelAlpha)
 			vid.Font.Printf(
-				200*menu.ratio,
+				600*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.7*menu.ratio, e.label)
 
@@ -237,7 +237,7 @@ func genericRender(list *entry) {
 			} else if e.stringValue != nil {
 				lw := vid.Font.Width(0.7*menu.ratio, e.stringValue())
 				vid.Font.Printf(
-					float32(w)-lw-650*menu.ratio,
+					float32(w)-lw-128*menu.ratio,
 					float32(h)*e.yp+fontOffset,
 					0.7*menu.ratio, e.stringValue())
 			}

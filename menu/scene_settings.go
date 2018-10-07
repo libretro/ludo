@@ -57,7 +57,7 @@ var widgets = map[string]func(*entry){
 		}
 		w, h := vid.Window.GetFramebufferSize()
 		vid.DrawImage(menu.icons[icon],
-			float32(w)-650*menu.ratio-128*menu.ratio,
+			float32(w)-128*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
 			1.25, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
@@ -66,7 +66,7 @@ var widgets = map[string]func(*entry){
 	// Range widget for audio volume and similat float settings
 	"range": func(e *entry) {
 		fbw, fbh := vid.Window.GetFramebufferSize()
-		x := float32(fbw) - 650*menu.ratio - 256*e.scale*menu.ratio
+		x := float32(fbw) - 128*menu.ratio - 256*e.scale*menu.ratio
 		y := float32(fbh)*e.yp - 3*menu.ratio
 		w := 256 * e.scale * menu.ratio
 		h := 6 * menu.ratio
