@@ -4,9 +4,9 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/settings"
-	"github.com/libretro/go-playthemall/utils"
+	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/utils"
 )
 
 type screenExplorer struct {

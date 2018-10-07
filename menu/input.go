@@ -1,8 +1,8 @@
 package menu
 
 import (
-	"github.com/libretro/go-playthemall/input"
-	"github.com/libretro/go-playthemall/libretro"
+	"github.com/libretro/ludo/input"
+	"github.com/libretro/ludo/libretro"
 )
 
 // Update takes care of calling the update method of the current scene.

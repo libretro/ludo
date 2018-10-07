@@ -8,14 +8,14 @@ import (
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/libretro/go-playthemall/core"
-	"github.com/libretro/go-playthemall/input"
-	"github.com/libretro/go-playthemall/menu"
-	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/scanner"
-	"github.com/libretro/go-playthemall/settings"
-	"github.com/libretro/go-playthemall/state"
-	"github.com/libretro/go-playthemall/video"
+	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/input"
+	"github.com/libretro/ludo/menu"
+	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/scanner"
+	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/video"
 )
 
 func init() {
@@ -23,13 +23,13 @@ func init() {
 	runtime.LockOSThread()
 	// Create base folders
 	usr, _ := user.Current()
-	os.Mkdir(usr.HomeDir+"/.playthemall/", 0777)
-	os.Mkdir(usr.HomeDir+"/.playthemall/playlists/", 0777)
-	os.Mkdir(usr.HomeDir+"/.playthemall/savefiles/", 0777)
-	os.Mkdir(usr.HomeDir+"/.playthemall/savestates/", 0777)
-	os.Mkdir(usr.HomeDir+"/.playthemall/screenshots/", 0777)
-	os.Mkdir(usr.HomeDir+"/.playthemall/system/", 0777)
-	os.Mkdir(usr.HomeDir+"/.playthemall/cores/", 0777)
+	os.Mkdir(usr.HomeDir+"/.ludo/", 0777)
+	os.Mkdir(usr.HomeDir+"/.ludo/playlists/", 0777)
+	os.Mkdir(usr.HomeDir+"/.ludo/savefiles/", 0777)
+	os.Mkdir(usr.HomeDir+"/.ludo/savestates/", 0777)
+	os.Mkdir(usr.HomeDir+"/.ludo/screenshots/", 0777)
+	os.Mkdir(usr.HomeDir+"/.ludo/system/", 0777)
+	os.Mkdir(usr.HomeDir+"/.ludo/cores/", 0777)
 }
 
 func runLoop(vid *video.Video) {

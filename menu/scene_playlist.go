@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"os"
 
-	"github.com/libretro/go-playthemall/core"
-	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/settings"
-	"github.com/libretro/go-playthemall/utils"
+	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/utils"
 )
 
 type screenPlaylist struct {

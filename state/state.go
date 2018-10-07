@@ -3,9 +3,9 @@
 package state
 
 import (
-	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/rdb"
-	"github.com/libretro/go-playthemall/tasks"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/rdb"
+	"github.com/libretro/ludo/tasks"
 )
 
 // State is a type for the global state of the app

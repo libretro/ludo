@@ -8,7 +8,7 @@ version: 0.1.0.{build}
 
 platform: x64
 
-clone_folder: c:\gopath\src\github.com\libretro\go-playthemall
+clone_folder: c:\gopath\src\github.com\libretro\ludo
 
 environment:
   GOPATH: c:\gopath

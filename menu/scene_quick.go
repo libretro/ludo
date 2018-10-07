@@ -1,9 +1,9 @@
 package menu
 
 import (
-	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/savestates"
-	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/savestates"
+	"github.com/libretro/ludo/state"
 )
 
 type screenQuick struct {

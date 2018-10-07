@@ -1,9 +1,9 @@
 package input
 
 import (
-	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/settings"
-	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/state"
 )
 
 const (

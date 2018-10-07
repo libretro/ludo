@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/libretro/go-playthemall/settings"
+	"github.com/libretro/ludo/settings"
 	"golang.org/x/mobile/exp/audio/al"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/ludo/state"
 )
 
 // Notification is a message that will be displayed on the screen during a number of frames.

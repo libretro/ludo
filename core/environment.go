@@ -6,9 +6,9 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/options"
-	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/state"
 )
 
 var logLevels = map[uint32]string{
@@ -55,10 +55,10 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		return vid.SetPixelFormat(format)
 	case libretro.EnvironmentGetSystemDirectory:
 		usr, _ := user.Current()
-		libretro.SetString(data, usr.HomeDir+"/.playthemall/system/")
+		libretro.SetString(data, usr.HomeDir+"/.ludo/system/")
 	case libretro.EnvironmentGetSaveDirectory:
 		usr, _ := user.Current()
-		libretro.SetString(data, usr.HomeDir+"/.playthemall/savefiles/")
+		libretro.SetString(data, usr.HomeDir+"/.ludo/savefiles/")
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:

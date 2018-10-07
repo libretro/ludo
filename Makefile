@@ -1,9 +1,9 @@
-BUNDLENAME=Play\ Them\ All
+BUNDLENAME=Ludo
 
-go-playthemall:
+ludo:
 	go build
 
-$(BUNDLENAME).app: go-playthemall
+$(BUNDLENAME).app: ludo
 	mkdir -p $(BUNDLENAME).app/Contents/MacOS
 	mkdir -p $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset
 	cp Info.plist $(BUNDLENAME).app/Contents/
@@ -18,7 +18,7 @@ $(BUNDLENAME).app: go-playthemall
 	sips -z 256 256   assets/icon.png --out $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset/icon_256x256.png
 	sips -z 512 512   assets/icon.png --out $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset/icon_256x256@2x.png
 	sips -z 512 512   assets/icon.png --out $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset/icon_512x512.png
-	cp go-playthemall $(BUNDLENAME).app/Contents/MacOS
+	cp ludo $(BUNDLENAME).app/Contents/MacOS
 	iconutil -c icns -o $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).icns $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset
 	rm -rf $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset
 
@@ -38,4 +38,4 @@ $(BUNDLENAME).dmg: empty.dmg $(BUNDLENAME).app
 	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
 
 clean:
-	rm -rf $(BUNDLENAME).app go-playthemall wc empty.dmg $(BUNDLENAME).dmg
+	rm -rf $(BUNDLENAME).app ludo wc empty.dmg $(BUNDLENAME).dmg

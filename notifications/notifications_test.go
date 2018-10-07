@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/libretro/go-playthemall/state"
-	"github.com/libretro/go-playthemall/utils"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 )
 
 func Test_List(t *testing.T) {

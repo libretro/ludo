@@ -9,14 +9,14 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/libretro/go-playthemall/audio"
-	"github.com/libretro/go-playthemall/input"
-	"github.com/libretro/go-playthemall/libretro"
-	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/options"
-	"github.com/libretro/go-playthemall/state"
-	"github.com/libretro/go-playthemall/utils"
-	"github.com/libretro/go-playthemall/video"
+	"github.com/libretro/ludo/audio"
+	"github.com/libretro/ludo/input"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
+	"github.com/libretro/ludo/video"
 )
 
 // MenuInterface allows passing a *menu.Menu to the core package while avoiding
@@ -60,7 +60,7 @@ func Load(sofile string) {
 	si := state.Global.Core.GetSystemInfo()
 	if len(si.LibraryName) > 0 {
 		if vid.Window != nil {
-			vid.Window.SetTitle("Play Them All - " + si.LibraryName)
+			vid.Window.SetTitle("Ludo - " + si.LibraryName)
 		}
 		if state.Global.Verbose {
 			log.Println("[Core]: Name:", si.LibraryName)
@@ -139,7 +139,7 @@ func LoadGame(filename string) {
 
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
-		vid.Window.SetTitle("Play Them All - " + si.LibraryName)
+		vid.Window.SetTitle("Ludo - " + si.LibraryName)
 	}
 
 	input.Init(vid, menu)

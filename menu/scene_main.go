@@ -3,9 +3,9 @@ package menu
 import (
 	"os/user"
 
-	"github.com/libretro/go-playthemall/core"
-	"github.com/libretro/go-playthemall/notifications"
-	"github.com/libretro/go-playthemall/state"
+	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/state"
 )
 
 type screenMain struct {

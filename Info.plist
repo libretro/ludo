@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIconFile</key>
-	<string>Play Them All.icns</string>
+	<string>Ludo.icns</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>go-playthemall</string>
+	<string>ludo</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -17,11 +17,11 @@
 	<key>CFBundleVersion</key>
 	<string>0.1.0</string>
 	<key>CFBundleIdentifier</key>
-	<string>tv.lakka.playthemall</string>
+	<string>org.libretro.ludo</string>
 	<key>CFBundleDisplayName</key>
-	<string>Play Them All</string>
+	<string>Ludo</string>
 	<key>CFBundleName</key>
-	<string>Play Them All</string>
+	<string>Ludo</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 </dict>
