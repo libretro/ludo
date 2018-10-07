@@ -1,4 +1,4 @@
-# ludo [![Build Status](https://travis-ci.org/libretro/ludo.svg?branch=master)](https://travis-ci.org/libretro/ludo) [![Build status](https://ci.appveyor.com/api/projects/status/o3alckoqebr5t4s4?svg=true)](https://ci.appveyor.com/project/kivutar/ludo [![GoDoc](https://godoc.org/github.com/libretro/ludo?status.svg)](https://godoc.org/github.com/libretro/ludo)
+# ludo [![Build Status](https://travis-ci.org/libretro/ludo.svg?branch=master)](https://travis-ci.org/libretro/ludo) [![Build status](https://ci.appveyor.com/api/projects/status/o3alckoqebr5t4s4?svg=true)](https://ci.appveyor.com/project/kivutar/ludo) [![GoDoc](https://godoc.org/github.com/libretro/ludo?status.svg)](https://godoc.org/github.com/libretro/ludo)
 
 Ludo is a work in progress libretro frontend written in go.
 
