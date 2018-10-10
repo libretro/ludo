@@ -23,7 +23,7 @@ install:
   - go env
   - appveyor DownloadFile https://github.com/kcat/openal-soft/archive/openal-soft-1.18.2.zip
   - 7z x openal-soft-1.18.2.zip
-  - cd openal-soft-1.18.2/build
+  - cd openal-soft-openal-soft-1.18.2/build
   - cmake -G"Visual Studio 2015" -DALSOFT_REQUIRE_WINMM=ON -DALSOFT_REQUIRE_DSOUND=ON -DALSOFT_REQUIRE_WASAPI=ON -DALSOFT_EMBED_HRTF_DATA=YES ..
   - cmake --build . --config Release --clean-first
   - cp -r ../include/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/include/
