@@ -42,3 +42,8 @@ test_script:
 #  - go test -v -race ./...
   - megacheck ./...
   - golint -set_exit_status $(go list ./...)
+
+artifacts:
+  - path: openal-soft-openal-soft-1.19.0
+    name: openal-soft-1.19.0-bin
+    type: zip
