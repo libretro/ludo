@@ -26,9 +26,8 @@ install:
   - cd openal-soft-openal-soft-1.19.0/build
   - cmake -G"Visual Studio 14 2015 Win64" -DALSOFT_REQUIRE_WINMM=ON -DALSOFT_REQUIRE_DSOUND=ON -DALSOFT_REQUIRE_WASAPI=ON -DALSOFT_EMBED_HRTF_DATA=YES ..
   - cmake --build . --config Release --clean-first
-  - dir /s ..
   - cp -r ../include/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/include/
-  - cp -r ../libs/Win64/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/lib/
+  - cp -r Release/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/lib/
 
 build_script:
   - go get -t -v ./...
