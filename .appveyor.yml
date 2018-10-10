@@ -21,10 +21,14 @@ install:
   - go version
   - gcc --version
   - go env
-  - appveyor DownloadFile http://kcat.strangesoft.net/openal-binaries/openal-soft-1.18.2-bin.zip
-  - 7z x openal-soft-1.18.2-bin.zip
-  - cp -r openal-soft-1.18.2-bin/include/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/include/
-  - cp -r openal-soft-1.18.2-bin/libs/Win64/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/lib/
+  - appveyor DownloadFile https://github.com/kcat/openal-soft/archive/openal-soft-1.19.0.zip
+  - 7z x openal-soft-1.19.0.zip
+  - cd openal-soft-openal-soft-1.19.0/build
+  - cmake -G"Visual Studio 14 2015 Win64" -DALSOFT_REQUIRE_WINMM=ON -DALSOFT_REQUIRE_DSOUND=ON -DALSOFT_REQUIRE_WASAPI=ON -DALSOFT_EMBED_HRTF_DATA=YES ..
+  - cmake --build . --config Release --clean-first
+  - cp -r ../include/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/include/
+  - cp -r Release/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/lib/
+  - cd ../..
 
 build_script:
   - go get -t -v ./...
@@ -38,3 +42,8 @@ test_script:
 #  - go test -v -race ./...
   - megacheck ./...
   - golint -set_exit_status $(go list ./...)
+
+artifacts:
+  - path: openal-soft-openal-soft-1.19.0
+    name: openal-soft-1.19.0-bin
+    type: zip
