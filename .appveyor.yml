@@ -28,6 +28,7 @@ install:
   - cmake --build . --config Release --clean-first
   - cp -r ../include/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/include/
   - cp -r Release/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/lib/
+  - cd ../..
 
 build_script:
   - go get -t -v ./...
