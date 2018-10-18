@@ -6,7 +6,7 @@ ludo:
 $(BUNDLENAME).app: ludo
 	mkdir -p $(BUNDLENAME).app/Contents/MacOS
 	mkdir -p $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset
-	cp Info.plist $(BUNDLENAME).app/Contents/
+	cp pkg/Info.plist $(BUNDLENAME).app/Contents/
 	echo "APPL????" > $(BUNDLENAME).app/Contents/PkgInfo
 	cp -r assets $(BUNDLENAME).app/Contents/Resources
 	sips -z 16 16     assets/icon.png --out $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset/icon_16x16.png
