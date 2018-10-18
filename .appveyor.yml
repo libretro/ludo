@@ -31,7 +31,7 @@ build_script:
   - go build
 
 before_test:
-  - go get github.com/golang/lint/golint
+  - go get golang.org/x/lint/golint
   - go get honnef.co/go/tools/cmd/megacheck
 
 test_script:

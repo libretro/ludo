@@ -1,0 +1,4 @@
+[submodule "assets"]
+	path = assets
+	url = https://github.com/kivutar/ludo-assets.git
+	branch = master
