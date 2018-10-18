@@ -2,3 +2,6 @@
 	path = assets
 	url = https://github.com/kivutar/ludo-assets.git
 	branch = master
+[submodule "database"]
+	path = database
+	url = https://github.com/kivutar/ludo-database.git
