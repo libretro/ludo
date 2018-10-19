@@ -10,6 +10,7 @@ go:
 os:
   - linux
   - osx
+  - windows
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
