@@ -23,9 +23,8 @@ install:
   - go env
   - appveyor DownloadFile http://static.kivutar.me/openal-soft-1.19.0-bin.zip
   - 7z x openal-soft-1.19.0-bin.zip -oopenal-soft-1.19.0-bin
-  - dir
-  # - cp -r openal-soft-1.19.0-bin/include/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/include/
-  # - cp -r openal-soft-1.19.0-bin/build/Release/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/lib/
+  - cp -r openal-soft-1.19.0-bin/include/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/include/
+  - cp -r openal-soft-1.19.0-bin/build/Release/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/lib/
 
 build_script:
   - go get -t -v ./...
