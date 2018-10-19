@@ -78,7 +78,7 @@ func main() {
 		settings.Save()
 	}
 
-	state.Global.DB, err = scanner.LoadDB("/Users/kivutar/libretro-database/rdb/")
+	state.Global.DB, err = scanner.LoadDB("database/")
 	if err != nil {
 		log.Println("Can't load game database:", err)
 	}

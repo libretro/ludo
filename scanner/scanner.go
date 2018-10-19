@@ -7,6 +7,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/rdb"
@@ -23,6 +24,9 @@ func LoadDB(dir string) (rdb.DB, error) {
 	}
 	db := make(rdb.DB)
 	for _, f := range files {
+		if !strings.Contains(f.Name(), ".rdb") {
+			continue
+		}
 		filename := f.Name()
 		system := filename[0 : len(filename)-4]
 		bytes, _ := ioutil.ReadFile(dir + f.Name())

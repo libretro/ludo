@@ -8,6 +8,7 @@ $(BUNDLENAME).app: ludo
 	mkdir -p $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset
 	cp pkg/Info.plist $(BUNDLENAME).app/Contents/
 	echo "APPL????" > $(BUNDLENAME).app/Contents/PkgInfo
+	cp -r database $(BUNDLENAME).app/Contents/Resources
 	cp -r assets $(BUNDLENAME).app/Contents/Resources
 	sips -z 16 16     assets/icon.png --out $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset/icon_16x16.png
 	sips -z 32 32     assets/icon.png --out $(BUNDLENAME).app/Contents/Resources/$(BUNDLENAME).iconset/icon_16x16@2x.png
@@ -24,7 +25,7 @@ $(BUNDLENAME).app: ludo
 
 empty.dmg:
 	mkdir -p template
-	hdiutil create -fs HFSX -layout SPUD -size 40m empty.dmg -srcfolder template -format UDRW -volname $(BUNDLENAME) -quiet
+	hdiutil create -fs HFSX -layout SPUD -size 200m empty.dmg -srcfolder template -format UDRW -volname $(BUNDLENAME) -quiet
 	rmdir template
 
 $(BUNDLENAME).dmg: empty.dmg $(BUNDLENAME).app
