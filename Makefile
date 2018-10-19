@@ -25,7 +25,7 @@ $(BUNDLENAME).app: ludo
 
 empty.dmg:
 	mkdir -p template
-	hdiutil create -fs HFSX -layout SPUD -size 40m empty.dmg -srcfolder template -format UDRW -volname $(BUNDLENAME) -quiet
+	hdiutil create -fs HFSX -layout SPUD -size 200m empty.dmg -srcfolder template -format UDRW -volname $(BUNDLENAME) -quiet
 	rmdir template
 
 $(BUNDLENAME).dmg: empty.dmg $(BUNDLENAME).app
