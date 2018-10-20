@@ -45,4 +45,5 @@ deploy:
     - Ludo-*.dmg
     - Ludo-*.zip
   on:
+    repo: libretro/ludo
     tags: true
