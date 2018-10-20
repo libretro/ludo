@@ -11,6 +11,7 @@ go:
 os:
   - linux
   - osx
+  - windows
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
@@ -18,6 +19,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glfw openal-soft; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install openal; fi
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
