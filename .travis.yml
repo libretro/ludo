@@ -19,7 +19,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glfw openal-soft; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install openal; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then du -a / | grep al.h; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then du -a / | grep AL/al\\.h; fi
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
