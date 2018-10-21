@@ -23,6 +23,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 7z x openal-soft-1.19.0-bin.zip -oopenal-soft-1.19.0-bin; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r openal-soft-1.19.0-bin/include/* /mingw64/include/; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r openal-soft-1.19.0-bin/build/Release/* /mingw64/lib/; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ls -la /mingw64; fi
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
