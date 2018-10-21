@@ -32,8 +32,8 @@ before_script:
   - go get github.com/fzipp/gocyclo
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; go get -t -v ./...; fi
-  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; go test -v -race ./...; fi
+  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then go get -t -v ./...; fi
+  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then go test -v -race ./...; fi
   - go vet ./...
   - megacheck ./...
   - gocyclo -over 19 $GO_FILES
