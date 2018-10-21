@@ -11,7 +11,6 @@ os:
   - linux
   - osx
   - windows
-    env: CC=gcc.exe PATH="/mingw64/bin;$PATH"
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
