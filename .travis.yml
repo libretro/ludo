@@ -18,15 +18,9 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glfw openal-soft; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 7z x openal-soft-1.19.0-bin.zip -oopenal-soft-1.19.0-bin; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cd; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dir .; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dir C:/; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dir C:/Program\ Files; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then set INCLUDE=./openal-soft-1.19.0-bin/include/;%INCLUDE%; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r openal-soft-1.19.0-bin/include/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/include/; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r openal-soft-1.19.0-bin/build/Release/* C:/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/x86_64-w64-mingw32/lib/; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install openal; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cd C:\; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dir /s al.h; fi
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
