@@ -1,5 +1,6 @@
 /*
 Package libretro is a cgo binding for the libretro API.
+
 Libretro is a simple but powerful development interface that allows for the easy creation of
 emulators, games and multimedia applications that can plug straight into any libretro-compatible
 frontend. This development interface is open to others so that they can run these pluggable emulator

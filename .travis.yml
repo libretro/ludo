@@ -7,13 +7,12 @@ language: go
 go:
   - "1.9"
 
-os:
-  - linux
-  - osx
-  - windows
-
-env:
-  - CGO_CPPFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
+matrix:
+  include:
+    - os: linux
+    - os: osx
+    - os: windows
+      env: CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
@@ -24,7 +23,6 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install make; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin; fi
-  - pwd
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
