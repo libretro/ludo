@@ -20,6 +20,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glfw openal-soft; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 7z x openal-soft-1.19.0-bin.zip -oopenal-soft-1.19.0-bin; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ls -la /mingw64/include; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r openal-soft-1.19.0-bin/include/AL /mingw64/include/; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r openal-soft-1.19.0-bin/build/Release/* /mingw64/lib/; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ls -la /mingw64; fi
