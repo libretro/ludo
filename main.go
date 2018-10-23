@@ -78,15 +78,15 @@ func main() {
 		settings.Save()
 	}
 
-	state.Global.DB, err = scanner.LoadDB("database/")
-	if err != nil {
-		log.Println("Can't load game database:", err)
-	}
-
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
 	}
 	defer glfw.Terminate()
+
+	state.Global.DB, err = scanner.LoadDB("database/")
+	if err != nil {
+		log.Println("Can't load game database:", err)
+	}
 
 	vid := video.Init(settings.Settings.VideoFullscreen)
 
