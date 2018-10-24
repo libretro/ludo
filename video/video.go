@@ -40,15 +40,17 @@ type Video struct {
 	Geom   libretro.GameGeometry
 	Font   *glfont.Font
 
-	program uint32
-	vao     uint32
-	vbo     uint32
-	texID   uint32
-	white   uint32
-	pitch   int32
-	pixFmt  uint32
-	pixType uint32
-	bpp     int32
+	program        uint32 // default program
+	roundedProgram uint32 // program for drawing rectangles with rounded corners
+	circleProgram  uint32 // program for drawing circles
+	vao            uint32
+	vbo            uint32
+	texID          uint32
+	white          uint32
+	pitch          int32
+	pixFmt         uint32
+	pixType        uint32
+	bpp            int32
 }
 
 // Init instanciates the video package
@@ -122,7 +124,17 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	// Configure the vertex and fragment shaders
-	video.program, err = newProgram(vertexShader, fragmentShader)
+	video.program, err = newProgram(vertexShader, darkenFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -251,7 +263,9 @@ func (video *Video) RenderNotifications() {
 	fbw, fbh := video.Window.GetFramebufferSize()
 	video.Font.UpdateResolution(fbw, fbh)
 	for i, n := range notifications.List() {
-		video.Font.SetColor(1.0, 1.0, 0.0, float32(n.Frames)/120.0)
+		lw := video.Font.Width(0.7, n.Message)
+		video.DrawRoundedRect(60, float32(fbh-80*len(notifications.List())+80*i)-52, lw+35, 75, 0.25, Color{R: 1, G: 1, B: 0.85, A: float32(n.Frames) / 120.0})
+		video.Font.SetColor(0.4, 0.4, 0.0, float32(n.Frames)/120.0)
 		video.Font.Printf(80, float32(fbh-80*len(notifications.List())+80*i), 0.7, n.Message)
 	}
 }
@@ -359,32 +373,6 @@ out vec2 fragTexCoord;
 void main() {
   fragTexCoord = vertTexCoord;
   gl_Position = vec4(vert, 0, 1);
-}
-` + "\x00"
-
-var fragmentShader = `
-#version 330
-
-uniform sampler2D tex;
-uniform float mask;
-uniform vec4 texColor;
-
-in vec2 fragTexCoord;
-
-out vec4 outputColor;
-
-vec4 grayscale(in vec4 c) {
-  float average = (c.r + c.g + c.b) / 3.0;
-  return vec4(average, average, average, 1.0);
-}
-
-vec4 darken(in vec4 c) {
-  return vec4(c.r/4, c.g/4, c.b/4, 1.0);
-}
-
-void main() {
-  vec4 color = texture(tex, fragTexCoord);
-  outputColor = texColor * mix(color, darken(grayscale(color)), mask);
 }
 ` + "\x00"
 
