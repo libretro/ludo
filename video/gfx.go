@@ -75,6 +75,38 @@ func (video *Video) drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4
 	gl.Disable(gl.BLEND)
 }
 
+// DrawRoundedRect draws a rectangle with rounded corners
+func (video *Video) DrawRoundedRect(x, y, w, h, r float32, c Color) {
+
+	fbw, fbh := video.Window.GetFramebufferSize()
+	ffbw := float32(fbw)
+	ffbh := float32(fbh)
+
+	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, ffbh)
+
+	var va = []float32{
+		//  X, Y, U, V
+		x1/ffbw*2 - 1, y1/ffbh*2 - 1, 0, 1, // left-bottom
+		x2/ffbw*2 - 1, y2/ffbh*2 - 1, 0, 0, // left-top
+		x3/ffbw*2 - 1, y3/ffbh*2 - 1, 1, 1, // right-bottom
+		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
+	}
+
+	gl.UseProgram(video.roundedProgram)
+	gl.Uniform4f(gl.GetUniformLocation(video.roundedProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform1f(gl.GetUniformLocation(video.roundedProgram, gl.Str("radius\x00")), r)
+	gl.Uniform2f(gl.GetUniformLocation(video.roundedProgram, gl.Str("size\x00")), w, h)
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BindVertexArray(video.vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	gl.BindVertexArray(0)
+	gl.UseProgram(0)
+	gl.Disable(gl.BLEND)
+}
+
 func textureLoad(rgba *image.RGBA) uint32 {
 	var texture uint32
 	gl.GenTextures(1, &texture)
