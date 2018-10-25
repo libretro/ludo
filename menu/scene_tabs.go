@@ -213,7 +213,7 @@ func (tabs *screenTabs) update() {
 }
 
 func (tabs screenTabs) render() {
-	_, h := vid.Window.GetFramebufferSize()
+	w, h := vid.Window.GetFramebufferSize()
 
 	stackWidth := 660 * menu.ratio
 	for i, e := range tabs.children {
@@ -240,4 +240,8 @@ func (tabs screenTabs) render() {
 			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,
 			256*menu.ratio, 256*menu.ratio, e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 	}
+
+	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
+	vid.Font.Printf(30*menu.ratio, float32(h)-22*menu.ratio, 0.5*menu.ratio, "ARROWS: NAVIGATE    X: CONFIRM    Z: CANCEL")
 }

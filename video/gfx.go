@@ -44,6 +44,19 @@ func (video *Video) DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4 float32, c Color) {
 	video.drawTextureQuad(video.white, x1, y1, x2, y2, x3, y3, x4, y4, c)
 }
 
+// DrawRect draws a colored rectangle
+func (video *Video) DrawRect(x, y, w, h float32, scale float32, c Color) {
+	_, fbh := video.Window.GetFramebufferSize()
+	ffbh := float32(fbh)
+
+	w *= scale
+	h *= scale
+
+	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, ffbh)
+
+	video.drawTextureQuad(video.white, x1, y1, x2, y2, x3, y3, x4, y4, c)
+}
+
 // Draw a texture on a polygon
 func (video *Video) drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4 float32, c Color) {
 	fbw, fbh := video.Window.GetFramebufferSize()
