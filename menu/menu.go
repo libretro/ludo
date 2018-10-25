@@ -80,7 +80,7 @@ func updateTweens(dt float32) {
 // Render takes care of rendering the menu
 func Render() {
 	menu.t += 0.1
-	w, _ := vid.Window.GetFramebufferSize()
+	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
 	vid.FullViewport()
@@ -96,6 +96,10 @@ func Render() {
 		menu := menu.stack[i]
 		menu.render()
 	}
+
+	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
+	vid.Font.Printf(30*menu.ratio, float32(h)-22*menu.ratio, 0.5*menu.ratio, "ARROWS: NAVIGATE    X: CONFIRM    Z: CANCEL")
 }
 
 // genericSegueMount is the smooth transition of the menu entries first appearance
