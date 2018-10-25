@@ -163,19 +163,19 @@ func (tabs *screenTabs) animate() {
 			width = 128
 		}
 
-		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.25, ease.OutSine)
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.25, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.25, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.25, ease.OutSine)
-		menu.tweens[&e.width] = gween.New(e.width, width, 0.25, ease.OutSine)
+		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
+		menu.tweens[&e.width] = gween.New(e.width, width, 0.15, ease.OutSine)
 	}
-	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.25, ease.OutSine)
+	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.15, ease.OutSine)
 }
 
 func (tabs *screenTabs) segueNext() {
 	cur := &tabs.children[tabs.ptr]
-	menu.tweens[&cur.width] = gween.New(cur.width, 5200, 0.25, ease.OutSine)
-	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+3028, 0.25, ease.OutSine)
+	menu.tweens[&cur.width] = gween.New(cur.width, 5200, 0.15, ease.OutSine)
+	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+3028, 0.15, ease.OutSine)
 }
 
 func (tabs *screenTabs) update() {
@@ -190,7 +190,7 @@ func (tabs *screenTabs) update() {
 			tabs.ptr = 0
 		}
 		tabs.animate()
-		menu.inputCooldown = 20
+		menu.inputCooldown = 10
 	}
 
 	// Left
@@ -200,7 +200,7 @@ func (tabs *screenTabs) update() {
 			tabs.ptr = len(tabs.children) - 1
 		}
 		tabs.animate()
-		menu.inputCooldown = 20
+		menu.inputCooldown = 10
 	}
 
 	// OK
@@ -219,15 +219,6 @@ func (tabs screenTabs) render() {
 	for i, e := range tabs.children {
 
 		c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
-		var alpha float32 = 1
-		if i == 0 {
-			alpha = 0
-		}
-
-		vid.DrawCircle(
-			-menu.scroll*menu.ratio+stackWidth+e.width/2*menu.ratio, float32(h/2), e.width*menu.ratio,
-
-			video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: alpha}) // intentional mix
 
 		stackWidth += e.width * menu.ratio
 
@@ -240,6 +231,10 @@ func (tabs screenTabs) render() {
 			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
 			vid.Font.Printf(x-lw/2, float32(h)*e.yp+390*menu.ratio, 0.4*menu.ratio, e.subLabel)
 		}
+
+		vid.DrawImage(menu.icons["hexagon"],
+			x-240*e.scale*menu.ratio, float32(h)*e.yp-240*e.scale*menu.ratio,
+			480*menu.ratio, 480*menu.ratio, e.scale, video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.iconAlpha})
 
 		vid.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,

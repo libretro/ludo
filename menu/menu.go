@@ -249,6 +249,7 @@ func genericRender(list *entry) {
 // It should be called after each time the window is recreated.
 func (menu *Menu) ContextReset() {
 	menu.icons = map[string]uint32{
+		"hexagon":    video.NewImage("assets/hexagon.png"),
 		"main":       video.NewImage("assets/main.png"),
 		"file":       video.NewImage("assets/file.png"),
 		"folder":     video.NewImage("assets/folder.png"),
