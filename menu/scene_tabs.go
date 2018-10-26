@@ -175,7 +175,7 @@ func (tabs *screenTabs) animate() {
 func (tabs *screenTabs) segueNext() {
 	cur := &tabs.children[tabs.ptr]
 	menu.tweens[&cur.width] = gween.New(cur.width, 5200, 0.15, ease.OutSine)
-	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+3028, 0.15, ease.OutSine)
+	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+3000, 0.15, ease.OutSine)
 }
 
 func (tabs *screenTabs) update() {
@@ -233,8 +233,8 @@ func (tabs screenTabs) render() {
 		}
 
 		vid.DrawImage(menu.icons["hexagon"],
-			x-240*e.scale*menu.ratio, float32(h)*e.yp-240*e.scale*menu.ratio,
-			480*menu.ratio, 480*menu.ratio, e.scale, video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.iconAlpha})
+			x-220*e.scale*menu.ratio, float32(h)*e.yp-220*e.scale*menu.ratio,
+			440*menu.ratio, 440*menu.ratio, e.scale, video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.iconAlpha})
 
 		vid.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,

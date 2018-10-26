@@ -143,13 +143,13 @@ func genericAnimate(list *entry) {
 			scale = 0.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.5
-			iconAlpha = 0.5
+			labelAlpha = 0.75
+			iconAlpha = 0.75
 			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.5
-			iconAlpha = 0.5
+			labelAlpha = 0.75
+			iconAlpha = 0.75
 			scale = 0.5
 		}
 
@@ -199,12 +199,16 @@ func genericSegueNext(list *entry) {
 func drawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
 	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
+	color := video.Color{R: 0.25, G: 0.25, B: 0.25, A: alpha}
+	if state.Global.CoreRunning {
+		color = video.Color{R: 1, G: 1, B: 1, A: alpha}
+	}
 	vid.DrawQuad(
-		470*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
+		540*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		float32(w)-100*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		470*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
+		540*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
 		float32(w)-100*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
-		video.Color{R: 1, G: 1, B: 1, A: alpha},
+		color,
 	)
 }
 
@@ -222,17 +226,21 @@ func genericRender(list *entry) {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
+		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+		if state.Global.CoreRunning {
+			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
+		}
+
 		vid.DrawImage(menu.icons[e.icon],
-			520*menu.ratio-64*e.scale*menu.ratio,
+			590*menu.ratio-64*e.scale*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+			e.scale, color)
 
 		if e.labelAlpha > 0 {
-
-			vid.Font.SetColor(1, 1, 1, e.labelAlpha)
+			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
 			vid.Font.Printf(
-				600*menu.ratio,
+				650*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.7*menu.ratio, e.label)
 
