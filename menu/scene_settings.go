@@ -7,6 +7,7 @@ import (
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 
 	"github.com/fatih/structs"
@@ -56,11 +57,15 @@ var widgets = map[string]func(*entry){
 			icon = "on"
 		}
 		w, h := vid.Window.GetFramebufferSize()
+		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+		if state.Global.CoreRunning {
+			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
+		}
 		vid.DrawImage(menu.icons[icon],
 			float32(w)-128*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			1.25, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+			1.25, color)
 	},
 
 	// Range widget for audio volume and similat float settings
@@ -70,12 +75,16 @@ var widgets = map[string]func(*entry){
 		y := float32(fbh)*e.yp - 3*menu.ratio
 		w := 256 * e.scale * menu.ratio
 		h := 6 * menu.ratio
+		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+		if state.Global.CoreRunning {
+			c = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
+		}
 		x1, y1, x2, y2, x3, y3, x4, y4 := video.XYWHTo4points(x, y, w, h, float32(fbh))
-		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha / 4})
+		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{R: c.R, G: c.G, B: c.B, A: e.iconAlpha / 4})
 
 		w = 256 * e.scale * menu.ratio * e.value().(float32)
 		x1, y1, x2, y2, x3, y3, x4, y4 = video.XYWHTo4points(x, y, w, h, float32(fbh))
-		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{R: c.R, G: c.G, B: c.B, A: e.iconAlpha})
 	},
 }
 
