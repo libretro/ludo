@@ -264,9 +264,9 @@ func (video *Video) RenderNotifications() {
 	video.Font.UpdateResolution(fbw, fbh)
 	for i, n := range notifications.List() {
 		lw := video.Font.Width(0.7, n.Message)
-		video.DrawRoundedRect(60, float32(fbh-80*len(notifications.List())+80*i)-52, lw+35, 75, 0.25, Color{R: 1, G: 1, B: 0.85, A: float32(n.Frames) / 120.0})
-		video.Font.SetColor(0.4, 0.4, 0.0, float32(n.Frames)/120.0)
-		video.Font.Printf(80, float32(fbh-80*len(notifications.List())+80*i), 0.7, n.Message)
+		video.DrawRoundedRect(25, float32(80+80*i)-52, lw+35, 75, 0.25, Color{R: 0.4, G: 0.4, B: 0, A: float32(n.Frames) / 120.0})
+		video.Font.SetColor(1, 1, 0.85, float32(n.Frames)/120.0)
+		video.Font.Printf(45, float32(80+80*i), 0.7, n.Message)
 	}
 }
 
