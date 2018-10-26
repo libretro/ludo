@@ -71,10 +71,10 @@ func (video *Video) drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4
 		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
 	}
 
-	gl.UseProgram(video.program)
-	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
+	gl.UseProgram(video.demulProgram)
+	maskUniform := gl.GetUniformLocation(video.demulProgram, gl.Str("mask\x00"))
 	gl.Uniform1f(maskUniform, 0)
-	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("texColor\x00")), c.R, c.G, c.B, c.A)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BindVertexArray(video.vao)

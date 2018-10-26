@@ -40,9 +40,10 @@ type Video struct {
 	Geom   libretro.GameGeometry
 	Font   *glfont.Font
 
-	program        uint32 // default program
-	roundedProgram uint32 // program for drawing rectangles with rounded corners
-	circleProgram  uint32 // program for drawing circles
+	program        uint32 // default program used for the game window
+	roundedProgram uint32 // program to draw rectangles with rounded corners
+	circleProgram  uint32 // program to draw textured circles
+	demulProgram   uint32 // program to draw premultiplied alpha images
 	vao            uint32
 	vbo            uint32
 	texID          uint32
@@ -135,6 +136,11 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.demulProgram, err = newProgram(vertexShader, demulFragmentShader)
 	if err != nil {
 		panic(err)
 	}
