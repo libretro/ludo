@@ -42,6 +42,7 @@ type Video struct {
 
 	program        uint32 // default program used for the game window
 	roundedProgram uint32 // program to draw rectangles with rounded corners
+	borderProgram  uint32 // program to draw rectangles borders
 	circleProgram  uint32 // program to draw textured circles
 	demulProgram   uint32 // program to draw premultiplied alpha images
 	vao            uint32
@@ -131,6 +132,11 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.borderProgram, err = newProgram(vertexShader, borderFragmentShader)
 	if err != nil {
 		panic(err)
 	}

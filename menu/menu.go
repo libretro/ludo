@@ -123,9 +123,9 @@ func genericSegueMount(list *entry) {
 			e.iconAlpha = 0
 			e.scale = 0.5
 		}
-		e.cursor.alpha = 0
-		e.cursor.yp = 0.5 + 0.3
 	}
+	list.cursor.alpha = 0
+	list.cursor.yp = 0.5 + 0.3
 
 	genericAnimate(list)
 }
@@ -199,17 +199,17 @@ func genericSegueNext(list *entry) {
 func drawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
 	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
-	color := video.Color{R: 0.25, G: 0.25, B: 0.25, A: alpha}
+	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: alpha}
 	if state.Global.CoreRunning {
-		color = video.Color{R: 1, G: 1, B: 1, A: alpha}
+		c = video.Color{R: 1, G: 1, B: 1, A: alpha}
 	}
-	vid.DrawQuad(
+	vid.DrawRect(
 		540*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-100*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		540*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
-		float32(w)-100*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
-		color,
-	)
+		float32(w)-640*menu.ratio, 100*menu.ratio, 1.0, c)
+	vid.DrawBorder(
+		540*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
+		float32(w)-640*menu.ratio, 100*menu.ratio, 0.02,
+		video.Color{R: c.R, G: c.G, B: c.B, A: alpha * 3})
 }
 
 // genericRender renders a vertical list of menu entries
