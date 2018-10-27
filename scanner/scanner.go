@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/rdb"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/tasks"
@@ -46,6 +47,9 @@ func ScanDir(dir string) {
 		Update: func() {
 			i := 0
 			for game := range scannedGames {
+				if playlists.ExistsInPlaylist(game.System, game.Path, game.CRC32) {
+					continue
+				}
 				i++
 				lpl, _ := os.OpenFile(usr.HomeDir+"/.ludo/playlists/"+game.System+".lpl", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 				lpl.WriteString(game.Path + "\n")
@@ -55,8 +59,7 @@ func ScanDir(dir string) {
 				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\n")
 				lpl.WriteString(game.System + ".lpl\n")
 				lpl.Close()
-				notifications.List()[nid].Frames = 240
-				notifications.List()[nid].Message = strconv.Itoa(i) + "/" + strconv.Itoa(len(roms)) + " " + game.Name
+				notifications.Update(nid, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+game.Name)
 			}
 		},
 	}
