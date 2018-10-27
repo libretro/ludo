@@ -5,7 +5,7 @@ var circleFragmentShader = `
 #version 330
 
 uniform sampler2D tex;
-uniform vec4 texColor;
+uniform vec4 color;
 
 in vec2 fragTexCoord;
 out vec4 outputColor;
@@ -16,8 +16,6 @@ float circle(in vec2 _st, in float _radius) {
 }
 
 void main() {
-  vec4 color = texture(tex, fragTexCoord);
-	outputColor = texColor * color;
-	outputColor = vec4(outputColor.rgb, circle(fragTexCoord.xy, 1.0));
+	outputColor = vec4(color.rgb, circle(fragTexCoord.xy, 0.125));
 }
 ` + "\x00"

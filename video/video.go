@@ -40,9 +40,11 @@ type Video struct {
 	Geom   libretro.GameGeometry
 	Font   *glfont.Font
 
-	program        uint32 // default program
-	roundedProgram uint32 // program for drawing rectangles with rounded corners
-	circleProgram  uint32 // program for drawing circles
+	program        uint32 // default program used for the game window
+	roundedProgram uint32 // program to draw rectangles with rounded corners
+	borderProgram  uint32 // program to draw rectangles borders
+	circleProgram  uint32 // program to draw textured circles
+	demulProgram   uint32 // program to draw premultiplied alpha images
 	vao            uint32
 	vbo            uint32
 	texID          uint32
@@ -134,7 +136,17 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
+	video.borderProgram, err = newProgram(vertexShader, borderFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
 	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.demulProgram, err = newProgram(vertexShader, demulFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -264,14 +276,19 @@ func (video *Video) RenderNotifications() {
 	video.Font.UpdateResolution(fbw, fbh)
 	for i, n := range notifications.List() {
 		lw := video.Font.Width(0.7, n.Message)
-		video.DrawRoundedRect(60, float32(fbh-80*len(notifications.List())+80*i)-52, lw+35, 75, 0.25, Color{R: 1, G: 1, B: 0.85, A: float32(n.Frames) / 120.0})
-		video.Font.SetColor(0.4, 0.4, 0.0, float32(n.Frames)/120.0)
-		video.Font.Printf(80, float32(fbh-80*len(notifications.List())+80*i), 0.7, n.Message)
+		video.DrawRoundedRect(25, float32(80+80*i)-52, lw+35, 75, 0.25, Color{R: 0.4, G: 0.4, B: 0, A: float32(n.Frames) / 120.0})
+		video.Font.SetColor(1, 1, 0.85, float32(n.Frames)/120.0)
+		video.Font.Printf(45, float32(80+80*i), 0.7, n.Message)
 	}
 }
 
 // Render the current frame
 func (video *Video) Render() {
+	if state.Global.CoreRunning {
+		gl.ClearColor(0, 0, 0, 1)
+	} else {
+		gl.ClearColor(1, 1, 1, 1)
+	}
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	fbw, fbh := video.Window.GetFramebufferSize()

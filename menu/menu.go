@@ -80,7 +80,7 @@ func updateTweens(dt float32) {
 // Render takes care of rendering the menu
 func Render() {
 	menu.t += 0.1
-	w, _ := vid.Window.GetFramebufferSize()
+	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
 	vid.FullViewport()
@@ -96,6 +96,10 @@ func Render() {
 		menu := menu.stack[i]
 		menu.render()
 	}
+
+	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
+	vid.Font.Printf(30*menu.ratio, float32(h)-22*menu.ratio, 0.5*menu.ratio, "ARROWS: NAVIGATE    X: CONFIRM    Z: CANCEL")
 }
 
 // genericSegueMount is the smooth transition of the menu entries first appearance
@@ -119,9 +123,9 @@ func genericSegueMount(list *entry) {
 			e.iconAlpha = 0
 			e.scale = 0.5
 		}
-		e.cursor.alpha = 0
-		e.cursor.yp = 0.5 + 0.3
 	}
+	list.cursor.alpha = 0
+	list.cursor.yp = 0.5 + 0.3
 
 	genericAnimate(list)
 }
@@ -139,13 +143,13 @@ func genericAnimate(list *entry) {
 			scale = 0.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.5
-			iconAlpha = 0.5
+			labelAlpha = 0.75
+			iconAlpha = 0.75
 			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.5
-			iconAlpha = 0.5
+			labelAlpha = 0.75
+			iconAlpha = 0.75
 			scale = 0.5
 		}
 
@@ -195,13 +199,17 @@ func genericSegueNext(list *entry) {
 func drawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
 	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
-	vid.DrawQuad(
-		470*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-100*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		470*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
-		float32(w)-100*menu.ratio, float32(h)*list.cursor.yp+50*menu.ratio,
-		video.Color{R: 1, G: 1, B: 1, A: alpha},
-	)
+	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: alpha}
+	if state.Global.CoreRunning {
+		c = video.Color{R: 1, G: 1, B: 1, A: alpha}
+	}
+	vid.DrawRect(
+		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
+		float32(w)-630*menu.ratio, 100*menu.ratio, 1.0, c)
+	vid.DrawBorder(
+		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
+		float32(w)-630*menu.ratio, 100*menu.ratio, 0.02,
+		video.Color{R: c.R, G: c.G, B: c.B, A: alpha * 3})
 }
 
 // genericRender renders a vertical list of menu entries
@@ -218,17 +226,21 @@ func genericRender(list *entry) {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
+		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+		if state.Global.CoreRunning {
+			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
+		}
+
 		vid.DrawImage(menu.icons[e.icon],
-			520*menu.ratio-64*e.scale*menu.ratio,
+			610*menu.ratio-64*e.scale*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+			e.scale, color)
 
 		if e.labelAlpha > 0 {
-
-			vid.Font.SetColor(1, 1, 1, e.labelAlpha)
+			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
 			vid.Font.Printf(
-				600*menu.ratio,
+				670*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.7*menu.ratio, e.label)
 
@@ -249,6 +261,7 @@ func genericRender(list *entry) {
 // It should be called after each time the window is recreated.
 func (menu *Menu) ContextReset() {
 	menu.icons = map[string]uint32{
+		"hexagon":    video.NewImage("assets/hexagon.png"),
 		"main":       video.NewImage("assets/main.png"),
 		"file":       video.NewImage("assets/file.png"),
 		"folder":     video.NewImage("assets/folder.png"),

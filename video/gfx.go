@@ -44,6 +44,51 @@ func (video *Video) DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4 float32, c Color) {
 	video.drawTextureQuad(video.white, x1, y1, x2, y2, x3, y3, x4, y4, c)
 }
 
+// DrawRect draws a colored rectangle
+func (video *Video) DrawRect(x, y, w, h float32, scale float32, c Color) {
+	_, fbh := video.Window.GetFramebufferSize()
+	ffbh := float32(fbh)
+
+	w *= scale
+	h *= scale
+
+	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, ffbh)
+
+	video.drawTextureQuad(video.white, x1, y1, x2, y2, x3, y3, x4, y4, c)
+}
+
+// DrawBorder draws a colored rectangle border
+func (video *Video) DrawBorder(x, y, w, h float32, borderWidth float32, c Color) {
+
+	fbw, fbh := video.Window.GetFramebufferSize()
+	ffbw := float32(fbw)
+	ffbh := float32(fbh)
+
+	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, ffbh)
+
+	var va = []float32{
+		//  X, Y, U, V
+		x1/ffbw*2 - 1, y1/ffbh*2 - 1, 0, 1, // left-bottom
+		x2/ffbw*2 - 1, y2/ffbh*2 - 1, 0, 0, // left-top
+		x3/ffbw*2 - 1, y3/ffbh*2 - 1, 1, 1, // right-bottom
+		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
+	}
+
+	gl.UseProgram(video.borderProgram)
+	gl.Uniform1f(gl.GetUniformLocation(video.borderProgram, gl.Str("border_width\x00")), borderWidth)
+	gl.Uniform4f(gl.GetUniformLocation(video.borderProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform2f(gl.GetUniformLocation(video.borderProgram, gl.Str("size\x00")), w, h)
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BindVertexArray(video.vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	gl.BindVertexArray(0)
+	gl.UseProgram(0)
+	gl.Disable(gl.BLEND)
+}
+
 // Draw a texture on a polygon
 func (video *Video) drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4 float32, c Color) {
 	fbw, fbh := video.Window.GetFramebufferSize()
@@ -58,10 +103,10 @@ func (video *Video) drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4
 		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
 	}
 
-	gl.UseProgram(video.program)
-	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
+	gl.UseProgram(video.demulProgram)
+	maskUniform := gl.GetUniformLocation(video.demulProgram, gl.Str("mask\x00"))
 	gl.Uniform1f(maskUniform, 0)
-	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("texColor\x00")), c.R, c.G, c.B, c.A)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BindVertexArray(video.vao)
@@ -96,6 +141,37 @@ func (video *Video) DrawRoundedRect(x, y, w, h, r float32, c Color) {
 	gl.Uniform4f(gl.GetUniformLocation(video.roundedProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
 	gl.Uniform1f(gl.GetUniformLocation(video.roundedProgram, gl.Str("radius\x00")), r)
 	gl.Uniform2f(gl.GetUniformLocation(video.roundedProgram, gl.Str("size\x00")), w, h)
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BindVertexArray(video.vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	gl.BindVertexArray(0)
+	gl.UseProgram(0)
+	gl.Disable(gl.BLEND)
+}
+
+// DrawCircle draws a circle
+func (video *Video) DrawCircle(x, y, r float32, c Color) {
+
+	fbw, fbh := video.Window.GetFramebufferSize()
+	ffbw := float32(fbw)
+	ffbh := float32(fbh)
+
+	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x-r, y-r, r*2, r*2, ffbh)
+
+	var va = []float32{
+		//  X, Y, U, V
+		x1/ffbw*2 - 1, y1/ffbh*2 - 1, 0, 1, // left-bottom
+		x2/ffbw*2 - 1, y2/ffbh*2 - 1, 0, 0, // left-top
+		x3/ffbw*2 - 1, y3/ffbh*2 - 1, 1, 1, // right-bottom
+		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
+	}
+
+	gl.UseProgram(video.circleProgram)
+	gl.Uniform4f(gl.GetUniformLocation(video.circleProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform1f(gl.GetUniformLocation(video.circleProgram, gl.Str("radius\x00")), r)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BindVertexArray(video.vao)
