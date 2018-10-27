@@ -12,6 +12,7 @@ import (
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/menu"
 	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -87,6 +88,8 @@ func main() {
 	if err != nil {
 		log.Println("Can't load game database:", err)
 	}
+
+	playlists.LoadPlaylists()
 
 	vid := video.Init(settings.Settings.VideoFullscreen)
 

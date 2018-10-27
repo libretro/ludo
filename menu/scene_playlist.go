@@ -1,13 +1,12 @@
 package menu
 
 import (
-	"bufio"
-	"os"
 	"regexp"
 	"strings"
 
 	"github.com/libretro/ludo/core"
 	"github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -21,33 +20,14 @@ type screenPlaylist struct {
 func buildPlaylist(path string) Scene {
 	var list screenPlaylist
 	list.label = utils.Filename(path)
-	file, err := os.Open(path)
-	if err != nil {
-		notifications.DisplayAndLog("Menu", err.Error())
-		list.segueMount()
-		return &list
-	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
 
-	for {
-		more := scanner.Scan()
-		if !more {
-			break
-		}
-		gamePath := scanner.Text() // path
-		scanner.Scan()
-		name := scanner.Text()
-		scanner.Scan() // unused
-		scanner.Scan() // unused
-		scanner.Scan() // CRC
-		scanner.Scan() // lpl
-		strippedName, tags := extractTags(name)
+	for _, game := range playlists.Playlists[list.label] {
+		strippedName, tags := extractTags(game.Name)
 		list.children = append(list.children, entry{
 			label:      strippedName,
 			tags:       tags,
 			icon:       utils.Filename(path) + "-content",
-			callbackOK: func() { loadEntry(list.label, gamePath) },
+			callbackOK: func() { loadEntry(list.label, game.Path) },
 		})
 	}
 	list.segueMount()
