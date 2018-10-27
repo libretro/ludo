@@ -132,13 +132,13 @@ func (s *screenPlaylist) render() {
 			stack += float32(int(vid.Font.Width(0.7*menu.ratio, e.label)))
 
 			for _, tag := range e.tags {
-				stack += 15
+				stack += 20
 				vid.DrawImage(
 					menu.icons[tag],
 					stack, float32(h)*e.yp-23*menu.ratio,
 					60*menu.ratio, 46*menu.ratio, 1.0, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 				vid.DrawBorder(stack, float32(h)*e.yp-23*menu.ratio,
-					60*menu.ratio, 46*menu.ratio, 0.05, video.Color{R: 0, G: 0, B: 0, A: 0.25})
+					60*menu.ratio, 46*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: 0.25})
 				stack += 60 * menu.ratio
 			}
 		}
