@@ -175,7 +175,7 @@ func (tabs *screenTabs) animate() {
 func (tabs *screenTabs) segueNext() {
 	cur := &tabs.children[tabs.ptr]
 	menu.tweens[&cur.width] = gween.New(cur.width, 5200, 0.15, ease.OutSine)
-	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+3000, 0.15, ease.OutSine)
+	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+2980, 0.15, ease.OutSine)
 }
 
 func (tabs *screenTabs) update() {
