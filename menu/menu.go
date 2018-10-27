@@ -29,17 +29,19 @@ type entry struct {
 	labelAlpha      float32
 	icon            string
 	iconAlpha       float32
+	tagAlpha        float32
 	ptr             int
 	callbackOK      func()
 	value           func() interface{}
 	stringValue     func() string
 	widget          func(*entry)
 	incr            func(int)
-	children        []entry
+	tags            []string
 	cursor          struct {
 		alpha float32
 		yp    float32
 	}
+	children []entry
 }
 
 // Scene represents a page of the UI
@@ -132,16 +134,19 @@ func genericSegueMount(list *entry) {
 			e.yp = 0.5 + 0.3
 			e.labelAlpha = 0
 			e.iconAlpha = 0
+			e.tagAlpha = 1
 			e.scale = 0.5
 		} else if i < list.ptr {
 			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
 			e.labelAlpha = 0
 			e.iconAlpha = 0
+			e.tagAlpha = 0
 			e.scale = 0.5
 		} else if i > list.ptr {
 			e.yp = 0.6 + 0.3 + 0.08*float32(i-list.ptr)
 			e.labelAlpha = 0
 			e.iconAlpha = 0
+			e.tagAlpha = 0
 			e.scale = 0.5
 		}
 	}
@@ -156,27 +161,31 @@ func genericAnimate(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
 
-		var yp, labelAlpha, iconAlpha, scale float32
+		var yp, labelAlpha, iconAlpha, tagAlpha, scale float32
 		if i == list.ptr {
 			yp = 0.5
-			labelAlpha = 1.0
-			iconAlpha = 1.0
+			labelAlpha = 1
+			iconAlpha = 1
+			tagAlpha = 1
 			scale = 0.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
 			labelAlpha = 0.75
 			iconAlpha = 0.75
+			tagAlpha = 0
 			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 + 0.08*float32(i-list.ptr)
 			labelAlpha = 0.75
 			iconAlpha = 0.75
+			tagAlpha = 0
 			scale = 0.5
 		}
 
 		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
 	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0.1, 0.15, ease.OutSine)
@@ -189,27 +198,31 @@ func genericSegueNext(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
 
-		var yp, la, a, s float32
+		var yp, labelAlpha, iconAlpha, tagAlpha, s float32
 		if i == list.ptr {
 			yp = 0.5 - 0.3
-			la = 0
-			a = 0
+			labelAlpha = 0
+			iconAlpha = 0
+			tagAlpha = 1
 			s = 1.0
 		} else if i < list.ptr {
 			yp = 0.4 - 0.3 + 0.08*float32(i-list.ptr)
-			la = 0
-			a = 0
+			labelAlpha = 0
+			iconAlpha = 0
+			tagAlpha = 0
 			s = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 - 0.3 + 0.08*float32(i-list.ptr)
-			la = 0
-			a = 0
+			labelAlpha = 0
+			iconAlpha = 0
+			tagAlpha = 0
 			s = 0.5
 		}
 
 		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, la, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, a, 0.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
 	}
 	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 0.15, ease.OutSine)
@@ -309,6 +322,13 @@ func (menu *Menu) ContextReset() {
 		filename := utils.Filename(path)
 		menu.icons[filename] = video.NewImage("assets/" + filename + ".png")
 		menu.icons[filename+"-content"] = video.NewImage("assets/" + filename + "-content.png")
+	}
+
+	paths, _ = filepath.Glob("assets/flags/*.png")
+	for _, path := range paths {
+		path := path
+		filename := utils.Filename(path)
+		menu.icons[filename] = video.NewImage("assets/flags/" + filename + ".png")
 	}
 }
 

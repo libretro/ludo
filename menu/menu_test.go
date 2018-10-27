@@ -190,3 +190,49 @@ func Test_buildExplorer(t *testing.T) {
 		}
 	})
 }
+
+func TestExtractTags(t *testing.T) {
+	var empty []string
+	tests := []struct {
+		name  string
+		args  string
+		want1 interface{}
+		want2 interface{}
+	}{
+		{
+			name:  "No tags",
+			args:  "My Awesome Game",
+			want1: "My Awesome Game",
+			want2: empty,
+		},
+		{
+			name:  "One tag",
+			args:  "My Awesome Game (France)",
+			want1: "My Awesome Game",
+			want2: []string{"France"},
+		},
+		{
+			name:  "Multiple tags",
+			args:  "My Awesome Game (France) (v1.0)",
+			want1: "My Awesome Game",
+			want2: []string{"France", "v1.0"},
+		},
+		{
+			name:  "Nested tags",
+			args:  "My Awesome Game (Europe) (Fr,De,En)",
+			want1: "My Awesome Game",
+			want2: []string{"Europe", "Fr", "De", "En"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got1, got2 := extractTags(tt.args)
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("got1 = %v, want %v", got1, tt.want1)
+			}
+			if !reflect.DeepEqual(got2, tt.want2) {
+				t.Errorf("got2 = %v, want %v", got2, tt.want2)
+			}
+		})
+	}
+}
