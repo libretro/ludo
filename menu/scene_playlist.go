@@ -22,6 +22,7 @@ func buildPlaylist(path string) Scene {
 	list.label = utils.Filename(path)
 
 	for _, game := range playlists.Playlists[list.label] {
+		game := game // needed for callbackOK
 		strippedName, tags := extractTags(game.Name)
 		list.children = append(list.children, entry{
 			label:      strippedName,
