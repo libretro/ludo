@@ -311,6 +311,13 @@ func (menu *Menu) ContextReset() {
 		menu.icons[filename] = video.NewImage("assets/" + filename + ".png")
 		menu.icons[filename+"-content"] = video.NewImage("assets/" + filename + "-content.png")
 	}
+
+	paths, _ = filepath.Glob("assets/flags/*.png")
+	for _, path := range paths {
+		path := path
+		filename := utils.Filename(path)
+		menu.icons[filename] = video.NewImage("assets/flags/" + filename + ".png")
+	}
 }
 
 // fastForwardTweens finishes all the current animations in the queue.
