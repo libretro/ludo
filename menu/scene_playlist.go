@@ -47,7 +47,7 @@ func buildPlaylist(path string) Scene {
 			label:      strippedName,
 			tags:       tags,
 			icon:       utils.Filename(path) + "-content",
-			callbackOK: func() { loadEntry(name, gamePath) },
+			callbackOK: func() { loadEntry(list.label, gamePath) },
 		})
 	}
 	list.segueMount()
