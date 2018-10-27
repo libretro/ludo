@@ -71,20 +71,18 @@ var widgets = map[string]func(*entry){
 	// Range widget for audio volume and similat float settings
 	"range": func(e *entry) {
 		fbw, fbh := vid.Window.GetFramebufferSize()
-		x := float32(fbw) - 128*menu.ratio - 256*e.scale*menu.ratio
-		y := float32(fbh)*e.yp - 3*menu.ratio
-		w := 256 * e.scale * menu.ratio
-		h := 6 * menu.ratio
+		x := float32(fbw) - 128*menu.ratio - 175*menu.ratio
+		y := float32(fbh)*e.yp - 4*menu.ratio
+		w := 175 * menu.ratio
+		h := 8 * menu.ratio
 		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
 		if state.Global.CoreRunning {
 			c = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
 		}
-		x1, y1, x2, y2, x3, y3, x4, y4 := video.XYWHTo4points(x, y, w, h, float32(fbh))
-		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{R: c.R, G: c.G, B: c.B, A: e.iconAlpha / 4})
-
-		w = 256 * e.scale * menu.ratio * e.value().(float32)
-		x1, y1, x2, y2, x3, y3, x4, y4 = video.XYWHTo4points(x, y, w, h, float32(fbh))
-		vid.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, video.Color{R: c.R, G: c.G, B: c.B, A: e.iconAlpha})
+		vid.DrawRoundedRect(x, y, w, h, 0.9, video.Color{R: c.R, G: c.G, B: c.B, A: e.iconAlpha / 4})
+		w = 175 * menu.ratio * e.value().(float32)
+		vid.DrawRoundedRect(x, y, w, h, 0.9, c)
+		vid.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, c)
 	},
 }
 
