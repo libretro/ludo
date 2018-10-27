@@ -80,7 +80,7 @@ func updateTweens(dt float32) {
 // Render takes care of rendering the menu
 func Render() {
 	menu.t += 0.1
-	w, h := vid.Window.GetFramebufferSize()
+	w, _ := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
 	vid.FullViewport()
@@ -97,9 +97,20 @@ func Render() {
 		menu.render()
 	}
 
+	drawHintBar()
+}
+
+func drawHintBar() {
+	w, h := vid.Window.GetFramebufferSize()
+	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
 	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
-	vid.Font.Printf(30*menu.ratio, float32(h)-22*menu.ratio, 0.5*menu.ratio, "ARROWS: NAVIGATE    X: CONFIRM    Z: CANCEL")
+	vid.DrawImage(menu.icons["key-arrows"], 30*menu.ratio, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1})
+	vid.Font.Printf(105*menu.ratio, float32(h)-23*menu.ratio, 0.5*menu.ratio, "NAVIGATE")
+	vid.DrawImage(menu.icons["key-z"], 300*menu.ratio, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1})
+	vid.Font.Printf(370*menu.ratio, float32(h)-23*menu.ratio, 0.5*menu.ratio, "CANCEL")
+	vid.DrawImage(menu.icons["key-x"], 525*menu.ratio, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1})
+	vid.Font.Printf(590*menu.ratio, float32(h)-23*menu.ratio, 0.5*menu.ratio, "OK")
 }
 
 // genericSegueMount is the smooth transition of the menu entries first appearance
@@ -276,6 +287,9 @@ func (menu *Menu) ContextReset() {
 		"scan":       video.NewImage("assets/scan.png"),
 		"on":         video.NewImage("assets/on.png"),
 		"off":        video.NewImage("assets/off.png"),
+		"key-arrows": video.NewImage("assets/key-arrows.png"),
+		"key-x":      video.NewImage("assets/key-x.png"),
+		"key-z":      video.NewImage("assets/key-z.png"),
 	}
 
 	usr, _ := user.Current()
