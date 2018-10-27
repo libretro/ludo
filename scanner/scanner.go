@@ -55,8 +55,7 @@ func ScanDir(dir string) {
 				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\n")
 				lpl.WriteString(game.System + ".lpl\n")
 				lpl.Close()
-				notifications.List()[nid].Frames = 240
-				notifications.List()[nid].Message = strconv.Itoa(i) + "/" + strconv.Itoa(len(roms)) + " " + game.Name
+				notifications.Update(nid, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+game.Name)
 			}
 		},
 	}

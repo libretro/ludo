@@ -63,3 +63,8 @@ func Process() {
 func Clear() {
 	notifications = []Notification{}
 }
+
+func Update(id int, message string) {
+	notifications[id].Frames = 240
+	notifications[id].Message = message
+}
