@@ -3,6 +3,8 @@ package menu
 import (
 	"bufio"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/libretro/ludo/core"
 	"github.com/libretro/ludo/notifications"
@@ -25,6 +27,7 @@ func buildPlaylist(path string) Scene {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
+
 	for {
 		more := scanner.Scan()
 		if !more {
@@ -39,12 +42,28 @@ func buildPlaylist(path string) Scene {
 		scanner.Scan() // lpl
 		list.children = append(list.children, entry{
 			label:      name,
+			tags:       extractTags(name),
 			icon:       utils.Filename(path) + "-content",
 			callbackOK: func() { loadEntry(list.label, gamePath) },
 		})
 	}
 	list.segueMount()
 	return &list
+}
+
+func extractTags(in string) []string {
+	re := regexp.MustCompile("\\(.*?\\)")
+	pars := re.FindAllString(in, -1)
+	var tags []string
+	for _, par := range pars {
+		par = strings.Replace(par, "(", "", -1)
+		par = strings.Replace(par, ")", "", -1)
+		results := strings.Split(par, ",")
+		for _, result := range results {
+			tags = append(tags, strings.TrimSpace(result))
+		}
+	}
+	return tags
 }
 
 func loadEntry(playlist, gamePath string) {

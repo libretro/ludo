@@ -35,11 +35,12 @@ type entry struct {
 	stringValue     func() string
 	widget          func(*entry)
 	incr            func(int)
-	children        []entry
+	tags            []string
 	cursor          struct {
 		alpha float32
 		yp    float32
 	}
+	children []entry
 }
 
 // Scene represents a page of the UI
