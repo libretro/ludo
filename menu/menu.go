@@ -192,7 +192,7 @@ func genericSegueNext(list *entry) {
 		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
 	}
 	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 0.15, ease.OutSine)
-	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5+0.3, 0.15, ease.OutSine)
+	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5-0.3, 0.15, ease.OutSine)
 }
 
 // drawCursor draws the blinking rectangular background of the active menu entry
