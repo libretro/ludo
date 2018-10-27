@@ -67,6 +67,10 @@ func Clear() {
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
 func Update(id int, message string) {
-	notifications[id].Frames = 240
-	notifications[id].Message = message
+	if id < len(notifications) {
+		notifications[id].Frames = 240
+		notifications[id].Message = message
+	} else {
+		Display(message, 240)
+	}
 }
