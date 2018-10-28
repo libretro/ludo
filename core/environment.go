@@ -72,6 +72,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		return false
 	case libretro.EnvironmentSetVariables:
 		opts = options.New(libretro.GetVariables(data))
+		menu.UpdateOptions(opts)
 		return true
 	case libretro.EnvironmentGetVariableUpdate:
 		libretro.SetBool(data, opts.Updated)
