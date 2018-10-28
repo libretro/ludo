@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // Slurp reads a file completely and returns the content as a []byte.
@@ -63,7 +64,7 @@ func CaptureOutput(f func()) string {
 func AllFilesIn(dir string) []string {
 	file := []string{}
 	filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
-		if !f.IsDir() {
+		if !f.IsDir() && !strings.HasPrefix(f.Name(), ".") {
 			file = append(file, path)
 		}
 		return nil
