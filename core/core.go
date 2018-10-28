@@ -152,7 +152,7 @@ func LoadGame(filename string) {
 	state.Global.MenuActive = false
 	state.Global.GamePath = filename
 
-	log.Println("Core: Game loaded: " + filename)
+	log.Println("[Core]: Game loaded: " + filename)
 }
 
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it
