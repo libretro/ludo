@@ -73,7 +73,7 @@ func Load(sofile string) {
 
 	menu.UpdateOptions(opts)
 
-	notifications.DisplayAndLog("Core", "Core loaded: "+si.LibraryName)
+	log.Println("[Core]: Core loaded: " + si.LibraryName)
 }
 
 // unzipGame unzips a rom to tmpdir and returns the path and size of the extracted rom
@@ -152,7 +152,7 @@ func LoadGame(filename string) {
 	state.Global.MenuActive = false
 	state.Global.GamePath = filename
 
-	notifications.DisplayAndLog("Core", "Game loaded: "+filename)
+	log.Println("Core: Game loaded: " + filename)
 }
 
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it

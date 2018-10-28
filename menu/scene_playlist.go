@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"os"
 	"regexp"
 	"strings"
 
@@ -56,6 +57,10 @@ func loadEntry(playlist, gamePath string) {
 	coreFullPath, err := settings.CoreForPlaylist(playlist)
 	if err != nil {
 		notifications.DisplayAndLog("Menu", err.Error())
+		return
+	}
+	if _, err := os.Stat(coreFullPath); os.IsNotExist(err) {
+		notifications.DisplayAndLog("Menu", "Core not found.")
 		return
 	}
 	core.Load(coreFullPath)
