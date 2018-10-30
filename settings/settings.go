@@ -104,8 +104,7 @@ func Save() error {
 // CoreForPlaylist returns the absolute path of the default libretro core for
 // a given playlist
 func CoreForPlaylist(playlist string) (string, error) {
-	usr, _ := user.Current()
-	coresPath := usr.HomeDir + "/.ludo/cores/"
+	coresPath := "cores/"
 	c := Settings.CoreForPlaylist[playlist]
 	if c != "" {
 		return coresPath + c + utils.CoreExt(), nil
