@@ -37,9 +37,9 @@ script:
   - megacheck ./...
   - gocyclo -over 19 $GO_FILES
   - golint -set_exit_status $(go list ./...)
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then OS="Linux" VERSION=${TRAVIS_TAG:1} make tar; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then OS="OSX" VERSION=${TRAVIS_TAG:1} make dmg; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then OS="Windows" VERSION=${TRAVIS_TAG:1} make zip; fi
+  - if [[ -n "$TRAVIS_TAG" -a "$TRAVIS_OS_NAME" == "linux" ]]; then OS="Linux" VERSION=${TRAVIS_TAG:1} make tar; fi
+  - if [[ -n "$TRAVIS_TAG" -a "$TRAVIS_OS_NAME" == "osx" ]]; then OS="OSX" VERSION=${TRAVIS_TAG:1} make dmg; fi
+  - if [[ -n "$TRAVIS_TAG" -a "$TRAVIS_OS_NAME" == "windows" ]]; then OS="Windows" VERSION=${TRAVIS_TAG:1} make zip; fi
 
 deploy:
   skip_cleanup: true

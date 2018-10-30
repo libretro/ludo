@@ -1,16 +1,40 @@
 APP = Ludo
 BUNDLENAME = $(APP)-$(OS)-$(VERSION)
 
+CORES = atari800 fbalpha gambatte genesis_plus_gx handy mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba nestopia pcsx_rearmed picodrive prosystem snes9x stella vecx virtualjaguar
+
+ifeq ($(OS), OSX)
+	BUILDBOTURL=http://buildbot.libretro.com/nightly/apple/osx/x86_64/latest
+	EXT=dylib
+endif
+ifeq ($(OS), Linux)
+	BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/x86_64/latest
+	EXT=so
+endif
+ifeq ($(OS), Windows)
+	BUILDBOTURL=http://buildbot.libretro.com/nightly/windows/x86_64/latest
+	EXT=dll
+endif
+
 ludo:
 	go build
 
-$(APP).app: ludo
+cores:
+	mkdir -p cores
+	for CORE in ${CORES} ; do \
+		wget $(BUILDBOTURL)/$${CORE}_libretro.$(EXT).zip -O cores/$${CORE}_libretro.$(EXT).zip; \
+		unzip cores/$${CORE}_libretro.$(EXT).zip -d cores; \
+		rm cores/$${CORE}_libretro.$(EXT).zip; \
+	done
+
+$(APP).app: ludo cores
 	mkdir -p $(APP).app/Contents/MacOS
 	mkdir -p $(APP).app/Contents/Resources/$(APP).iconset
 	cp pkg/Info.plist $(APP).app/Contents/
 	echo "APPL????" > $(APP).app/Contents/PkgInfo
 	cp -r database $(APP).app/Contents/Resources
 	cp -r assets $(APP).app/Contents/Resources
+	cp -r cores $(APP).app/Contents/Resources
 	sips -z 16 16     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16.png
 	sips -z 32 32     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16@2x.png
 	sips -z 32 32     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_32x32.png
@@ -39,19 +63,21 @@ dmg: empty.dmg $(APP).app
 	rm -f $(BUNDLENAME)-*.dmg
 	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
 
-zip: ludo
+zip: ludo cores
 	mkdir -p $(BUNDLENAME)/
 	cp ludo $(BUNDLENAME)/
 	cp -r database $(BUNDLENAME)/
 	cp -r assets $(BUNDLENAME)/
+	cp -r cores $(BUNDLENAME)/
 	7z a $(BUNDLENAME).zip $(BUNDLENAME)\
 
-tar: ludo
+tar: ludo cores
 	mkdir -p $(BUNDLENAME)/
 	cp ludo $(BUNDLENAME)/
 	cp -r database $(BUNDLENAME)/
 	cp -r assets $(BUNDLENAME)/
+	cp -r cores $(BUNDLENAME)/
 	tar -zcf $(BUNDLENAME).tar.gz $(BUNDLENAME)\
 
 clean:
-	rm -rf $(BUNDLENAME).app ludo wc empty.dmg $(BUNDLENAME).dmg $(BUNDLENAME)-*
+	rm -rf $(BUNDLENAME).app ludo wc empty.dmg $(BUNDLENAME).dmg $(BUNDLENAME)-* cores/

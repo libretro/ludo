@@ -35,7 +35,7 @@ func buildMainMenu() Scene {
 		callbackOK: func() {
 			list.segueNext()
 			menu.stack = append(menu.stack, buildExplorer(
-				usr.HomeDir,
+				"cores",
 				[]string{".dll", ".dylib", ".so"},
 				core.Load,
 				nil,
