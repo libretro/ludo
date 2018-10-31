@@ -27,13 +27,13 @@ func (m WindowMock) ShouldClose() bool                           { return false 
 func (m WindowMock) SetTitle(string)                             {}
 func (m WindowMock) SwapBuffers()                                {}
 
-func Test_Init(t *testing.T) {
+func Test_WarpToQuickMenu(t *testing.T) {
 
 	var vid = &video.Video{
 		Window: &WindowMock{},
 	}
 
-	Init(vid)
+	m := Init(vid)
 
 	t.Run("Starts with a single scene if no game is running", func(t *testing.T) {
 		got := len(menu.stack)
@@ -52,7 +52,7 @@ func Test_Init(t *testing.T) {
 	})
 
 	state.Global.CoreRunning = true
-	Init(vid)
+	m.WarpToQuickMenu()
 
 	t.Run("Warps at the quick menu if a game is launched", func(t *testing.T) {
 		got := len(menu.stack)

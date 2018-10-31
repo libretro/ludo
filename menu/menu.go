@@ -344,6 +344,18 @@ func (menu *Menu) UpdateOptions(o *options.Options) {
 	opts = o
 }
 
+// WarpToQuickMenu loads the contextual menu for games that are launched from
+// the command line interface.
+func (menu *Menu) WarpToQuickMenu() {
+	menu.stack = []Scene{}
+	menu.stack = append(menu.stack, buildTabs())
+	menu.stack[0].segueNext()
+	menu.stack = append(menu.stack, buildMainMenu())
+	menu.stack[1].segueNext()
+	menu.stack = append(menu.stack, buildQuickMenu())
+	fastForwardTweens()
+}
+
 // Init initializes the menu.
 // If a game is already running, it will warp the user to the quick menu.
 // If not, it will display the menu tabs.
@@ -356,16 +368,7 @@ func Init(v *video.Video) *Menu {
 	menu.tweens = make(map[*float32]*gween.Tween)
 	menu.ratio = float32(w) / 1920
 
-	if state.Global.CoreRunning {
-		menu.stack = append(menu.stack, buildTabs())
-		menu.stack[0].segueNext()
-		menu.stack = append(menu.stack, buildMainMenu())
-		menu.stack[1].segueNext()
-		menu.stack = append(menu.stack, buildQuickMenu())
-		fastForwardTweens()
-	} else {
-		menu.stack = append(menu.stack, buildTabs())
-	}
+	menu.stack = append(menu.stack, buildTabs())
 
 	return menu
 }
