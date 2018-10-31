@@ -30,7 +30,7 @@ func buildPlaylist(path string) Scene {
 			path:       game.Path,
 			tags:       tags,
 			icon:       utils.Filename(path) + "-content",
-			callbackOK: func() { loadEntry(list.label, game.Path) },
+			callbackOK: func() { loadEntry(&list, list.label, game.Path) },
 		})
 	}
 	list.segueMount()
@@ -54,7 +54,7 @@ func extractTags(name string) (string, []string) {
 	return name, tags
 }
 
-func loadEntry(playlist, gamePath string) {
+func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 	corePath, err := settings.CoreForPlaylist(playlist)
 	if err != nil {
 		notifications.DisplayAndLog("Menu", err.Error())
@@ -68,10 +68,14 @@ func loadEntry(playlist, gamePath string) {
 		core.Load(corePath)
 	}
 	if state.Global.GamePath != gamePath {
+		list.segueNext()
+		menu.stack = append(menu.stack, buildQuickMenu())
+		fastForwardTweens() // position the elements without animating
 		core.LoadGame(gamePath)
+	} else {
+		list.segueNext()
+		menu.stack = append(menu.stack, buildQuickMenu())
 	}
-	// In case this exact game is already running, just toggle the menu
-	state.Global.MenuActive = false
 }
 
 // Generic stuff
