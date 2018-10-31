@@ -26,6 +26,7 @@ type entry struct {
 	yp, scale       float32
 	width           float32
 	label, subLabel string
+	path            string
 	labelAlpha      float32
 	icon            string
 	iconAlpha       float32

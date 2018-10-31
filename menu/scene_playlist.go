@@ -27,6 +27,7 @@ func buildPlaylist(path string) Scene {
 		strippedName, tags := extractTags(game.Name)
 		list.children = append(list.children, entry{
 			label:      strippedName,
+			path:       game.Path,
 			tags:       tags,
 			icon:       utils.Filename(path) + "-content",
 			callbackOK: func() { loadEntry(list.label, game.Path) },
@@ -54,17 +55,23 @@ func extractTags(name string) (string, []string) {
 }
 
 func loadEntry(playlist, gamePath string) {
-	coreFullPath, err := settings.CoreForPlaylist(playlist)
+	corePath, err := settings.CoreForPlaylist(playlist)
 	if err != nil {
 		notifications.DisplayAndLog("Menu", err.Error())
 		return
 	}
-	if _, err := os.Stat(coreFullPath); os.IsNotExist(err) {
+	if _, err := os.Stat(corePath); os.IsNotExist(err) {
 		notifications.DisplayAndLog("Menu", "Core not found.")
 		return
 	}
-	core.Load(coreFullPath)
-	core.LoadGame(gamePath)
+	if state.Global.CorePath != corePath {
+		core.Load(corePath)
+	}
+	if state.Global.GamePath != gamePath {
+		core.LoadGame(gamePath)
+	}
+	// In case this exact game is already running, just toggle the menu
+	state.Global.MenuActive = false
 }
 
 // Generic stuff
@@ -102,7 +109,12 @@ func (s *screenPlaylist) render() {
 			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
 		}
 
-		vid.DrawImage(menu.icons[e.icon],
+		icon := menu.icons[e.icon]
+		if e.path == state.Global.GamePath {
+			icon = menu.icons["resume"]
+		}
+
+		vid.DrawImage(icon,
 			610*menu.ratio-64*e.scale*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
