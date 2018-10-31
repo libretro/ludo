@@ -38,7 +38,7 @@ func buildPlaylist(path string) Scene {
 }
 
 func extractTags(name string) (string, []string) {
-	re := regexp.MustCompile("\\(.*?\\)")
+	re := regexp.MustCompile(`\(.*?\)`)
 	pars := re.FindAllString(name, -1)
 	var tags []string
 	for _, par := range pars {
