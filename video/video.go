@@ -186,8 +186,6 @@ func (video *Video) Configure(fullscreen bool) {
 		log.Println("[Video]: Failed to create the vid texture")
 	}
 
-	video.pitch = int32(video.Geom.BaseWidth) * video.bpp
-
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
@@ -219,6 +217,8 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 	default:
 		log.Fatalf("Unknown pixel type %v", format)
 	}
+
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	return true
 }
