@@ -5,7 +5,6 @@ package state
 import (
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/rdb"
-	"github.com/libretro/ludo/tasks"
 )
 
 // State is a type for the global state of the app
@@ -19,7 +18,6 @@ type State struct {
 	CorePath    string // Path of the current libretro core
 	GamePath    string // Path of the current game
 	DB          rdb.DB
-	Tasks       []tasks.Task
 }
 
 // Global state
