@@ -56,7 +56,6 @@ func ScanDir(dir string, doneCb func()) {
 			lpl.WriteString("DETECT\n")
 			if uint64(game.CRC32) > 0 {
 				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\n")
-
 			} else {
 				lpl.WriteString("DETECT\n")
 			}
