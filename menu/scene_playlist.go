@@ -68,10 +68,14 @@ func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 		core.Load(corePath)
 	}
 	if state.Global.GamePath != gamePath {
+		err := core.LoadGame(gamePath)
+		if err != nil {
+			notifications.DisplayAndLog("Menu", err.Error())
+			return
+		}
 		list.segueNext()
 		menu.stack = append(menu.stack, buildQuickMenu())
 		fastForwardTweens() // position the elements without animating
-		core.LoadGame(gamePath)
 	} else {
 		list.segueNext()
 		menu.stack = append(menu.stack, buildQuickMenu())

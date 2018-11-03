@@ -4,6 +4,7 @@ package core
 
 import (
 	"archive/zip"
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -12,7 +13,6 @@ import (
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -38,7 +38,7 @@ func Init(v *video.Video, m MenuInterface) {
 }
 
 // Load loads a libretro core
-func Load(sofile string) {
+func Load(sofile string) error {
 	state.Global.CorePath = sofile
 	if state.Global.CoreRunning {
 		state.Global.Core.UnloadGame()
@@ -47,7 +47,11 @@ func Load(sofile string) {
 		state.Global.CoreRunning = false
 	}
 
-	state.Global.Core, _ = libretro.Load(sofile)
+	var err error
+	state.Global.Core, err = libretro.Load(sofile)
+	if err != nil {
+		return err
+	}
 	state.Global.Core.SetEnvironment(environment)
 	state.Global.Core.SetVideoRefresh(vid.Refresh)
 	state.Global.Core.SetInputPoll(input.Poll)
@@ -74,6 +78,7 @@ func Load(sofile string) {
 	menu.UpdateOptions(opts)
 
 	log.Println("[Core]: Core loaded: " + si.LibraryName)
+	return nil
 }
 
 // unzipGame unzips a rom to tmpdir and returns the path and size of the extracted rom
@@ -108,29 +113,26 @@ func unzipGame(filename string) (string, int64, error) {
 }
 
 // LoadGame loads a game. A core has to be loaded first.
-func LoadGame(filename string) {
+func LoadGame(filename string) error {
 	si := state.Global.Core.GetSystemInfo()
 
 	gi, err := getGameInfo(filename, si.BlockExtract)
 	if err != nil {
-		notifications.DisplayAndLog("Core", err.Error())
-		return
+		return err
 	}
 
 	if !si.NeedFullpath {
 		bytes, err := utils.Slurp(gi.Path)
 		if err != nil {
-			notifications.DisplayAndLog("Core", err.Error())
-			return
+			return err
 		}
 		gi.SetData(bytes)
 	}
 
 	ok := state.Global.Core.LoadGame(gi)
 	if !ok {
-		notifications.DisplayAndLog("Core", "Failed to load the content.")
 		state.Global.CoreRunning = false
-		return
+		return errors.New("failed to load the game")
 	}
 
 	avi := state.Global.Core.GetSystemAVInfo()
@@ -153,6 +155,7 @@ func LoadGame(filename string) {
 	state.Global.GamePath = filename
 
 	log.Println("[Core]: Game loaded: " + filename)
+	return nil
 }
 
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it

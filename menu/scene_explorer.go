@@ -13,7 +13,7 @@ type screenExplorer struct {
 	entry
 }
 
-func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
+func buildExplorer(path string, exts []string, cb func(string) error, dirAction *entry) Scene {
 	var list screenExplorer
 	list.label = "Explorer"
 
