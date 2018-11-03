@@ -157,8 +157,8 @@ func Parse(rdb []byte) RDB {
 	return output
 }
 
-// Find loops over the RDBs in the DB and concurrently matches CRC32 checksums.
-func (db *DB) Find(romPath string, romName string, CRC32 uint32, games chan (Entry)) {
+// FindByCRC loops over the RDBs in the DB and concurrently matches CRC32 checksums.
+func (db *DB) FindByCRC(romPath string, romName string, CRC32 uint32, games chan (Entry)) {
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
 	// For every RDB in the DB
@@ -168,6 +168,27 @@ func (db *DB) Find(romPath string, romName string, CRC32 uint32, games chan (Ent
 			for _, game := range rdb {
 				// If the checksums match
 				if CRC32 == game.CRC32 {
+					games <- Entry{Path: romPath, ROMName: romName, Name: game.Name, CRC32: CRC32, System: system}
+				}
+			}
+			wg.Done()
+		}(rdb, CRC32, system)
+	}
+	// Synchronize all the goroutines
+	wg.Wait()
+}
+
+// FindByROMName loops over the RDBs in the DB and concurrently matches ROM names.
+func (db *DB) FindByROMName(romPath string, romName string, CRC32 uint32, games chan (Entry)) {
+	var wg sync.WaitGroup
+	wg.Add(len(*db))
+	// For every RDB in the DB
+	for system, rdb := range *db {
+		go func(rdb RDB, CRC32 uint32, system string) {
+			// For each game in the RDB
+			for _, game := range rdb {
+				// If the checksums match
+				if romName == game.ROMName {
 					games <- Entry{Path: romPath, ROMName: romName, Name: game.Name, CRC32: CRC32, System: system}
 				}
 			}
