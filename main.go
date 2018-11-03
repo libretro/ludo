@@ -105,8 +105,12 @@ func main() {
 	}
 
 	if len(gamePath) > 0 {
-		core.LoadGame(gamePath)
-		m.WarpToQuickMenu()
+		err := core.LoadGame(gamePath)
+		if err != nil {
+			notifications.DisplayAndLog("Menu", err.Error())
+		} else {
+			m.WarpToQuickMenu()
+		}
 	}
 
 	// No game running? display the menu
