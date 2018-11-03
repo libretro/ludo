@@ -63,7 +63,7 @@ func TestParse(t *testing.T) {
 	}
 }
 
-func TestDB_Find(t *testing.T) {
+func TestDB_FindByCRC(t *testing.T) {
 	type args struct {
 		romPath string
 		romName string
@@ -97,7 +97,7 @@ func TestDB_Find(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			go tt.db.Find(tt.args.romPath, tt.args.romName, tt.args.CRC32, tt.args.games)
+			go tt.db.FindByCRC(tt.args.romPath, tt.args.romName, tt.args.CRC32, tt.args.games)
 			got := <-tt.args.games
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Find() = %v, want %v", got, tt.want)

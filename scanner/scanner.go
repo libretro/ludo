@@ -40,7 +40,7 @@ func ScanDir(dir string, doneCb func()) {
 	usr, _ := user.Current()
 	roms := utils.AllFilesIn(dir)
 	scannedGames := make(chan (rdb.Entry))
-	go Scan(dir, roms, scannedGames, state.Global.DB.Find, doneCb)
+	go Scan(dir, roms, scannedGames, doneCb)
 	go func() {
 		i := 0
 		for game := range scannedGames {
@@ -54,7 +54,11 @@ func ScanDir(dir string, doneCb func()) {
 			lpl.WriteString(game.Name + "\n")
 			lpl.WriteString("DETECT\n")
 			lpl.WriteString("DETECT\n")
-			lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\n")
+			if uint64(game.CRC32) > 0 {
+				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\n")
+			} else {
+				lpl.WriteString("DETECT\n")
+			}
 			lpl.WriteString(game.System + ".lpl\n")
 			lpl.Close()
 		}
@@ -62,7 +66,7 @@ func ScanDir(dir string, doneCb func()) {
 }
 
 // Scan scans a list of roms against the database
-func Scan(dir string, roms []string, games chan (rdb.Entry), cb func(rompath string, romname string, CRC32 uint32, games chan (rdb.Entry)), doneCb func()) {
+func Scan(dir string, roms []string, games chan (rdb.Entry), doneCb func()) {
 	nid := notifications.DisplayAndLog("Menu", "Scanning %s", dir)
 	for i, f := range roms {
 		ext := filepath.Ext(f)
@@ -73,11 +77,15 @@ func Scan(dir string, roms []string, games chan (rdb.Entry), cb func(rompath str
 			for _, rom := range z.File {
 				if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
-					cb(f, rom.Name, rom.CRC32, games)
+					state.Global.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
 					notifications.Update(nid, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				}
 			}
 			z.Close()
+		case ".cue":
+			// Look for a matching game entry in the database
+			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
+			notifications.Update(nid, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}
 	}
 	notifications.Update(nid, "Done scanning.")
