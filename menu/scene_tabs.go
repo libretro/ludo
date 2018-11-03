@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
@@ -45,22 +45,7 @@ func buildTabs() Scene {
 		},
 	})
 
-	usr, _ := user.Current()
-	paths, _ := filepath.Glob(usr.HomeDir + "/.ludo/playlists/*.lpl")
-
-	for _, path := range paths {
-		path := path
-		filename := utils.Filename(path)
-		count := playlistCount(path)
-		list.children = append(list.children, entry{
-			label:    playlistShortName(filename),
-			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
-			icon:     filename,
-			callbackOK: func() {
-				menu.stack = append(menu.stack, buildPlaylist(path))
-			},
-		})
-	}
+	list.children = append(list.children, getPlaylists()...)
 
 	list.children = append(list.children, entry{
 		label:    "Add games",
@@ -68,7 +53,8 @@ func buildTabs() Scene {
 		icon:     "add",
 		callbackOK: func() {
 			usr, _ := user.Current()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, scanner.ScanDir,
+			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil,
+				func(path string) { scanner.ScanDir(path, refreshTabs) },
 				&entry{
 					label: "<Scan this directory>",
 					icon:  "scan",
@@ -81,6 +67,77 @@ func buildTabs() Scene {
 	return &list
 }
 
+// refreshTabs is called after playlist scanning is complete. It inserts the new
+// playlists in the tabs, and makes sure that all the icons are positioned and
+// sized properly.
+func refreshTabs() {
+	e := menu.stack[0].Entry()
+	l := len(e.children)
+	pls := getPlaylists()
+
+	// This assumes that the two first tabs are not playlists, and that the last
+	// tab is the scanner.
+	e.children = append(e.children[:2], append(pls, e.children[l-1:]...)...)
+
+	// Update which tab is the active tab after the refresh
+	if e.ptr >= 2 {
+		e.ptr += len(pls) - (l - 3)
+	}
+
+	// Ensure new icons are styled properly
+	for i := range e.children {
+		if i == e.ptr {
+			e.children[i].yp = 0.5
+			e.children[i].iconAlpha = 1
+			e.children[i].scale = 1
+			e.children[i].width = 600
+		} else if i < e.ptr {
+			e.children[i].yp = 0.5
+			e.children[i].iconAlpha = 1
+			e.children[i].scale = 0.25
+			e.children[i].width = 128
+		} else if i > e.ptr {
+			e.children[i].yp = 0.5
+			e.children[i].iconAlpha = 1
+			e.children[i].scale = 0.25
+			e.children[i].width = 128
+		}
+	}
+
+	// Adapt the tabs scroll value
+	if len(menu.stack) == 1 {
+		menu.scroll = float32(e.ptr * 128)
+	} else {
+		e.children[e.ptr].width = 5200
+		menu.scroll = float32(e.ptr*128 + 2980)
+	}
+}
+
+// getPlaylists browse the filesystem for lpl files, parse them and returns
+// a list of menu entries. It is used in the tabs, but could be used somewhere
+// else too.
+func getPlaylists() []entry {
+	playlists.LoadPlaylists()
+
+	var pls []entry
+	for path := range playlists.Playlists {
+		path := path
+		filename := utils.Filename(path)
+		count := playlistCount(path)
+		pls = append(pls, entry{
+			label:    playlistShortName(filename),
+			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
+			icon:     filename,
+			callbackOK: func() {
+				menu.stack = append(menu.stack, buildPlaylist(path))
+			},
+		})
+	}
+	return pls
+}
+
+// playlistShortName shortens the name of some game systems that are too long
+// to be displayed in the menu
 func playlistShortName(in string) string {
 	if len(in) < 20 {
 		return in

@@ -22,7 +22,7 @@ func buildPlaylist(path string) Scene {
 	var list screenPlaylist
 	list.label = utils.Filename(path)
 
-	for _, game := range playlists.Playlists[list.label] {
+	for _, game := range playlists.Playlists[path] {
 		game := game // needed for callbackOK
 		strippedName, tags := extractTags(game.Name)
 		list.children = append(list.children, entry{

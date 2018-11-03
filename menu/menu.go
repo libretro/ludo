@@ -5,7 +5,6 @@ package menu
 
 import (
 	"math"
-	"os/user"
 	"path/filepath"
 
 	"github.com/libretro/ludo/options"
@@ -295,34 +294,11 @@ func genericRender(list *entry) {
 // ContextReset uploads the UI images to the GPU.
 // It should be called after each time the window is recreated.
 func (menu *Menu) ContextReset() {
-	menu.icons = map[string]uint32{
-		"hexagon":    video.NewImage("assets/hexagon.png"),
-		"main":       video.NewImage("assets/main.png"),
-		"file":       video.NewImage("assets/file.png"),
-		"folder":     video.NewImage("assets/folder.png"),
-		"subsetting": video.NewImage("assets/subsetting.png"),
-		"setting":    video.NewImage("assets/setting.png"),
-		"resume":     video.NewImage("assets/resume.png"),
-		"reset":      video.NewImage("assets/reset.png"),
-		"loadstate":  video.NewImage("assets/loadstate.png"),
-		"savestate":  video.NewImage("assets/savestate.png"),
-		"screenshot": video.NewImage("assets/screenshot.png"),
-		"add":        video.NewImage("assets/add.png"),
-		"scan":       video.NewImage("assets/scan.png"),
-		"on":         video.NewImage("assets/on.png"),
-		"off":        video.NewImage("assets/off.png"),
-		"key-arrows": video.NewImage("assets/key-arrows.png"),
-		"key-x":      video.NewImage("assets/key-x.png"),
-		"key-z":      video.NewImage("assets/key-z.png"),
-	}
-
-	usr, _ := user.Current()
-	paths, _ := filepath.Glob(usr.HomeDir + "/.ludo/playlists/*.lpl")
+	paths, _ := filepath.Glob("assets/*.png")
 	for _, path := range paths {
 		path := path
 		filename := utils.Filename(path)
 		menu.icons[filename] = video.NewImage("assets/" + filename + ".png")
-		menu.icons[filename+"-content"] = video.NewImage("assets/" + filename + "-content.png")
 	}
 
 	paths, _ = filepath.Glob("assets/flags/*.png")
@@ -367,6 +343,7 @@ func Init(v *video.Video) *Menu {
 	menu.stack = []Scene{}
 	menu.tweens = make(map[*float32]*gween.Tween)
 	menu.ratio = float32(w) / 1920
+	menu.icons = map[string]uint32{}
 
 	menu.stack = append(menu.stack, buildTabs())
 

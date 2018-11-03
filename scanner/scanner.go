@@ -36,19 +36,20 @@ func LoadDB(dir string) (rdb.DB, error) {
 }
 
 // ScanDir scans a full directory, report progress and generate playlists
-func ScanDir(dir string) {
+func ScanDir(dir string, doneCb func()) {
 	usr, _ := user.Current()
 	roms := utils.AllFilesIn(dir)
 	scannedGames := make(chan (rdb.Entry))
-	go Scan(dir, roms, scannedGames, state.Global.DB.Find)
+	go Scan(dir, roms, scannedGames, state.Global.DB.Find, doneCb)
 	go func() {
 		i := 0
 		for game := range scannedGames {
-			if playlists.ExistsInPlaylist(game.System, game.Path, game.CRC32) {
+			lplpath := usr.HomeDir + "/.ludo/playlists/" + game.System + ".lpl"
+			if playlists.ExistsInPlaylist(lplpath, game.Path, game.CRC32) {
 				continue
 			}
 			i++
-			lpl, _ := os.OpenFile(usr.HomeDir+"/.ludo/playlists/"+game.System+".lpl", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+			lpl, _ := os.OpenFile(lplpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 			lpl.WriteString(game.Path + "\n")
 			lpl.WriteString(game.Name + "\n")
 			lpl.WriteString("DETECT\n")
@@ -61,7 +62,7 @@ func ScanDir(dir string) {
 }
 
 // Scan scans a list of roms against the database
-func Scan(dir string, roms []string, games chan (rdb.Entry), cb func(rompath string, romname string, CRC32 uint32, games chan (rdb.Entry))) {
+func Scan(dir string, roms []string, games chan (rdb.Entry), cb func(rompath string, romname string, CRC32 uint32, games chan (rdb.Entry)), doneCb func()) {
 	nid := notifications.DisplayAndLog("Menu", "Scanning %s", dir)
 	for i, f := range roms {
 		ext := filepath.Ext(f)
@@ -80,4 +81,5 @@ func Scan(dir string, roms []string, games chan (rdb.Entry), cb func(rompath str
 		}
 	}
 	notifications.Update(nid, "Done scanning.")
+	doneCb()
 }
