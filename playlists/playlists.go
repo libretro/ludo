@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/libretro/ludo/utils"
 )
 
 // PlaylistEntry represents a game in a playlist.
@@ -35,8 +33,6 @@ func LoadPlaylists() {
 	for _, path := range paths {
 		path := path
 
-		system := utils.Filename(path)
-
 		file, _ := os.Open(path)
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
@@ -61,13 +57,13 @@ func LoadPlaylists() {
 
 			playlist = append(playlist, entry)
 		}
-		Playlists[system] = playlist
+		Playlists[path] = playlist
 	}
 }
 
 // ExistsInPlaylist checks if a game is already in a playlist.
-func ExistsInPlaylist(system, path string, CRC32 uint32) bool {
-	for _, entry := range Playlists[system] {
+func ExistsInPlaylist(lplpath, path string, CRC32 uint32) bool {
+	for _, entry := range Playlists[lplpath] {
 		if entry.Path == path || entry.CRC32 == CRC32 {
 			return true
 		}

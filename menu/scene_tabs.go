@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
@@ -72,17 +72,19 @@ func buildTabs() Scene {
 // sized properly.
 func refreshTabs() {
 	e := menu.stack[0].Entry()
-	c := e.children
-	l := len(c)
+	l := len(e.children)
 	pls := getPlaylists()
 
 	// This assumes that the two first tabs are not playlists, and that the last
 	// tab is the scanner.
-	e.children = append(c[:2], append(pls, c[l-1:]...)...)
+	e.children = append(e.children[:2], append(pls, e.children[l-1:]...)...)
+
+	// Update which tab is the active tab after the refresh
 	if e.ptr >= 2 {
 		e.ptr += len(pls) - (l - 3)
 	}
 
+	// Ensure new icons are styled properly
 	for i := range e.children {
 		if i == e.ptr {
 			e.children[i].yp = 0.5
@@ -102,6 +104,7 @@ func refreshTabs() {
 		}
 	}
 
+	// Adapt the tabs scroll value
 	if len(menu.stack) == 1 {
 		menu.scroll = float32(e.ptr * 128)
 	} else {
@@ -114,11 +117,10 @@ func refreshTabs() {
 // a list of menu entries. It is used in the tabs, but could be used somewhere
 // else too.
 func getPlaylists() []entry {
-	var pls []entry
-	usr, _ := user.Current()
-	paths, _ := filepath.Glob(usr.HomeDir + "/.ludo/playlists/*.lpl")
+	playlists.LoadPlaylists()
 
-	for _, path := range paths {
+	var pls []entry
+	for path := range playlists.Playlists {
 		path := path
 		filename := utils.Filename(path)
 		count := playlistCount(path)

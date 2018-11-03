@@ -44,11 +44,12 @@ func ScanDir(dir string, doneCb func()) {
 	go func() {
 		i := 0
 		for game := range scannedGames {
-			if playlists.ExistsInPlaylist(game.System, game.Path, game.CRC32) {
+			lplpath := usr.HomeDir + "/.ludo/playlists/" + game.System + ".lpl"
+			if playlists.ExistsInPlaylist(lplpath, game.Path, game.CRC32) {
 				continue
 			}
 			i++
-			lpl, _ := os.OpenFile(usr.HomeDir+"/.ludo/playlists/"+game.System+".lpl", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+			lpl, _ := os.OpenFile(lplpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 			lpl.WriteString(game.Path + "\n")
 			lpl.WriteString(game.Name + "\n")
 			lpl.WriteString("DETECT\n")
