@@ -3,9 +3,10 @@ package input
 import "github.com/libretro/ludo/libretro"
 
 var joyBinds = map[string]joybinds{
-	"Microsoft X-Box 360 pad": xbox360JoyBinds,
-	"Xbox 360 Controller":     xboxOneJoyBinds,
-	"Wireless Controller":     ds4JoyBinds,
+	"Microsoft X-Box 360 pad":    xbox360JoyBinds,
+	"Xbox 360 Controller":        xboxOneJoyBinds,
+	"Wireless Controller":        ds4JoyBinds,
+	"PLAYSTATION(R)3 Controller": ds3JoyBinds,
 }
 
 var xbox360JoyBinds = joybinds{
@@ -67,3 +68,6 @@ var ds4JoyBinds = joybinds{
 	bind{axis, 3, 1, 0}: libretro.DeviceIDJoypadL2,
 	bind{axis, 4, 1, 0}: libretro.DeviceIDJoypadL3,
 }
+
+// Detected but doesn't send inputs
+var ds3JoyBinds = joybinds{}
