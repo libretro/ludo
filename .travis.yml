@@ -53,3 +53,7 @@ deploy:
   on:
     repo: libretro/ludo
     tags: true
+
+cache:
+  directories:
+    - $HOME/Library/Caches/Homebrew
