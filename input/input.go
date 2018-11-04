@@ -99,11 +99,13 @@ func pollJoypads(state inputstate) inputstate {
 			for k, v := range jb {
 				switch k.kind {
 				case btn:
-					if glfw.Action(buttonState[k.index]) == glfw.Press {
+					if int(k.index) < len(buttonState) &&
+						glfw.Action(buttonState[k.index]) == glfw.Press {
 						state[p][v] = true
 					}
 				case axis:
-					if k.direction*axisState[k.index] > k.threshold*k.direction {
+					if int(k.index) < len(axisState) &&
+						k.direction*axisState[k.index] > k.threshold*k.direction {
 						state[p][v] = true
 					}
 				}
