@@ -4,6 +4,7 @@ import "github.com/libretro/ludo/libretro"
 
 var joyBinds = map[string]joybinds{
 	"Xbox 360 Wired Controller": xbox360JoyBinds,
+	"Xbox One Wired Controller": xbox360JoyBinds,
 	"Wireless Controller":       ds4JoyBinds,
 	"8Bitdo NES30 Pro":          nes30proJoyBinds,
 }
