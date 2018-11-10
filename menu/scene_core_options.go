@@ -63,3 +63,7 @@ func (s *screenCoreOptions) update() {
 func (s *screenCoreOptions) render() {
 	genericRender(&s.entry)
 }
+
+func (s *screenCoreOptions) drawHintBar() {
+	genericDrawHintBar()
+}

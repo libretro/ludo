@@ -105,3 +105,7 @@ func (main *screenMain) update() {
 func (main *screenMain) render() {
 	genericRender(&main.entry)
 }
+
+func (main *screenMain) drawHintBar() {
+	genericDrawHintBar()
+}

@@ -52,6 +52,7 @@ type Scene interface {
 	segueBack()
 	update()
 	render()
+	drawHintBar()
 	Entry() *entry
 }
 
@@ -97,32 +98,37 @@ func Render() {
 
 		menu := menu.stack[i]
 		menu.render()
+		menu.drawHintBar()
 	}
-
-	drawHintBar()
 }
 
-func drawHintBar() {
+func genericDrawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
 	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
+
 	stack := 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-arrows"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
+	vid.DrawImage(menu.icons["key-up-down"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
 	stack += 70 * menu.ratio
 	stack += 10 * menu.ratio
 	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "NAVIGATE")
 	stack += vid.Font.Width(0.5*menu.ratio, "NAVIGATE")
+
 	stack += 30 * menu.ratio
 	vid.DrawImage(menu.icons["key-z"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
 	stack += 70 * menu.ratio
 	stack += 10 * menu.ratio
-	vid.Font.Printf(370*menu.ratio, float32(h)-23*menu.ratio, 0.5*menu.ratio, "CANCEL")
-	stack += vid.Font.Width(0.5*menu.ratio, "CANCEL")
-	stack += 10 * menu.ratio
+	vid.Font.Printf(370*menu.ratio, float32(h)-23*menu.ratio, 0.5*menu.ratio, "BACK")
+	stack += vid.Font.Width(0.5*menu.ratio, "BACK")
+
+	stack += 30 * menu.ratio
 	vid.DrawImage(menu.icons["key-x"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	vid.Font.Printf(590*menu.ratio, float32(h)-23*menu.ratio, 0.5*menu.ratio, "OK")
+	stack += 70 * menu.ratio
+	stack += 10 * menu.ratio
+	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "OK")
+	stack += vid.Font.Width(0.5*menu.ratio, "OK")
 }
 
 // genericSegueMount is the smooth transition of the menu entries first appearance

@@ -92,3 +92,7 @@ func (explorer *screenExplorer) update() {
 func (explorer *screenExplorer) render() {
 	genericRender(&explorer.entry)
 }
+
+func (explorer *screenExplorer) drawHintBar() {
+	genericDrawHintBar()
+}

@@ -104,3 +104,7 @@ func (s *screenQuick) update() {
 func (s *screenQuick) render() {
 	genericRender(&s.entry)
 }
+
+func (s *screenQuick) drawHintBar() {
+	genericDrawHintBar()
+}
