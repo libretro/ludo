@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/user"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/libretro/ludo/input"
@@ -122,8 +123,15 @@ func refreshTabs() {
 func getPlaylists() []entry {
 	playlists.LoadPlaylists()
 
+	// To store the keys in slice in sorted order
+	var keys []string
+	for k := range playlists.Playlists {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var pls []entry
-	for path := range playlists.Playlists {
+	for _, path := range keys {
 		path := path
 		filename := utils.Filename(path)
 		count := playlistCount(path)
