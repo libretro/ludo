@@ -11,8 +11,6 @@ import (
 )
 
 func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
-	fmt.Println("Download " + url)
-
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
