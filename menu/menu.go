@@ -99,8 +99,8 @@ func Render() {
 
 		menu := menu.stack[i]
 		menu.render()
-		menu.drawHintBar()
 	}
+	menu.stack[currentScreenIndex].drawHintBar()
 }
 
 func genericDrawHintBar() {
