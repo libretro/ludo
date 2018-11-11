@@ -314,6 +314,12 @@ func (menu *Menu) ContextReset() {
 		filename := utils.Filename(path)
 		menu.icons[filename] = video.NewImage("assets/flags/" + filename + ".png")
 	}
+
+	currentScreenIndex := len(menu.stack) - 1
+	curList := menu.stack[currentScreenIndex].Entry()
+	for i := range curList.children {
+		curList.children[i].thumbnail = 0
+	}
 }
 
 // fastForwardTweens finishes all the current animations in the queue.
