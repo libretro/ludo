@@ -311,10 +311,8 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
 
-	if pitch != video.pitch {
-		video.pitch = pitch
-		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
-	}
+	video.pitch = pitch
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	if data != nil {
 		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
