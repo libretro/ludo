@@ -37,6 +37,7 @@ type entry struct {
 	widget          func(*entry)
 	incr            func(int)
 	tags            []string
+	thumbnail       uint32
 	cursor          struct {
 		alpha float32
 		yp    float32

@@ -105,7 +105,7 @@ func (s *screenPlaylist) render() {
 
 	drawCursor(list)
 
-	for _, e := range list.children {
+	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			continue
 		}
@@ -148,6 +148,15 @@ func (s *screenPlaylist) render() {
 					60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: e.tagAlpha / 4})
 				stack += 60 * menu.ratio
 			}
+
+			drawThumbnail(
+				list, i,
+				list.label, utils.Filename(e.path),
+				600*menu.ratio-64*e.scale*menu.ratio,
+				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+				128*menu.ratio*4/3, 128*menu.ratio,
+				e.scale,
+			)
 		}
 	}
 }
