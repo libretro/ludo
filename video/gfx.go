@@ -193,6 +193,7 @@ func textureLoad(rgba *image.RGBA) uint32 {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, 0)
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
 		0,
