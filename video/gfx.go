@@ -28,25 +28,17 @@ func XYWHTo4points(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 floa
 
 // DrawImage draws an image with x, y, w, h
 func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c Color) {
-	_, fbh := video.Window.GetFramebufferSize()
-	ffbh := float32(fbh)
-
-	w *= scale
-	h *= scale
-
-	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, ffbh)
-
-	video.drawTextureQuad(image, x1, y1, x2, y2, x3, y3, x4, y4, c)
-}
-
-// DrawQuad draws a colored quad
-func (video *Video) DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4 float32, c Color) {
-	video.drawTextureQuad(video.white, x1, y1, x2, y2, x3, y3, x4, y4, c)
+	video.drawTexturedQuad(image, x, y, w, h, scale, c)
 }
 
 // DrawRect draws a colored rectangle
 func (video *Video) DrawRect(x, y, w, h float32, scale float32, c Color) {
-	_, fbh := video.Window.GetFramebufferSize()
+	video.drawTexturedQuad(video.white, x, y, w, h, scale, c)
+}
+
+func (video *Video) vertexArray(x, y, w, h, scale float32) []float32 {
+	fbw, fbh := video.Window.GetFramebufferSize()
+	ffbw := float32(fbw)
 	ffbh := float32(fbh)
 
 	w *= scale
@@ -54,25 +46,19 @@ func (video *Video) DrawRect(x, y, w, h float32, scale float32, c Color) {
 
 	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, ffbh)
 
-	video.drawTextureQuad(video.white, x1, y1, x2, y2, x3, y3, x4, y4, c)
-}
-
-// DrawBorder draws a colored rectangle border
-func (video *Video) DrawBorder(x, y, w, h float32, borderWidth float32, c Color) {
-
-	fbw, fbh := video.Window.GetFramebufferSize()
-	ffbw := float32(fbw)
-	ffbh := float32(fbh)
-
-	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, ffbh)
-
-	var va = []float32{
+	return []float32{
 		//  X, Y, U, V
 		x1/ffbw*2 - 1, y1/ffbh*2 - 1, 0, 1, // left-bottom
 		x2/ffbw*2 - 1, y2/ffbh*2 - 1, 0, 0, // left-top
 		x3/ffbw*2 - 1, y3/ffbh*2 - 1, 1, 1, // right-bottom
 		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
 	}
+}
+
+// DrawBorder draws a colored rectangle border
+func (video *Video) DrawBorder(x, y, w, h, borderWidth float32, c Color) {
+
+	va := video.vertexArray(x, y, w, h, 1.0)
 
 	gl.UseProgram(video.borderProgram)
 	gl.Uniform1f(gl.GetUniformLocation(video.borderProgram, gl.Str("border_width\x00")), borderWidth)
@@ -90,18 +76,9 @@ func (video *Video) DrawBorder(x, y, w, h float32, borderWidth float32, c Color)
 }
 
 // Draw a texture on a polygon
-func (video *Video) drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4 float32, c Color) {
-	fbw, fbh := video.Window.GetFramebufferSize()
-	ffbw := float32(fbw)
-	ffbh := float32(fbh)
+func (video *Video) drawTexturedQuad(image uint32, x, y, w, h, scale float32, c Color) {
 
-	var va = []float32{
-		//  X, Y, U, V
-		x1/ffbw*2 - 1, y1/ffbh*2 - 1, 0, 1, // left-bottom
-		x2/ffbw*2 - 1, y2/ffbh*2 - 1, 0, 0, // left-top
-		x3/ffbw*2 - 1, y3/ffbh*2 - 1, 1, 1, // right-bottom
-		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
-	}
+	va := video.vertexArray(x, y, w, h, scale)
 
 	gl.UseProgram(video.demulProgram)
 	maskUniform := gl.GetUniformLocation(video.demulProgram, gl.Str("mask\x00"))
@@ -124,19 +101,7 @@ func (video *Video) drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4
 // DrawRoundedRect draws a rectangle with rounded corners
 func (video *Video) DrawRoundedRect(x, y, w, h, r float32, c Color) {
 
-	fbw, fbh := video.Window.GetFramebufferSize()
-	ffbw := float32(fbw)
-	ffbh := float32(fbh)
-
-	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, ffbh)
-
-	var va = []float32{
-		//  X, Y, U, V
-		x1/ffbw*2 - 1, y1/ffbh*2 - 1, 0, 1, // left-bottom
-		x2/ffbw*2 - 1, y2/ffbh*2 - 1, 0, 0, // left-top
-		x3/ffbw*2 - 1, y3/ffbh*2 - 1, 1, 1, // right-bottom
-		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
-	}
+	va := video.vertexArray(x, y, w, h, 1.0)
 
 	gl.UseProgram(video.roundedProgram)
 	gl.Uniform4f(gl.GetUniformLocation(video.roundedProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
@@ -156,19 +121,7 @@ func (video *Video) DrawRoundedRect(x, y, w, h, r float32, c Color) {
 // DrawCircle draws a circle
 func (video *Video) DrawCircle(x, y, r float32, c Color) {
 
-	fbw, fbh := video.Window.GetFramebufferSize()
-	ffbw := float32(fbw)
-	ffbh := float32(fbh)
-
-	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x-r, y-r, r*2, r*2, ffbh)
-
-	var va = []float32{
-		//  X, Y, U, V
-		x1/ffbw*2 - 1, y1/ffbh*2 - 1, 0, 1, // left-bottom
-		x2/ffbw*2 - 1, y2/ffbh*2 - 1, 0, 0, // left-top
-		x3/ffbw*2 - 1, y3/ffbh*2 - 1, 1, 1, // right-bottom
-		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
-	}
+	va := video.vertexArray(x, y, r*2, r*2, 1.0)
 
 	gl.UseProgram(video.circleProgram)
 	gl.Uniform4f(gl.GetUniformLocation(video.circleProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
