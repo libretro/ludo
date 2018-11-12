@@ -121,7 +121,7 @@ func (video *Video) DrawRoundedRect(x, y, w, h, r float32, c Color) {
 // DrawCircle draws a circle
 func (video *Video) DrawCircle(x, y, r float32, c Color) {
 
-	va := video.vertexArray(x, y, r*2, r*2, 1.0)
+	va := video.vertexArray(x-r, y-r, r*2, r*2, 1.0)
 
 	gl.UseProgram(video.circleProgram)
 	gl.Uniform4f(gl.GetUniformLocation(video.circleProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
