@@ -27,6 +27,7 @@ func buildPlaylist(path string) Scene {
 		strippedName, tags := extractTags(game.Name)
 		list.children = append(list.children, entry{
 			label:      strippedName,
+			gameName:   game.Name,
 			path:       game.Path,
 			tags:       tags,
 			icon:       utils.Filename(path) + "-content",
@@ -151,7 +152,7 @@ func (s *screenPlaylist) render() {
 
 			drawThumbnail(
 				list, i,
-				list.label, utils.Filename(e.path),
+				list.label, e.gameName,
 				600*menu.ratio-64*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				128*menu.ratio*4/3, 128*menu.ratio,

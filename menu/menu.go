@@ -25,28 +25,30 @@ type entry struct {
 	yp, scale       float32
 	width           float32
 	label, subLabel string
-	path            string
+	path            string // full path of the rom linked to the entry
 	labelAlpha      float32
 	icon            string
 	iconAlpha       float32
 	tagAlpha        float32
-	ptr             int
-	callbackOK      func()
+	callbackOK      func() // callback executed when user presses OK
 	value           func() interface{}
 	stringValue     func() string
-	widget          func(*entry)
-	incr            func(int)
-	tags            []string
-	thumbnail       uint32
+	widget          func(*entry) // widget draw callback used in settings
+	incr            func(int)    // increment callback used in settings
+	tags            []string     // flags extracted from game title
+	thumbnail       uint32       // thumbnail texture id
+	gameName        string       // title of the game in db, used for thumbnails
 	cursor          struct {
 		alpha float32
 		yp    float32
 	}
-	children []entry
+	children []entry // children entries
+	ptr      int     // index of the active child
 }
 
 // Scene represents a page of the UI
-// A Scene is typically an entry displaying its own children
+// A scene is typically an entry displaying its own children
+// A segue is a smooth transition between two scenes.
 type Scene interface {
 	segueMount()
 	segueNext()
