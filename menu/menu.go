@@ -25,27 +25,30 @@ type entry struct {
 	yp, scale       float32
 	width           float32
 	label, subLabel string
-	path            string
+	path            string // full path of the rom linked to the entry
 	labelAlpha      float32
 	icon            string
 	iconAlpha       float32
 	tagAlpha        float32
-	ptr             int
-	callbackOK      func()
+	callbackOK      func() // callback executed when user presses OK
 	value           func() interface{}
 	stringValue     func() string
-	widget          func(*entry)
-	incr            func(int)
-	tags            []string
+	widget          func(*entry) // widget draw callback used in settings
+	incr            func(int)    // increment callback used in settings
+	tags            []string     // flags extracted from game title
+	thumbnail       uint32       // thumbnail texture id
+	gameName        string       // title of the game in db, used for thumbnails
 	cursor          struct {
 		alpha float32
 		yp    float32
 	}
-	children []entry
+	children []entry // children entries
+	ptr      int     // index of the active child
 }
 
 // Scene represents a page of the UI
-// A Scene is typically an entry displaying its own children
+// A scene is typically an entry displaying its own children
+// A segue is a smooth transition between two scenes.
 type Scene interface {
 	segueMount()
 	segueNext()
@@ -98,8 +101,8 @@ func Render() {
 
 		menu := menu.stack[i]
 		menu.render()
-		menu.drawHintBar()
 	}
+	menu.stack[currentScreenIndex].drawHintBar()
 }
 
 func genericDrawHintBar() {
@@ -141,7 +144,7 @@ func genericSegueMount(list *entry) {
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.tagAlpha = 1
-			e.scale = 0.5
+			e.scale = 1.5
 		} else if i < list.ptr {
 			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
 			e.labelAlpha = 0
@@ -173,7 +176,7 @@ func genericAnimate(list *entry) {
 			labelAlpha = 1
 			iconAlpha = 1
 			tagAlpha = 1
-			scale = 0.5
+			scale = 1.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
 			labelAlpha = 0.75
@@ -204,32 +207,32 @@ func genericSegueNext(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
 
-		var yp, labelAlpha, iconAlpha, tagAlpha, s float32
+		var yp, labelAlpha, iconAlpha, tagAlpha, scale float32
 		if i == list.ptr {
 			yp = 0.5 - 0.3
 			labelAlpha = 0
 			iconAlpha = 0
 			tagAlpha = 1
-			s = 1.0
+			scale = 1.5
 		} else if i < list.ptr {
 			yp = 0.4 - 0.3 + 0.08*float32(i-list.ptr)
 			labelAlpha = 0
 			iconAlpha = 0
 			tagAlpha = 0
-			s = 0.5
+			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 - 0.3 + 0.08*float32(i-list.ptr)
 			labelAlpha = 0
 			iconAlpha = 0
 			tagAlpha = 0
-			s = 0.5
+			scale = 0.5
 		}
 
 		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, s, 0.15, ease.OutSine)
+		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
 	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 0.15, ease.OutSine)
 	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5-0.3, 0.15, ease.OutSine)
@@ -272,26 +275,26 @@ func genericRender(list *entry) {
 		}
 
 		vid.DrawImage(menu.icons[e.icon],
-			610*menu.ratio-64*e.scale*menu.ratio,
-			float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+			610*menu.ratio-64*0.5*menu.ratio,
+			float32(h)*e.yp-14*menu.ratio-64*0.5*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			e.scale, color)
+			0.5, color)
 
 		if e.labelAlpha > 0 {
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
 			vid.Font.Printf(
 				670*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.7*menu.ratio, e.label)
+				0.6*menu.ratio, e.label)
 
 			if e.widget != nil {
 				e.widget(&e)
 			} else if e.stringValue != nil {
-				lw := vid.Font.Width(0.7*menu.ratio, e.stringValue())
+				lw := vid.Font.Width(0.6*menu.ratio, e.stringValue())
 				vid.Font.Printf(
 					float32(w)-lw-128*menu.ratio,
 					float32(h)*e.yp+fontOffset,
-					0.7*menu.ratio, e.stringValue())
+					0.6*menu.ratio, e.stringValue())
 			}
 		}
 	}
@@ -312,6 +315,12 @@ func (menu *Menu) ContextReset() {
 		path := path
 		filename := utils.Filename(path)
 		menu.icons[filename] = video.NewImage("assets/flags/" + filename + ".png")
+	}
+
+	currentScreenIndex := len(menu.stack) - 1
+	curList := menu.stack[currentScreenIndex].Entry()
+	for i := range curList.children {
+		curList.children[i].thumbnail = 0
 	}
 }
 

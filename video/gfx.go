@@ -110,6 +110,7 @@ func (video *Video) drawTextureQuad(image uint32, x1, y1, x2, y2, x3, y3, x4, y4
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BindVertexArray(video.vao)
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, image)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
@@ -192,6 +193,7 @@ func textureLoad(rgba *image.RGBA) uint32 {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, 0)
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
 		0,

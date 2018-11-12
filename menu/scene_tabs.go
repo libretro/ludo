@@ -93,8 +93,8 @@ func refreshTabs() {
 		if i == e.ptr {
 			e.children[i].yp = 0.5
 			e.children[i].iconAlpha = 1
-			e.children[i].scale = 1
-			e.children[i].width = 600
+			e.children[i].scale = 0.75
+			e.children[i].width = 500
 		} else if i < e.ptr {
 			e.children[i].yp = 0.5
 			e.children[i].iconAlpha = 1
@@ -113,7 +113,7 @@ func refreshTabs() {
 		menu.scroll = float32(e.ptr * 128)
 	} else {
 		e.children[e.ptr].width = 5200
-		menu.scroll = float32(e.ptr*128 + 2980)
+		menu.scroll = float32(e.ptr*128 + 3030)
 	}
 }
 
@@ -182,8 +182,8 @@ func (tabs *screenTabs) segueMount() {
 			e.yp = 0.5
 			e.labelAlpha = 1
 			e.iconAlpha = 1
-			e.scale = 1
-			e.width = 600
+			e.scale = 0.75
+			e.width = 500
 		} else if i < tabs.ptr {
 			e.yp = 0.5
 			e.labelAlpha = 0
@@ -215,8 +215,8 @@ func (tabs *screenTabs) animate() {
 			yp = 0.5
 			labelAlpha = 1
 			iconAlpha = 1
-			scale = 1
-			width = 600
+			scale = 0.75
+			width = 500
 		} else if i < tabs.ptr {
 			yp = 0.5
 			labelAlpha = 0
@@ -243,7 +243,7 @@ func (tabs *screenTabs) animate() {
 func (tabs *screenTabs) segueNext() {
 	cur := &tabs.children[tabs.ptr]
 	menu.tweens[&cur.width] = gween.New(cur.width, 5200, 0.15, ease.OutSine)
-	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+2980, 0.15, ease.OutSine)
+	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+3030, 0.15, ease.OutSine)
 }
 
 func (tabs *screenTabs) update() {
@@ -283,7 +283,7 @@ func (tabs *screenTabs) update() {
 func (tabs screenTabs) render() {
 	_, h := vid.Window.GetFramebufferSize()
 
-	stackWidth := 660 * menu.ratio
+	stackWidth := 710 * menu.ratio
 	for i, e := range tabs.children {
 
 		c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
@@ -294,10 +294,10 @@ func (tabs screenTabs) render() {
 
 		if e.labelAlpha > 0 {
 			vid.Font.SetColor(float32(c.R), float32(c.B), float32(c.G), e.labelAlpha)
-			lw := vid.Font.Width(0.7*menu.ratio, e.label)
-			vid.Font.Printf(x-lw/2, float32(h)*e.yp+310*menu.ratio, 0.7*menu.ratio, e.label)
+			lw := vid.Font.Width(0.6*menu.ratio, e.label)
+			vid.Font.Printf(x-lw/2, float32(h)*e.yp+250*menu.ratio, 0.6*menu.ratio, e.label)
 			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
-			vid.Font.Printf(x-lw/2, float32(h)*e.yp+390*menu.ratio, 0.4*menu.ratio, e.subLabel)
+			vid.Font.Printf(x-lw/2, float32(h)*e.yp+330*menu.ratio, 0.4*menu.ratio, e.subLabel)
 		}
 
 		vid.DrawImage(menu.icons["hexagon"],
