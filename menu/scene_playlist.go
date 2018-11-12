@@ -118,18 +118,24 @@ func (s *screenPlaylist) render() {
 			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
 		}
 
-		icon := menu.icons[e.icon]
-		if e.path == state.Global.GamePath {
-			icon = menu.icons["resume"]
-		}
-
-		vid.DrawImage(icon,
-			610*menu.ratio-64*e.scale*menu.ratio,
-			float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-			128*menu.ratio, 128*menu.ratio,
-			e.scale, color)
-
 		if e.labelAlpha > 0 {
+			if e.path == state.Global.GamePath {
+				vid.DrawImage(menu.icons["resume"],
+					610*menu.ratio-64*e.scale*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+					128*menu.ratio, 128*menu.ratio,
+					e.scale, color)
+			} else {
+				drawThumbnail(
+					list, i,
+					list.label, e.gameName,
+					600*menu.ratio-64*e.scale*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+					128*menu.ratio*4/3, 128*menu.ratio,
+					e.scale,
+				)
+			}
+
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
 			stack := 670 * menu.ratio
 			vid.Font.Printf(
@@ -149,15 +155,6 @@ func (s *screenPlaylist) render() {
 					60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: e.tagAlpha / 4})
 				stack += 60 * menu.ratio
 			}
-
-			drawThumbnail(
-				list, i,
-				list.label, e.gameName,
-				600*menu.ratio-64*e.scale*menu.ratio,
-				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-				128*menu.ratio*4/3, 128*menu.ratio,
-				e.scale,
-			)
 		}
 	}
 }
