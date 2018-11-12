@@ -14,7 +14,6 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/kivutar/glfont"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 )
@@ -267,19 +266,6 @@ func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
 func (video *Video) FullViewport() {
 	w, h := video.Window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(w), int32(h))
-}
-
-// RenderNotifications draws the list of notification messages on the viewport
-func (video *Video) RenderNotifications() {
-	video.FullViewport()
-	fbw, fbh := video.Window.GetFramebufferSize()
-	video.Font.UpdateResolution(fbw, fbh)
-	for i, n := range notifications.List() {
-		lw := video.Font.Width(0.7, n.Message)
-		video.DrawRoundedRect(25, float32(80+80*i)-52, lw+35, 75, 0.25, Color{R: 0.4, G: 0.4, B: 0, A: float32(n.Frames) / 120.0})
-		video.Font.SetColor(1, 1, 0.85, float32(n.Frames)/120.0)
-		video.Font.Printf(45, float32(80+80*i), 0.7, n.Message)
-	}
 }
 
 // Render the current frame

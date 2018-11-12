@@ -55,7 +55,7 @@ func runLoop(vid *video.Video) {
 			menu.Render()
 		}
 		input.ProcessActions()
-		vid.RenderNotifications()
+		menu.RenderNotifications()
 		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
 	}
