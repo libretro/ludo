@@ -104,8 +104,6 @@ func (s *screenPlaylist) render() {
 
 	_, h := vid.Window.GetFramebufferSize()
 
-	drawCursor(list)
-
 	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			continue
@@ -119,30 +117,34 @@ func (s *screenPlaylist) render() {
 		}
 
 		if e.labelAlpha > 0 {
+			drawThumbnail(
+				list, i,
+				list.label, e.gameName,
+				680*menu.ratio-85*e.scale*menu.ratio,
+				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+				170*menu.ratio, 128*menu.ratio,
+				e.scale,
+			)
+			vid.DrawBorder(
+				680*menu.ratio-85*e.scale*menu.ratio,
+				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
+				video.Color{R: color.R, G: color.G, B: color.B, A: 0.75})
 			if e.path == state.Global.GamePath {
 				vid.DrawImage(menu.icons["resume"],
-					610*menu.ratio-64*e.scale*menu.ratio,
+					680*menu.ratio-64*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 					128*menu.ratio, 128*menu.ratio,
-					e.scale, color)
-			} else {
-				drawThumbnail(
-					list, i,
-					list.label, e.gameName,
-					600*menu.ratio-64*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-					128*menu.ratio*4/3, 128*menu.ratio,
-					e.scale,
-				)
+					e.scale, video.Color{R: 1, G: 1, B: 1, A: 1})
 			}
 
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
-			stack := 670 * menu.ratio
+			stack := 840 * menu.ratio
 			vid.Font.Printf(
-				670*menu.ratio,
+				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.7*menu.ratio, e.label)
-			stack += float32(int(vid.Font.Width(0.7*menu.ratio, e.label)))
+				0.6*menu.ratio, e.label)
+			stack += float32(int(vid.Font.Width(0.6*menu.ratio, e.label)))
 			stack += 10
 
 			for _, tag := range e.tags {
