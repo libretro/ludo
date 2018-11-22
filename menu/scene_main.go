@@ -37,7 +37,13 @@ func buildMainMenu() Scene {
 			menu.stack = append(menu.stack, buildExplorer(
 				"cores",
 				[]string{".dll", ".dylib", ".so"},
-				core.Load,
+				func(path string) error {
+					err := core.Load(path)
+					if err == nil {
+						notifications.DisplayAndLog("Core", "Core loaded.")
+					}
+					return err
+				},
 				nil,
 			))
 		},
