@@ -101,9 +101,7 @@ func (video *Video) Configure(fullscreen bool) {
 	// Force a minimum size for the window.
 	video.Window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
 
-	if fullscreen {
-		video.Window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
-	}
+	video.Window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
 
 	// Initialize Glow
 	if err := gl.Init(); err != nil {
