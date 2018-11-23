@@ -31,7 +31,7 @@ before_install:
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
-  - go get golang.org/x/lint/golint
+  - if [[ "$GIMME_ARCH" != "arm" ]]; then go get golang.org/x/lint/golint; fi
   - go get honnef.co/go/tools/cmd/megacheck
   - go get github.com/fzipp/gocyclo
 
