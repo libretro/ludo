@@ -11,9 +11,9 @@ go:
 matrix:
   include:
     - os: linux
-      env: GOARCH=amd64
+      env: GIMME_ARCH=amd64
     - os: linux
-      env: GOARCH=arm
+      env: GIMME_ARCH=arm
     - os: osx
     - os: windows
       env: CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
@@ -40,12 +40,13 @@ script:
   - megacheck ./...
   - gocyclo -over 19 $GO_FILES
   - golint -set_exit_status $(go list ./...)
-  - GOARCH=$GOARCH go build
+  - go build
+  - ls -la
   - file ludo
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "linux" && "GOARCH" == "amd64" ]]; then OS="Linux" ARCH=x86_64 GOARCH=$GOARCH VERSION=${TRAVIS_TAG:1} make tar; fi
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "linux" && "GOARCH" == "arm" ]]; then OS="Linux" ARCH=arm GOARCH=$GOARCH VERSION=${TRAVIS_TAG:1} make tar; fi
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "osx" ]]; then OS="OSX" ARCH=x86_64 GOARCH=$GOARCH VERSION=${TRAVIS_TAG:1} make dmg; fi
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "windows" ]]; then OS="Windows" ARCH=x86_64 GOARCH=$GOARCH VERSION=${TRAVIS_TAG:1} make zip; fi
+  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "linux" && "GIMME_ARCH" == "amd64" ]]; then OS="Linux" ARCH=x86_64 GOARCH=$GOARCH VERSION=${TRAVIS_TAG:1} make tar; fi
+  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "linux" && "GIMME_ARCH" == "arm" ]]; then OS="Linux" ARCH=arm GOARCH=$GIMME_ARCH VERSION=${TRAVIS_TAG:1} make tar; fi
+  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "osx" ]]; then OS="OSX" ARCH=x86_64 GOARCH=$GIMME_ARCH VERSION=${TRAVIS_TAG:1} make dmg; fi
+  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "windows" ]]; then OS="Windows" ARCH=x86_64 GOARCH=$GIMME_ARCH VERSION=${TRAVIS_TAG:1} make zip; fi
 
 deploy:
   skip_cleanup: true
