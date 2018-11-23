@@ -11,12 +11,13 @@ go:
 matrix:
   include:
     - os: linux
-      env: GIMME_ARCH=amd64
+      env: CGO_ENABLED=1 GIMME_ARCH=amd64
     - os: linux
-      env: GIMME_ARCH=arm
+      env: CGO_ENABLED=1 GIMME_ARCH=arm
     - os: osx
+      env: CGO_ENABLED=1 GIMME_ARCH=amd64
     - os: windows
-      env: CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
+      env: CGO_ENABLED=1 GIMME_ARCH=amd64 CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
