@@ -4,20 +4,20 @@ BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 CORES = atari800 fbalpha gambatte genesis_plus_gx handy mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba nestopia pcsx_rearmed picodrive prosystem snes9x stella vecx virtualjaguar
 
 ifeq ($(OS), OSX)
-	BUILDBOTURL=http://buildbot.libretro.com/nightly/apple/osx/x86_64/latest
+	BUILDBOTURL=http://buildbot.libretro.com/nightly/apple/osx/$(ARCH)/latest
 	EXT=dylib
 endif
 ifeq ($(OS), Linux)
-	BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/x86_64/latest
+	BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/$(ARCH)/latest
 	EXT=so
 endif
 ifeq ($(OS), Windows)
-	BUILDBOTURL=http://buildbot.libretro.com/nightly/windows/x86_64/latest
+	BUILDBOTURL=http://buildbot.libretro.com/nightly/windows/$(ARCH)/latest
 	EXT=dll
 endif
 
 ludo:
-	go build
+	GOARCH=$(GOARCH) go build
 
 cores:
 	mkdir -p cores
