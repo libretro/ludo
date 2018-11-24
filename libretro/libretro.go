@@ -32,6 +32,9 @@ void bridge_retro_unload_game(void *f);
 void bridge_retro_run(void *f);
 void bridge_retro_reset(void *f);
 void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_t usec);
+void bridge_retro_hw_context_reset(retro_hw_context_reset_t f);
+uintptr_t bridge_retro_hw_get_current_framebuffer(retro_hw_get_current_framebuffer_t f);
+void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f);
 void bridge_retro_audio_callback(retro_audio_callback_t f);
 void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
 
@@ -121,6 +124,22 @@ type FrameTimeCallback struct {
 	Reference int64
 }
 
+// HWRenderCallback sets an interface to let a libretro core render with
+// hardware acceleration.
+type HWRenderCallback struct {
+	HWContextType              uint
+	ContextReset               func()
+	GetCurrentFramebuffer      func() uintptr
+	GetProcAddress             func()
+	Depth                      bool
+	Stencil                    bool
+	BottomLeftOrigin           bool
+	VersionMajor, VersionMinor uint
+	CacheContext               bool
+	ContextDestroy             func()
+	DebugContext               bool
+}
+
 // AudioCallback stores the audio callback itself and the SetState callback
 type AudioCallback struct {
 	Callback func()
@@ -179,6 +198,7 @@ const (
 	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
 	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
 	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
+	EnvironmentSetHWRenderer        = uint32(C.RETRO_ENVIRONMENT_SET_HW_RENDER)
 )
 
 // Debug levels
@@ -529,6 +549,30 @@ func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
 		C.bridge_retro_frame_time_callback(c.callback, C.retro_usec_t(usec))
 	}
 	return ftc
+}
+
+// SetHWRenderCallback is an environment callback helper to set the HWRenderCallback
+func SetHWRenderCallback(data unsafe.Pointer) HWRenderCallback {
+	c := *(*C.struct_retro_hw_render_callback)(data)
+	hwrc := HWRenderCallback{}
+	hwrc.HWContextType = uint(c.context_type)
+	hwrc.ContextReset = func() {
+		C.bridge_retro_hw_context_reset(c.context_reset)
+	}
+	hwrc.GetCurrentFramebuffer = func() uintptr {
+		return uintptr(C.bridge_retro_hw_get_current_framebuffer(c.get_current_framebuffer))
+	}
+	hwrc.Depth = bool(c.depth)
+	hwrc.Stencil = bool(c.stencil)
+	hwrc.BottomLeftOrigin = bool(c.bottom_left_origin)
+	hwrc.VersionMajor = uint(c.version_major)
+	hwrc.VersionMinor = uint(c.version_minor)
+	hwrc.CacheContext = bool(c.cache_context)
+	hwrc.ContextDestroy = func() {
+		C.bridge_retro_hw_context_destroy(c.context_destroy)
+	}
+	hwrc.DebugContext = bool(c.debug_context)
+	return hwrc
 }
 
 // SetAudioCallback is an environment callback helper to set the AudioCallback

@@ -12,6 +12,7 @@ type State struct {
 	Core        libretro.Core // Current libretro core
 	FrameTimeCb libretro.FrameTimeCallback
 	AudioCb     libretro.AudioCallback
+	HWRenderCb  libretro.HWRenderCallback
 	CoreRunning bool
 	MenuActive  bool // When set to true, will display the menu layer
 	Verbose     bool

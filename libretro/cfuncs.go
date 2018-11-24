@@ -22,6 +22,18 @@ void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_
 	f(usec);
 }
 
+void bridge_retro_hw_context_reset(retro_hw_context_reset_t f) {
+	f();
+}
+
+void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f) {
+	f();
+}
+
+uintptr_t bridge_retro_hw_get_current_framebuffer(retro_hw_get_current_framebuffer_t f) {
+	return ((uintptr_t (*)(void))f)();
+}
+
 void bridge_retro_audio_callback(retro_audio_callback_t f) {
 	f();
 }
