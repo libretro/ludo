@@ -2,14 +2,13 @@ package video
 
 // source of the shader to draw circles
 var borderFragmentShader = `
-#version 330
+#version 120
 
 uniform float border_width;
 uniform vec4 color;
 uniform vec2 size;
 
-in vec2 fragTexCoord;
-out vec4 outputColor;
+varying vec2 fragTexCoord;
 
 void main() {
 	float ratio = size.x / size.y;
@@ -20,9 +19,9 @@ void main() {
 
 	if (fragTexCoord.x < maxX && fragTexCoord.x > minX &&
 			fragTexCoord.y < maxY && fragTexCoord.y > minY) {
-		outputColor = vec4(0,0,0,0);
+		gl_FragColor = vec4(0,0,0,0);
 	} else {
-		outputColor = color;
+		gl_FragColor = color;
 	}
 }
 ` + "\x00"

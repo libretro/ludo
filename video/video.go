@@ -71,10 +71,10 @@ func (video *Video) Reconfigure(fullscreen bool) {
 
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
-	glfw.WindowHint(glfw.ContextVersionMajor, 3)
-	glfw.WindowHint(glfw.ContextVersionMinor, 2)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+	glfw.WindowHint(glfw.ContextVersionMajor, 2)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+	//glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
 	var width, height int
 	var m *glfw.Monitor
@@ -362,12 +362,12 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 }
 
 var vertexShader = `
-#version 330
+#version 120
 
-in vec2 vert;
-in vec2 vertTexCoord;
+attribute vec2 vert;
+attribute vec2 vertTexCoord;
 
-out vec2 fragTexCoord;
+varying vec2 fragTexCoord;
 
 void main() {
   fragTexCoord = vertTexCoord;
