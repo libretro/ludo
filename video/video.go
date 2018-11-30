@@ -362,8 +362,6 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 }
 
 var vertexShader = `
-#version 120
-
 attribute vec2 vert;
 attribute vec2 vertTexCoord;
 
