@@ -1,8 +1,6 @@
 package video
 
 var demulFragmentShader = `
-#version 120
-
 uniform sampler2D tex;
 uniform float mask;
 uniform vec4 texColor;

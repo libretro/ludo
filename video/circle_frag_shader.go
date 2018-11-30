@@ -2,8 +2,6 @@ package video
 
 // source of the shader to draw circles
 var circleFragmentShader = `
-#version 120
-
 uniform sampler2D tex;
 uniform vec4 color;
 

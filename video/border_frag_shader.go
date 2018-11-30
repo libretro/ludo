@@ -2,8 +2,6 @@ package video
 
 // source of the shader to draw circles
 var borderFragmentShader = `
-#version 120
-
 uniform float border_width;
 uniform vec4 color;
 uniform vec2 size;

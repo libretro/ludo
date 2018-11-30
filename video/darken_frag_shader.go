@@ -1,8 +1,6 @@
 package video
 
 var darkenFragmentShader = `
-#version 120
-
 uniform sampler2D tex;
 uniform float mask;
 uniform vec4 texColor;
@@ -15,7 +13,7 @@ vec4 grayscale(vec4 c) {
 }
 
 vec4 darken(vec4 c) {
-  return vec4(c.r/4, c.g/4, c.b/4, 1.0);
+  return vec4(c.r/4.0, c.g/4.0, c.b/4.0, 1.0);
 }
 
 void main() {
