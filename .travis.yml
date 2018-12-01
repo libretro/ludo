@@ -16,10 +16,8 @@ matrix:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -q; fi
-  - sudo install cross-gcc-dev -t jessie-backports
   - sudo dpkg --add-architecture armhf
   - sudo dpkg --add-architecture armel
-  - sudo apt-get install crossbuild-essential-armel crossbuild-essential-armhf
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libglfw3-dev libopenal-dev xorg-dev gcc-arm-linux-gnueabihf -y --allow-unauthenticated; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glfw openal-soft; fi
