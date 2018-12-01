@@ -35,9 +35,10 @@ type WindowInterface interface {
 
 // Video holds the state of the video package
 type Video struct {
-	Window WindowInterface
-	Geom   libretro.GameGeometry
-	Font   *glfont.Font
+	GLVersion uint
+	Window    WindowInterface
+	Geom      libretro.GameGeometry
+	Font      *glfont.Font
 
 	program        uint32 // default program used for the game window
 	roundedProgram uint32 // program to draw rectangles with rounded corners
@@ -55,8 +56,9 @@ type Video struct {
 }
 
 // Init instanciates the video package
-func Init(fullscreen bool) *Video {
+func Init(fullscreen bool, GLVersion uint) *Video {
 	vid := &Video{}
+	vid.GLVersion = GLVersion
 	vid.Configure(fullscreen)
 	return vid
 }
@@ -71,13 +73,30 @@ func (video *Video) Reconfigure(fullscreen bool) {
 
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
-	glfw.WindowHint(glfw.ContextVersionMajor, 2)
-	glfw.WindowHint(glfw.ContextVersionMinor, 1)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-	//glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-
 	var width, height int
 	var m *glfw.Monitor
+	var GLSLVersion uint
+
+	switch video.GLVersion {
+	case 21:
+		glfw.WindowHint(glfw.ContextVersionMajor, 2)
+		glfw.WindowHint(glfw.ContextVersionMinor, 1)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
+		GLSLVersion = 120
+	case 41:
+		glfw.WindowHint(glfw.ContextVersionMajor, 4)
+		glfw.WindowHint(glfw.ContextVersionMinor, 1)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+		GLSLVersion = 410
+	default:
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 2)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+		GLSLVersion = 150
+	}
 
 	if fullscreen {
 		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
@@ -112,7 +131,7 @@ func (video *Video) Configure(fullscreen bool) {
 	video.CoreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
-	video.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh)
+	video.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh, GLSLVersion)
 	if err != nil {
 		panic(err)
 	}
@@ -123,27 +142,27 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	// Configure the vertex and fragment shaders
-	video.program, err = newProgram(vertexShader, darkenFragmentShader)
+	video.program, err = newProgram(GLSLVersion, vertexShader, darkenFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
+	video.roundedProgram, err = newProgram(GLSLVersion, vertexShader, roundedFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.borderProgram, err = newProgram(vertexShader, borderFragmentShader)
+	video.borderProgram, err = newProgram(GLSLVersion, vertexShader, borderFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
+	video.circleProgram, err = newProgram(GLSLVersion, vertexShader, circleFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.demulProgram, err = newProgram(vertexShader, demulFragmentShader)
+	video.demulProgram, err = newProgram(GLSLVersion, vertexShader, demulFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -303,7 +322,10 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	}
 }
 
-func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
+func newProgram(GLSLVersion uint, vertexShaderSource, fragmentShaderSource string) (uint32, error) {
+	vertexShaderSource = fmt.Sprintf("#version %d\n", GLSLVersion) + vertexShaderSource
+	fragmentShaderSource = fmt.Sprintf("#version %d\n", GLSLVersion) + fragmentShaderSource
+
 	vertexShader, err := compileShader(vertexShaderSource, gl.VERTEX_SHADER)
 	if err != nil {
 		return 0, err
@@ -362,10 +384,23 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 }
 
 var vertexShader = `
-attribute vec2 vert;
-attribute vec2 vertTexCoord;
+#if __VERSION__ >= 130
+#define COMPAT_VARYING out
+#define COMPAT_ATTRIBUTE in
+#define COMPAT_TEXTURE texture
+#define COMPAT_FRAGCOLOR FragColor
+out vec4 COMPAT_FRAGCOLOR;
+#else
+#define COMPAT_VARYING varying
+#define COMPAT_ATTRIBUTE attribute
+#define COMPAT_TEXTURE texture2D
+#define COMPAT_FRAGCOLOR gl_FragColor
+#endif
 
-varying vec2 fragTexCoord;
+COMPAT_ATTRIBUTE vec2 vert;
+COMPAT_ATTRIBUTE vec2 vertTexCoord;
+
+COMPAT_VARYING vec2 fragTexCoord;
 
 void main() {
   fragTexCoord = vertTexCoord;

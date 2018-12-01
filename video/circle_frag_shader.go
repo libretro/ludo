@@ -1,11 +1,23 @@
 package video
 
-// source of the shader to draw circles
 var circleFragmentShader = `
+#if __VERSION__ >= 130
+#define COMPAT_VARYING in
+#define COMPAT_ATTRIBUTE in
+#define COMPAT_TEXTURE texture
+#define COMPAT_FRAGCOLOR FragColor
+out vec4 COMPAT_FRAGCOLOR;
+#else
+#define COMPAT_VARYING varying
+#define COMPAT_ATTRIBUTE attribute
+#define COMPAT_TEXTURE texture2D
+#define COMPAT_FRAGCOLOR gl_FragColor
+#endif
+
 uniform sampler2D tex;
 uniform vec4 color;
 
-varying vec2 fragTexCoord;
+COMPAT_VARYING vec2 fragTexCoord;
 
 float circle(vec2 _st, float _radius) {
   vec2 dist = _st - vec2(0.5);
@@ -13,6 +25,6 @@ float circle(vec2 _st, float _radius) {
 }
 
 void main() {
-	gl_FragColor = vec4(color.rgb, circle(fragTexCoord.xy, 0.125));
+	COMPAT_FRAGCOLOR = vec4(color.rgb, circle(fragTexCoord.xy, 0.125));
 }
 ` + "\x00"
