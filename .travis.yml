@@ -11,7 +11,7 @@ go:
 matrix:
   include:
     - os: linux
-      env: CGO_ENABLED=1 GIMME_ARCH=arm GOARCH=arm GOARM=7 CC=/usr/bin/arm-linux-gnueabihf-gcc CFLAGS="-marm"
+      env: CGO_ENABLED=1 GIMME_ARCH=arm GOARCH=arm GOARM=6 CC=arm-linux-gnueabihf-gcc CXX=arm-linux-gnueabihf-g++ CFLAGS="-marm"
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
@@ -36,7 +36,8 @@ script:
   - if [[ "$GIMME_ARCH" != "arm" ]]; then megacheck ./...; fi
   - if [[ "$GIMME_ARCH" != "arm" ]]; then gocyclo -over 19 $GO_FILES; fi
   - if [[ "$GIMME_ARCH" != "arm" ]]; then golint -set_exit_status $(go list ./...); fi
-  - go build -ldflags="-extld=$CC"
+  - go env
+  - go build -x -ldflags="-extld=$CC"
   - ls -la
   - file ludo
   - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "linux" && "GIMME_ARCH" == "amd64" ]]; then OS="Linux" ARCH=x86_64 GOARCH=$GOARCH VERSION=${TRAVIS_TAG:1} make tar; fi
