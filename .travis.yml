@@ -13,7 +13,7 @@ matrix:
     - os: linux
       env: CGO_ENABLED=1 GIMME_ARCH=amd64
     - os: linux
-      env: CGO_ENABLED=1 GIMME_ARCH=arm CC=/usr/bin/arm-linux-gnueabihf-gcc CFLAGS="-marm"
+      env: CGO_ENABLED=1 GIMME_ARCH=arm GOARCH=arm GOARM=7 CC=/usr/bin/arm-linux-gnueabihf-gcc CFLAGS="-marm"
     - os: osx
       env: CGO_ENABLED=1 GIMME_ARCH=amd64
     - os: windows
