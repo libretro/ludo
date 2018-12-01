@@ -78,19 +78,49 @@ func (video *Video) Configure(fullscreen bool) {
 	var GLSLVersion uint
 
 	switch video.GLVersion {
+	case 20:
+		glfw.WindowHint(glfw.ContextVersionMajor, 2)
+		glfw.WindowHint(glfw.ContextVersionMinor, 0)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
+		GLSLVersion = 110
 	case 21:
 		glfw.WindowHint(glfw.ContextVersionMajor, 2)
 		glfw.WindowHint(glfw.ContextVersionMinor, 1)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 		GLSLVersion = 120
+	case 30:
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 0)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
+		GLSLVersion = 130
+	case 31:
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 1)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
+		GLSLVersion = 140
+	case 32:
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 2)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+		GLSLVersion = 150
 	case 41:
 		glfw.WindowHint(glfw.ContextVersionMajor, 4)
 		glfw.WindowHint(glfw.ContextVersionMinor, 1)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 		GLSLVersion = 410
-	default:
+	case 42:
+		glfw.WindowHint(glfw.ContextVersionMajor, 4)
+		glfw.WindowHint(glfw.ContextVersionMinor, 2)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+		GLSLVersion = 420
+	default: // 32
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 2)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
