@@ -71,12 +71,8 @@ func (video *Video) Reconfigure(fullscreen bool) {
 	video.Configure(fullscreen)
 }
 
-// Configure instanciates the video package
-func (video *Video) Configure(fullscreen bool) {
-	var width, height int
-	var m *glfw.Monitor
+func (video *Video) configureContext() uint {
 	var GLSLVersion uint
-
 	switch video.GLVersion {
 	case 20:
 		glfw.WindowHint(glfw.ContextVersionMajor, 2)
@@ -127,6 +123,14 @@ func (video *Video) Configure(fullscreen bool) {
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 		GLSLVersion = 150
 	}
+	return GLSLVersion
+}
+
+// Configure instanciates the video package
+func (video *Video) Configure(fullscreen bool) {
+	var width, height int
+	var m *glfw.Monitor
+	GLSLVersion := video.configureContext()
 
 	if fullscreen {
 		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
