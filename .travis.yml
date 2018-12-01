@@ -16,6 +16,7 @@ matrix:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -q; fi
+  - sudo install cross-gcc-dev -t jessie-backports
   - sudo dpkg --add-architecture armhf
   - sudo dpkg --add-architecture armel
   - sudo apt-get install crossbuild-essential-armel crossbuild-essential-armhf
