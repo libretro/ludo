@@ -6,7 +6,7 @@ branches:
 language: go
 
 go:
-  - "1.9"
+  - "1.11"
 
 matrix:
   include:
