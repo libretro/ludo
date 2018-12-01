@@ -14,15 +14,24 @@ It works on OSX, Linux and Windows. You can download releases [here](https://git
  * OpenGL 4.1
  * OpenAL
 
-On OSX you can execute the following command and follow the instructions about exporting PKG_CONFIG
+#### On OSX
+
+You can execute the following command and follow the instructions about exporting PKG_CONFIG
 
     brew install glfw openal-soft
 
-On Debian or Ubuntu:
+#### On Debian or Ubuntu
 
     sudo apt-get install libglfw3-dev libopenal-dev xorg-dev
 
-On Windows, setup openal headers and dll in mingw-w64 `include` and `lib` folders
+#### On Raspbian
+
+    sudo apt-get install libglfw3-dev libopenal-dev xorg-dev
+    
+
+#### On Windows
+
+Setup openal headers and dll in mingw-w64 `include` and `lib` folders.
 
 ## Building
 
@@ -32,4 +41,8 @@ On Windows, setup openal headers and dll in mingw-w64 `include` and `lib` folder
 
 ## Running
 
-    ./ludo -L nestopia_libretro.so mario3.nes
+    ./ludo
+
+But on a RaspberryPi:
+
+    ./ludo -glver=21
