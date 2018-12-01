@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/user"
+	"strings"
 
 	"github.com/libretro/ludo/video"
 )
@@ -42,11 +43,27 @@ func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 	io.Copy(out, resp.Body)
 }
 
+// Scrub characters that are not cross-platform and/or violate the
+// No-Intro filename standard.
+func scrubIllegalChars(str string) string {
+	str = strings.Replace(str, "&", "_", -1)
+	str = strings.Replace(str, "*", "_", -1)
+	str = strings.Replace(str, "/", "_", -1)
+	str = strings.Replace(str, ":", "_", -1)
+	str = strings.Replace(str, "`", "_", -1)
+	str = strings.Replace(str, "<", "_", -1)
+	str = strings.Replace(str, ">", "_", -1)
+	str = strings.Replace(str, "?", "_", -1)
+	str = strings.Replace(str, "|", "_", -1)
+	return str
+}
+
 func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32) {
 	usr, _ := user.Current()
 	folderPath := usr.HomeDir + "/.ludo/thumbnails/" + system + "/Named_Snaps/"
 	path := folderPath + gameName + ".png"
-	url := "http://thumbnails.libretro.com/" + system + "/Named_Snaps/" + gameName + ".png"
+	legalName := scrubIllegalChars(gameName)
+	url := "http://thumbnails.libretro.com/" + system + "/Named_Snaps/" + legalName + ".png"
 
 	if list.children[i].thumbnail == 0 || list.children[i].thumbnail == menu.icons["img-dl"] {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
