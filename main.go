@@ -62,8 +62,10 @@ func runLoop(vid *video.Video) {
 }
 
 func main() {
+	var GLVersion uint
 	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
+	flag.UintVar(&GLVersion, "glver", 32, "OpenGL version")
 	flag.Parse()
 	args := flag.Args()
 
@@ -91,7 +93,7 @@ func main() {
 
 	playlists.LoadPlaylists()
 
-	vid := video.Init(settings.Settings.VideoFullscreen)
+	vid := video.Init(settings.Settings.VideoFullscreen, GLVersion)
 
 	m := menu.Init(vid)
 	m.ContextReset()

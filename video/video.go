@@ -4,10 +4,8 @@
 package video
 
 import (
-	"fmt"
 	"log"
 
-	"strings"
 	"unsafe"
 
 	"github.com/go-gl/gl/all-core/gl"
@@ -35,9 +33,10 @@ type WindowInterface interface {
 
 // Video holds the state of the video package
 type Video struct {
-	Window WindowInterface
-	Geom   libretro.GameGeometry
-	Font   *glfont.Font
+	GLVersion uint
+	Window    WindowInterface
+	Geom      libretro.GameGeometry
+	Font      *glfont.Font
 
 	program        uint32 // default program used for the game window
 	roundedProgram uint32 // program to draw rectangles with rounded corners
@@ -55,8 +54,9 @@ type Video struct {
 }
 
 // Init instanciates the video package
-func Init(fullscreen bool) *Video {
+func Init(fullscreen bool, GLVersion uint) *Video {
 	vid := &Video{}
+	vid.GLVersion = GLVersion
 	vid.Configure(fullscreen)
 	return vid
 }
@@ -69,15 +69,66 @@ func (video *Video) Reconfigure(fullscreen bool) {
 	video.Configure(fullscreen)
 }
 
+func (video *Video) configureContext() uint {
+	var GLSLVersion uint
+	switch video.GLVersion {
+	case 20:
+		glfw.WindowHint(glfw.ContextVersionMajor, 2)
+		glfw.WindowHint(glfw.ContextVersionMinor, 0)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
+		GLSLVersion = 110
+	case 21:
+		glfw.WindowHint(glfw.ContextVersionMajor, 2)
+		glfw.WindowHint(glfw.ContextVersionMinor, 1)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
+		GLSLVersion = 120
+	case 30:
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 0)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
+		GLSLVersion = 130
+	case 31:
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 1)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
+		GLSLVersion = 140
+	case 32:
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 2)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+		GLSLVersion = 150
+	case 41:
+		glfw.WindowHint(glfw.ContextVersionMajor, 4)
+		glfw.WindowHint(glfw.ContextVersionMinor, 1)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+		GLSLVersion = 410
+	case 42:
+		glfw.WindowHint(glfw.ContextVersionMajor, 4)
+		glfw.WindowHint(glfw.ContextVersionMinor, 2)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+		GLSLVersion = 420
+	default: // 32
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 2)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+		GLSLVersion = 150
+	}
+	return GLSLVersion
+}
+
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
-	glfw.WindowHint(glfw.ContextVersionMajor, 3)
-	glfw.WindowHint(glfw.ContextVersionMinor, 2)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-
 	var width, height int
 	var m *glfw.Monitor
+	GLSLVersion := video.configureContext()
 
 	if fullscreen {
 		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
@@ -112,7 +163,7 @@ func (video *Video) Configure(fullscreen bool) {
 	video.CoreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
-	video.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh)
+	video.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh, GLSLVersion)
 	if err != nil {
 		panic(err)
 	}
@@ -123,27 +174,27 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	// Configure the vertex and fragment shaders
-	video.program, err = newProgram(vertexShader, darkenFragmentShader)
+	video.program, err = newProgram(GLSLVersion, vertexShader, darkenFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
+	video.roundedProgram, err = newProgram(GLSLVersion, vertexShader, roundedFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.borderProgram, err = newProgram(vertexShader, borderFragmentShader)
+	video.borderProgram, err = newProgram(GLSLVersion, vertexShader, borderFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
+	video.circleProgram, err = newProgram(GLSLVersion, vertexShader, circleFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.demulProgram, err = newProgram(vertexShader, demulFragmentShader)
+	video.demulProgram, err = newProgram(GLSLVersion, vertexShader, demulFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -302,78 +353,6 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
 	}
 }
-
-func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
-	vertexShader, err := compileShader(vertexShaderSource, gl.VERTEX_SHADER)
-	if err != nil {
-		return 0, err
-	}
-
-	fragmentShader, err := compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER)
-	if err != nil {
-		return 0, err
-	}
-
-	program := gl.CreateProgram()
-
-	gl.AttachShader(program, vertexShader)
-	gl.AttachShader(program, fragmentShader)
-	gl.LinkProgram(program)
-
-	var status int32
-	gl.GetProgramiv(program, gl.LINK_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetProgramiv(program, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetProgramInfoLog(program, logLength, nil, gl.Str(log))
-
-		return 0, fmt.Errorf("failed to link program: %v", log)
-	}
-
-	gl.DeleteShader(vertexShader)
-	gl.DeleteShader(fragmentShader)
-
-	return program, nil
-}
-
-func compileShader(source string, shaderType uint32) (uint32, error) {
-	shader := gl.CreateShader(shaderType)
-
-	csources, free := gl.Strs(source)
-	gl.ShaderSource(shader, 1, csources, nil)
-	free()
-	gl.CompileShader(shader)
-
-	var status int32
-	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetShaderiv(shader, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
-
-		return 0, fmt.Errorf("failed to compile %v: %v", source, log)
-	}
-
-	return shader, nil
-}
-
-var vertexShader = `
-#version 330
-
-in vec2 vert;
-in vec2 vertTexCoord;
-
-out vec2 fragTexCoord;
-
-void main() {
-  fragTexCoord = vertTexCoord;
-  gl_Position = vec4(vert, 0, 1);
-}
-` + "\x00"
 
 var vertices = []float32{
 	//  X, Y, U, V

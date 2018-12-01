@@ -1,8 +1,8 @@
 package video
 
-var circleFragmentShader = `
+var vertexShader = `
 #if __VERSION__ >= 130
-#define COMPAT_VARYING in
+#define COMPAT_VARYING out
 #define COMPAT_ATTRIBUTE in
 #define COMPAT_TEXTURE texture
 #define COMPAT_FRAGCOLOR FragColor
@@ -14,17 +14,13 @@ out vec4 COMPAT_FRAGCOLOR;
 #define COMPAT_FRAGCOLOR gl_FragColor
 #endif
 
-uniform sampler2D tex;
-uniform vec4 color;
+COMPAT_ATTRIBUTE vec2 vert;
+COMPAT_ATTRIBUTE vec2 vertTexCoord;
 
 COMPAT_VARYING vec2 fragTexCoord;
 
-float circle(vec2 _st, float _radius) {
-  vec2 dist = _st - vec2(0.5);
-  return 1.-smoothstep(_radius-(_radius*0.05), _radius+(_radius*0.05), dot(dist,dist)*4.0);
-}
-
 void main() {
-	COMPAT_FRAGCOLOR = vec4(color.rgb, circle(fragTexCoord.xy, 0.125));
+  fragTexCoord = vertTexCoord;
+  gl_Position = vec4(vert, 0, 1);
 }
 ` + "\x00"
