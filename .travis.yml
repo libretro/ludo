@@ -21,6 +21,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glfw openal-soft; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install make; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin; fi
 
