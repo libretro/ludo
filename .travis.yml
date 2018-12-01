@@ -15,9 +15,9 @@ matrix:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -q; fi
   - sudo dpkg --add-architecture armhf
   - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ xenial main universe" >> /etc/apt/sources.list
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -q; fi
   - sudo apt-get install crossbuild-essential-armhf g++-arm-linux-gnueabi g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf -y --allow-unauthenticated
   - sudo apt-get install -o APT::Architectures="amd64 armhf" libglfw3-dev libopenal-dev:armhf xorg-dev
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
