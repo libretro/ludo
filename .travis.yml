@@ -19,7 +19,7 @@ before_install:
   - sudo dpkg --add-architecture armhf
   - sudo dpkg --add-architecture armel
   - sudo apt-get install g++-arm-linux-gnueabi g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf -y --allow-unauthenticated
-  - sudo apt-get -f install -o APT::Architecture=armhf libglfw3-dev libopenal-dev xorg-dev
+  - sudo apt-get install -o APT::Architectures="amd64 armhf" libglfw3-dev libopenal-dev xorg-dev
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glfw openal-soft; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install make; fi
