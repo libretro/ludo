@@ -38,9 +38,9 @@ script:
   - megacheck ./...
   - gocyclo -over 19 $GO_FILES
   - golint -set_exit_status $(go list ./...)
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "linux" ]]; then OS="Linux" VERSION=${TRAVIS_TAG:1} make tar; fi
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "osx" ]]; then OS="OSX" VERSION=${TRAVIS_TAG:1} make dmg; fi
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "windows" ]]; then OS="Windows" VERSION=${TRAVIS_TAG:1} make zip; fi
+  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "linux" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
+  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "osx" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
+  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "windows" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
 
 deploy:
   skip_cleanup: true
@@ -48,9 +48,9 @@ deploy:
   api_key:
     secure: N/AOf4iKJoFBJ7NP6hWOHQHNyOj5A5B2WhHzh1pO5pQrLqSJumfTSZZiD5WX3m5ycLokI49xUqwQN7yyNpE8h5FOfjKn5h6Uq2VByTVCzfHgRXn/RbrGUBMnLbEwwVOlpbCv/tYybpqUzGOSkKkzDhbAjQugSbI8B9szHPyX0FnAPoOQzLQoPkHjyl9nHtFgc3gbgZUGEouo5mGmET0VuszbAFiW6UUHgCBGiciZa1TQHREHlM6cFjC+Z9MeqXAxfVCu3CCqxSFwQwGGFe3gfe12wu8LrOGD7FEp11vswKW1bePU1tOgTBC207TyBni9TXAYjpvuEgm1N5NnNsiR+IrggOrJczglvAgwLHPN5a8Tu8ZZsCEc1GotqGNBBFE1GZuhJ45NLvXw4VzCmqT9ciaUYFyl1G1hY8N8TiHWIT+wmklYzHMtHPqQhyzSHnAgnaY50B6vKNp835F3U+Rt9r0M5kgOARe2KeaVgUPxWWevav84cQLSj23yQU2zxNg+H6sOJ2yHS0S0m6e5UGj+Du/9kxICD7t0bEnC0KmD3BLGaR29aQfQxd8PPB2KEjitsQ9wPlzbIyh6I19yxzMBSIy6LDChcJNIDeL0v3fBkdSnOyh6RE+VENMNtVk+QndQWw0NkSuNYGMcGf31OYed6gJ1DZIXDX/vk0uGv7WXLaA=
   file:
-    - Ludo-Linux-${TRAVIS_TAG:1}.tar.gz
-    - Ludo-OSX-${TRAVIS_TAG:1}.dmg
-    - Ludo-Windows-${TRAVIS_TAG:1}.zip
+    - Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz
+    - Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
+    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip
   on:
     repo: libretro/ludo
     tags: true
