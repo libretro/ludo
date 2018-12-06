@@ -38,6 +38,7 @@ script:
   - megacheck ./...
   - gocyclo -over 19 $GO_FILES
   - golint -set_exit_status $(go list ./...)
+  - go build -ldflags '-s'
   - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "linux" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
   - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "osx" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
   - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "windows" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
