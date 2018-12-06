@@ -13,7 +13,7 @@ matrix:
     - os: linux
     - os: osx
     - os: windows
-      env: CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.1-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.1-bin/lib/Win64/"
+      env: CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.1-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.1-bin/libs/Win64/"
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
