@@ -17,12 +17,6 @@ const (
 	ActionLast uint32 = libretro.DeviceIDJoypadR3 + 4
 )
 
-// VideoInterface is used to pass a video instance to Process
-type VideoInterface interface {
-	Reconfigure(bool)
-	SetShouldClose(bool)
-}
-
 // ProcessActions checks if certain keys are pressed and perform corresponding actions
 func ProcessActions() {
 	// Toggle the menu if ActionMenuToggle is pressed

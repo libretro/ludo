@@ -14,22 +14,6 @@ const numPlayers = 5
 
 type joybinds map[bind]uint32
 
-var keyBinds = map[glfw.Key]uint32{
-	glfw.KeyX:         libretro.DeviceIDJoypadA,
-	glfw.KeyZ:         libretro.DeviceIDJoypadB,
-	glfw.KeyA:         libretro.DeviceIDJoypadY,
-	glfw.KeyS:         libretro.DeviceIDJoypadX,
-	glfw.KeyUp:        libretro.DeviceIDJoypadUp,
-	glfw.KeyDown:      libretro.DeviceIDJoypadDown,
-	glfw.KeyLeft:      libretro.DeviceIDJoypadLeft,
-	glfw.KeyRight:     libretro.DeviceIDJoypadRight,
-	glfw.KeyEnter:     libretro.DeviceIDJoypadStart,
-	glfw.KeyBackspace: libretro.DeviceIDJoypadSelect,
-	glfw.KeyP:         ActionMenuToggle,
-	glfw.KeyF:         ActionFullscreenToggle,
-	glfw.KeyEscape:    ActionShouldClose,
-}
-
 const btn = 0
 const axis = 1
 
