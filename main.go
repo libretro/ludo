@@ -103,7 +103,10 @@ func main() {
 	input.Init(vid, m)
 
 	if len(state.Global.CorePath) > 0 {
-		core.Load(state.Global.CorePath)
+		err := core.Load(state.Global.CorePath)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if len(gamePath) > 0 {

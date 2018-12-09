@@ -10,6 +10,7 @@ import (
 /*
 #cgo LDFLAGS: -ldl
 #include <dlfcn.h>
+#include <stdlib.h>
 */
 import "C"
 
@@ -44,9 +45,14 @@ func (core *Core) DlSym(name string) unsafe.Pointer {
 
 // DlOpen opens a dynamic library
 func DlOpen(path string) (unsafe.Pointer, error) {
-	h := C.dlopen(C.CString(path), C.RTLD_NOW)
-	if h == nil {
-		return h, errors.New("dlopen failed")
+	cpath := C.CString(path)
+	defer C.free(unsafe.Pointer(cpath))
+
+	h := C.dlopen(cpath, C.RTLD_LAZY|C.RTLD_GLOBAL)
+	cerr := C.dlerror()
+	if h == nil || cerr != nil {
+		err := C.GoString(cerr)
+		return nil, errors.New(err)
 	}
 	return h, nil
 }
