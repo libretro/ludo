@@ -31,7 +31,7 @@ type Core struct {
 
 // DlSym loads a symbol from a dynamic library
 func (core *Core) DlSym(name string) unsafe.Pointer {
-	proc := syscall.MustFindProc(core.handle, name)
+	proc := core.handle.MustFindProc(name)
 	return unsafe.Pointer(proc.Addr())
 }
 
