@@ -132,8 +132,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	if fullscreen {
 		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
-		vms := m.GetVideoModes()
-		vm := vms[len(vms)-1]
+		vm := m.GetVideoMode()
 		width = vm.Width
 		height = vm.Height
 	} else {
@@ -309,12 +308,6 @@ func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
-}
-
-// FullViewport configures the GL viewport to take all the available space in the window
-func (video *Video) FullViewport() {
-	w, h := video.Window.GetFramebufferSize()
-	gl.Viewport(0, 0, int32(w), int32(h))
 }
 
 // Render the current frame
