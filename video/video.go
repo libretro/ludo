@@ -320,6 +320,7 @@ func (video *Video) Render() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	fbw, fbh := video.Window.GetFramebufferSize()
+	gl.Viewport(0, 0, int32(fbw), int32(fbh))
 	video.CoreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
