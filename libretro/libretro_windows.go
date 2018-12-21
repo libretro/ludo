@@ -7,7 +7,7 @@ import (
 
 // Core is an instance of a dynalically loaded libretro core
 type Core struct {
-	handle syscall.Handle
+	handle *syscall.DLL
 
 	symRetroInit                unsafe.Pointer
 	symRetroDeinit              unsafe.Pointer
@@ -31,11 +31,11 @@ type Core struct {
 
 // DlSym loads a symbol from a dynamic library
 func (core *Core) DlSym(name string) unsafe.Pointer {
-	tmp, _ := syscall.GetProcAddress(core.handle, name)
-	return unsafe.Pointer(tmp)
+	proc := core.handle.MustFindProc(name)
+	return unsafe.Pointer(proc.Addr())
 }
 
 // DlOpen opens a dynamic library
-func DlOpen(path string) (syscall.Handle, error) {
-	return syscall.LoadLibrary(path)
+func DlOpen(path string) (*syscall.DLL, error) {
+	return syscall.LoadDLL(path)
 }

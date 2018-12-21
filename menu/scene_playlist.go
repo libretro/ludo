@@ -66,7 +66,11 @@ func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 		return
 	}
 	if state.Global.CorePath != corePath {
-		core.Load(corePath)
+		err := core.Load(corePath)
+		if err != nil {
+			notifications.DisplayAndLog("Menu", err.Error())
+			return
+		}
 	}
 	if state.Global.GamePath != gamePath {
 		err := core.LoadGame(gamePath)
