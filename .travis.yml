@@ -30,6 +30,12 @@ matrix:
         - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
       before_deploy: if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
 
+before_script:
+  - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
+  - go get golang.org/x/lint/golint
+  - go get honnef.co/go/tools/cmd/megacheck
+  - go get github.com/fzipp/gocyclo
+
 script:
   - go get -t -v ./...
   - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then go test -v -race ./...; fi
@@ -37,14 +43,6 @@ script:
   - megacheck ./...
   - gocyclo -over 19 $GO_FILES
   - golint -set_exit_status $(go list ./...)
-
-before_script:
-  - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
-  - go get golang.org/x/lint/golint
-  - go get honnef.co/go/tools/cmd/megacheck
-  - go get github.com/fzipp/gocyclo
-
-
 
 deploy:
   skip_cleanup: true
