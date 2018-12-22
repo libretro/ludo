@@ -89,8 +89,6 @@ func Render() {
 	w, _ := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
-	vid.FullViewport()
-
 	updateTweens(1.0 / 60.0)
 
 	currentScreenIndex := len(menu.stack) - 1
