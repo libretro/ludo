@@ -10,19 +10,30 @@ go:
 
 matrix:
   include:
-    - os: linux
+    - name: Linux x86_64
+      os: linux
       before_install:
         - sudo add-apt-repository ppa:keithw/glfw3 -y
         - sudo apt-get update -q
         - sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
-    - os: osx
+    - name: Linux armv7
+      os: linux
+      before_install:
+        - docker pull arm32v7/golang:1.11
+      script:
+        - docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp arm32v7/golang:1.11 go build -v
+      before_deploy:
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
+    - OSX
+      os: osx
       before_install:
         - brew install glfw openal-soft
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
-    - os: windows
+    - name: Windows
+      os: windows
       before_install:
         - choco install make
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
