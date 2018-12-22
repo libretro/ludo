@@ -11,36 +11,48 @@ go:
 matrix:
   include:
     - os: linux
+      before_install:
+        - sudo add-apt-repository ppa:keithw/glfw3 -y
+        - sudo apt-get update -q
+        - sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
+      script:
+        - go get -t -v ./...
+        - go test -v -race ./...
+        - go vet ./...
+        - megacheck ./...
+        - gocyclo -over 19 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
+        - OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar
     - os: osx
+      before_install:
+        - brew update
+        - brew install glfw openal-soft
+      script:
+        - go get -t -v ./...
+        - go test -v -race ./...
+        - go vet ./...
+        - megacheck ./...
+        - gocyclo -over 19 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
+        - OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg
     - os: windows
       env: CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
-
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:keithw/glfw3 -y; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -q; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glfw openal-soft; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install make; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin; fi
+      before_install:
+        - choco install make
+        - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
+        - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
+      script:
+        - go get -t -v ./...
+        - megacheck ./...
+        - gocyclo -over 19 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
+        - OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
   - go get golang.org/x/lint/golint
   - go get honnef.co/go/tools/cmd/megacheck
   - go get github.com/fzipp/gocyclo
-
-script:
-  - go get -t -v ./...
-  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then go test -v -race ./...; fi
-  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then go vet ./...; fi
-  - megacheck ./...
-  - gocyclo -over 19 $GO_FILES
-  - golint -set_exit_status $(go list ./...)
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "linux" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "osx" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
-  - if [[ -n "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" == "windows" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
 
 deploy:
   skip_cleanup: true
