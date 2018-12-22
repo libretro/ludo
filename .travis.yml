@@ -22,7 +22,7 @@ matrix:
         - megacheck ./...
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
-        - OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
     - os: osx
       before_install:
         - brew update
@@ -34,19 +34,22 @@ matrix:
         - megacheck ./...
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
-        - OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
     - os: windows
-      env: CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
       before_install:
         - choco install make
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
       script:
+        - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
+        - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
         - go get -t -v ./...
+        #- go test -v -race ./...
+        #- go vet ./...
         - megacheck ./...
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
-        - OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
