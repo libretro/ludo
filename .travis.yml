@@ -21,11 +21,11 @@ matrix:
     - name: Linux armv7
       os: linux
       before_install:
-        - docker pull arm32v7/golang:1.11
+        - docker build . -t ludobuilder:latest
       script:
-        - docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp arm32v7/golang:1.11 go build -v
+        - docker run --rm -v "$PWD":/go/src/github.com/libretro/ludo -w /go/src/github.com/libretro/ludo ludobuilder:latest go get -v ./... && go build -v
       before_deploy:
-        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=armv7 VERSION=${TRAVIS_TAG:1} make tar; fi
     # - OSX
     #   os: osx
     #   before_install:
