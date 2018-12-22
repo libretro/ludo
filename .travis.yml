@@ -15,12 +15,13 @@ matrix:
         - sudo add-apt-repository ppa:keithw/glfw3 -y
         - sudo apt-get update -q
         - sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
-      before_deploy: if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
+      before_deploy:
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
     - os: osx
       before_install:
-        - brew update
         - brew install glfw openal-soft
-      before_deploy: if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
+      before_deploy:
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
     - os: windows
       before_install:
         - choco install make
@@ -28,7 +29,8 @@ matrix:
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
         - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
-      before_deploy: if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
+      before_deploy:
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
