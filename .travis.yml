@@ -8,8 +8,6 @@ language: go
 go:
   - "1.11"
 
-dist: xenial
-
 matrix:
   include:
     # - name: Linux x86_64
