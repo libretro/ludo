@@ -34,7 +34,7 @@ matrix:
         - sudo echo "deb [arch=amd64] http://ppa.launchpad.net/keithw/glfw3/ubuntu trusty main" >> /etc/apt/sources.list
         - sudo echo "deb [arch=armhf] http://ppa.launchpad.net/keithw/glfw3/ubuntu trusty main" >> /etc/apt/sources.list
         - sudo apt-get update -q
-        - sudo apt-get install gcc-arm-linux-gnueabihf libopenal-dev:armhf xserver-xorg-dev -y --allow-unauthenticated
+        - sudo apt-get install gcc-arm-linux-gnueabihf libglfw3-dev:armhf libopenal-dev:armhf xorg-dev -y --allow-unauthenticated
       script:
         - go get -t -v ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
