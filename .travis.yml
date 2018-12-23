@@ -27,6 +27,10 @@ matrix:
         - sudo echo "" > /etc/apt/sources.list
         - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo echo "deb [arch=amd64] http://ppa.launchpad.net/keithw/glfw3/ubuntu trusty main" >> /etc/apt/sources.list
         - sudo echo "deb [arch=armhf] http://ppa.launchpad.net/keithw/glfw3/ubuntu trusty main" >> /etc/apt/sources.list
         - sudo apt-get update -q
