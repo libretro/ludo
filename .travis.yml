@@ -8,6 +8,9 @@ language: go
 go:
   - "1.11"
 
+services:
+  - docker
+
 matrix:
   include:
     # - name: Linux x86_64
