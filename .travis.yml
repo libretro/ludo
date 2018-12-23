@@ -28,14 +28,13 @@ matrix:
         - GOARCH=arm
         - GOARM=7
         - CGO_ENABLED=1
-        - CC=arm-linux-gnueabihf-gcc
       before_install:
         - sudo add-apt-repository ppa:keithw/glfw3 -y
         - sudo apt-get update -q
         - sudo apt-get install gcc-arm-linux-gnueabihf libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
       script:
         - go get -t -v ./...
-        - go build -v
+        - CC=arm-linux-gnueabihf-gcc go build -v
         - ls -la
         - file ./ludo
       before_deploy:
