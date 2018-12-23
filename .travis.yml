@@ -23,18 +23,13 @@ matrix:
     #     - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
     - name: Linux armv7
       os: linux
-      env:
-        - GOOS=linux
-        - GOARCH=arm
-        - GOARM=7
-        - CGO_ENABLED=1
       before_install:
         - sudo add-apt-repository ppa:keithw/glfw3 -y
         - sudo apt-get update -q
         - sudo apt-get install gcc-arm-linux-gnueabihf libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
       script:
         - go get -t -v ./...
-        - CC=arm-linux-gnueabihf-gcc go build -v
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
         - ls -la
         - file ./ludo
       before_deploy:
