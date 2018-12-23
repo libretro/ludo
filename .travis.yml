@@ -23,10 +23,20 @@ matrix:
     #     - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
     - name: Linux armv7
       os: linux
+      env:
+        - GOOS=linux
+        - GOARCH=arm
+        - GOARM=7
+        - CGO_ENABLED=1
+        - CC=arm-linux-gnueabihf-gcc
       before_install:
-        - docker pull kivutar/ludobuilder:latest
+        - sudo add-apt-repository ppa:keithw/glfw3 -y
+        - sudo apt-get update -q
+        - sudo apt-get install gcc-arm-linux-gnueabihf libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
       script:
-        - docker run --rm -v "$PWD":/go/src/github.com/libretro/ludo -w /go/src/github.com/libretro/ludo kivutar/ludobuilder:latest /bin/sh -c "go get -v ./... && go build -v"
+        - go get -t -v ./...
+        - go build -v
+        - ls -la
         - file ./ludo
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
