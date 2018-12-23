@@ -24,9 +24,11 @@ matrix:
     - name: Linux armv7
       os: linux
       before_install:
+        - sudo apt-get install binutils-multiarch
+        - sudo dpkg --add-architecture armhf
         - sudo add-apt-repository ppa:keithw/glfw3 -y
         - sudo apt-get update -q
-        - sudo apt-get install gcc-arm-linux-gnueabihf libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
+        - sudo apt-get install gcc-arm-linux-gnueabihf libglfw3-dev:armhf libopenal-dev:armhf xorg-dev:armhf -y --allow-unauthenticated
       script:
         - go get -t -v ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
