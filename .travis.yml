@@ -10,14 +10,14 @@ go:
 
 matrix:
   include:
-    # - name: Linux x86_64
-    #   os: linux
-    #   before_install:
-    #     - sudo add-apt-repository ppa:keithw/glfw3 -y
-    #     - sudo apt-get update -q
-    #     - sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
-    #   before_deploy:
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
+    - name: Linux x86_64
+      os: linux
+      before_install:
+        - sudo add-apt-repository ppa:keithw/glfw3 -y
+        - sudo apt-get update -q
+        - sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
+      before_deploy:
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
     - name: Linux armv7
       os: linux
       before_install:
@@ -38,26 +38,24 @@ matrix:
       script:
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get -t -v ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
-        - ls -la
-        - file ./ludo
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
-    # - OSX
-    #   os: osx
-    #   before_install:
-    #     - brew install glfw openal-soft
-    #   before_deploy:
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
-    # - name: Windows
-    #   os: windows
-    #   before_install:
-    #     - choco install make
-    #     - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
-    #     - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
-    #     - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
-    #     - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
-    #   before_deploy:
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
+    - OSX
+      os: osx
+      before_install:
+        - brew install glfw openal-soft
+      before_deploy:
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
+    - name: Windows
+      os: windows
+      before_install:
+        - choco install make
+        - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
+        - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
+        - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
+        - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
+      before_deploy:
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
 
 deploy:
   skip_cleanup: true
