@@ -38,15 +38,15 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 
 		// Filter files by extension.
 		if !f.IsDir() && len(exts) > 0 {
-			var extentionFound = false
+			var extensionFound = false
 			var fileExtension = filepath.Ext(f.Name())
 			for _, extension := range exts {
 				if (extension == fileExtension) {
-					extentionFound = true
+					extensionFound = true
 					break
 				}
 			}
-			if !extentionFound {
+			if !extensionFound {
 				continue
 			}
 		}
