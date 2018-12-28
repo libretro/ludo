@@ -41,7 +41,7 @@ matrix:
     - name: OSX
       os: osx
       before_install:
-        - brew install glfw openal-soft
+        - brew install openal-soft
       script:
         - go get -t -v ./...
         - go build -v
