@@ -8,7 +8,11 @@ ifeq ($(OS), OSX)
 	EXT=dylib
 endif
 ifeq ($(OS), Linux)
-	BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/$(ARCH)/latest
+	ifeq ($(ARCH), arm)
+		BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/armv7-neon-hf/latest
+	else
+		BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/$(ARCH)/latest
+	endif
 	EXT=so
 endif
 ifeq ($(OS), Windows)
