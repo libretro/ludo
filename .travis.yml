@@ -10,41 +10,56 @@ go:
 
 matrix:
   include:
-    - os: linux
+    - name: Linux x86_64
+      os: linux
       before_install:
-        - sudo add-apt-repository ppa:keithw/glfw3 -y
-        - sudo apt-get update -q
-        - sudo apt-get install libglfw3-dev libopenal-dev xorg-dev -y --allow-unauthenticated
+        - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
+      script:
+        - go get -t -v ./...
+        - go build -v
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
-    - os: osx
+    - name: Linux arm
+      os: linux
       before_install:
-        - brew install glfw openal-soft
+        - sudo apt-get install binutils-multiarch
+        - sudo dpkg --add-architecture armhf
+        - sudo echo "" > /etc/apt/sources.list
+        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo apt-get update -q
+        - sudo apt-get install gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
+      script:
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get -t -v ./...
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
+      before_deploy:
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
+    - name: OSX
+      os: osx
+      before_install:
+        - brew install openal-soft
+      script:
+        - go get -t -v ./...
+        - go build -v
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
-    - os: windows
+    - name: Windows
+      os: windows
       before_install:
         - choco install make
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
         - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
+      script:
+        - go get -t -v ./...
+        - go build -v
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
-
-before_script:
-  - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
-  - go get golang.org/x/lint/golint
-  - go get honnef.co/go/tools/cmd/megacheck
-  - go get github.com/fzipp/gocyclo
-
-script:
-  - go get -t -v ./...
-  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then go test -v -race ./...; fi
-  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then go vet ./...; fi
-  - megacheck ./...
-  - gocyclo -over 19 $GO_FILES
-  - golint -set_exit_status $(go list ./...)
 
 deploy:
   skip_cleanup: true
@@ -53,6 +68,7 @@ deploy:
     secure: N/AOf4iKJoFBJ7NP6hWOHQHNyOj5A5B2WhHzh1pO5pQrLqSJumfTSZZiD5WX3m5ycLokI49xUqwQN7yyNpE8h5FOfjKn5h6Uq2VByTVCzfHgRXn/RbrGUBMnLbEwwVOlpbCv/tYybpqUzGOSkKkzDhbAjQugSbI8B9szHPyX0FnAPoOQzLQoPkHjyl9nHtFgc3gbgZUGEouo5mGmET0VuszbAFiW6UUHgCBGiciZa1TQHREHlM6cFjC+Z9MeqXAxfVCu3CCqxSFwQwGGFe3gfe12wu8LrOGD7FEp11vswKW1bePU1tOgTBC207TyBni9TXAYjpvuEgm1N5NnNsiR+IrggOrJczglvAgwLHPN5a8Tu8ZZsCEc1GotqGNBBFE1GZuhJ45NLvXw4VzCmqT9ciaUYFyl1G1hY8N8TiHWIT+wmklYzHMtHPqQhyzSHnAgnaY50B6vKNp835F3U+Rt9r0M5kgOARe2KeaVgUPxWWevav84cQLSj23yQU2zxNg+H6sOJ2yHS0S0m6e5UGj+Du/9kxICD7t0bEnC0KmD3BLGaR29aQfQxd8PPB2KEjitsQ9wPlzbIyh6I19yxzMBSIy6LDChcJNIDeL0v3fBkdSnOyh6RE+VENMNtVk+QndQWw0NkSuNYGMcGf31OYed6gJ1DZIXDX/vk0uGv7WXLaA=
   file:
     - Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz
+    - Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz
     - Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
     - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip
   on:
