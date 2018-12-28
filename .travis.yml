@@ -14,6 +14,9 @@ matrix:
       os: linux
       before_install:
         - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
+      script:
+        - go get -t -v ./...
+        - go build -v
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
     - name: Linux armv7
@@ -39,6 +42,9 @@ matrix:
       os: osx
       before_install:
         - brew install glfw openal-soft
+      script:
+        - go get -t -v ./...
+        - go build -v
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
     - name: Windows
@@ -49,6 +55,9 @@ matrix:
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
         - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
+      script:
+        - go get -t -v ./...
+        - go build -v
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
 
