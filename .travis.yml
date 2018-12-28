@@ -40,7 +40,7 @@ matrix:
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
-    - OSX
+    - name: OSX
       os: osx
       before_install:
         - brew install glfw openal-soft
