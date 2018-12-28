@@ -36,9 +36,25 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 			continue
 		}
 
+		// Filter files by extension.
+		if !f.IsDir() && len(exts) > 0 {
+			var extentionFound = false
+			var fileExtension = filepath.Ext(f.Name())
+			for _, extension := range exts {
+				if (extension == fileExtension) {
+					extentionFound = true
+					break
+				}
+			}
+			if !extentionFound {
+				continue
+			}
+		}
+
 		if f.IsDir() {
 			icon = "folder"
 		}
+
 		list.children = append(list.children, entry{
 			label: f.Name(),
 			icon:  icon,
