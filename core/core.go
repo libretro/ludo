@@ -5,6 +5,7 @@ package core
 import (
 	"archive/zip"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -153,6 +154,9 @@ func LoadGame(filename string) error {
 	state.Global.CoreRunning = true
 	state.Global.MenuActive = false
 	state.Global.GamePath = filename
+
+	fmt.Println(vid.Geom.BaseWidth)
+	vid.InitFramebuffer(vid.Geom.BaseWidth, vid.Geom.BaseHeight)
 
 	log.Println("[Core]: Game loaded: " + filename)
 	return nil

@@ -48,6 +48,8 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		state.Global.AudioCb = libretro.SetAudioCallback(data)
 	case libretro.EnvironmentSetHWRenderer:
 		state.Global.HWRenderCb = libretro.SetHWRenderCallback(data)
+		state.Global.HWRenderCb.GetCurrentFramebuffer = vid.CurrentFramebuffer
+		state.Global.HWRenderCb.GetProcAddress = vid.ProcAddress
 		fmt.Println(state.Global.HWRenderCb)
 		return true
 	case libretro.EnvironmentGetCanDupe:

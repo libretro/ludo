@@ -51,6 +51,7 @@ type Video struct {
 	pixFmt         uint32
 	pixType        uint32
 	bpp            int32
+	fboID          uint32
 }
 
 // Init instanciates the video package
@@ -122,6 +123,12 @@ func (video *Video) configureContext() uint {
 		GLSLVersion = 150
 	}
 	return GLSLVersion
+}
+
+func (video *Video) InitFramebuffer(width, height int) {
+	gl.GenFramebuffers(1, &video.fboID)
+	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
+	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
 }
 
 // Configure instanciates the video package
@@ -346,6 +353,15 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	if data != nil {
 		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
 	}
+}
+
+// CurrentFramebuffer returns the current FBO ID
+func (video *Video) CurrentFramebuffer() uintptr {
+	return uintptr(video.fboID)
+}
+
+func (video *Video) ProcAddress() uintptr {
+	return 0
 }
 
 var vertices = []float32{
