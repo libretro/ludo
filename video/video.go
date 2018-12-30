@@ -361,7 +361,7 @@ func (video *Video) CurrentFramebuffer() uintptr {
 }
 
 func (video *Video) ProcAddress() uintptr {
-	return 0
+	return 0 // TODO find a way to call GetProcAddress from glfw
 }
 
 var vertices = []float32{
