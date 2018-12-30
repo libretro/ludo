@@ -360,8 +360,19 @@ func (video *Video) CurrentFramebuffer() uintptr {
 	return uintptr(video.fboID)
 }
 
-func (video *Video) ProcAddress() uintptr {
-	return 0 // TODO find a way to call GetProcAddress from glfw
+/*
+Added this in glfw context.go
+
+func GetProcAddress(procName string) uintptr {
+	p := C.CString(procName)
+	defer C.free(unsafe.Pointer(p))
+	ret := unsafe.Pointer(C.glfwGetProcAddress(p))
+	panicError()
+	return uintptr(ret)
+}
+*/
+func (video *Video) ProcAddress(procName string) uintptr {
+	return glfw.GetProcAddress(procName)
 }
 
 var vertices = []float32{

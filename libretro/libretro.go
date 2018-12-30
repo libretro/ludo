@@ -130,7 +130,7 @@ type HWRenderCallback struct {
 	HWContextType              uint
 	ContextReset               func()
 	GetCurrentFramebuffer      func() uintptr
-	GetProcAddress             func() uintptr
+	GetProcAddress             func(string) uintptr
 	Depth                      bool
 	Stencil                    bool
 	BottomLeftOrigin           bool
