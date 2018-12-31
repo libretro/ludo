@@ -2,6 +2,7 @@ package core
 
 import (
 	"log"
+	"os"
 	"os/user"
 	"time"
 	"unsafe"
@@ -55,8 +56,10 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		}
 		return vid.SetPixelFormat(format)
 	case libretro.EnvironmentGetSystemDirectory:
+		os.MkdirAll(settings.Current.SystemDirectory, os.ModePerm)
 		libretro.SetString(data, settings.Current.SystemDirectory)
 	case libretro.EnvironmentGetSaveDirectory:
+		os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
 		libretro.SetString(data, settings.Current.SavefilesDirectory)
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
