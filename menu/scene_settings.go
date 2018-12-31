@@ -9,6 +9,7 @@ import (
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 
 	"github.com/fatih/structs"
@@ -36,7 +37,7 @@ func buildSettings() Scene {
 				icon:  "folder",
 				value: f.Value,
 				stringValue: func() string {
-					return fmt.Sprintf(f.Tag("fmt"), f.Value())
+					return "<" + utils.Filename(f.Value().(string)) + ">"
 				},
 				widget: widgets[f.Tag("widget")],
 				callbackOK: func() {
@@ -45,7 +46,12 @@ func buildSettings() Scene {
 						f.Value().(string),
 						nil,
 						func(path string) error {
-							f.Set(filepath.Clean(path))
+							var err error
+							path, err = filepath.Abs(path)
+							if err != nil {
+								return err
+							}
+							f.Set(path)
 							return settings.Save()
 						},
 						&entry{

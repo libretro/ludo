@@ -22,11 +22,13 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 		notifications.DisplayAndLog("Menu", err.Error())
 	}
 
+	// Display the special directory action entry.
 	if dirAction != nil && dirAction.label != "" {
 		dirAction.callbackOK = func() { cb(path) }
 		list.children = append(list.children, *dirAction)
 	}
 
+	// Add a first entry for the parent directory.
 	list.children = append(list.children, entry{
 		label: "..",
 		icon:  "folder",
@@ -40,6 +42,7 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 		},
 	})
 
+	// Loop over files in the directory and add one entry for each.
 	for _, f := range files {
 		f := f
 		icon := "file"
