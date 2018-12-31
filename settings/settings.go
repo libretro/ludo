@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"os/user"
+	"path/filepath"
 	"sync"
 
 	"github.com/libretro/ludo/utils"
@@ -106,10 +107,9 @@ func Save() error {
 // CoreForPlaylist returns the absolute path of the default libretro core for
 // a given playlist
 func CoreForPlaylist(playlist string) (string, error) {
-	coresPath := "cores/"
 	c := Settings.CoreForPlaylist[playlist]
 	if c != "" {
-		return coresPath + c + utils.CoreExt(), nil
+		return filepath.Join(Settings.CoresDirectory, c+utils.CoreExt()), nil
 	}
 	return "", errors.New("Default core not set")
 }
