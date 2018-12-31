@@ -26,7 +26,7 @@ func Save() error {
 		return err
 	}
 	path := filepath.Join(settings.Current.SavestatesDirectory, name())
-	err = os.Mkdir(settings.Current.SavestatesDirectory, 0777)
+	err = os.MkdirAll(settings.Current.SavestatesDirectory, os.ModePerm)
 	if err != nil {
 		return err
 	}
