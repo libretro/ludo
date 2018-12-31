@@ -56,5 +56,6 @@ func defaultSettings() Settings {
 		ScreenshotsDirectory: filepath.Join(usr.HomeDir, ".ludo", "screenshots"),
 		SystemDirectory:      filepath.Join(usr.HomeDir, ".ludo", "system"),
 		PlaylistsDirectory:   filepath.Join(usr.HomeDir, ".ludo", "playlists"),
+		ThumbnailsDirectory:  filepath.Join(usr.HomeDir, ".ludo", "thumbnails"),
 	}
 }

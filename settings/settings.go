@@ -32,6 +32,7 @@ type Settings struct {
 	ScreenshotsDirectory string            `json:"screenshots_dir" label:"Screenshots Directory" fmt:"%s" widget:"dir"`
 	SystemDirectory      string            `json:"system_dir" label:"System Directory" fmt:"%s" widget:"dir"`
 	PlaylistsDirectory   string            `json:"playlists_dir" label:"Playlists Directory" fmt:"%s" widget:"dir"`
+	ThumbnailsDirectory  string            `json:"thumbnail_dir" label:"Thumbnails Directory" fmt:"%s" widget:"dir"`
 }
 
 // Current stores the current settings at runtime

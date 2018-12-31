@@ -5,8 +5,10 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/user"
+	"path/filepath"
 	"strings"
+
+	"github.com/libretro/ludo/settings"
 
 	"github.com/libretro/ludo/video"
 )
@@ -59,9 +61,8 @@ func scrubIllegalChars(str string) string {
 }
 
 func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32) {
-	usr, _ := user.Current()
-	folderPath := usr.HomeDir + "/.ludo/thumbnails/" + system + "/Named_Snaps/"
-	path := folderPath + gameName + ".png"
+	folderPath := filepath.Join(settings.Current.ThumbnailsDirectory, system, "Named_Snaps")
+	path := filepath.Join(folderPath, gameName+".png")
 	legalName := scrubIllegalChars(gameName)
 	url := "http://thumbnails.libretro.com/" + system + "/Named_Snaps/" + legalName + ".png"
 
