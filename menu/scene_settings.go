@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/fatih/structs"
 	"github.com/go-gl/glfw/v3.2/glfw"
 
 	"github.com/libretro/ludo/audio"
+	"github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
-
-	"github.com/fatih/structs"
 )
 
 type screenSettings struct {
@@ -52,6 +52,7 @@ func buildSettings() Scene {
 								return err
 							}
 							f.Set(path)
+							notifications.DisplayAndLog("Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
 							return settings.Save()
 						},
 						&entry{
