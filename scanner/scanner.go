@@ -43,6 +43,7 @@ func ScanDir(dir string, doneCb func()) {
 	go func() {
 		i := 0
 		for game := range scannedGames {
+			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
 			lplpath := settings.Current.PlaylistsDirectory + "/" + game.System + ".lpl"
 			if playlists.ExistsInPlaylist(lplpath, game.Path, game.CRC32) {
 				continue

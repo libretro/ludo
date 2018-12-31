@@ -29,6 +29,7 @@ func (video *Video) TakeScreenshot() {
 	fbw, fbh := video.Window.GetFramebufferSize()
 	img := image.NewNRGBA(image.Rect(0, 0, fbw, fbh))
 	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+	os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
 	path := filepath.Join(settings.Current.ScreenshotsDirectory, screenshotName())
 	fd, _ := os.Create(path)
 	png.Encode(fd, imaging.FlipV(img))
