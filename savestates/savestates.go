@@ -4,6 +4,7 @@ package savestates
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/libretro/ludo/settings"
@@ -25,6 +26,10 @@ func Save() error {
 		return err
 	}
 	path := filepath.Join(settings.Current.SavestatesDirectory, name())
+	err = os.Mkdir(path, 0777)
+	if err != nil {
+		return err
+	}
 	return ioutil.WriteFile(path, bytes, 0644)
 }
 

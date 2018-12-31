@@ -27,7 +27,6 @@ func init() {
 	os.Mkdir(usr.HomeDir+"/.ludo/", 0777)
 	os.Mkdir(usr.HomeDir+"/.ludo/playlists/", 0777)
 	os.Mkdir(usr.HomeDir+"/.ludo/savefiles/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/savestates/", 0777)
 	os.Mkdir(usr.HomeDir+"/.ludo/screenshots/", 0777)
 	os.Mkdir(usr.HomeDir+"/.ludo/system/", 0777)
 }
