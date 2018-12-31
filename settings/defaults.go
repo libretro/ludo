@@ -48,7 +48,11 @@ func defaultSettings() Settings {
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 			"Sony - PlayStation":                             "mednafen_psx_libretro",
 		},
-		CoresDirectory:      "./cores",
-		SavestatesDirectory: filepath.Join(usr.HomeDir, ".ludo", "savestates"),
+		CoresDirectory:       "./cores",
+		SavestatesDirectory:  filepath.Join(usr.HomeDir, ".ludo", "savestates"),
+		SavefilesDirectory:   filepath.Join(usr.HomeDir, ".ludo", "savefiles"),
+		ScreenshotsDirectory: filepath.Join(usr.HomeDir, ".ludo", "screenshots"),
+		SystemDirectory:      filepath.Join(usr.HomeDir, ".ludo", "system"),
+		PlaylistsDirectory:   filepath.Join(usr.HomeDir, ".ludo", "playlists"),
 	}
 }

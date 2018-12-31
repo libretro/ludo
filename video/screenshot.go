@@ -4,12 +4,13 @@ import (
 	"image"
 	"image/png"
 	"os"
-	"os/user"
 	"path/filepath"
 	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/go-gl/gl/all-core/gl"
+
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 )
 
@@ -23,13 +24,13 @@ func screenshotName() string {
 
 // TakeScreenshot captures the ouput of video.Render and writes it to a file
 func (video *Video) TakeScreenshot() {
-	usr, _ := user.Current()
 	state.Global.MenuActive = false
 	video.Render()
 	fbw, fbh := video.Window.GetFramebufferSize()
 	img := image.NewNRGBA(image.Rect(0, 0, fbw, fbh))
 	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
-	fd, _ := os.Create(usr.HomeDir + "/.ludo/screenshots/" + screenshotName())
+	path := filepath.Join(settings.Current.ScreenshotsDirectory, screenshotName())
+	fd, _ := os.Create(path)
 	png.Encode(fd, imaging.FlipV(img))
 	state.Global.MenuActive = true
 }

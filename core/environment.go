@@ -8,6 +8,7 @@ import (
 
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 )
 
@@ -54,11 +55,9 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		}
 		return vid.SetPixelFormat(format)
 	case libretro.EnvironmentGetSystemDirectory:
-		usr, _ := user.Current()
-		libretro.SetString(data, usr.HomeDir+"/.ludo/system/")
+		libretro.SetString(data, settings.Current.SystemDirectory)
 	case libretro.EnvironmentGetSaveDirectory:
-		usr, _ := user.Current()
-		libretro.SetString(data, usr.HomeDir+"/.ludo/savefiles/")
+		libretro.SetString(data, settings.Current.SavefilesDirectory)
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:

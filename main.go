@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-	"os"
-	"os/user"
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
@@ -22,13 +20,6 @@ import (
 func init() {
 	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
-	// Create base folders
-	usr, _ := user.Current()
-	os.Mkdir(usr.HomeDir+"/.ludo/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/playlists/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/savefiles/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/screenshots/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/system/", 0777)
 }
 
 func runLoop(vid *video.Video) {
