@@ -79,11 +79,10 @@ func main() {
 	if err != nil {
 		log.Println("[Settings]: Loading failed:", err)
 		log.Println("[Settings]: Using default settings")
-		settings.Save()
 	}
 
 	if fullscreen {
-		settings.Settings.VideoFullscreen = fullscreen
+		settings.Current.VideoFullscreen = fullscreen
 		settings.Save()
 	}
 
@@ -99,7 +98,7 @@ func main() {
 
 	playlists.LoadPlaylists()
 
-	vid := video.Init(settings.Settings.VideoFullscreen, GLVersion)
+	vid := video.Init(settings.Current.VideoFullscreen, GLVersion)
 
 	m := menu.Init(vid)
 	m.ContextReset()

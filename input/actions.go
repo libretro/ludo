@@ -26,8 +26,8 @@ func ProcessActions() {
 
 	// Toggle fullscreen if ActionFullscreenToggle is pressed
 	if Released[0][ActionFullscreenToggle] {
-		settings.Settings.VideoFullscreen = !settings.Settings.VideoFullscreen
-		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
+		vid.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
 		settings.Save()
 	}

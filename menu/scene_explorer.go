@@ -48,7 +48,7 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 		icon := "file"
 
 		// Check whether or not we are to display hidden files.
-		if f.Name()[:1] == "." && settings.Settings.ShowHiddenFiles {
+		if f.Name()[:1] == "." && settings.Current.ShowHiddenFiles {
 			continue
 		}
 

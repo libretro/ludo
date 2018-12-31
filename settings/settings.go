@@ -11,16 +11,14 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"sync"
 
 	"github.com/libretro/ludo/utils"
 )
 
-var lock sync.Mutex
-
 // Settings is the list of available settings for the program. It serializes to JSON.
 // Tags are used to set a human readable label and a format for the settings value.
-var Settings struct {
+// Widget sets the graphical representation of the value.
+type Settings struct {
 	VideoFullscreen   bool              `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
 	VideoMonitorIndex int               `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	AudioVolume       float32           `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
@@ -29,12 +27,16 @@ var Settings struct {
 	CoresDirectory    string            `json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
 }
 
-func setDefaults() {
-	Settings.VideoFullscreen = false
-	Settings.VideoMonitorIndex = 0
-	Settings.AudioVolume = 0.5
-	Settings.ShowHiddenFiles = true
-	Settings.CoreForPlaylist = map[string]string{
+// Current stores the current settings at runtime
+var Current Settings
+
+// Defaults stores default values for settings
+var Defaults = Settings{
+	VideoFullscreen:   false,
+	VideoMonitorIndex: 0,
+	AudioVolume:       0.5,
+	ShowHiddenFiles:   true,
+	CoreForPlaylist: map[string]string{
 		"Atari - 2600":                                   "stella_libretro",
 		"Atari - 5200":                                   "atari800_libretro",
 		"Atari - 7800":                                   "prosystem_libretro",
@@ -64,19 +66,16 @@ func setDefaults() {
 		"SNK - Neo Geo Pocket Color":                     "mednafen_ngp_libretro",
 		"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 		"Sony - PlayStation":                             "mednafen_psx_libretro",
-	}
-	Settings.CoresDirectory = "./cores"
+	},
+	CoresDirectory: "./cores",
 }
 
 // Load loads settings from the home directory.
 // If the settings file doesn't exists, it will return an error and
 // set all the settings to their default value.
 func Load() error {
-	lock.Lock()
-	defer lock.Unlock()
-
-	// Set default values
-	setDefaults()
+	// Set default values for settings
+	Current = Defaults
 
 	usr, err := user.Current()
 	if err != nil {
@@ -87,18 +86,18 @@ func Load() error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(b, &Settings)
+	err = json.Unmarshal(b, &Current)
+
+	Save()
+
 	return err
 }
 
 // Save saves the current configuration to the home directory
 func Save() error {
-	lock.Lock()
-	defer lock.Unlock()
-
 	usr, _ := user.Current()
 
-	b, _ := json.MarshalIndent(Settings, "", "  ")
+	b, _ := json.MarshalIndent(Current, "", "  ")
 	f, err := os.Create(usr.HomeDir + "/.ludo/settings.json")
 	if err != nil {
 		return err
@@ -111,9 +110,9 @@ func Save() error {
 // CoreForPlaylist returns the absolute path of the default libretro core for
 // a given playlist
 func CoreForPlaylist(playlist string) (string, error) {
-	c := Settings.CoreForPlaylist[playlist]
+	c := Current.CoreForPlaylist[playlist]
 	if c != "" {
-		return filepath.Join(Settings.CoresDirectory, c+utils.CoreExt()), nil
+		return filepath.Join(Current.CoresDirectory, c+utils.CoreExt()), nil
 	}
 	return "", errors.New("Default core not set")
 }

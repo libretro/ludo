@@ -23,7 +23,7 @@ func buildSettings() Scene {
 	var list screenSettings
 	list.label = "Settings"
 
-	fields := structs.Fields(&settings.Settings)
+	fields := structs.Fields(&settings.Current)
 	for _, f := range fields {
 		f := f
 		// Don't expose settings without label
@@ -129,7 +129,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
-		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		vid.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
 		settings.Save()
 	},
@@ -143,7 +143,7 @@ var incrCallbacks = map[string]callbackIncrement{
 			v = len(glfw.GetMonitors()) - 1
 		}
 		f.Set(v)
-		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		vid.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
 		settings.Save()
 	},

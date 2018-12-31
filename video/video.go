@@ -131,7 +131,7 @@ func (video *Video) Configure(fullscreen bool) {
 	GLSLVersion := video.configureContext()
 
 	if fullscreen {
-		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
+		m = glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
 		vm := m.GetVideoMode()
 		width = vm.Width
 		height = vm.Height
