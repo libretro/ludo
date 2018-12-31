@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"sync"
@@ -74,7 +75,7 @@ func (o *Options) load() error {
 	usr, _ := user.Current()
 
 	name := utils.Filename(state.Global.CorePath)
-	b, err := utils.Slurp(usr.HomeDir + "/.ludo/" + name + ".json")
+	b, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/" + name + ".json")
 	if err != nil {
 		return err
 	}

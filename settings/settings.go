@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -77,9 +78,12 @@ func Load() error {
 	// Set default values
 	setDefaults()
 
-	usr, _ := user.Current()
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 
-	b, err := utils.Slurp(usr.HomeDir + "/.ludo/settings.json")
+	b, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/settings.json")
 	if err != nil {
 		return err
 	}

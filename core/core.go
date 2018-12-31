@@ -6,6 +6,7 @@ import (
 	"archive/zip"
 	"errors"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,7 +16,6 @@ import (
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/state"
-	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 )
 
@@ -122,7 +122,7 @@ func LoadGame(filename string) error {
 	}
 
 	if !si.NeedFullpath {
-		bytes, err := utils.Slurp(gi.Path)
+		bytes, err := ioutil.ReadFile(gi.Path)
 		if err != nil {
 			return err
 		}

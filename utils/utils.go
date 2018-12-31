@@ -5,23 +5,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 )
-
-// Slurp reads a file completely and returns the content as a []byte.
-func Slurp(path string) ([]byte, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	return ioutil.ReadAll(f)
-}
 
 // StringInSlice check wether a string is contain in a string slice.
 func StringInSlice(a string, list []string) bool {
