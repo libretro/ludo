@@ -24,6 +24,7 @@ var Settings struct {
 	AudioVolume       float32           `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
 	ShowHiddenFiles   bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
 	CoreForPlaylist   map[string]string `json:"core_for_playlist"`
+	CoresDirectory    string            `json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
 }
 
 func setDefaults() {
@@ -62,6 +63,7 @@ func setDefaults() {
 		"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 		"Sony - PlayStation":                             "mednafen_psx_libretro",
 	}
+	Settings.CoresDirectory = "./cores"
 }
 
 // Load loads settings from the home directory.

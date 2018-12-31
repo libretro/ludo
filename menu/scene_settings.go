@@ -2,6 +2,7 @@ package menu
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 
@@ -28,18 +29,46 @@ func buildSettings() Scene {
 		if f.Tag("label") == "" {
 			continue
 		}
-		list.children = append(list.children, entry{
-			label: f.Tag("label"),
-			icon:  "subsetting",
-			incr: func(direction int) {
-				incrCallbacks[f.Name()](f, direction)
-			},
-			value: f.Value,
-			stringValue: func() string {
-				return fmt.Sprintf(f.Tag("fmt"), f.Value())
-			},
-			widget: widgets[f.Tag("widget")],
-		})
+
+		if f.Tag("widget") == "dir" {
+			list.children = append(list.children, entry{
+				label: f.Tag("label"),
+				icon:  "folder",
+				value: f.Value,
+				stringValue: func() string {
+					return fmt.Sprintf(f.Tag("fmt"), f.Value())
+				},
+				widget: widgets[f.Tag("widget")],
+				callbackOK: func() {
+					list.segueNext()
+					menu.stack = append(menu.stack, buildExplorer(
+						f.Value().(string),
+						nil,
+						func(path string) error {
+							f.Set(filepath.Clean(path))
+							return settings.Save()
+						},
+						&entry{
+							label: "<Select this directory>",
+							icon:  "scan",
+						}),
+					)
+				},
+			})
+		} else {
+			list.children = append(list.children, entry{
+				label: f.Tag("label"),
+				icon:  "subsetting",
+				incr: func(direction int) {
+					incrCallbacks[f.Name()](f, direction)
+				},
+				value: f.Value,
+				stringValue: func() string {
+					return fmt.Sprintf(f.Tag("fmt"), f.Value())
+				},
+				widget: widgets[f.Tag("widget")],
+			})
+		}
 	}
 
 	list.segueMount()

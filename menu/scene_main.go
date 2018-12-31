@@ -3,6 +3,8 @@ package menu
 import (
 	"os/user"
 
+	"github.com/libretro/ludo/settings"
+
 	"github.com/libretro/ludo/core"
 	"github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
@@ -35,7 +37,7 @@ func buildMainMenu() Scene {
 		callbackOK: func() {
 			list.segueNext()
 			menu.stack = append(menu.stack, buildExplorer(
-				"cores",
+				settings.Settings.CoresDirectory,
 				[]string{".dll", ".dylib", ".so"},
 				func(path string) error {
 					err := core.Load(path)

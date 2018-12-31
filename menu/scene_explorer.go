@@ -27,6 +27,19 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 		list.children = append(list.children, *dirAction)
 	}
 
+	list.children = append(list.children, entry{
+		label: "..",
+		icon:  "folder",
+		callbackOK: func() {
+			list.segueNext()
+			newPath := filepath.Clean(path + "/..")
+			if dirAction != nil {
+				dirAction.callbackOK = func() { cb(newPath) }
+			}
+			menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
+		},
+	})
+
 	for _, f := range files {
 		f := f
 		icon := "file"
@@ -41,7 +54,7 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 			var extensionFound = false
 			var fileExtension = filepath.Ext(f.Name())
 			for _, extension := range exts {
-				if (extension == fileExtension) {
+				if extension == fileExtension {
 					extensionFound = true
 					break
 				}

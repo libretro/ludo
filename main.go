@@ -30,7 +30,6 @@ func init() {
 	os.Mkdir(usr.HomeDir+"/.ludo/savestates/", 0777)
 	os.Mkdir(usr.HomeDir+"/.ludo/screenshots/", 0777)
 	os.Mkdir(usr.HomeDir+"/.ludo/system/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/cores/", 0777)
 }
 
 func runLoop(vid *video.Video) {
