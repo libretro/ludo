@@ -29,7 +29,7 @@ func LoadDB(dir string) (rdb.DB, error) {
 		}
 		filename := f.Name()
 		system := filename[0 : len(filename)-4]
-		bytes, _ := ioutil.ReadFile(dir + f.Name())
+		bytes, _ := ioutil.ReadFile(dir + "/" + f.Name())
 		db[system] = rdb.Parse(bytes)
 	}
 	return db, nil

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
@@ -301,18 +302,20 @@ func genericRender(list *entry) {
 // ContextReset uploads the UI images to the GPU.
 // It should be called after each time the window is recreated.
 func (menu *Menu) ContextReset() {
-	paths, _ := filepath.Glob("assets/*.png")
+	assets := settings.Current.AssetsDirectory
+
+	paths, _ := filepath.Glob(assets + "/*.png")
 	for _, path := range paths {
 		path := path
 		filename := utils.Filename(path)
-		menu.icons[filename] = video.NewImage("assets/" + filename + ".png")
+		menu.icons[filename] = video.NewImage(assets + "/" + filename + ".png")
 	}
 
-	paths, _ = filepath.Glob("assets/flags/*.png")
+	paths, _ = filepath.Glob(assets + "/flags/*.png")
 	for _, path := range paths {
 		path := path
 		filename := utils.Filename(path)
-		menu.icons[filename] = video.NewImage("assets/flags/" + filename + ".png")
+		menu.icons[filename] = video.NewImage(assets + "/flags/" + filename + ".png")
 	}
 
 	currentScreenIndex := len(menu.stack) - 1

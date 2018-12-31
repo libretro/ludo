@@ -49,6 +49,8 @@ func defaultSettings() Settings {
 			"Sony - PlayStation":                             "mednafen_psx_libretro",
 		},
 		CoresDirectory:       "./cores",
+		AssetsDirectory:      "./assets",
+		DatabaseDirectory:    "./database",
 		SavestatesDirectory:  filepath.Join(usr.HomeDir, ".ludo", "savestates"),
 		SavefilesDirectory:   filepath.Join(usr.HomeDir, ".ludo", "savefiles"),
 		ScreenshotsDirectory: filepath.Join(usr.HomeDir, ".ludo", "screenshots"),

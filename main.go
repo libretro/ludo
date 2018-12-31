@@ -81,7 +81,7 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	state.Global.DB, err = scanner.LoadDB("database/")
+	state.Global.DB, err = scanner.LoadDB(settings.Current.DatabaseDirectory)
 	if err != nil {
 		log.Println("Can't load game database:", err)
 	}

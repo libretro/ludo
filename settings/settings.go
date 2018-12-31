@@ -25,6 +25,8 @@ type Settings struct {
 	ShowHiddenFiles      bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
 	CoreForPlaylist      map[string]string `json:"core_for_playlist"`
 	CoresDirectory       string            `json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
+	AssetsDirectory      string            `json:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
+	DatabaseDirectory    string            `json:"database_dir" label:"Database Directory" fmt:"%s" widget:"dir"`
 	SavestatesDirectory  string            `json:"savestates_dir" label:"Savestates Directory" fmt:"%s" widget:"dir"`
 	SavefilesDirectory   string            `json:"savefiles_dir" label:"Savefiles Directory" fmt:"%s" widget:"dir"`
 	ScreenshotsDirectory string            `json:"screenshots_dir" label:"Screenshots Directory" fmt:"%s" widget:"dir"`
