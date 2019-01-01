@@ -54,11 +54,8 @@ func Load() error {
 
 	// If /etc/ludo.json exists, override the defaults
 	if _, err := os.Stat("/etc/ludo.json"); !os.IsNotExist(err) {
-		b, err := ioutil.ReadFile("/etc/ludo.json")
-		if err != nil {
-			return err
-		}
-		err = json.Unmarshal(b, &Current)
+		b, _ := ioutil.ReadFile("/etc/ludo.json")
+		json.Unmarshal(b, &Current)
 	}
 
 	b, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/settings.json")
