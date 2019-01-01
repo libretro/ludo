@@ -169,6 +169,7 @@ const (
 	EnvironmentGetUsername          = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
 	EnvironmentGetLogInterface      = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
 	EnvironmentGetCanDupe           = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
+	EnvironmentSetSupportNoGame     = uint32(C.RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME)
 	EnvironmentSetPixelFormat       = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
 	EnvironmentGetSystemDirectory   = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
 	EnvironmentGetSaveDirectory     = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
@@ -512,6 +513,12 @@ func GetVariables(data unsafe.Pointer) []Variable {
 func SetBool(data unsafe.Pointer, val bool) {
 	b := (*C.bool)(data)
 	*b = C.bool(val)
+}
+
+// GetBool is an environment callback helper to get a boolean
+func GetBool(data unsafe.Pointer) bool {
+	b := (*C.bool)(data)
+	return (bool)(*b)
 }
 
 // SetString is an environment callback helper to set a string

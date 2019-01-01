@@ -44,6 +44,7 @@ func Load(sofile string) error {
 		state.Global.Core.UnloadGame()
 		state.Global.Core.Deinit()
 		state.Global.GamePath = ""
+		state.Global.SupportNoGame = false
 		state.Global.CoreRunning = false
 	}
 
@@ -77,7 +78,14 @@ func Load(sofile string) error {
 
 	menu.UpdateOptions(opts)
 
-	log.Println("[Core]: Core loaded: " + si.LibraryName)
+	if (state.Global.SupportNoGame) {
+		log.Println("[Core]: Core launching: " + si.LibraryName)
+		StartCore()
+	}
+	else {
+		log.Println("[Core]: Core loaded: " + si.LibraryName)
+	}
+
 	return nil
 }
 
@@ -112,6 +120,28 @@ func unzipGame(filename string) (string, int64, error) {
 	return path, size, nil
 }
 
+// StartCore will set the start up the loaded core, with or without a game being loaded first.
+func StartCore() {
+	si := state.Global.Core.GetSystemInfo()
+	avi := state.Global.Core.GetSystemAVInfo()
+
+	vid.Geom = avi.Geometry
+
+	// Append the library name to the window title.
+	if len(si.LibraryName) > 0 {
+		vid.Window.SetTitle("Ludo - " + si.LibraryName)
+	}
+
+	input.Init(vid, menu)
+	audio.Init(int32(avi.Timing.SampleRate))
+	if state.Global.AudioCb.SetState != nil {
+		state.Global.AudioCb.SetState(true)
+	}
+
+	state.Global.CoreRunning = true
+	state.Global.MenuActive = false
+}
+
 // LoadGame loads a game. A core has to be loaded first.
 func LoadGame(filename string) error {
 	si := state.Global.Core.GetSystemInfo()
@@ -135,26 +165,10 @@ func LoadGame(filename string) error {
 		return errors.New("failed to load the game")
 	}
 
-	avi := state.Global.Core.GetSystemAVInfo()
-
-	vid.Geom = avi.Geometry
-
-	// Append the library name to the window title.
-	if len(si.LibraryName) > 0 {
-		vid.Window.SetTitle("Ludo - " + si.LibraryName)
-	}
-
-	input.Init(vid, menu)
-	audio.Init(int32(avi.Timing.SampleRate))
-	if state.Global.AudioCb.SetState != nil {
-		state.Global.AudioCb.SetState(true)
-	}
-
-	state.Global.CoreRunning = true
-	state.Global.MenuActive = false
 	state.Global.GamePath = filename
-
 	log.Println("[Core]: Game loaded: " + filename)
+	StartCore()
+
 	return nil
 }
 
