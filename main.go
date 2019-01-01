@@ -52,11 +52,9 @@ func runLoop(vid *video.Video) {
 
 func main() {
 	var GLVersion uint
-	var fullscreen bool
 	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
 	flag.UintVar(&GLVersion, "glver", 32, "OpenGL version")
-	flag.BoolVar(&fullscreen, "fullscreen", false, "Force starting in full screen mode")
 	flag.Parse()
 	args := flag.Args()
 
@@ -69,11 +67,6 @@ func main() {
 	if err != nil {
 		log.Println("[Settings]: Loading failed:", err)
 		log.Println("[Settings]: Using default settings")
-	}
-
-	if fullscreen {
-		settings.Current.VideoFullscreen = fullscreen
-		settings.Save()
 	}
 
 	if err := glfw.Init(); err != nil {

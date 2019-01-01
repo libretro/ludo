@@ -45,12 +45,17 @@ var Defaults = defaultSettings()
 // If the settings file doesn't exists, it will return an error and
 // set all the settings to their default value.
 func Load() error {
+	defer Save()
+
+	usr, _ := user.Current()
+
 	// Set default values for settings
 	Current = Defaults
 
-	usr, err := user.Current()
-	if err != nil {
-		return err
+	// If /etc/ludo.json exists, override the defaults
+	if _, err := os.Stat("/etc/ludo.json"); !os.IsNotExist(err) {
+		b, _ := ioutil.ReadFile("/etc/ludo.json")
+		json.Unmarshal(b, &Current)
 	}
 
 	b, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/settings.json")
@@ -59,14 +64,14 @@ func Load() error {
 	}
 	err = json.Unmarshal(b, &Current)
 
-	Save()
-
 	return err
 }
 
 // Save saves the current configuration to the home directory
 func Save() error {
 	usr, _ := user.Current()
+
+	os.MkdirAll(usr.HomeDir+"/.ludo", os.ModePerm)
 
 	b, _ := json.MarshalIndent(Current, "", "  ")
 	f, err := os.Create(usr.HomeDir + "/.ludo/settings.json")
