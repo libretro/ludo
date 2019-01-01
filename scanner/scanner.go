@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/rdb"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 )
@@ -29,7 +29,7 @@ func LoadDB(dir string) (rdb.DB, error) {
 		}
 		filename := f.Name()
 		system := filename[0 : len(filename)-4]
-		bytes, _ := ioutil.ReadFile(dir + f.Name())
+		bytes, _ := ioutil.ReadFile(dir + "/" + f.Name())
 		db[system] = rdb.Parse(bytes)
 	}
 	return db, nil
@@ -37,14 +37,14 @@ func LoadDB(dir string) (rdb.DB, error) {
 
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
-	usr, _ := user.Current()
 	roms := utils.AllFilesIn(dir)
 	scannedGames := make(chan (rdb.Entry))
 	go Scan(dir, roms, scannedGames, doneCb)
 	go func() {
 		i := 0
 		for game := range scannedGames {
-			lplpath := usr.HomeDir + "/.ludo/playlists/" + game.System + ".lpl"
+			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
+			lplpath := settings.Current.PlaylistsDirectory + "/" + game.System + ".lpl"
 			if playlists.ExistsInPlaylist(lplpath, game.Path, game.CRC32) {
 				continue
 			}

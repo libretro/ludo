@@ -131,7 +131,7 @@ func (video *Video) Configure(fullscreen bool) {
 	GLSLVersion := video.configureContext()
 
 	if fullscreen {
-		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
+		m = glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
 		vm := m.GetVideoMode()
 		width = vm.Width
 		height = vm.Height
@@ -162,7 +162,8 @@ func (video *Video) Configure(fullscreen bool) {
 	video.CoreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
-	video.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh, GLSLVersion)
+	assets := settings.Current.AssetsDirectory
+	video.Font, err = glfont.LoadFont(assets+"/font.ttf", int32(64), fbw, fbh, GLSLVersion)
 	if err != nil {
 		panic(err)
 	}

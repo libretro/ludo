@@ -4,9 +4,10 @@ package savestates
 
 import (
 	"io/ioutil"
-	"os/user"
+	"os"
 	"path/filepath"
 
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 )
 
@@ -19,20 +20,24 @@ func name() string {
 
 // Save the current state to the filesystem
 func Save() error {
-	usr, _ := user.Current()
 	s := state.Global.Core.SerializeSize()
 	bytes, err := state.Global.Core.Serialize(s)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(usr.HomeDir+"/.ludo/savestates/"+name(), bytes, 0644)
+	path := filepath.Join(settings.Current.SavestatesDirectory, name())
+	err = os.MkdirAll(settings.Current.SavestatesDirectory, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(path, bytes, 0644)
 }
 
 // Load the state from the filesystem
 func Load() error {
-	usr, _ := user.Current()
 	s := state.Global.Core.SerializeSize()
-	bytes, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/savestates/" + name())
+	path := filepath.Join(settings.Current.SavestatesDirectory, name())
+	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}

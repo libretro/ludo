@@ -2,15 +2,17 @@ package menu
 
 import (
 	"fmt"
+	"path/filepath"
 
+	"github.com/fatih/structs"
 	"github.com/go-gl/glfw/v3.2/glfw"
 
 	"github.com/libretro/ludo/audio"
+	"github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
-
-	"github.com/fatih/structs"
 )
 
 type screenSettings struct {
@@ -21,25 +23,59 @@ func buildSettings() Scene {
 	var list screenSettings
 	list.label = "Settings"
 
-	fields := structs.Fields(&settings.Settings)
+	fields := structs.Fields(&settings.Current)
 	for _, f := range fields {
 		f := f
 		// Don't expose settings without label
 		if f.Tag("label") == "" {
 			continue
 		}
-		list.children = append(list.children, entry{
-			label: f.Tag("label"),
-			icon:  "subsetting",
-			incr: func(direction int) {
-				incrCallbacks[f.Name()](f, direction)
-			},
-			value: f.Value,
-			stringValue: func() string {
-				return fmt.Sprintf(f.Tag("fmt"), f.Value())
-			},
-			widget: widgets[f.Tag("widget")],
-		})
+
+		if f.Tag("widget") == "dir" {
+			list.children = append(list.children, entry{
+				label: f.Tag("label"),
+				icon:  "folder",
+				value: f.Value,
+				stringValue: func() string {
+					return "<" + utils.Filename(f.Value().(string)) + ">"
+				},
+				widget: widgets[f.Tag("widget")],
+				callbackOK: func() {
+					list.segueNext()
+					menu.stack = append(menu.stack, buildExplorer(
+						f.Value().(string),
+						nil,
+						func(path string) error {
+							var err error
+							path, err = filepath.Abs(path)
+							if err != nil {
+								return err
+							}
+							f.Set(path)
+							notifications.DisplayAndLog("Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
+							return settings.Save()
+						},
+						&entry{
+							label: "<Select this directory>",
+							icon:  "scan",
+						}),
+					)
+				},
+			})
+		} else {
+			list.children = append(list.children, entry{
+				label: f.Tag("label"),
+				icon:  "subsetting",
+				incr: func(direction int) {
+					incrCallbacks[f.Name()](f, direction)
+				},
+				value: f.Value,
+				stringValue: func() string {
+					return fmt.Sprintf(f.Tag("fmt"), f.Value())
+				},
+				widget: widgets[f.Tag("widget")],
+			})
+		}
 	}
 
 	list.segueMount()
@@ -94,7 +130,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
-		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		vid.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
 		settings.Save()
 	},
@@ -108,7 +144,7 @@ var incrCallbacks = map[string]callbackIncrement{
 			v = len(glfw.GetMonitors()) - 1
 		}
 		f.Set(v)
-		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		vid.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
 		settings.Save()
 	},

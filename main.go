@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-	"os"
-	"os/user"
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
@@ -22,15 +20,6 @@ import (
 func init() {
 	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
-	// Create base folders
-	usr, _ := user.Current()
-	os.Mkdir(usr.HomeDir+"/.ludo/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/playlists/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/savefiles/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/savestates/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/screenshots/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/system/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/cores/", 0777)
 }
 
 func runLoop(vid *video.Video) {
@@ -80,11 +69,10 @@ func main() {
 	if err != nil {
 		log.Println("[Settings]: Loading failed:", err)
 		log.Println("[Settings]: Using default settings")
-		settings.Save()
 	}
 
 	if fullscreen {
-		settings.Settings.VideoFullscreen = fullscreen
+		settings.Current.VideoFullscreen = fullscreen
 		settings.Save()
 	}
 
@@ -93,14 +81,14 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	state.Global.DB, err = scanner.LoadDB("database/")
+	state.Global.DB, err = scanner.LoadDB(settings.Current.DatabaseDirectory)
 	if err != nil {
 		log.Println("Can't load game database:", err)
 	}
 
 	playlists.LoadPlaylists()
 
-	vid := video.Init(settings.Settings.VideoFullscreen, GLVersion)
+	vid := video.Init(settings.Current.VideoFullscreen, GLVersion)
 
 	m := menu.Init(vid)
 	m.ContextReset()

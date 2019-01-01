@@ -3,10 +3,11 @@ package playlists
 import (
 	"bufio"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/libretro/ludo/settings"
 )
 
 // PlaylistEntry represents a game in a playlist.
@@ -26,8 +27,7 @@ var Playlists = map[string]Playlist{}
 // LoadPlaylists loops over lpl files in ~/.ludo/playlists and loads them into
 // memory.
 func LoadPlaylists() {
-	usr, _ := user.Current()
-	paths, _ := filepath.Glob(usr.HomeDir + "/.ludo/playlists/*.lpl")
+	paths, _ := filepath.Glob(settings.Current.PlaylistsDirectory + "/*.lpl")
 
 	Playlists = map[string]Playlist{}
 	for _, path := range paths {
