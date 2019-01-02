@@ -78,11 +78,10 @@ func Load(sofile string) error {
 
 	menu.UpdateOptions(opts)
 
-	if (state.Global.SupportNoGame) {
+	if state.Global.SupportNoGame {
 		log.Println("[Core]: Core launching: " + si.LibraryName)
 		StartCore()
-	}
-	else {
+	} else {
 		log.Println("[Core]: Core loaded: " + si.LibraryName)
 	}
 
