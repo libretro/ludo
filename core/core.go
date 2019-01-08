@@ -15,6 +15,7 @@ import (
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/savefiles"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 )
@@ -155,6 +156,7 @@ func LoadGame(filename string) error {
 	state.Global.GamePath = filename
 
 	log.Println("[Core]: Game loaded: " + filename)
+	savefiles.LoadSRAM()
 	return nil
 }
 
