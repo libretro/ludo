@@ -190,6 +190,15 @@ const (
 	LogLevelDummy = uint32(C.RETRO_LOG_DUMMY)
 )
 
+// Memory constants
+const (
+	MemoryMask      = uint32(C.RETRO_MEMORY_MASK)
+	MemorySaveRAM   = uint32(C.RETRO_MEMORY_SAVE_RAM)
+	MemoryRTC       = uint32(C.RETRO_MEMORY_RTC)
+	MemorySystemRAM = uint32(C.RETRO_MEMORY_SYSTEM_RAM)
+	MemoryVideoRAM  = uint32(C.RETRO_MEMORY_VIDEO_RAM)
+)
+
 type (
 	environmentFunc      func(uint32, unsafe.Pointer) bool
 	videoRefreshFunc     func(unsafe.Pointer, int32, int32, int32)
