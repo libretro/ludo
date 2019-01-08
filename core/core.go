@@ -155,6 +155,12 @@ func LoadGame(filename string) error {
 	state.Global.GamePath = filename
 
 	log.Println("[Core]: Game loaded: " + filename)
+	// len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
+	// dat := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
+	// bytes := make([]byte, len)
+	// copy(bytes, *(*[]byte)(dat))
+	// srm, _ := os.Create("lala.srm")
+	// srm.Write(bytes)
 	return nil
 }
 
