@@ -34,6 +34,7 @@ void bridge_retro_reset(void *f);
 void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_t usec);
 void bridge_retro_audio_callback(retro_audio_callback_t f);
 void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
+size_t bridge_retro_get_memory_size(void *f, unsigned id);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -252,6 +253,7 @@ func Load(sofile string) (Core, error) {
 	core.symRetroSerializeSize = core.DlSym("retro_serialize_size")
 	core.symRetroSerialize = core.DlSym("retro_serialize")
 	core.symRetroUnserialize = core.DlSym("retro_unserialize")
+	core.symRetroGetMemorySize = core.DlSym("retro_get_memory_size")
 	mu.Unlock()
 
 	return core, nil
@@ -551,4 +553,10 @@ func SetAudioCallback(data unsafe.Pointer) AudioCallback {
 		C.bridge_retro_audio_set_state(c.set_state, C.bool(state))
 	}
 	return auc
+}
+
+// GetMemorySize returns the size of a region of the memory.
+// See memory constants.
+func (core *Core) GetMemorySize(id uint32) uint {
+	return uint(C.bridge_retro_get_memory_size(core.symRetroGetMemorySize, C.unsigned(id)))
 }
