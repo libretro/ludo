@@ -566,5 +566,5 @@ func (core *Core) GetMemorySize(id uint32) uint {
 // GetMemoryData returns the size of a region of the memory.
 // See memory constants.
 func (core *Core) GetMemoryData(id uint32) unsafe.Pointer {
-	return unsafe.Pointer(C.bridge_retro_get_memory_data(core.symRetroGetMemoryData, C.unsigned(id)))
+	return C.bridge_retro_get_memory_data(core.symRetroGetMemoryData, C.unsigned(id))
 }
