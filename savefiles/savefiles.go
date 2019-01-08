@@ -2,6 +2,7 @@
 package savefiles
 
 import (
+	"C"
 	"os"
 	"path/filepath"
 
@@ -22,9 +23,7 @@ func SaveSRAM() {
 	if state.Global.CoreRunning {
 		len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
 		dat := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
-		bytes := make([]byte, len)
-		copy(bytes, (*(*[]byte)(dat))[:])
-		//fmt.Println((*(*[]byte)(dat))[:])
+		bytes := C.GoBytes(dat, C.int(len))
 		path := filepath.Join(settings.Current.SavefilesDirectory, name())
 		os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
 		srm, _ := os.Create(path)
