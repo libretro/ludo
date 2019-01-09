@@ -27,6 +27,8 @@ type Core struct {
 	symRetroSerializeSize       unsafe.Pointer
 	symRetroSerialize           unsafe.Pointer
 	symRetroUnserialize         unsafe.Pointer
+	symRetroGetMemorySize       unsafe.Pointer
+	symRetroGetMemoryData       unsafe.Pointer
 }
 
 // DlSym loads a symbol from a dynamic library
