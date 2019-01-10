@@ -31,11 +31,24 @@ func SaveSRAM() {
 	if state.Global.CoreRunning {
 		len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
 		ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
+		if ptr == nil || len == 0 {
+			log.Println("[Core]: Unable to get SRAM address")
+			return
+		}
 		// convert the C array to a go slice
 		bytes := C.GoBytes(ptr, C.int(len))
-		os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
-		fd, _ := os.Create(Path())
+		err := os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
+		if err != nil {
+			log.Println("[Core]:", err)
+			return
+		}
+		fd, err := os.Create(Path())
+		if err != nil {
+			log.Println("[Core]:", err)
+			return
+		}
 		fd.Write(bytes)
+		log.Println("[Core]: Saved SRAM", Path())
 	}
 }
 
