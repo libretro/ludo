@@ -41,7 +41,11 @@ func Init(v *video.Video, m MenuInterface) {
 // Load loads a libretro core
 func Load(sofile string) error {
 	state.Global.CorePath = sofile
+
+	// In case the a core is already loaded, we need to close it properly
+	// before loading the new core
 	if state.Global.CoreRunning {
+		savefiles.SaveSRAM()
 		state.Global.Core.UnloadGame()
 		state.Global.Core.Deinit()
 		state.Global.GamePath = ""
@@ -115,6 +119,13 @@ func unzipGame(filename string) (string, int64, error) {
 
 // LoadGame loads a game. A core has to be loaded first.
 func LoadGame(filename string) error {
+
+	// If we're loading a new game on the same core, save the RAM of the previous
+	// game before closing it.
+	if state.Global.GamePath != filename {
+		savefiles.SaveSRAM()
+	}
+
 	si := state.Global.Core.GetSystemInfo()
 
 	gi, err := getGameInfo(filename, si.BlockExtract)
