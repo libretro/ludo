@@ -1,3 +1,3 @@
 package settings
 
-var playstation_core = "pcsx_rearmed_libretro"
+var playstationCore = "pcsx_rearmed_libretro"

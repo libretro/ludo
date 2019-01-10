@@ -1,3 +1,5 @@
+// +build !arm
+
 package settings
 
-var playstation_core = "mednafen_psx_libretro"
+var playstationCore = "mednafen_psx_libretro"

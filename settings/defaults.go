@@ -46,7 +46,7 @@ func defaultSettings() Settings {
 			"Sega - PICO":                                    "picodrive_libretro",
 			"SNK - Neo Geo Pocket Color":                     "mednafen_ngp_libretro",
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
-			"Sony - PlayStation":                             playstation_core,
+			"Sony - PlayStation":                             playstationCore,
 		},
 		CoresDirectory:       "./cores",
 		AssetsDirectory:      "./assets",
