@@ -41,6 +41,7 @@ matrix:
     - name: OSX
       os: osx
       before_install:
+        - brew update
         - brew install openal-soft
       script:
         - go get -t -v ./...
