@@ -8,17 +8,19 @@ language: go
 go:
   - "1.11"
 
+
+before_script:
+  - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
+  - go get github.com/golang/lint/golint
+  - go get honnef.co/go/tools/cmd/megacheck
+  - go get github.com/fzipp/gocyclo
+
 matrix:
   include:
     - name: Linux x86_64
       os: linux
       before_install:
         - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
-      before_script:
-        - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
-        - go get github.com/golang/lint/golint
-        - go get honnef.co/go/tools/cmd/megacheck
-        - go get github.com/fzipp/gocyclo
       script:
         - go get -t -v ./...
         - go test -v -race ./...
