@@ -8,7 +8,6 @@ language: go
 go:
   - "1.11"
 
-
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
   - go get github.com/golang/lint/golint
@@ -80,6 +79,11 @@ matrix:
         - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
       script:
         - go get -t -v ./...
+        #- go test -v -race ./...
+        #- go vet ./...
+        - megacheck ./...
+        - gocyclo -over 19 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
         - go build -v
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
