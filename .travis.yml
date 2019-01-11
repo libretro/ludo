@@ -14,8 +14,18 @@ matrix:
       os: linux
       before_install:
         - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
+      before_script:
+        - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
+        - go get github.com/golang/lint/golint
+        - go get honnef.co/go/tools/cmd/megacheck
+        - go get github.com/fzipp/gocyclo
       script:
         - go get -t -v ./...
+        - go test -v -race ./...
+        - go vet ./...
+        - megacheck ./...
+        - gocyclo -over 19 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
         - go build -v
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
