@@ -1,7 +1,6 @@
 package menu
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -68,7 +67,6 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 
 		// Filter files by extension.
 		if !f.IsDir() && !contains(f, exts) {
-			fmt.Println("skip")
 			continue
 		}
 
