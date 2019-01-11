@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -145,6 +146,7 @@ func Test_buildExplorer(t *testing.T) {
 	menu.stack = append(menu.stack, scene)
 
 	children := scene.Entry().children
+	fmt.Println(children)
 
 	t.Run("Should display the right number of menu entries", func(t *testing.T) {
 		// txt files are ignored because we filter on .img

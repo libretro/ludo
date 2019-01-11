@@ -1,7 +1,9 @@
 package menu
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/libretro/ludo/notifications"
@@ -11,6 +13,18 @@ import (
 
 type screenExplorer struct {
 	entry
+}
+
+func contains(f os.FileInfo, exts []string) bool {
+	if len(exts) > 0 {
+		var fileExtension = filepath.Ext(f.Name())
+		for _, ext := range exts {
+			if ext == fileExtension {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func buildExplorer(path string, exts []string, cb func(string) error, dirAction *entry) Scene {
@@ -53,18 +67,9 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 		}
 
 		// Filter files by extension.
-		if !f.IsDir() && len(exts) > 0 {
-			var extensionFound = false
-			var fileExtension = filepath.Ext(f.Name())
-			for _, extension := range exts {
-				if extension == fileExtension {
-					extensionFound = true
-					break
-				}
-			}
-			if !extensionFound {
-				continue
-			}
+		if !f.IsDir() && !contains(f, exts) {
+			fmt.Println("skip")
+			continue
 		}
 
 		if f.IsDir() {
