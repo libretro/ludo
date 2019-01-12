@@ -133,6 +133,9 @@ func LoadGame(filename string) error {
 	// game before closing it.
 	if state.Global.GamePath != filename {
 		savefiles.SaveSRAM()
+		state.Global.Core.UnloadGame()
+		state.Global.GamePath = ""
+		state.Global.CoreRunning = false
 	}
 
 	si := state.Global.Core.GetSystemInfo()
