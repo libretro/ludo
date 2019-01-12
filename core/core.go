@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
@@ -36,6 +37,14 @@ var menu MenuInterface
 func Init(v *video.Video, m MenuInterface) {
 	vid = v
 	menu = m
+	ticker := time.NewTicker(time.Second)
+	go func() {
+		for range ticker.C {
+			if state.Global.CoreRunning && !state.Global.MenuActive {
+				savefiles.SaveSRAM()
+			}
+		}
+	}()
 }
 
 // Load loads a libretro core
@@ -168,6 +177,7 @@ func LoadGame(filename string) error {
 
 	log.Println("[Core]: Game loaded: " + filename)
 	savefiles.LoadSRAM()
+
 	return nil
 }
 
