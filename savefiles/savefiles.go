@@ -32,7 +32,9 @@ func SaveSRAM() {
 		len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
 		ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
 		if ptr == nil || len == 0 {
-			log.Println("[Core]: Unable to get SRAM address")
+			if state.Global.Verbose {
+				log.Println("[Core]: Unable to get SRAM address")
+			}
 			return
 		}
 		// convert the C array to a go slice
@@ -48,7 +50,9 @@ func SaveSRAM() {
 			return
 		}
 		fd.Write(bytes)
-		log.Println("[Core]: Saved SRAM", Path())
+		if state.Global.Verbose {
+			log.Println("[Core]: Saved SRAM", Path())
+		}
 	}
 }
 
@@ -75,6 +79,8 @@ func LoadSRAM() {
 			return
 		}
 		copy(destination, source)
-		log.Println("[Core]: Loaded SRAM", Path())
+		if state.Global.Verbose {
+			log.Println("[Core]: Loaded SRAM", Path())
+		}
 	}
 }
