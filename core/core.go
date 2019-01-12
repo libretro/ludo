@@ -53,13 +53,7 @@ func Load(sofile string) error {
 
 	// In case the a core is already loaded, we need to close it properly
 	// before loading the new core
-	if state.Global.CoreRunning {
-		savefiles.SaveSRAM()
-		state.Global.Core.UnloadGame()
-		state.Global.Core.Deinit()
-		state.Global.GamePath = ""
-		state.Global.CoreRunning = false
-	}
+	Unload()
 
 	var err error
 	state.Global.Core, err = libretro.Load(sofile)
@@ -132,10 +126,7 @@ func LoadGame(filename string) error {
 	// If we're loading a new game on the same core, save the RAM of the previous
 	// game before closing it.
 	if state.Global.GamePath != filename {
-		savefiles.SaveSRAM()
-		state.Global.Core.UnloadGame()
-		state.Global.GamePath = ""
-		state.Global.CoreRunning = false
+		UnloadGame()
 	}
 
 	si := state.Global.Core.GetSystemInfo()
@@ -153,7 +144,7 @@ func LoadGame(filename string) error {
 		gi.SetData(bytes)
 	}
 
-	ok := state.Global.Core.LoadGame(gi)
+	ok := state.Global.Core.LoadGame(*gi)
 	if !ok {
 		state.Global.CoreRunning = false
 		return errors.New("failed to load the game")
@@ -184,24 +175,40 @@ func LoadGame(filename string) error {
 	return nil
 }
 
+// Unload unloads a libretro core
+func Unload() {
+	if state.Global.CoreRunning {
+		UnloadGame()
+		state.Global.Core.Deinit()
+	}
+}
+
+// UnloadGame unloads a game.
+func UnloadGame() {
+	savefiles.SaveSRAM()
+	state.Global.Core.UnloadGame()
+	state.Global.GamePath = ""
+	state.Global.CoreRunning = false
+}
+
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it
-func getGameInfo(filename string, blockExtract bool) (libretro.GameInfo, error) {
+func getGameInfo(filename string, blockExtract bool) (*libretro.GameInfo, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return libretro.GameInfo{}, err
+		return nil, err
 	}
 
 	fi, err := file.Stat()
 	if err != nil {
-		return libretro.GameInfo{}, err
+		return nil, err
 	}
 
 	if filepath.Ext(filename) == ".zip" && !blockExtract {
 		path, size, err := unzipGame(filename)
 		if err != nil {
-			return libretro.GameInfo{}, err
+			return nil, err
 		}
-		return libretro.GameInfo{Path: path, Size: size}, nil
+		return &libretro.GameInfo{Path: path, Size: size}, nil
 	}
-	return libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
+	return &libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
 }
