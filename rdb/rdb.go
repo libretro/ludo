@@ -154,6 +154,10 @@ func Parse(rdb []byte) RDB {
 		}
 		iskey = !iskey
 	}
+	// Don't forget to add the last rdb entry
+	if (g != Entry{}) {
+		output = append(output, g)
+	}
 	return output
 }
 
