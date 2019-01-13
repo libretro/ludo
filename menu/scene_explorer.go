@@ -66,7 +66,7 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 		}
 
 		// Filter files by extension.
-		if !f.IsDir() && !contains(f, exts) {
+		if exts != nil && !f.IsDir() && !contains(f, exts) {
 			continue
 		}
 
