@@ -11,7 +11,6 @@ import (
 	"github.com/libretro/ludo/menu"
 	"github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
-	"github.com/libretro/ludo/savefiles"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -114,8 +113,6 @@ func main() {
 
 	// Unload and deinit in the core.
 	if state.Global.CoreRunning {
-		savefiles.SaveSRAM()
-		state.Global.Core.UnloadGame()
-		state.Global.Core.Deinit()
+		core.Unload()
 	}
 }
