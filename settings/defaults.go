@@ -31,6 +31,8 @@ func defaultSettings() Settings {
 			"Coleco - ColecoVision":                          "bluemsx_libretro",
 			"FB Alpha - Arcade Games":                        "fbalpha_libretro",
 			"GCE - Vectrex":                                  "vecx_libretro",
+			"Microsoft - MSX":                                "bluemsx_libretro",
+			"Microsoft - MSX2":                               "bluemsx_libretro",
 			"NEC - PC Engine SuperGrafx":                     "mednafen_supergrafx_libretro",
 			"NEC - PC Engine - TurboGrafx 16":                "mednafen_pce_fast_libretro",
 			"Nintendo - Family Computer Disk System":         "nestopia_libretro",
