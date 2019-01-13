@@ -45,6 +45,7 @@ func defaultSettings() Settings {
 			"Sega - Master System - Mark III":                "genesis_plus_gx_libretro",
 			"Sega - Mega Drive - Genesis":                    "genesis_plus_gx_libretro",
 			"Sega - PICO":                                    "picodrive_libretro",
+			"Sega - SG-1000":                                 "genesis_plus_gx_libretro",
 			"SNK - Neo Geo Pocket Color":                     "mednafen_ngp_libretro",
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 			"Sony - PlayStation":                             playstationCore,
