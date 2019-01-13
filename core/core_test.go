@@ -74,13 +74,13 @@ func Test_getGameInfo(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    libretro.GameInfo
+		want    *libretro.GameInfo
 		wantErr bool
 	}{
 		{
 			name: "Returns the right path and size for an unzipped ROM",
 			args: args{filename: "testdata/ZoomingSecretary.uze", blockExtract: false},
-			want: libretro.GameInfo{
+			want: &libretro.GameInfo{
 				Path: "testdata/ZoomingSecretary.uze",
 				Size: 61286,
 			},
@@ -89,7 +89,7 @@ func Test_getGameInfo(t *testing.T) {
 		{
 			name: "Returns the right path and size for a zipped ROM",
 			args: args{filename: "testdata/ZoomingSecretary.zip", blockExtract: false},
-			want: libretro.GameInfo{
+			want: &libretro.GameInfo{
 				Path: os.TempDir() + "/ZoomingSecretary.uze",
 				Size: 61286,
 			},
@@ -98,7 +98,7 @@ func Test_getGameInfo(t *testing.T) {
 		{
 			name: "Returns the right path and size for a zipped ROM with blockExtract",
 			args: args{filename: "testdata/ZoomingSecretary.zip", blockExtract: true},
-			want: libretro.GameInfo{
+			want: &libretro.GameInfo{
 				Path: "testdata/ZoomingSecretary.zip",
 				Size: 25599,
 			},
@@ -107,7 +107,7 @@ func Test_getGameInfo(t *testing.T) {
 		{
 			name: "Returns the right path and size for a zipped ROM with blockExtract",
 			args: args{filename: "testdata/ZoomingSecretary.zip", blockExtract: true},
-			want: libretro.GameInfo{
+			want: &libretro.GameInfo{
 				Path: "testdata/ZoomingSecretary.zip",
 				Size: 25599,
 			},
@@ -116,13 +116,13 @@ func Test_getGameInfo(t *testing.T) {
 		{
 			name:    "Returns an error when a file doesn't exists",
 			args:    args{filename: "testdata/ZoomingSecretary2.zip", blockExtract: true},
-			want:    libretro.GameInfo{},
+			want:    nil,
 			wantErr: true,
 		},
 		{
 			name: "Doesn't attempt to unzip a file that has no .zip extension",
 			args: args{filename: "testdata/ZoomingSecretary.uze", blockExtract: true},
-			want: libretro.GameInfo{
+			want: &libretro.GameInfo{
 				Path: "testdata/ZoomingSecretary.uze",
 				Size: 61286,
 			},

@@ -33,6 +33,7 @@ func defaultSettings() Settings {
 			"GCE - Vectrex":                                  "vecx_libretro",
 			"NEC - PC Engine SuperGrafx":                     "mednafen_supergrafx_libretro",
 			"NEC - PC Engine - TurboGrafx 16":                "mednafen_pce_fast_libretro",
+			"Nintendo - Family Computer Disk System":         "nestopia_libretro",
 			"Nintendo - Game Boy Advance":                    "mgba_libretro",
 			"Nintendo - Game Boy Color":                      "gambatte_libretro",
 			"Nintendo - Game Boy":                            "gambatte_libretro",
