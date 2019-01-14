@@ -41,7 +41,7 @@ func Test_coreLoad(t *testing.T) {
 	out := utils.CaptureOutput(func() { Load("testdata/uzem_libretro" + ext) })
 
 	t.Run("The core is loaded", func(t *testing.T) {
-		if state.Global.Core == (libretro.Core{}) {
+		if state.Global.Core == nil {
 			t.Errorf("got = %v, want not libretro.Core{}", state.Global.Core)
 		}
 	})

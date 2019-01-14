@@ -55,8 +55,12 @@ func buildMainMenu() Scene {
 		label: "Load Game",
 		icon:  "subsetting",
 		callbackOK: func() {
-			list.segueNext()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, core.LoadGame, nil))
+			if state.Global.Core != nil {
+				list.segueNext()
+				menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, core.LoadGame, nil))
+			} else {
+				notifications.DisplayAndLog("Menu", "Please load a core first.")
+			}
 		},
 	})
 

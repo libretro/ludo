@@ -9,7 +9,7 @@ import (
 
 // State is a type for the global state of the app
 type State struct {
-	Core        libretro.Core // Current libretro core
+	Core        *libretro.Core // Current libretro core
 	FrameTimeCb libretro.FrameTimeCallback
 	AudioCb     libretro.AudioCallback
 	CoreRunning bool

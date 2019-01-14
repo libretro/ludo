@@ -226,14 +226,14 @@ var (
 var mu sync.Mutex
 
 // Load dynamically loads a libretro core at the given path and returns a Core instance
-func Load(sofile string) (Core, error) {
+func Load(sofile string) (*Core, error) {
 	core := Core{}
 
 	mu.Lock()
 	var err error
 	core.handle, err = DlOpen(sofile)
 	if err != nil {
-		return core, err
+		return nil, err
 	}
 
 	core.symRetroInit = core.DlSym("retro_init")
@@ -258,7 +258,7 @@ func Load(sofile string) (Core, error) {
 	core.symRetroGetMemoryData = core.DlSym("retro_get_memory_data")
 	mu.Unlock()
 
-	return core, nil
+	return &core, nil
 }
 
 // Init takes care of the library global initialization
