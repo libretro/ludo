@@ -8,8 +8,8 @@ import (
 // Update takes care of calling the update method of the current scene.
 // Each scene has it's own input logic to allow a variety of navigation systems.
 func Update() {
-	currentMenu := menu.stack[len(menu.stack)-1]
-	currentMenu.update()
+	currentScene := menu.stack[len(menu.stack)-1]
+	currentScene.update()
 }
 
 func genericInput(list *entry) {
