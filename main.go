@@ -112,7 +112,5 @@ func main() {
 	runLoop(vid)
 
 	// Unload and deinit in the core.
-	if state.Global.CoreRunning {
-		core.Unload()
-	}
+	core.Unload()
 }
