@@ -33,7 +33,7 @@ type WindowInterface interface {
 
 // Video holds the state of the video package
 type Video struct {
-	GLVersion uint
+	GLVersion string
 	Window    WindowInterface
 	Geom      libretro.GameGeometry
 	Font      *glfont.Font
@@ -54,7 +54,7 @@ type Video struct {
 }
 
 // Init instanciates the video package
-func Init(fullscreen bool, GLVersion uint) *Video {
+func Init(fullscreen bool, GLVersion string) *Video {
 	vid := &Video{}
 	vid.GLVersion = GLVersion
 	vid.Configure(fullscreen)
@@ -72,49 +72,49 @@ func (video *Video) Reconfigure(fullscreen bool) {
 func (video *Video) configureContext() uint {
 	var GLSLVersion uint
 	switch video.GLVersion {
-	case 20:
+	case "2.0":
 		glfw.WindowHint(glfw.ContextVersionMajor, 2)
 		glfw.WindowHint(glfw.ContextVersionMinor, 0)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 		GLSLVersion = 110
-	case 21:
+	case "2.1":
 		glfw.WindowHint(glfw.ContextVersionMajor, 2)
 		glfw.WindowHint(glfw.ContextVersionMinor, 1)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 		GLSLVersion = 120
-	case 30:
+	case "3.0":
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 0)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 		GLSLVersion = 130
-	case 31:
+	case "3.1":
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 1)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 		GLSLVersion = 140
-	case 32:
+	case "3.2":
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 2)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 		GLSLVersion = 150
-	case 41:
+	case "4.1":
 		glfw.WindowHint(glfw.ContextVersionMajor, 4)
 		glfw.WindowHint(glfw.ContextVersionMinor, 1)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 		GLSLVersion = 410
-	case 42:
+	case "4.2":
 		glfw.WindowHint(glfw.ContextVersionMajor, 4)
 		glfw.WindowHint(glfw.ContextVersionMinor, 2)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 		GLSLVersion = 420
-	default: // 32
+	default: // 3.2
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 2)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)

@@ -46,4 +46,4 @@ Setup openal headers and dll in mingw-w64 `include` and `lib` folders.
 
 If on a RaspberryPi:
 
-    ./ludo -glver=21
+    ./ludo -glver=2.1
