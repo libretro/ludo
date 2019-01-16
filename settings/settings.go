@@ -21,6 +21,7 @@ import (
 type Settings struct {
 	VideoFullscreen      bool              `json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
 	VideoMonitorIndex    int               `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
+	GLVersion            string            `json:"video_gl_version"`
 	AudioVolume          float32           `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
 	ShowHiddenFiles      bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
 	CoreForPlaylist      map[string]string `json:"core_for_playlist"`

@@ -51,22 +51,27 @@ func runLoop(vid *video.Video) {
 }
 
 func main() {
-	var GLVersion uint
-	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
-	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
-	flag.UintVar(&GLVersion, "glver", 32, "OpenGL version")
-	flag.Parse()
-	args := flag.Args()
-
-	var gamePath string
-	if len(args) > 0 {
-		gamePath = args[0]
-	}
-
 	err := settings.Load()
 	if err != nil {
 		log.Println("[Settings]: Loading failed:", err)
 		log.Println("[Settings]: Using default settings")
+	}
+
+	var GLVersion string
+	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
+	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
+	flag.StringVar(&GLVersion, "glver", settings.Defaults.GLVersion, "OpenGL version, possible values are 2.0, 2.1, 3.0, 3.1, 3.2, 4.1, 4.2")
+	flag.Parse()
+	args := flag.Args()
+
+	if GLVersion != settings.Defaults.GLVersion {
+		settings.Current.GLVersion = GLVersion
+		settings.Save()
+	}
+
+	var gamePath string
+	if len(args) > 0 {
+		gamePath = args[0]
 	}
 
 	if err := glfw.Init(); err != nil {
@@ -81,7 +86,7 @@ func main() {
 
 	playlists.LoadPlaylists()
 
-	vid := video.Init(settings.Current.VideoFullscreen, GLVersion)
+	vid := video.Init(settings.Current.VideoFullscreen, settings.Current.GLVersion)
 
 	m := menu.Init(vid)
 	m.ContextReset()
