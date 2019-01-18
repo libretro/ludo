@@ -53,6 +53,9 @@ func Load(sofile string) error {
 	// before loading the new core
 	Unload()
 
+	// This must be set before the environment callback is called
+	state.Global.CorePath = sofile
+
 	var err error
 	state.Global.Core, err = libretro.Load(sofile)
 	if err != nil {
@@ -84,7 +87,7 @@ func Load(sofile string) error {
 	menu.UpdateOptions(opts)
 
 	log.Println("[Core]: Core loaded: " + si.LibraryName)
-	state.Global.CorePath = sofile
+
 	return nil
 }
 
