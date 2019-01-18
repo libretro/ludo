@@ -29,8 +29,8 @@ func runLoop(vid *video.Video) {
 		if !state.Global.MenuActive {
 			if state.Global.CoreRunning {
 				state.Global.Core.Run()
-				if state.Global.FrameTimeCb.Callback != nil {
-					state.Global.FrameTimeCb.Callback(state.Global.FrameTimeCb.Reference)
+				if state.Global.Core.FrameTimeCallback != nil {
+					state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
 				}
 				if state.Global.Core.AudioCallback != nil {
 					state.Global.Core.AudioCallback.Callback()

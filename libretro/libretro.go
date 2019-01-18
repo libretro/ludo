@@ -534,14 +534,14 @@ func SetString(data unsafe.Pointer, val string) {
 }
 
 // SetFrameTimeCallback is an environment callback helper to set the FrameTimeCallback
-func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
+func (core *Core) SetFrameTimeCallback(data unsafe.Pointer) {
 	c := *(*C.struct_retro_frame_time_callback)(data)
-	ftc := FrameTimeCallback{}
+	ftc := &FrameTimeCallback{}
 	ftc.Reference = int64(c.reference)
 	ftc.Callback = func(usec int64) {
 		C.bridge_retro_frame_time_callback(c.callback, C.retro_usec_t(usec))
 	}
-	return ftc
+	core.FrameTimeCallback = ftc
 }
 
 // SetAudioCallback is an environment callback helper to set the AudioCallback

@@ -44,7 +44,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetPerfInterface:
 		state.Global.Core.BindPerfCallback(data, getTimeUsec)
 	case libretro.EnvironmentSetFrameTimeCallback:
-		state.Global.FrameTimeCb = libretro.SetFrameTimeCallback(data)
+		state.Global.Core.SetFrameTimeCallback(data)
 	case libretro.EnvironmentSetAudioCallback:
 		state.Global.Core.SetAudioCallback(data)
 	case libretro.EnvironmentGetCanDupe:
