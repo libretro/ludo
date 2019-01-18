@@ -91,5 +91,5 @@ func CoreForPlaylist(playlist string) (string, error) {
 	if c != "" {
 		return filepath.Join(Current.CoresDirectory, c+utils.CoreExt()), nil
 	}
-	return "", errors.New("Default core not set")
+	return "", errors.New("default core not set")
 }

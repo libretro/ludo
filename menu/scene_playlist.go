@@ -56,6 +56,10 @@ func extractTags(name string) (string, []string) {
 }
 
 func loadEntry(list *screenPlaylist, playlist, gamePath string) {
+	if _, err := os.Stat(gamePath); os.IsNotExist(err) {
+		notifications.DisplayAndLog("Menu", "Game not found.")
+		return
+	}
 	corePath, err := settings.CoreForPlaylist(playlist)
 	if err != nil {
 		notifications.DisplayAndLog("Menu", err.Error())
