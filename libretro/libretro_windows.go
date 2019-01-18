@@ -29,6 +29,8 @@ type Core struct {
 	symRetroUnserialize         unsafe.Pointer
 	symRetroGetMemorySize       unsafe.Pointer
 	symRetroGetMemoryData       unsafe.Pointer
+
+	AudioCallback *AudioCallback
 }
 
 // DlSym loads a symbol from a dynamic library

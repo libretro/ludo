@@ -32,8 +32,8 @@ func runLoop(vid *video.Video) {
 				if state.Global.FrameTimeCb.Callback != nil {
 					state.Global.FrameTimeCb.Callback(state.Global.FrameTimeCb.Reference)
 				}
-				if state.Global.AudioCb.Callback != nil {
-					state.Global.AudioCb.Callback()
+				if state.Global.Core.AudioCallback != nil {
+					state.Global.Core.AudioCallback.Callback()
 				}
 			}
 			vid.Render()

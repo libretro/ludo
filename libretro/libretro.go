@@ -545,16 +545,16 @@ func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
 }
 
 // SetAudioCallback is an environment callback helper to set the AudioCallback
-func SetAudioCallback(data unsafe.Pointer) AudioCallback {
+func (core *Core) SetAudioCallback(data unsafe.Pointer) {
 	c := *(*C.struct_retro_audio_callback)(data)
-	auc := AudioCallback{}
+	auc := &AudioCallback{}
 	auc.Callback = func() {
 		C.bridge_retro_audio_callback(c.callback)
 	}
 	auc.SetState = func(state bool) {
 		C.bridge_retro_audio_set_state(c.set_state, C.bool(state))
 	}
-	return auc
+	core.AudioCallback = auc
 }
 
 // GetMemorySize returns the size of a region of the memory.

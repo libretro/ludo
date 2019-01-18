@@ -160,8 +160,8 @@ func LoadGame(filename string) error {
 
 	input.Init(vid, menu)
 	audio.Init(int32(avi.Timing.SampleRate))
-	if state.Global.AudioCb.SetState != nil {
-		state.Global.AudioCb.SetState(true)
+	if state.Global.Core.AudioCallback != nil {
+		state.Global.Core.AudioCallback.SetState(true)
 	}
 
 	state.Global.CoreRunning = true
