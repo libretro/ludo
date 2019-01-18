@@ -49,8 +49,6 @@ func Init(v *video.Video, m MenuInterface) {
 
 // Load loads a libretro core
 func Load(sofile string) error {
-	state.Global.CorePath = sofile
-
 	// In case the a core is already loaded, we need to close it properly
 	// before loading the new core
 	Unload()
@@ -86,6 +84,7 @@ func Load(sofile string) error {
 	menu.UpdateOptions(opts)
 
 	log.Println("[Core]: Core loaded: " + si.LibraryName)
+	state.Global.CorePath = sofile
 	return nil
 }
 
@@ -180,6 +179,8 @@ func Unload() {
 	if state.Global.CoreRunning {
 		UnloadGame()
 		state.Global.Core.Deinit()
+		state.Global.CorePath = ""
+		state.Global.Core = nil
 	}
 }
 
