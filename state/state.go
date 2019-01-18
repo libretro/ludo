@@ -11,7 +11,6 @@ import (
 type State struct {
 	Core        *libretro.Core             // Current libretro core
 	FrameTimeCb libretro.FrameTimeCallback // Move this to the core package?
-	AudioCb     libretro.AudioCallback     // Move this to the core package?
 	CoreRunning bool                       // Should be true if a game or a gameless core is loaded
 	MenuActive  bool                       // When set to true, will display the menu layer
 	Verbose     bool                       // When set to true, will output a lots of logs

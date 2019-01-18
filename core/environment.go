@@ -46,7 +46,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentSetFrameTimeCallback:
 		state.Global.FrameTimeCb = libretro.SetFrameTimeCallback(data)
 	case libretro.EnvironmentSetAudioCallback:
-		state.Global.AudioCb = libretro.SetAudioCallback(data)
+		state.Global.Core.SetAudioCallback(data)
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:
