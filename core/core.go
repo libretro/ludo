@@ -28,8 +28,10 @@ type MenuInterface interface {
 }
 
 var vid *video.Video
-var Options *options.Options
 var menu MenuInterface
+
+// Options holds the settings for the current core
+var Options *options.Options
 
 // Init is there mainly for dependency injection.
 // Call Init before calling other functions of this package.
