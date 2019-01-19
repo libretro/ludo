@@ -39,12 +39,12 @@ func buildMainMenu() Scene {
 			menu.stack = append(menu.stack, buildExplorer(
 				settings.Current.CoresDirectory,
 				[]string{".dll", ".dylib", ".so"},
-				func(path string) error {
+				func(path string) {
 					err := core.Load(path)
-					if err == nil {
-						notifications.DisplayAndLog("Core", "Core loaded.")
+					if err != nil {
+						notifications.DisplayAndLog("Core", err.Error())
 					}
-					return err
+					notifications.DisplayAndLog("Core", "Core loaded.")
 				},
 				nil,
 			))
@@ -57,7 +57,15 @@ func buildMainMenu() Scene {
 		callbackOK: func() {
 			if state.Global.Core != nil {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil, core.LoadGame, nil))
+				menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil,
+					func(path string) {
+						err := core.LoadGame(path)
+						if err != nil {
+							notifications.DisplayAndLog("Core", err.Error())
+							return
+						}
+						state.Global.MenuActive = false
+					}, nil))
 			} else {
 				notifications.DisplayAndLog("Menu", "Please load a core first.")
 			}

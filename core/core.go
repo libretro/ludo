@@ -122,17 +122,17 @@ func unzipGame(filename string) (string, int64, error) {
 }
 
 // LoadGame loads a game. A core has to be loaded first.
-func LoadGame(filename string) error {
+func LoadGame(gamePath string) error {
 
 	// If we're loading a new game on the same core, save the RAM of the previous
 	// game before closing it.
-	if state.Global.GamePath != filename {
+	if state.Global.GamePath != gamePath {
 		UnloadGame()
 	}
 
 	si := state.Global.Core.GetSystemInfo()
 
-	gi, err := getGameInfo(filename, si.BlockExtract)
+	gi, err := getGameInfo(gamePath, si.BlockExtract)
 	if err != nil {
 		return err
 	}
@@ -167,10 +167,9 @@ func LoadGame(filename string) error {
 	}
 
 	state.Global.CoreRunning = true
-	state.Global.MenuActive = false
-	state.Global.GamePath = filename
+	state.Global.GamePath = gamePath
 
-	log.Println("[Core]: Game loaded: " + filename)
+	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
 
 	return nil

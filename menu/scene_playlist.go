@@ -85,6 +85,7 @@ func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 		list.segueNext()
 		menu.stack = append(menu.stack, buildQuickMenu())
 		fastForwardTweens() // position the elements without animating
+		state.Global.MenuActive = false
 	} else {
 		list.segueNext()
 		menu.stack = append(menu.stack, buildQuickMenu())
