@@ -8,6 +8,7 @@ var joyBinds = map[string]joybinds{
 	"Sony Computer Entertainment Wireless Controller":    ds4JoyBinds,
 	"Sony Interactive Entertainment Wireless Controller": ds4JoyBinds,
 	"Sony PLAYSTATION(R)3 Controller":                    ds3JoyBinds,
+	"SHANWAN PS3 GamePad":                                ds3JoyBinds,
 }
 
 // Joypad bindings fox Xbox360 pad on Linux
