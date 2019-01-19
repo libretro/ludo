@@ -3,9 +3,10 @@ package input
 import "github.com/libretro/ludo/libretro"
 
 var joyBinds = map[string]joybinds{
-	"Microsoft X-Box 360 pad":                         xbox360JoyBinds,
-	"Microsoft X-Box One S pad":                       xboxOneJoyBinds,
-	"Sony Computer Entertainment Wireless Controller": ds4JoyBinds,
+	"Microsoft X-Box 360 pad":                            xbox360JoyBinds,
+	"Microsoft X-Box One S pad":                          xboxOneJoyBinds,
+	"Sony Computer Entertainment Wireless Controller":    ds4JoyBinds,
+	"Sony Interactive Entertainment Wireless Controller": ds4JoyBinds,
 }
 
 // Joypad bindings fox Xbox360 pad on Linux
