@@ -25,11 +25,10 @@ import (
 // cyclic dependencies.
 type MenuInterface interface {
 	ContextReset()
-	UpdateOptions(*options.Options)
 }
 
 var vid *video.Video
-var opts *options.Options
+var Options *options.Options
 var menu MenuInterface
 
 // Init is there mainly for dependency injection.
@@ -83,8 +82,6 @@ func Load(sofile string) error {
 			log.Println("[Core]: Block extract:", si.BlockExtract)
 		}
 	}
-
-	menu.UpdateOptions(opts)
 
 	log.Println("[Core]: Core loaded: " + si.LibraryName)
 

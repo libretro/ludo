@@ -2,6 +2,8 @@ package menu
 
 import (
 	"strings"
+
+	"github.com/libretro/ludo/core"
 )
 
 type screenCoreOptions struct {
@@ -12,25 +14,25 @@ func buildCoreOptions() Scene {
 	var list screenCoreOptions
 	list.label = "Core Options"
 
-	for i, v := range opts.Vars {
+	for i, v := range core.Options.Vars {
 		i := i
 		v := v
 		list.children = append(list.children, entry{
 			label: strings.Replace(v.Desc(), "%", "%%", -1),
 			icon:  "subsetting",
 			stringValue: func() string {
-				val := v.Choices()[opts.Choices[i]]
+				val := v.Choices()[core.Options.Choices[i]]
 				return strings.Replace(val, "%", "%%", -1)
 			},
 			incr: func(direction int) {
-				opts.Choices[i] += direction
-				if opts.Choices[i] < 0 {
-					opts.Choices[i] = opts.NumChoices(i) - 1
-				} else if opts.Choices[i] > opts.NumChoices(i)-1 {
-					opts.Choices[i] = 0
+				core.Options.Choices[i] += direction
+				if core.Options.Choices[i] < 0 {
+					core.Options.Choices[i] = core.Options.NumChoices(i) - 1
+				} else if core.Options.Choices[i] > core.Options.NumChoices(i)-1 {
+					core.Options.Choices[i] = 0
 				}
-				opts.Updated = true
-				opts.Save()
+				core.Options.Updated = true
+				core.Options.Save()
 			},
 		})
 	}

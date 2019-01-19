@@ -65,20 +65,19 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:
 		variable := libretro.GetVariable(data)
-		for i, v := range opts.Vars {
+		for i, v := range Options.Vars {
 			if variable.Key() == v.Key() {
-				variable.SetValue(v.Choices()[opts.Choices[i]])
+				variable.SetValue(v.Choices()[Options.Choices[i]])
 				return true
 			}
 		}
 		return false
 	case libretro.EnvironmentSetVariables:
-		opts = options.New(libretro.GetVariables(data))
-		menu.UpdateOptions(opts)
+		Options = options.New(libretro.GetVariables(data))
 		return true
 	case libretro.EnvironmentGetVariableUpdate:
-		libretro.SetBool(data, opts.Updated)
-		opts.Updated = false
+		libretro.SetBool(data, Options.Updated)
+		Options.Updated = false
 		return true
 	default:
 		//log.Println("[Env]: Not implemented:", cmd)

@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
@@ -28,8 +27,7 @@ func (m WindowMock) SwapBuffers()                                {}
 
 type MenuMock struct{}
 
-func (m MenuMock) ContextReset()                    {}
-func (m MenuMock) UpdateOptions(o *options.Options) {}
+func (m MenuMock) ContextReset() {}
 
 func Test_coreLoad(t *testing.T) {
 	state.Global.Verbose = true

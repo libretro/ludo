@@ -7,7 +7,6 @@ import (
 	"math"
 	"path/filepath"
 
-	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -18,7 +17,6 @@ import (
 )
 
 var vid *video.Video
-var opts *options.Options
 
 // entry is a menu entry. It can also represent a scene.
 // The menu data is a tree of entries.
@@ -328,12 +326,6 @@ func (menu *Menu) ContextReset() {
 // fastForwardTweens finishes all the current animations in the queue.
 func fastForwardTweens() {
 	updateTweens(10)
-}
-
-// UpdateOptions updates the menu with the core options of the newly loaded
-// libretro core.
-func (menu *Menu) UpdateOptions(o *options.Options) {
-	opts = o
 }
 
 // WarpToQuickMenu loads the contextual menu for games that are launched from
