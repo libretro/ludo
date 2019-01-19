@@ -187,10 +187,12 @@ func Unload() {
 
 // UnloadGame unloads a game.
 func UnloadGame() {
-	savefiles.SaveSRAM()
-	state.Global.Core.UnloadGame()
-	state.Global.GamePath = ""
-	state.Global.CoreRunning = false
+	if state.Global.CoreRunning {
+		savefiles.SaveSRAM()
+		state.Global.Core.UnloadGame()
+		state.Global.GamePath = ""
+		state.Global.CoreRunning = false
+	}
 }
 
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it
