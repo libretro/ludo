@@ -117,9 +117,8 @@ func Test_buildExplorer(t *testing.T) {
 	menu.stack = []Scene{}
 
 	exec := 0
-	cbMock := func(str string) error {
+	cbMock := func(str string) {
 		exec++
-		return nil
 	}
 
 	dirActionMock := &entry{

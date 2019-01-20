@@ -45,15 +45,20 @@ func buildSettings() Scene {
 					menu.stack = append(menu.stack, buildExplorer(
 						f.Value().(string),
 						nil,
-						func(path string) error {
+						func(path string) {
 							var err error
 							path, err = filepath.Abs(path)
 							if err != nil {
-								return err
+								notifications.DisplayAndLog("Settings", err.Error())
+								return
 							}
 							f.Set(path)
 							notifications.DisplayAndLog("Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
-							return settings.Save()
+							err = settings.Save()
+							if err != nil {
+								notifications.DisplayAndLog("Settings", err.Error())
+								return
+							}
 						},
 						&entry{
 							label: "<Select this directory>",
