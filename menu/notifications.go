@@ -12,11 +12,11 @@ func RenderNotifications() {
 	var h float32 = 75
 	stack := h
 	for _, n := range notifications.List() {
-		fading := float32(n.Frames) / 120
+		fading := float32(n.Frames) / 10
 		if fading > 1 {
 			fading = 1
 		}
-		offset := fading*20 - 20
+		offset := fading*h - h
 		lw := vid.Font.Width(0.5*menu.ratio, n.Message)
 		vid.DrawRoundedRect(
 			25*menu.ratio,
