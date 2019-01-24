@@ -2,22 +2,23 @@ package menu
 
 import (
 	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
 	colorful "github.com/lucasb-eyer/go-colorful"
 )
 
-var severityFgColor = map[string]colorful.Color{
-	"error":   colorful.Hcl(40, 0.75, 0.85),
-	"warning": colorful.Hcl(90, 0.75, 0.85),
-	"success": colorful.Hcl(120, 0.75, 0.85),
-	"info":    colorful.Hcl(230, 0.75, 0.85),
+var severityFgColor = map[ntf.Severity]colorful.Color{
+	ntf.Error:   colorful.Hcl(40, 0.75, 0.85),
+	ntf.Warning: colorful.Hcl(90, 0.75, 0.85),
+	ntf.Success: colorful.Hcl(120, 0.75, 0.85),
+	ntf.Info:    colorful.Hcl(230, 0.75, 0.85),
 }
 
-var severityBgColor = map[string]colorful.Color{
-	"error":   colorful.Hcl(40, 0.65, 0.1),
-	"warning": colorful.Hcl(90, 0.65, 0.1),
-	"success": colorful.Hcl(120, 0.65, 0.1),
-	"info":    colorful.Hcl(230, 0.65, 0.1),
+var severityBgColor = map[ntf.Severity]colorful.Color{
+	ntf.Error:   colorful.Hcl(40, 0.65, 0.1),
+	ntf.Warning: colorful.Hcl(90, 0.65, 0.1),
+	ntf.Success: colorful.Hcl(120, 0.65, 0.1),
+	ntf.Info:    colorful.Hcl(230, 0.65, 0.1),
 }
 
 // RenderNotifications draws the list of notification messages on the viewport

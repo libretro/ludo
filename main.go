@@ -9,7 +9,7 @@ import (
 	"github.com/libretro/ludo/core"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/menu"
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/settings"
@@ -25,7 +25,7 @@ func init() {
 func runLoop(vid *video.Video) {
 	for !vid.Window.ShouldClose() {
 		glfw.PollEvents()
-		notifications.Process()
+		ntf.Process()
 		if !state.Global.MenuActive {
 			if state.Global.CoreRunning {
 				state.Global.Core.Run()
@@ -105,7 +105,7 @@ func main() {
 	if len(gamePath) > 0 {
 		err := core.LoadGame(gamePath)
 		if err != nil {
-			notifications.DisplayAndLog("error", "Menu", err.Error())
+			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 		} else {
 			m.WarpToQuickMenu()
 		}

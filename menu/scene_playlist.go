@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/libretro/ludo/core"
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -57,29 +57,29 @@ func extractTags(name string) (string, []string) {
 
 func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 	if _, err := os.Stat(gamePath); os.IsNotExist(err) {
-		notifications.DisplayAndLog("error", "Menu", "Game not found.")
+		ntf.DisplayAndLog(ntf.Error, "Menu", "Game not found.")
 		return
 	}
 	corePath, err := settings.CoreForPlaylist(playlist)
 	if err != nil {
-		notifications.DisplayAndLog("error", "Menu", err.Error())
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 		return
 	}
 	if _, err := os.Stat(corePath); os.IsNotExist(err) {
-		notifications.DisplayAndLog("error", "Menu", "Core not found.")
+		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found.")
 		return
 	}
 	if state.Global.CorePath != corePath {
 		err := core.Load(corePath)
 		if err != nil {
-			notifications.DisplayAndLog("error", "Menu", err.Error())
+			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
 		}
 	}
 	if state.Global.GamePath != gamePath {
 		err := core.LoadGame(gamePath)
 		if err != nil {
-			notifications.DisplayAndLog("error", "Menu", err.Error())
+			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
 		}
 		list.segueNext()

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/rdb"
 	"github.com/libretro/ludo/settings"
@@ -67,7 +67,7 @@ func ScanDir(dir string, doneCb func()) {
 
 // Scan scans a list of roms against the database
 func Scan(dir string, roms []string, games chan (rdb.Entry), doneCb func()) {
-	nid := notifications.DisplayAndLog("Menu", "Scanning %s", dir)
+	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
 	for i, f := range roms {
 		ext := filepath.Ext(f)
 		switch ext {
@@ -78,16 +78,16 @@ func Scan(dir string, roms []string, games chan (rdb.Entry), doneCb func()) {
 				if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
 					state.Global.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
-					notifications.Update(nid, "info", strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				}
 			}
 			z.Close()
 		case ".cue":
 			// Look for a matching game entry in the database
 			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
-			notifications.Update(nid, "info", strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}
 	}
-	notifications.Update(nid, "success", "Done scanning.")
+	ntf.Update(nid, ntf.Success, "Done scanning.")
 	doneCb()
 }

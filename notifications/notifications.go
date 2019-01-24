@@ -7,9 +7,27 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-// Notification is a message that will be displayed on the screen during a number of frames.
+// Severity represents the severity of a notification message. It will affect
+// the color of the notification text in the UI.
+type Severity uint8
+
+const (
+	// Info is for informative message, when everything is fine
+	Info Severity = iota
+	// Success is for successful actions
+	Success
+	// Warning is also for informative messages, when something is not right
+	// for example, if a menu entry has not been implemented.
+	Warning
+	// Error is for failed actions. For example, trying to load a game that
+	// doesn't exists.
+	Error
+)
+
+// Notification is a message that will be displayed on the screen during a
+// certain time (number of frames).
 type Notification struct {
-	Severity string
+	Severity Severity
 	Message  string
 	Frames   int
 }
@@ -22,7 +40,7 @@ func List() []Notification {
 }
 
 // Display creates a new notification.
-func Display(severity, message string, frames int) int {
+func Display(severity Severity, message string, frames int) int {
 	n := Notification{
 		severity,
 		message,
@@ -35,7 +53,7 @@ func Display(severity, message string, frames int) int {
 }
 
 // DisplayAndLog creates a new notification and also logs the message to stdout.
-func DisplayAndLog(severity, prefix, message string, vars ...interface{}) int {
+func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) int {
 	var msg string
 	if len(vars) > 0 {
 		msg = fmt.Sprintf(message, vars...)
@@ -68,7 +86,7 @@ func Clear() {
 
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
-func Update(id int, severity, message string) {
+func Update(id int, severity Severity, message string) {
 	if id < len(notifications) {
 		notifications[id].Frames = 240
 		notifications[id].Message = message

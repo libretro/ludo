@@ -6,7 +6,7 @@ package input
 import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
 )
 
@@ -38,11 +38,11 @@ var (
 func joystickCallback(joy int, event int) {
 	switch glfw.MonitorEvent(event) {
 	case glfw.Connected:
-		notifications.DisplayAndLog("info", "Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
+		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
 	case glfw.Disconnected:
-		notifications.DisplayAndLog("info", "Input", "Joystick #%d unplugged.", joy)
+		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d unplugged.", joy)
 	default:
-		notifications.DisplayAndLog("warning", "Input", "Joystick #%d unhandled event: %d.", joy, event)
+		ntf.DisplayAndLog(ntf.Warning, "Input", "Joystick #%d unhandled event: %d.", joy, event)
 	}
 }
 
