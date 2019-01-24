@@ -37,9 +37,9 @@ func buildQuickMenu() Scene {
 		callbackOK: func() {
 			err := savestates.Save()
 			if err != nil {
-				notifications.DisplayAndLog("Menu", err.Error())
+				notifications.DisplayAndLog("error", "Menu", err.Error())
 			} else {
-				notifications.DisplayAndLog("Menu", "State saved.")
+				notifications.DisplayAndLog("success", "Menu", "State saved.")
 			}
 		},
 	})
@@ -50,10 +50,10 @@ func buildQuickMenu() Scene {
 		callbackOK: func() {
 			err := savestates.Load()
 			if err != nil {
-				notifications.DisplayAndLog("Menu", err.Error())
+				notifications.DisplayAndLog("error", "Menu", err.Error())
 			} else {
 				state.Global.MenuActive = false
-				notifications.DisplayAndLog("Menu", "State loaded.")
+				notifications.DisplayAndLog("success", "Menu", "State loaded.")
 			}
 		},
 	})
@@ -63,7 +63,7 @@ func buildQuickMenu() Scene {
 		icon:  "screenshot",
 		callbackOK: func() {
 			vid.TakeScreenshot()
-			notifications.DisplayAndLog("Menu", "Took a screenshot.")
+			notifications.DisplayAndLog("success", "Menu", "Took a screenshot.")
 		},
 	})
 

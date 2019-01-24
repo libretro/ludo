@@ -3,7 +3,22 @@ package menu
 import (
 	"github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
+	colorful "github.com/lucasb-eyer/go-colorful"
 )
+
+var severityFgColor = map[string]colorful.Color{
+	"error":   colorful.Hcl(40, 0.75, 0.85),
+	"warning": colorful.Hcl(90, 0.75, 0.85),
+	"success": colorful.Hcl(120, 0.75, 0.85),
+	"info":    colorful.Hcl(230, 0.75, 0.85),
+}
+
+var severityBgColor = map[string]colorful.Color{
+	"error":   colorful.Hcl(40, 0.65, 0.1),
+	"warning": colorful.Hcl(90, 0.65, 0.1),
+	"success": colorful.Hcl(120, 0.65, 0.1),
+	"info":    colorful.Hcl(230, 0.65, 0.1),
+}
 
 // RenderNotifications draws the list of notification messages on the viewport
 func RenderNotifications() {
@@ -18,15 +33,17 @@ func RenderNotifications() {
 		}
 		offset := fading*h - h
 		lw := vid.Font.Width(0.5*menu.ratio, n.Message)
+		fg := severityFgColor[n.Severity]
+		bg := severityBgColor[n.Severity]
 		vid.DrawRoundedRect(
 			25*menu.ratio,
 			(stack+offset-46)*menu.ratio,
 			lw+40*menu.ratio,
 			70*menu.ratio,
 			0.25,
-			video.Color{R: 0.4, G: 0.4, B: 0, A: fading},
+			video.Color{R: float32(bg.R), G: float32(bg.G), B: float32(bg.B), A: fading},
 		)
-		vid.Font.SetColor(1, 1, 0.85, fading)
+		vid.Font.SetColor(float32(fg.R), float32(fg.G), float32(fg.B), fading)
 		vid.Font.Printf(
 			45*menu.ratio,
 			(stack+offset)*menu.ratio,

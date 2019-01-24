@@ -78,16 +78,16 @@ func Scan(dir string, roms []string, games chan (rdb.Entry), doneCb func()) {
 				if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
 					state.Global.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
-					notifications.Update(nid, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					notifications.Update(nid, "info", strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				}
 			}
 			z.Close()
 		case ".cue":
 			// Look for a matching game entry in the database
 			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
-			notifications.Update(nid, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			notifications.Update(nid, "info", strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}
 	}
-	notifications.Update(nid, "Done scanning.")
+	notifications.Update(nid, "success", "Done scanning.")
 	doneCb()
 }

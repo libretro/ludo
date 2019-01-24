@@ -105,7 +105,7 @@ func main() {
 	if len(gamePath) > 0 {
 		err := core.LoadGame(gamePath)
 		if err != nil {
-			notifications.DisplayAndLog("Menu", err.Error())
+			notifications.DisplayAndLog("error", "Menu", err.Error())
 		} else {
 			m.WarpToQuickMenu()
 		}

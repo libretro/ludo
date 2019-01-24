@@ -57,29 +57,29 @@ func extractTags(name string) (string, []string) {
 
 func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 	if _, err := os.Stat(gamePath); os.IsNotExist(err) {
-		notifications.DisplayAndLog("Menu", "Game not found.")
+		notifications.DisplayAndLog("error", "Menu", "Game not found.")
 		return
 	}
 	corePath, err := settings.CoreForPlaylist(playlist)
 	if err != nil {
-		notifications.DisplayAndLog("Menu", err.Error())
+		notifications.DisplayAndLog("error", "Menu", err.Error())
 		return
 	}
 	if _, err := os.Stat(corePath); os.IsNotExist(err) {
-		notifications.DisplayAndLog("Menu", "Core not found.")
+		notifications.DisplayAndLog("error", "Menu", "Core not found.")
 		return
 	}
 	if state.Global.CorePath != corePath {
 		err := core.Load(corePath)
 		if err != nil {
-			notifications.DisplayAndLog("Menu", err.Error())
+			notifications.DisplayAndLog("error", "Menu", err.Error())
 			return
 		}
 	}
 	if state.Global.GamePath != gamePath {
 		err := core.LoadGame(gamePath)
 		if err != nil {
-			notifications.DisplayAndLog("Menu", err.Error())
+			notifications.DisplayAndLog("error", "Menu", err.Error())
 			return
 		}
 		list.segueNext()

@@ -32,7 +32,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		notifications.DisplayAndLog("Menu", err.Error())
+		notifications.DisplayAndLog("error", "Menu", err.Error())
 	}
 
 	// Display the special directory action entry.

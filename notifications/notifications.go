@@ -9,8 +9,9 @@ import (
 
 // Notification is a message that will be displayed on the screen during a number of frames.
 type Notification struct {
-	Message string
-	Frames  int
+	Severity string
+	Message  string
+	Frames   int
 }
 
 var notifications []Notification
@@ -21,8 +22,9 @@ func List() []Notification {
 }
 
 // Display creates a new notification.
-func Display(message string, frames int) int {
+func Display(severity, message string, frames int) int {
 	n := Notification{
+		severity,
 		message,
 		frames,
 	}
@@ -33,7 +35,7 @@ func Display(message string, frames int) int {
 }
 
 // DisplayAndLog creates a new notification and also logs the message to stdout.
-func DisplayAndLog(prefix, message string, vars ...interface{}) int {
+func DisplayAndLog(severity, prefix, message string, vars ...interface{}) int {
 	var msg string
 	if len(vars) > 0 {
 		msg = fmt.Sprintf(message, vars...)
@@ -43,7 +45,7 @@ func DisplayAndLog(prefix, message string, vars ...interface{}) int {
 	if state.Global.Verbose {
 		log.Print("[" + prefix + "]: " + msg + "\n")
 	}
-	return Display(msg, 240)
+	return Display(severity, msg, 240)
 }
 
 // Process iterates over the notifications, update them, delete the old ones.
@@ -66,11 +68,12 @@ func Clear() {
 
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
-func Update(id int, message string) {
+func Update(id int, severity, message string) {
 	if id < len(notifications) {
 		notifications[id].Frames = 240
 		notifications[id].Message = message
+		notifications[id].Severity = severity
 	} else {
-		Display(message, 240)
+		Display(severity, message, 240)
 	}
 }

@@ -38,11 +38,11 @@ var (
 func joystickCallback(joy int, event int) {
 	switch glfw.MonitorEvent(event) {
 	case glfw.Connected:
-		notifications.DisplayAndLog("Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
+		notifications.DisplayAndLog("info", "Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
 	case glfw.Disconnected:
-		notifications.DisplayAndLog("Input", "Joystick #%d unplugged.", joy)
+		notifications.DisplayAndLog("info", "Input", "Joystick #%d unplugged.", joy)
 	default:
-		notifications.DisplayAndLog("Input", "Joystick #%d unhandled event: %d.", joy, event)
+		notifications.DisplayAndLog("warning", "Input", "Joystick #%d unhandled event: %d.", joy, event)
 	}
 }
 

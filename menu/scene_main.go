@@ -42,9 +42,9 @@ func buildMainMenu() Scene {
 				func(path string) {
 					err := core.Load(path)
 					if err != nil {
-						notifications.DisplayAndLog("Core", err.Error())
+						notifications.DisplayAndLog("error", "Core", err.Error())
 					}
-					notifications.DisplayAndLog("Core", "Core loaded.")
+					notifications.DisplayAndLog("success", "Core", "Core loaded.")
 				},
 				nil,
 			))
@@ -61,13 +61,13 @@ func buildMainMenu() Scene {
 					func(path string) {
 						err := core.LoadGame(path)
 						if err != nil {
-							notifications.DisplayAndLog("Core", err.Error())
+							notifications.DisplayAndLog("error", "Core", err.Error())
 							return
 						}
 						state.Global.MenuActive = false
 					}, nil))
 			} else {
-				notifications.DisplayAndLog("Menu", "Please load a core first.")
+				notifications.DisplayAndLog("warning", "Menu", "Please load a core first.")
 			}
 		},
 	})
@@ -85,7 +85,7 @@ func buildMainMenu() Scene {
 		label: "Help",
 		icon:  "subsetting",
 		callbackOK: func() {
-			notifications.DisplayAndLog("Menu", "Not implemented yet.")
+			notifications.DisplayAndLog("warning", "Menu", "Not implemented yet.")
 		},
 	})
 

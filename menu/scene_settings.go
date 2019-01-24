@@ -49,14 +49,14 @@ func buildSettings() Scene {
 							var err error
 							path, err = filepath.Abs(path)
 							if err != nil {
-								notifications.DisplayAndLog("Settings", err.Error())
+								notifications.DisplayAndLog("error", "Settings", err.Error())
 								return
 							}
 							f.Set(path)
-							notifications.DisplayAndLog("Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
+							notifications.DisplayAndLog("success", "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
 							err = settings.Save()
 							if err != nil {
-								notifications.DisplayAndLog("Settings", err.Error())
+								notifications.DisplayAndLog("error", "Settings", err.Error())
 								return
 							}
 						},
