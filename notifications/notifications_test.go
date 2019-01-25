@@ -11,14 +11,14 @@ import (
 func Test_List(t *testing.T) {
 	Clear()
 	t.Run("Returns the notifications", func(t *testing.T) {
-		Display(Error, "Test1", 240)
-		Display(Error, "Test2", 240)
-		Display(Error, "Test3", 240)
+		nid1 := Display(Error, "Test1", 240)
+		nid2 := Display(Error, "Test2", 240)
+		nid3 := Display(Error, "Test3", 240)
 		got := List()
 		want := []Notification{
-			Notification{ID: got[0].ID, Severity: Error, Message: "Test1", Frames: 240},
-			Notification{ID: got[1].ID, Severity: Error, Message: "Test2", Frames: 240},
-			Notification{ID: got[2].ID, Severity: Error, Message: "Test3", Frames: 240},
+			Notification{ID: nid1, Severity: Error, Message: "Test1", Frames: 240},
+			Notification{ID: nid2, Severity: Error, Message: "Test2", Frames: 240},
+			Notification{ID: nid3, Severity: Error, Message: "Test3", Frames: 240},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
@@ -29,14 +29,14 @@ func Test_List(t *testing.T) {
 func Test_Display(t *testing.T) {
 	Clear()
 	t.Run("Stacks notifications correctly", func(t *testing.T) {
-		Display(Error, "Test1", 240)
-		Display(Info, "Test2", 240)
-		Display(Warning, "Test3", 240)
+		nid1 := Display(Error, "Test1", 240)
+		nid2 := Display(Info, "Test2", 240)
+		nid3 := Display(Warning, "Test3", 240)
 		got := notifications
 		want := []Notification{
-			Notification{ID: got[0].ID, Severity: Error, Message: "Test1", Frames: 240},
-			Notification{ID: got[1].ID, Severity: Info, Message: "Test2", Frames: 240},
-			Notification{ID: got[2].ID, Severity: Warning, Message: "Test3", Frames: 240},
+			Notification{ID: nid1, Severity: Error, Message: "Test1", Frames: 240},
+			Notification{ID: nid2, Severity: Info, Message: "Test2", Frames: 240},
+			Notification{ID: nid3, Severity: Warning, Message: "Test3", Frames: 240},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
@@ -114,6 +114,31 @@ func Test_Clear(t *testing.T) {
 		got := len(notifications)
 		want := 0
 		if got != want {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+}
+
+func Test_Update(t *testing.T) {
+	Clear()
+	t.Run("Is able to update a notification independantly", func(t *testing.T) {
+		Display(Error, "Test1", 3)
+		nid2 := Display(Error, "Test2", 240)
+		nid3 := Display(Error, "Test3", 240)
+
+		Process()
+		Process()
+		Process()
+		Process()
+		Update(nid2, Success, "Test4")
+		Process()
+
+		got := List()
+		want := []Notification{
+			Notification{ID: nid2, Severity: Success, Message: "Test4", Frames: 239},
+			Notification{ID: nid3, Severity: Error, Message: "Test3", Frames: 235},
+		}
+		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
 		}
 	})
