@@ -5,12 +5,34 @@ import (
 	"log"
 
 	"github.com/libretro/ludo/state"
+
+	"github.com/rs/xid"
 )
 
-// Notification is a message that will be displayed on the screen during a number of frames.
+// Severity represents the severity of a notification message. It will affect
+// the color of the notification text in the UI.
+type Severity uint8
+
+const (
+	// Info is for informative message, when everything is fine
+	Info Severity = iota
+	// Success is for successful actions
+	Success
+	// Warning is also for informative messages, when something is not right
+	// for example, if a menu entry has not been implemented.
+	Warning
+	// Error is for failed actions. For example, trying to load a game that
+	// doesn't exists.
+	Error
+)
+
+// Notification is a message that will be displayed on the screen during a
+// certain time (number of frames).
 type Notification struct {
-	Message string
-	Frames  int
+	ID       xid.ID
+	Severity Severity
+	Message  string
+	Frames   int
 }
 
 var notifications []Notification
@@ -21,19 +43,22 @@ func List() []Notification {
 }
 
 // Display creates a new notification.
-func Display(message string, frames int) int {
+func Display(severity Severity, message string, frames int) xid.ID {
+	id := xid.New()
 	n := Notification{
+		id,
+		severity,
 		message,
 		frames,
 	}
 
 	notifications = append(notifications, n)
 
-	return len(notifications) - 1
+	return id
 }
 
 // DisplayAndLog creates a new notification and also logs the message to stdout.
-func DisplayAndLog(prefix, message string, vars ...interface{}) int {
+func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) xid.ID {
 	var msg string
 	if len(vars) > 0 {
 		msg = fmt.Sprintf(message, vars...)
@@ -43,7 +68,7 @@ func DisplayAndLog(prefix, message string, vars ...interface{}) int {
 	if state.Global.Verbose {
 		log.Print("[" + prefix + "]: " + msg + "\n")
 	}
-	return Display(msg, 240)
+	return Display(severity, msg, 240)
 }
 
 // Process iterates over the notifications, update them, delete the old ones.
@@ -64,13 +89,25 @@ func Clear() {
 	notifications = []Notification{}
 }
 
+// find notification by unique ID
+func find(id xid.ID) *Notification {
+	for i := range notifications {
+		if notifications[i].ID == id {
+			return &notifications[i]
+		}
+	}
+	return nil
+}
+
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
-func Update(id int, message string) {
-	if id < len(notifications) {
-		notifications[id].Frames = 240
-		notifications[id].Message = message
-	} else {
-		Display(message, 240)
+func Update(id xid.ID, severity Severity, message string) {
+	n := find(id)
+	if n == nil {
+		return
 	}
+
+	n.Frames = 240
+	n.Message = message
+	n.Severity = severity
 }

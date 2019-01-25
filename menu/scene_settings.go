@@ -8,7 +8,7 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 
 	"github.com/libretro/ludo/audio"
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -49,14 +49,14 @@ func buildSettings() Scene {
 							var err error
 							path, err = filepath.Abs(path)
 							if err != nil {
-								notifications.DisplayAndLog("Settings", err.Error())
+								ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
 								return
 							}
 							f.Set(path)
-							notifications.DisplayAndLog("Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
+							ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
 							err = settings.Save()
 							if err != nil {
-								notifications.DisplayAndLog("Settings", err.Error())
+								ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
 								return
 							}
 						},

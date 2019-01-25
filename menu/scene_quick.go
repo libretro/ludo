@@ -1,7 +1,7 @@
 package menu
 
 import (
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/savestates"
 	"github.com/libretro/ludo/state"
 )
@@ -37,9 +37,9 @@ func buildQuickMenu() Scene {
 		callbackOK: func() {
 			err := savestates.Save()
 			if err != nil {
-				notifications.DisplayAndLog("Menu", err.Error())
+				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			} else {
-				notifications.DisplayAndLog("Menu", "State saved.")
+				ntf.DisplayAndLog(ntf.Success, "Menu", "State saved.")
 			}
 		},
 	})
@@ -50,10 +50,10 @@ func buildQuickMenu() Scene {
 		callbackOK: func() {
 			err := savestates.Load()
 			if err != nil {
-				notifications.DisplayAndLog("Menu", err.Error())
+				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			} else {
 				state.Global.MenuActive = false
-				notifications.DisplayAndLog("Menu", "State loaded.")
+				ntf.DisplayAndLog(ntf.Success, "Menu", "State loaded.")
 			}
 		},
 	})
@@ -63,7 +63,7 @@ func buildQuickMenu() Scene {
 		icon:  "screenshot",
 		callbackOK: func() {
 			vid.TakeScreenshot()
-			notifications.DisplayAndLog("Menu", "Took a screenshot.")
+			ntf.DisplayAndLog(ntf.Success, "Menu", "Took a screenshot.")
 		},
 	})
 

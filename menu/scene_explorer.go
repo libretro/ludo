@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/utils"
 )
@@ -32,7 +32,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		notifications.DisplayAndLog("Menu", err.Error())
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}
 
 	// Display the special directory action entry.
