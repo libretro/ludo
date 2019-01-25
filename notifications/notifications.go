@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/libretro/ludo/state"
+
+	"github.com/rs/xid"
 )
 
 // Severity represents the severity of a notification message. It will affect
@@ -27,6 +29,7 @@ const (
 // Notification is a message that will be displayed on the screen during a
 // certain time (number of frames).
 type Notification struct {
+	ID       xid.ID
 	Severity Severity
 	Message  string
 	Frames   int
@@ -40,8 +43,10 @@ func List() []Notification {
 }
 
 // Display creates a new notification.
-func Display(severity Severity, message string, frames int) int {
+func Display(severity Severity, message string, frames int) xid.ID {
+	id := xid.New()
 	n := Notification{
+		id,
 		severity,
 		message,
 		frames,
@@ -49,11 +54,11 @@ func Display(severity Severity, message string, frames int) int {
 
 	notifications = append(notifications, n)
 
-	return len(notifications) - 1
+	return id
 }
 
 // DisplayAndLog creates a new notification and also logs the message to stdout.
-func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) int {
+func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) xid.ID {
 	var msg string
 	if len(vars) > 0 {
 		msg = fmt.Sprintf(message, vars...)
@@ -84,14 +89,25 @@ func Clear() {
 	notifications = []Notification{}
 }
 
+// find notification by unique ID
+func find(id xid.ID) *Notification {
+	for i := range notifications {
+		if notifications[i].ID == id {
+			return &notifications[i]
+		}
+	}
+	return nil
+}
+
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
-func Update(id int, severity Severity, message string) {
-	if id < len(notifications) {
-		notifications[id].Frames = 240
-		notifications[id].Message = message
-		notifications[id].Severity = severity
-	} else {
-		Display(severity, message, 240)
+func Update(id xid.ID, severity Severity, message string) {
+	n := find(id)
+	if n == nil {
+		return
 	}
+
+	n.Frames = 240
+	n.Message = message
+	n.Severity = severity
 }
