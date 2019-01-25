@@ -16,9 +16,9 @@ func Test_List(t *testing.T) {
 		Display(Error, "Test3", 240)
 		got := List()
 		want := []Notification{
-			Notification{Severity: Error, Message: "Test1", Frames: 240},
-			Notification{Severity: Error, Message: "Test2", Frames: 240},
-			Notification{Severity: Error, Message: "Test3", Frames: 240},
+			Notification{ID: got[0].ID, Severity: Error, Message: "Test1", Frames: 240},
+			Notification{ID: got[1].ID, Severity: Error, Message: "Test2", Frames: 240},
+			Notification{ID: got[2].ID, Severity: Error, Message: "Test3", Frames: 240},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
@@ -34,9 +34,9 @@ func Test_Display(t *testing.T) {
 		Display(Warning, "Test3", 240)
 		got := notifications
 		want := []Notification{
-			Notification{Severity: Error, Message: "Test1", Frames: 240},
-			Notification{Severity: Info, Message: "Test2", Frames: 240},
-			Notification{Severity: Warning, Message: "Test3", Frames: 240},
+			Notification{ID: got[0].ID, Severity: Error, Message: "Test1", Frames: 240},
+			Notification{ID: got[1].ID, Severity: Info, Message: "Test2", Frames: 240},
+			Notification{ID: got[2].ID, Severity: Warning, Message: "Test3", Frames: 240},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
