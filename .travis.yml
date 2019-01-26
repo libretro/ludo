@@ -75,8 +75,8 @@ matrix:
         - choco install make
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
-        - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
-        - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
+        - export CGO_CFLAGS="-IC:\Users\travis\openal-soft-1.19.0-bin\include\"
+        - export CGO_LDFLAGS="-LC:\Users\travis\openal-soft-1.19.0-bin\build\Release\"
       script:
         - go get -t -v ./...
         - go test -v ./...
