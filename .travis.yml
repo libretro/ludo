@@ -76,7 +76,7 @@ matrix:
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
-        - export CGO_LDFLAGS="-L."
+        - export CGO_LDFLAGS="-lmingw32 -L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
         - cp /c/Users/travis/openal-soft-1.19.0-bin/build/Release/OpenAL32.dll .
       script:
         - go get -t -v ./...
