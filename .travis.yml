@@ -71,10 +71,12 @@ matrix:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
     - name: Windows
       os: windows
+      env: CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.1-bin/openal-soft-1.19.1-bin/include/" CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.1-bin/openal-soft-1.19.1-bin/libs/Win64/"
       before_install:
         - choco install make
         - choco install openal
-        - ls -la "/c/Program Files/"
+        - wget https://openal-soft.org/openal-binaries/openal-soft-1.19.1-bin.zip
+        - 7z x openal-soft-1.19.1-bin.zip -o/c/Users/travis/openal-soft-1.19.1-bin
       script:
         - go get -t -v ./...
         - go test -v ./...
