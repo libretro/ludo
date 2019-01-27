@@ -76,16 +76,16 @@ matrix:
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
-        - export CGO_LDFLAGS="-lmingw32 -L."
+        - export CGO_LDFLAGS="-lmingw32 -L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
         - cp /c/Users/travis/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
       script:
         - go get -t -v ./...
-        - go test -v ./...
+        - go test -v -x ./...
         #- go vet ./...
         - megacheck ./...
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
-        - go build -v
+        - go build -v -x
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then cp ./OpenAL32.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
