@@ -76,6 +76,7 @@ matrix:
         - choco install make
         - wget https://openal-soft.org/openal-binaries/openal-soft-1.19.1-bin.zip
         - 7z x openal-soft-1.19.1-bin.zip -o/c/Users/travis/openal-soft-1.19.1-bin
+        - ls -la /c/Users/travis/openal-soft-1.19.1-bin
       script:
         - go get -t -v ./...
         - go test -v ./...
