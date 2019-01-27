@@ -16,6 +16,7 @@ type Core struct {
 	symRetroGetSystemAVInfo     unsafe.Pointer
 	symRetroSetEnvironment      unsafe.Pointer
 	symRetroSetVideoRefresh     unsafe.Pointer
+	symRetroSetControllerPortDevice unsafe.Pointer
 	symRetroSetInputPoll        unsafe.Pointer
 	symRetroSetInputState       unsafe.Pointer
 	symRetroSetAudioSample      unsafe.Pointer

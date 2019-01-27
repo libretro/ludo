@@ -111,6 +111,9 @@ func main() {
 		}
 	}
 
+	// Set the device inputs, after the game is loaded so that devices are available.
+	core.SetControllerPortDevice(0, 1)
+
 	// No game running? display the menu
 	state.Global.MenuActive = !state.Global.CoreRunning
 

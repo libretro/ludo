@@ -20,6 +20,7 @@ void bridge_retro_get_system_info(void *f, struct retro_system_info *si);
 void bridge_retro_get_system_av_info(void *f, struct retro_system_av_info *si);
 bool bridge_retro_set_environment(void *f, void *callback);
 void bridge_retro_set_video_refresh(void *f, void *callback);
+void bridge_retro_set_controller_port_device(void *f, unsigned port, unsigned device);
 void bridge_retro_set_input_poll(void *f, void *callback);
 void bridge_retro_set_input_state(void *f, void *callback);
 void bridge_retro_set_audio_sample(void *f, void *callback);
@@ -243,6 +244,7 @@ func Load(sofile string) (*Core, error) {
 	core.symRetroGetSystemAVInfo = core.DlSym("retro_get_system_av_info")
 	core.symRetroSetEnvironment = core.DlSym("retro_set_environment")
 	core.symRetroSetVideoRefresh = core.DlSym("retro_set_video_refresh")
+	core.symRetroSetControllerPortDevice = core.DlSym("retro_set_controller_port_device")
 	core.symRetroSetInputPoll = core.DlSym("retro_set_input_poll")
 	core.symRetroSetInputState = core.DlSym("retro_set_input_state")
 	core.symRetroSetAudioSample = core.DlSym("retro_set_audio_sample")
@@ -450,6 +452,11 @@ func coreInputPoll() {
 		return
 	}
 	inputPoll()
+}
+
+//export SetControllerPortDevice
+func (core *Core) SetControllerPortDevice(port uint, device uint) {
+	C.bridge_retro_set_controller_port_device(core.symRetroSetControllerPortDevice, C.unsigned(port), C.unsigned(device))
 }
 
 //export coreInputState
