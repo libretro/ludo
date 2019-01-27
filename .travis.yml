@@ -74,6 +74,7 @@ matrix:
       before_install:
         - choco install make
         - choco install openal
+        - ls -la "/c/Program Files/"
       script:
         - go get -t -v ./...
         - go test -v ./...
