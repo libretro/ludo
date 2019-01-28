@@ -87,9 +87,6 @@ func Load(sofile string) error {
 
 	log.Println("[Core]: Core loaded: " + si.LibraryName)
 
-	// Set the device inputs, after the game is loaded so that devices are available.
-	state.Global.Core.SetControllerPortDevice(0, 1)
-
 	return nil
 }
 
@@ -171,6 +168,9 @@ func LoadGame(gamePath string) error {
 
 	state.Global.CoreRunning = true
 	state.Global.GamePath = gamePath
+
+	// Set the device inputs, after the game is loaded so that devices are available.
+	state.Global.Core.SetControllerPortDevice(0, 1)
 
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
