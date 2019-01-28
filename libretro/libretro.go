@@ -430,6 +430,11 @@ func (core *Core) BindPerfCallback(data unsafe.Pointer, f getTimeUsecFunc) {
 	cb.get_time_usec = (C.retro_perf_get_time_usec_t)(C.coreGetTimeUsec_cgo)
 }
 
+// SetControllerPortDevice sets the device type attached to a controller port
+func (core *Core) SetControllerPortDevice(port uint, device uint) {
+	C.bridge_retro_set_controller_port_device(core.symRetroSetControllerPortDevice, C.unsigned(port), C.unsigned(device))
+}
+
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
 	if environment == nil {
@@ -452,11 +457,6 @@ func coreInputPoll() {
 		return
 	}
 	inputPoll()
-}
-
-//export SetControllerPortDevice
-func (core *Core) SetControllerPortDevice(port uint, device uint) {
-	C.bridge_retro_set_controller_port_device(core.symRetroSetControllerPortDevice, C.unsigned(port), C.unsigned(device))
 }
 
 //export coreInputState
