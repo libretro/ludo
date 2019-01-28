@@ -139,10 +139,53 @@ const (
 	PixelFormatRGB565   = uint32(C.RETRO_PIXEL_FORMAT_RGB565)
 )
 
-// DeviceJoypad represents the RetroPad. It is essentially a Super Nintendo
-// controller, but with additional L2/R2/L3/R3 buttons, similar to a
-// PS1 DualShock.
-const DeviceJoypad = uint32(C.RETRO_DEVICE_JOYPAD)
+// Libretro's fundamental device abstractions.
+//
+// Libretro's input system consists of some standardized device types,
+// such as a joypad (with/without analog), mouse, keyboard, lightgun
+// and a pointer.
+//
+// The functionality of these devices are fixed, and individual cores
+// map their own concept of a controller to libretro's abstractions.
+// This makes it possible for frontends to map the abstract types to a
+// real input device, and not having to worry about binding input
+// correctly to arbitrary controller layouts.
+const (
+	// DeviceNone means that input is disabled.
+	DeviceNone = uint32(C.RETRO_DEVICE_NONE)
+
+	// DeviceJoypad represents the RetroPad. It is essentially a Super Nintendo
+	// controller, but with additional L2/R2/L3/R3 buttons, similar to a
+	// PS1 DualShock.
+	DeviceJoypad = uint32(C.RETRO_DEVICE_JOYPAD)
+
+	// DeviceMouse is a simple mouse, similar to Super Nintendo's mouse.
+	// X and Y coordinates are reported relatively to last poll (poll callback).
+	// It is up to the libretro implementation to keep track of where the mouse
+	// pointer is supposed to be on the screen.
+	// The frontend must make sure not to interfere with its own hardware
+	// mouse pointer.
+	DeviceMouse = uint32(C.RETRO_DEVICE_MOUSE)
+
+	// DeviceKeyboard lets one poll for raw key pressed.
+	// It is poll based, so input callback will return with the current
+	// pressed state.
+	// For event/text based keyboard input, see
+	// RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK.
+	DeviceKeyboard = uint32(C.RETRO_DEVICE_KEYBOARD)
+
+	// DeviceLightgun X/Y coordinates are reported relatively to last poll,
+	// similar to mouse. */
+	DeviceLightgun = uint32(C.RETRO_DEVICE_LIGHTGUN)
+
+	// DeviceAnalog device is an extension to JOYPAD (RetroPad).
+	// Similar to DualShock it adds two analog sticks.
+	// This is treated as a separate device type as it returns values in the
+	// full analog range of [-0x8000, 0x7fff]. Positive X axis is right.
+	// Positive Y axis is down.
+	// Only use ANALOG type when polling for analog values of the axes.
+	DeviceAnalog = uint32(C.RETRO_DEVICE_ANALOG)
+)
 
 // Buttons for the RetroPad (JOYPAD).
 // The placement of these is equivalent to placements on the
@@ -431,7 +474,7 @@ func (core *Core) BindPerfCallback(data unsafe.Pointer, f getTimeUsecFunc) {
 }
 
 // SetControllerPortDevice sets the device type attached to a controller port
-func (core *Core) SetControllerPortDevice(port uint, device uint) {
+func (core *Core) SetControllerPortDevice(port uint, device uint32) {
 	C.bridge_retro_set_controller_port_device(core.symRetroSetControllerPortDevice, C.unsigned(port), C.unsigned(device))
 }
 

@@ -170,7 +170,7 @@ func LoadGame(gamePath string) error {
 	state.Global.GamePath = gamePath
 
 	// Set the device inputs, after the game is loaded so that devices are available.
-	state.Global.Core.SetControllerPortDevice(0, 1)
+	state.Global.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
 
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
