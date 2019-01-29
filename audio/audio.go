@@ -15,7 +15,6 @@ var audio struct {
 	numBuffers int32
 	tmpBuf     [bufSize]byte
 	tmpBufPtr  int32
-	bufPtr     int32
 	resPtr     int32
 }
 
@@ -39,13 +38,6 @@ func Init(rate int32) {
 	audio.resPtr = audio.numBuffers
 	audio.tmpBufPtr = 0
 	audio.tmpBuf = [bufSize]byte{}
-}
-
-func min(a, b int32) int32 {
-	if a < b {
-		return a
-	}
-	return b
 }
 
 func write(buf []byte, size int32) int32 {
