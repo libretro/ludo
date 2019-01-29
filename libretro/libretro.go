@@ -151,6 +151,8 @@ const (
 // real input device, and not having to worry about binding input
 // correctly to arbitrary controller layouts.
 const (
+	DeviceMask = uint32(C.RETRO_DEVICE_MASK)
+
 	// DeviceNone means that input is disabled.
 	DeviceNone = uint32(C.RETRO_DEVICE_NONE)
 

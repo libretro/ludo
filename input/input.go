@@ -5,7 +5,6 @@ package input
 
 import (
 	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
 )
@@ -135,7 +134,7 @@ func Poll() {
 // State is a callback passed to core.SetInputState
 // It returns 1 if the button corresponding to the parameters is pressed
 func State(port uint, device uint32, index uint, id uint) int16 {
-	if id >= 255 || index > 0 || device != libretro.DeviceJoypad {
+	if id >= 255 || index > 0 {
 		return 0
 	}
 
