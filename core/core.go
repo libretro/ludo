@@ -169,8 +169,9 @@ func LoadGame(gamePath string) error {
 	state.Global.CoreRunning = true
 	state.Global.GamePath = gamePath
 
-	// Set the device inputs, after the game is loaded so that devices are available.
-	state.Global.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
+	for p := uint(0); p < input.MaxPlayers; p++ {
+		state.Global.Core.SetControllerPortDevice(p, libretro.DeviceJoypad)
+	}
 
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()

@@ -10,7 +10,8 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-const numPlayers = 5
+// MaxPlayers is the maximum number of players to poll input for
+const MaxPlayers = 5
 
 type joybinds map[bind]uint32
 
@@ -24,7 +25,7 @@ type bind struct {
 	threshold float32
 }
 
-type inputstate [numPlayers][ActionLast]bool
+type inputstate [MaxPlayers][ActionLast]bool
 
 // Input state for all the players
 var (
