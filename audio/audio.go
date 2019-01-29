@@ -4,17 +4,13 @@ package audio
 
 import (
 	"log"
-	"time"
 
-	"github.com/libretro/ludo/settings"
 	"golang.org/x/mobile/exp/audio/al"
 )
 
 const bufSize = 1024 * 4
 
 var audio struct {
-	source     al.Source
-	buffers    []al.Buffer
 	rate       int32
 	numBuffers int32
 	tmpBuf     [bufSize]byte
@@ -25,7 +21,6 @@ var audio struct {
 
 // SetVolume sets the audio volume
 func SetVolume(vol float32) {
-	audio.source.SetGain(vol)
 }
 
 // Init initializes the audio package. It opens the AL devices, sets the number of buffers, the
@@ -41,13 +36,9 @@ func Init(rate int32) {
 
 	log.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
 
-	audio.source = al.GenSources(1)[0]
-	audio.buffers = al.GenBuffers(int(audio.numBuffers))
 	audio.resPtr = audio.numBuffers
 	audio.tmpBufPtr = 0
 	audio.tmpBuf = [bufSize]byte{}
-
-	audio.source.SetGain(settings.Current.AudioVolume)
 }
 
 func min(a, b int32) int32 {
@@ -57,75 +48,8 @@ func min(a, b int32) int32 {
 	return b
 }
 
-func alUnqueueBuffers() bool {
-	val := audio.source.BuffersProcessed()
-
-	if val <= 0 {
-		return false
-	}
-
-	audio.source.UnqueueBuffers(audio.buffers[audio.resPtr:val]...)
-	audio.resPtr += val
-	return true
-}
-
-func alGetBuffer() al.Buffer {
-	if audio.resPtr == 0 {
-		for {
-			if alUnqueueBuffers() {
-				break
-			}
-
-			time.Sleep(time.Millisecond)
-		}
-	}
-
-	audio.resPtr--
-	return audio.buffers[audio.resPtr]
-}
-
-func fillInternalBuf(buf []byte, size int32) int32 {
-	// This is a workaround for mednafen-psx
-	if size > bufSize {
-		return size
-	}
-	readSize := min(bufSize-audio.tmpBufPtr, size)
-	if readSize > int32(len(buf)) {
-		return size
-	}
-	copy(audio.tmpBuf[audio.tmpBufPtr:], buf[audio.bufPtr:audio.bufPtr+readSize])
-	audio.tmpBufPtr += readSize
-	return readSize
-}
-
 func write(buf []byte, size int32) int32 {
 	written := int32(0)
-
-	for size > 0 {
-
-		rc := fillInternalBuf(buf, size)
-
-		written += rc
-		audio.bufPtr += rc
-		size -= rc
-
-		if audio.tmpBufPtr != bufSize {
-			break
-		}
-
-		buffer := alGetBuffer()
-
-		buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], int32(audio.rate))
-		audio.tmpBufPtr = 0
-		audio.source.QueueBuffers(buffer)
-
-		if audio.source.State() != al.Playing {
-			al.PlaySources(audio.source)
-		}
-	}
-
-	audio.bufPtr = 0
-
 	return written
 }
 
