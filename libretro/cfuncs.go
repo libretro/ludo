@@ -46,6 +46,10 @@ void bridge_retro_set_video_refresh(void *f, void *callback) {
 	((bool (*)(retro_video_refresh_t))f)((retro_video_refresh_t)callback);
 }
 
+void bridge_retro_set_controller_port_device(void *f, unsigned port, unsigned device) {
+	return ((void (*)(unsigned, unsigned))f)(port, device);
+}
+
 void bridge_retro_set_input_poll(void *f, void *callback) {
 	((bool (*)(retro_input_poll_t))f)((retro_input_poll_t)callback);
 }
