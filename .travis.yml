@@ -76,8 +76,7 @@ matrix:
       os: windows
       before_install:
         - choco install make
-        - choco install vcredist2015
-        - choco install glfw3
+        - choco install vcredist140
       script:
         - go get -v ./...
         - go test -v ./...
