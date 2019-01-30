@@ -8,6 +8,9 @@ language: go
 go:
   - "1.11"
 
+env:
+  - GO111MODULE=on
+
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
   - go get github.com/golang/lint/golint
