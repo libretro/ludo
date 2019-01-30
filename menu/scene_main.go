@@ -6,7 +6,7 @@ import (
 	"github.com/libretro/ludo/settings"
 
 	"github.com/libretro/ludo/core"
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
 )
 
@@ -42,9 +42,9 @@ func buildMainMenu() Scene {
 				func(path string) {
 					err := core.Load(path)
 					if err != nil {
-						notifications.DisplayAndLog("Core", err.Error())
+						ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 					}
-					notifications.DisplayAndLog("Core", "Core loaded.")
+					ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded.")
 				},
 				nil,
 			))
@@ -61,13 +61,13 @@ func buildMainMenu() Scene {
 					func(path string) {
 						err := core.LoadGame(path)
 						if err != nil {
-							notifications.DisplayAndLog("Core", err.Error())
+							ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 							return
 						}
 						state.Global.MenuActive = false
 					}, nil))
 			} else {
-				notifications.DisplayAndLog("Menu", "Please load a core first.")
+				ntf.DisplayAndLog(ntf.Warning, "Menu", "Please load a core first.")
 			}
 		},
 	})
@@ -85,7 +85,7 @@ func buildMainMenu() Scene {
 		label: "Help",
 		icon:  "subsetting",
 		callbackOK: func() {
-			notifications.DisplayAndLog("Menu", "Not implemented yet.")
+			ntf.DisplayAndLog(ntf.Warning, "Menu", "Not implemented yet.")
 		},
 	})
 

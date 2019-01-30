@@ -6,11 +6,12 @@ package input
 import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
 )
 
-const numPlayers = 5
+// MaxPlayers is the maximum number of players to poll input for
+const MaxPlayers = 5
 
 type joybinds map[bind]uint32
 
@@ -24,7 +25,7 @@ type bind struct {
 	threshold float32
 }
 
-type inputstate [numPlayers][ActionLast]bool
+type inputstate [MaxPlayers][ActionLast]bool
 
 // Input state for all the players
 var (
@@ -38,11 +39,11 @@ var (
 func joystickCallback(joy int, event int) {
 	switch glfw.MonitorEvent(event) {
 	case glfw.Connected:
-		notifications.DisplayAndLog("Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
+		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
 	case glfw.Disconnected:
-		notifications.DisplayAndLog("Input", "Joystick #%d unplugged.", joy)
+		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d unplugged.", joy)
 	default:
-		notifications.DisplayAndLog("Input", "Joystick #%d unhandled event: %d.", joy, event)
+		ntf.DisplayAndLog(ntf.Warning, "Input", "Joystick #%d unhandled event: %d.", joy, event)
 	}
 }
 

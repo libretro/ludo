@@ -169,6 +169,10 @@ func LoadGame(gamePath string) error {
 	state.Global.CoreRunning = true
 	state.Global.GamePath = gamePath
 
+	for p := uint(0); p < input.MaxPlayers; p++ {
+		state.Global.Core.SetControllerPortDevice(p, libretro.DeviceJoypad)
+	}
+
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
 
