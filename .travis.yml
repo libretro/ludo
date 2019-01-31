@@ -83,6 +83,7 @@ matrix:
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
         - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/ -L/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib -static"
+        - cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread-1.* .
       script:
         - go get -v ./...
         - go test -v -a -tags netgo -ldflags '-H=windowsgui -linkmode external -extldflags "-static"' ./...
