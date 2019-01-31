@@ -75,11 +75,9 @@ matrix:
     - name: Windows
       os: windows
       before_install:
-        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin
-        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64
-        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install
-        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools
-        - ls -la /c/ProgramData/chocolatey/lib/mingw/
+        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32
+        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/lib
+        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/include
         - choco install make
         - choco install vcredist140
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
