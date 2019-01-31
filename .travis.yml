@@ -82,7 +82,6 @@ matrix:
         - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
         - cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
         - cp /c/Users/travis/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
-        - ls -la .
       script:
         - go get -v ./...
         #- go test -v ./...
