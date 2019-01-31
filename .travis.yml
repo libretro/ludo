@@ -75,15 +75,14 @@ matrix:
     - name: Windows
       os: windows
       before_install:
-        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32
-        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/lib
-        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/include
+        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib
+        - ls -la /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include
         - choco install make
         - choco install vcredist140
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
-        - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
+        - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/ -L/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib -static"
       script:
         - go get -v ./...
         - go test -v ./...
