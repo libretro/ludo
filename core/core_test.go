@@ -36,7 +36,7 @@ func Test_coreLoad(t *testing.T) {
 
 	Init(&video.Video{Window: &WindowMock{}}, &MenuMock{})
 
-	out := utils.CaptureOutput(func() { Load("testdata/uzem_libretro" + ext) })
+	out := utils.CaptureOutput(func() { Load("testdata/vecx_libretro" + ext) })
 
 	t.Run("The core is loaded", func(t *testing.T) {
 		if state.Global.Core == nil {
@@ -46,12 +46,12 @@ func Test_coreLoad(t *testing.T) {
 
 	t.Run("Logs information about the loaded core", func(t *testing.T) {
 		got := out
-		want := `[Core]: Name: Uzem
-[Core]: Version: v2.0
-[Core]: Valid extensions: uze
+		want := `[Core]: Name: VecX
+[Core]: Version: 1.2 42366f8
+[Core]: Valid extensions: bin|vec
 [Core]: Need fullpath: false
 [Core]: Block extract: false
-[Core]: Core loaded: Uzem
+[Core]: Core loaded: VecX
 `
 		if got != want {
 			t.Errorf("got = %v, want %v", got, want)
@@ -77,52 +77,52 @@ func Test_getGameInfo(t *testing.T) {
 	}{
 		{
 			name: "Returns the right path and size for an unzipped ROM",
-			args: args{filename: "testdata/ZoomingSecretary.uze", blockExtract: false},
+			args: args{filename: "testdata/Polar Rescue (USA).vec", blockExtract: false},
 			want: &libretro.GameInfo{
-				Path: "testdata/ZoomingSecretary.uze",
-				Size: 61286,
+				Path: "testdata/Polar Rescue (USA).vec",
+				Size: 8192,
 			},
 			wantErr: false,
 		},
 		{
 			name: "Returns the right path and size for a zipped ROM",
-			args: args{filename: "testdata/ZoomingSecretary.zip", blockExtract: false},
+			args: args{filename: "testdata/Polar Rescue (USA).zip", blockExtract: false},
 			want: &libretro.GameInfo{
-				Path: os.TempDir() + "/ZoomingSecretary.uze",
-				Size: 61286,
+				Path: os.TempDir() + "/Polar Rescue (USA).vec",
+				Size: 8192,
 			},
 			wantErr: false,
 		},
 		{
 			name: "Returns the right path and size for a zipped ROM with blockExtract",
-			args: args{filename: "testdata/ZoomingSecretary.zip", blockExtract: true},
+			args: args{filename: "testdata/Polar Rescue (USA).zip", blockExtract: true},
 			want: &libretro.GameInfo{
-				Path: "testdata/ZoomingSecretary.zip",
-				Size: 25599,
+				Path: "testdata/Polar Rescue (USA).zip",
+				Size: 6829,
 			},
 			wantErr: false,
 		},
 		{
 			name: "Returns the right path and size for a zipped ROM with blockExtract",
-			args: args{filename: "testdata/ZoomingSecretary.zip", blockExtract: true},
+			args: args{filename: "testdata/Polar Rescue (USA).zip", blockExtract: true},
 			want: &libretro.GameInfo{
-				Path: "testdata/ZoomingSecretary.zip",
-				Size: 25599,
+				Path: "testdata/Polar Rescue (USA).zip",
+				Size: 6829,
 			},
 			wantErr: false,
 		},
 		{
 			name:    "Returns an error when a file doesn't exists",
-			args:    args{filename: "testdata/ZoomingSecretary2.zip", blockExtract: true},
+			args:    args{filename: "testdata/Polar Rescue (USA)2.zip", blockExtract: true},
 			want:    nil,
 			wantErr: true,
 		},
 		{
 			name: "Doesn't attempt to unzip a file that has no .zip extension",
-			args: args{filename: "testdata/ZoomingSecretary.uze", blockExtract: true},
+			args: args{filename: "testdata/Polar Rescue (USA).vec", blockExtract: true},
 			want: &libretro.GameInfo{
-				Path: "testdata/ZoomingSecretary.uze",
-				Size: 61286,
+				Path: "testdata/Polar Rescue (USA).vec",
+				Size: 8192,
 			},
 			wantErr: false,
 		},
@@ -154,21 +154,21 @@ func Test_unzipGame(t *testing.T) {
 	}{
 		{
 			name:    "Should unzip to the right path",
-			args:    args{filename: "testdata/ZoomingSecretary.zip"},
-			want:    os.TempDir() + "/ZoomingSecretary.uze",
-			want1:   61286,
+			args:    args{filename: "testdata/Polar Rescue (USA).zip"},
+			want:    os.TempDir() + "/Polar Rescue (USA).vec",
+			want1:   8192,
 			wantErr: false,
 		},
 		{
 			name:    "Returns an error if the file is not a zip",
-			args:    args{filename: "testdata/ZoomingSecretary.uze"},
+			args:    args{filename: "testdata/Polar Rescue (USA).vec"},
 			want:    "",
 			want1:   0,
 			wantErr: true,
 		},
 		{
 			name:    "Returns an error if the file doesn't exists",
-			args:    args{filename: "testdata/ZoomingSecretary2.zip"},
+			args:    args{filename: "testdata/Polar Rescue (USA)2.zip"},
 			want:    "",
 			want1:   0,
 			wantErr: true,
