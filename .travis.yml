@@ -77,6 +77,7 @@ matrix:
       before_install:
         - ls -la "/c/Program Files"
         - ls -la "/c/Program Files (x86)"
+        - echo $PATH
         - choco install make
         - choco install vcredist140
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
