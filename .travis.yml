@@ -76,16 +76,16 @@ matrix:
       os: windows
       before_install:
         - choco install make
-        - choco install vcredist140
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
-        - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/ -L/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib"
+        - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
         - cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
         - cp /c/Users/travis/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
+        - ls -la .
       script:
         - go get -v ./...
-        - go test -v ./...
+        #- go test -v ./...
         #- go vet ./...
         - megacheck ./...
         - gocyclo -over 19 $GO_FILES
