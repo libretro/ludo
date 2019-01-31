@@ -75,6 +75,7 @@ matrix:
     - name: Windows
       os: windows
       before_install:
+        - ls -la /c/
         - choco install make
         - choco install vcredist140
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
@@ -83,7 +84,7 @@ matrix:
         - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
       script:
         - go get -v ./...
-        - go test -v -ldflags "-linkmode external -extldflags -static" -a ./...
+        - go test -v ./...
         #- go vet ./...
         - megacheck ./...
         - gocyclo -over 19 $GO_FILES
