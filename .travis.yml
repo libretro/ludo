@@ -2,6 +2,7 @@ branches:
   only:
     - master
     - /^v.*$/
+    - kivutar/msi
 
 language: go
 
@@ -91,9 +92,9 @@ matrix:
         - golint -set_exit_status $(go list ./...)
         - go build -v
       before_deploy:
-        - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then cp *.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then choco install go-msi wixtoolset; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then export PATH="$PATH;$WIX/bin"; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make msi; fi
 
 deploy:
   skip_cleanup: true
@@ -104,7 +105,7 @@ deploy:
     - Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz
     - Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz
     - Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
-    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip
+    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.msi
   on:
     repo: libretro/ludo
     tags: true

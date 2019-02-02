@@ -83,5 +83,8 @@ tar: ludo cores
 	cp -r cores $(BUNDLENAME)/
 	tar -zcf $(BUNDLENAME).tar.gz $(BUNDLENAME)\
 
+msi: ludo cores
+	go-msi.exe make --msi $(BUNDLENAME).msi --version=$(VERSION)
+
 clean:
 	rm -rf $(BUNDLENAME).app ludo wc empty.dmg $(BUNDLENAME).dmg $(BUNDLENAME)-* cores/
