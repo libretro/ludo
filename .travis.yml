@@ -89,7 +89,7 @@ matrix:
         - megacheck ./...
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
-        - go build -v
+        - go build -v -ldflags '-H=windowsgui'
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then choco install go-msi wixtoolset; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then export PATH="$PATH;$WIX/bin"; fi
