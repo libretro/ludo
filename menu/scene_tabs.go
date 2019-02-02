@@ -245,9 +245,10 @@ func (tabs *screenTabs) segueNext() {
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+3030, 0.15, ease.OutSine)
 }
 
-func (tabs *screenTabs) update() {
-	if menu.inputCooldown > 0 {
-		menu.inputCooldown--
+func (tabs *screenTabs) update(dt float32) {
+	menu.inputCooldown -= dt
+	if menu.inputCooldown < 0 {
+		menu.inputCooldown = 0
 	}
 
 	// Right
@@ -257,7 +258,7 @@ func (tabs *screenTabs) update() {
 			tabs.ptr = 0
 		}
 		tabs.animate()
-		menu.inputCooldown = 10
+		menu.inputCooldown = 0.15
 	}
 
 	// Left
@@ -267,7 +268,7 @@ func (tabs *screenTabs) update() {
 			tabs.ptr = len(tabs.children) - 1
 		}
 		tabs.animate()
-		menu.inputCooldown = 10
+		menu.inputCooldown = 0.15
 	}
 
 	// OK

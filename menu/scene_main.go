@@ -118,8 +118,8 @@ func (main *screenMain) segueNext() {
 	genericSegueNext(&main.entry)
 }
 
-func (main *screenMain) update() {
-	genericInput(&main.entry)
+func (main *screenMain) update(dt float32) {
+	genericInput(&main.entry, dt)
 }
 
 func (main *screenMain) render() {

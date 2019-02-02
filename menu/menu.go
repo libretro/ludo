@@ -52,7 +52,7 @@ type Scene interface {
 	segueMount()
 	segueNext()
 	segueBack()
-	update()
+	update(dt float32)
 	render()
 	drawHintBar()
 	Entry() *entry
@@ -62,7 +62,7 @@ type Scene interface {
 type Menu struct {
 	stack         []Scene
 	icons         map[string]uint32
-	inputCooldown int
+	inputCooldown float32
 	tweens        map[*float32]*gween.Tween
 	scroll        float32
 	ratio         float32
@@ -83,12 +83,12 @@ func updateTweens(dt float32) {
 }
 
 // Render takes care of rendering the menu
-func Render() {
+func Render(dt float32) {
 	menu.t += 0.1
 	w, _ := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
-	updateTweens(1.0 / 60.0)
+	updateTweens(dt)
 
 	currentScreenIndex := len(menu.stack) - 1
 	for i := 0; i <= currentScreenIndex+1; i++ {
