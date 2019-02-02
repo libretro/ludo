@@ -2,7 +2,6 @@ branches:
   only:
     - master
     - /^v.*$/
-    - kivutar/msi
 
 language: go
 

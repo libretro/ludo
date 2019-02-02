@@ -16,10 +16,6 @@
     "database",
     "cores"
   ],
-  "env": {
-    "guid": "",
-    "vars": null
-  },
   "shortcuts": {
     "guid": "5ab52dc2-c638-4662-8284-90d25bc7d3a7",
     "items": [
@@ -36,20 +32,6 @@
     "description": "Ludo",
     "project-url": "https://github.com/libretro/ludo",
     "tags": "libretro",
-    "license-url": "https://github.com/libretro/ludo/blob/master/LICENSE"
-  },
-  "hooks": [
-    {
-      "command": "sc.exe create LudoSvc binPath=\"[INSTALLDIR]ludo.exe\" type=share start=auto DisplayName=\"Ludo\"",
-      "when": "install"
-    },
-    {
-      "command": "sc.exe start LudoSvc",
-      "when": "install"
-    },
-    {
-      "command": "sc.exe delete LudoSvc",
-      "when": "uninstall"
-    }
-  ]
+    "license-url": "https://github.com/libretro/ludo/blob/master/COPYING"
+  }
 }
