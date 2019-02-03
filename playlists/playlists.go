@@ -64,7 +64,8 @@ func LoadPlaylists() {
 // ExistsInPlaylist checks if a game is already in a playlist.
 func ExistsInPlaylist(lplpath, path string, CRC32 uint32) bool {
 	for _, entry := range Playlists[lplpath] {
-		if entry.Path == path || entry.CRC32 == CRC32 {
+		// Be careful, sometimes we don't have a CRC32
+		if entry.Path == path || (CRC32 != 0 && entry.CRC32 == CRC32) {
 			return true
 		}
 	}
