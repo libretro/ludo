@@ -76,7 +76,9 @@ matrix:
       os: windows
       before_install:
         - choco install make
-        - choco install dotnet3.5
+        - choco install nuget.commandline
+        - nuget install WiX.Toolset
+        - choco install go-msi wixtoolset
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
