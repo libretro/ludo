@@ -78,7 +78,7 @@ matrix:
         - choco install make
         - choco install nuget.commandline
         - nuget install WiX
-        - choco install go-msi wixtoolset
+        - choco install go-msi
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
@@ -94,7 +94,7 @@ matrix:
         - golint -set_exit_status $(go list ./...)
         - go build -v -ldflags '-H=windowsgui'
       before_deploy:
-        - if [[ -n "$TRAVIS_TAG" ]]; then choco install go-msi wixtoolset; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then choco install go-msi; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then export PATH="$PATH;$WIX/bin"; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make msi; fi
 
