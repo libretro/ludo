@@ -48,7 +48,7 @@ func runLoop(vid *video.Video) {
 			menu.Render(dt)
 		}
 		input.ProcessActions()
-		menu.RenderNotifications(dt)
+		menu.RenderNotifications()
 		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
 		prevTime = currTime

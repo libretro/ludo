@@ -22,7 +22,7 @@ var severityBgColor = map[ntf.Severity]colorful.Color{
 }
 
 // RenderNotifications draws the list of notification messages on the viewport
-func RenderNotifications(dt float32) {
+func RenderNotifications() {
 	fbw, fbh := vid.Window.GetFramebufferSize()
 	vid.Font.UpdateResolution(fbw, fbh)
 	var h float32 = 75
