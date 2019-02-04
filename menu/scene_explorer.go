@@ -120,8 +120,8 @@ func (explorer *screenExplorer) segueBack() {
 	genericAnimate(&explorer.entry)
 }
 
-func (explorer *screenExplorer) update() {
-	genericInput(&explorer.entry)
+func (explorer *screenExplorer) update(dt float32) {
+	genericInput(&explorer.entry, dt)
 }
 
 func (explorer *screenExplorer) render() {

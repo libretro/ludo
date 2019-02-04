@@ -186,8 +186,8 @@ func (s *screenSettings) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenSettings) update() {
-	genericInput(&s.entry)
+func (s *screenSettings) update(dt float32) {
+	genericInput(&s.entry, dt)
 }
 
 func (s *screenSettings) render() {

@@ -105,8 +105,8 @@ func (s *screenPlaylist) segueNext() {
 func (s *screenPlaylist) segueBack() {
 	genericAnimate(&s.entry)
 }
-func (s *screenPlaylist) update() {
-	genericInput(&s.entry)
+func (s *screenPlaylist) update(dt float32) {
+	genericInput(&s.entry, dt)
 }
 func (s *screenPlaylist) render() {
 	list := &s.entry

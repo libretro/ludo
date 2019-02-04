@@ -7,14 +7,15 @@ import (
 
 // Update takes care of calling the update method of the current scene.
 // Each scene has it's own input logic to allow a variety of navigation systems.
-func Update() {
+func Update(dt float32) {
 	currentScene := menu.stack[len(menu.stack)-1]
-	currentScene.update()
+	currentScene.update(dt)
 }
 
-func genericInput(list *entry) {
-	if menu.inputCooldown > 0 {
-		menu.inputCooldown--
+func genericInput(list *entry, dt float32) {
+	menu.inputCooldown -= dt
+	if menu.inputCooldown < 0 {
+		menu.inputCooldown = 0
 	}
 
 	if input.NewState[0][libretro.DeviceIDJoypadDown] && menu.inputCooldown == 0 {
@@ -23,7 +24,7 @@ func genericInput(list *entry) {
 			list.ptr = 0
 		}
 		genericAnimate(list)
-		menu.inputCooldown = 10
+		menu.inputCooldown = 0.15
 	}
 
 	if input.NewState[0][libretro.DeviceIDJoypadUp] && menu.inputCooldown == 0 {
@@ -32,7 +33,7 @@ func genericInput(list *entry) {
 			list.ptr = len(list.children) - 1
 		}
 		genericAnimate(list)
-		menu.inputCooldown = 10
+		menu.inputCooldown = 0.15
 	}
 
 	// OK
