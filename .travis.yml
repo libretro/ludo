@@ -90,7 +90,7 @@ matrix:
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v -ldflags '-H=windowsgui'
-        - depends.exe -oc:deps.csv ./ludo.exe
+        - depends.exe -c -oc:deps.csv ./ludo.exe
         - sleep 15s
         - cat deps.csv
       before_deploy:
