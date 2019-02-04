@@ -23,9 +23,6 @@ endif
 ludo:
 	go build
 
-ludo.exe:
-	go build -ldflags '-H=windowsgui'
-
 cores:
 	mkdir -p cores
 	for CORE in ${CORES} ; do \
@@ -86,8 +83,5 @@ tar: ludo cores
 	cp -r cores $(BUNDLENAME)/
 	tar -zcf $(BUNDLENAME).tar.gz $(BUNDLENAME)\
 
-msi: ludo.exe cores
-	go-msi.exe make --msi $(BUNDLENAME).msi --version=$(VERSION) --arch=x64
-
 clean:
-	rm -rf *.app ludo ludo.exe wc *.dmg $(BUNDLENAME)-* *.msi cores/
+	rm -rf $(BUNDLENAME).app ludo wc empty.dmg $(BUNDLENAME).dmg $(BUNDLENAME)-* cores/
