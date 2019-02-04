@@ -84,7 +84,7 @@ func updateTweens(dt float32) {
 
 // Render takes care of rendering the menu
 func Render(dt float32) {
-	menu.t += 0.1
+	menu.t += float64(dt * 8)
 	w, _ := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
