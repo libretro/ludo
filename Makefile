@@ -3,6 +3,10 @@ BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 
 CORES = fbalpha fceumm gambatte genesis_plus_gx handy mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba pcsx_rearmed picodrive prosystem snes9x stella vecx virtualjaguar
 
+ifeq ($(ARCH), arm)
+	CORES := $(filter-out mednafen_saturn,$(CORES))
+endif
+
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
 DLLS = $(addprefix cores/, $(addsuffix _libretro.dll,$(CORES)))
 SOBJS = $(addprefix cores/, $(addsuffix _libretro.so,$(CORES)))
