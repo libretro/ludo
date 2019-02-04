@@ -27,13 +27,16 @@ const (
 )
 
 // Notification is a message that will be displayed on the screen during a
-// certain time (number of frames).
+// certain time.
 type Notification struct {
 	ID       xid.ID
 	Severity Severity
 	Message  string
-	Frames   int
+	Duration float32
 }
+
+// Medium is the standard duration for a notification
+const Medium float32 = 4
 
 var notifications []Notification
 
@@ -43,13 +46,13 @@ func List() []Notification {
 }
 
 // Display creates a new notification.
-func Display(severity Severity, message string, frames int) xid.ID {
+func Display(severity Severity, message string, duration float32) xid.ID {
 	id := xid.New()
 	n := Notification{
 		id,
 		severity,
 		message,
-		frames,
+		duration,
 	}
 
 	notifications = append(notifications, n)
@@ -68,16 +71,16 @@ func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{
 	if state.Global.Verbose {
 		log.Print("[" + prefix + "]: " + msg + "\n")
 	}
-	return Display(severity, msg, 240)
+	return Display(severity, msg, Medium)
 }
 
 // Process iterates over the notifications, update them, delete the old ones.
-func Process() {
+func Process(dt float32) {
 	deleted := 0
 	for i := range notifications {
 		j := i - deleted
-		notifications[j].Frames--
-		if notifications[j].Frames <= 0 {
+		notifications[j].Duration -= dt
+		if notifications[j].Duration <= 0 {
 			notifications = append(notifications[:j], notifications[j+1:]...)
 			deleted++
 		}
@@ -107,7 +110,7 @@ func Update(id xid.ID, severity Severity, message string) {
 		return
 	}
 
-	n.Frames = 240
+	n.Duration = Medium
 	n.Message = message
 	n.Severity = severity
 }

@@ -29,7 +29,7 @@ func runLoop(vid *video.Video) {
 		currTime = time.Now()
 		dt := float32(currTime.Sub(prevTime)) / 1000000000
 		glfw.PollEvents()
-		ntf.Process()
+		ntf.Process(dt)
 		if !state.Global.MenuActive {
 			if state.Global.CoreRunning {
 				state.Global.Core.Run()
