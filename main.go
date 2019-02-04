@@ -24,9 +24,10 @@ func init() {
 }
 
 func runLoop(vid *video.Video) {
-	var t time.Time
+	var currTime, prevTime time.Time
 	for !vid.Window.ShouldClose() {
-		dt := float32(time.Since(t)) / 1000000
+		currTime = time.Now()
+		dt := float32(currTime.Sub(prevTime)) / 1000000000
 		glfw.PollEvents()
 		ntf.Process()
 		if !state.Global.MenuActive {
@@ -50,7 +51,7 @@ func runLoop(vid *video.Video) {
 		menu.RenderNotifications(dt)
 		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
-		t = time.Now()
+		prevTime = currTime
 	}
 }
 
