@@ -91,6 +91,7 @@ matrix:
         - golint -set_exit_status $(go list ./...)
         - go build -v -ldflags '-H=windowsgui'
         - depends.exe -oc:deps.csv ./ludo.exe
+        - sleep 15s
         - cat deps.csv
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then choco install go-msi wixtoolset; fi
