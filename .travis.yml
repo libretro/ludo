@@ -75,7 +75,7 @@ matrix:
     - name: Windows
       os: windows
       before_install:
-        - choco install make
+        - choco install make dependencywalker
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
@@ -90,6 +90,8 @@ matrix:
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v -ldflags '-H=windowsgui'
+        - depends.exe -oc:deps.csv ./ludo.exe
+        - cat deps.csv
       before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then choco install go-msi wixtoolset; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then export PATH="$PATH;$WIX/bin"; fi
