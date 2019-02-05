@@ -77,6 +77,7 @@ dmg: empty.dmg $(APP).app
 # For Windows
 zip: ludo $(DLLS)
 	mkdir -p $(BUNDLENAME)/
+	./rcedit-x64 ludo.exe --set-icon assets/icon.ico
 	cp ludo $(BUNDLENAME)/
 	cp -r database $(BUNDLENAME)/
 	cp -r assets $(BUNDLENAME)/
