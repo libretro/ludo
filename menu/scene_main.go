@@ -64,6 +64,7 @@ func buildMainMenu() Scene {
 							ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 							return
 						}
+						menu.WarpToQuickMenu()
 						state.Global.MenuActive = false
 					}, nil))
 			} else {

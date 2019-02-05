@@ -329,8 +329,9 @@ func fastForwardTweens() {
 }
 
 // WarpToQuickMenu loads the contextual menu for games that are launched from
-// the command line interface.
+// the command line interface or from 'Load Game'.
 func (menu *Menu) WarpToQuickMenu() {
+	menu.scroll = 0
 	menu.stack = []Scene{}
 	menu.stack = append(menu.stack, buildTabs())
 	menu.stack[0].segueNext()
