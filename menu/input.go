@@ -12,29 +12,55 @@ func Update(dt float32) {
 	currentScene.update(dt)
 }
 
+var downPressed, upPressed, downDelay, upDelay float32
+
+// Used to speed up the scrolling when up or down are hold by reducing the
+// input cooldown delay accordingly
+func scrollSpeed(pressedSeconds float32) float32 {
+	delay := 0.15 - pressedSeconds/50
+	if delay < 0.001 {
+		return 0.01
+	}
+	return delay
+}
+
 func genericInput(list *entry, dt float32) {
 	menu.inputCooldown -= dt
 	if menu.inputCooldown < 0 {
 		menu.inputCooldown = 0
 	}
 
-	if input.NewState[0][libretro.DeviceIDJoypadDown] && menu.inputCooldown == 0 {
-		list.ptr++
-		if list.ptr >= len(list.children) {
-			list.ptr = 0
+	// Down
+	if input.NewState[0][libretro.DeviceIDJoypadDown] {
+		if menu.inputCooldown == 0 {
+			list.ptr++
+			if list.ptr >= len(list.children) {
+				list.ptr = 0
+			}
+			genericAnimate(list)
+			menu.inputCooldown = downDelay
 		}
-		genericAnimate(list)
-		menu.inputCooldown = 0.15
+		downPressed += dt
+	} else {
+		downPressed = 0
 	}
+	downDelay = scrollSpeed(downPressed)
 
-	if input.NewState[0][libretro.DeviceIDJoypadUp] && menu.inputCooldown == 0 {
-		list.ptr--
-		if list.ptr < 0 {
-			list.ptr = len(list.children) - 1
+	// Up
+	if input.NewState[0][libretro.DeviceIDJoypadUp] {
+		if menu.inputCooldown == 0 {
+			list.ptr--
+			if list.ptr < 0 {
+				list.ptr = len(list.children) - 1
+			}
+			genericAnimate(list)
+			menu.inputCooldown = upDelay
 		}
-		genericAnimate(list)
-		menu.inputCooldown = 0.15
+		upPressed += dt
+	} else {
+		upPressed = 0
 	}
+	upDelay = scrollSpeed(upPressed)
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
