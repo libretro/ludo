@@ -2,6 +2,7 @@ package menu
 
 import (
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -66,7 +67,7 @@ func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 		return
 	}
 	if _, err := os.Stat(corePath); os.IsNotExist(err) {
-		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found.")
+		ntf.DisplayAndLog(ntf.Error, "Menu", "Core %s not found.", filepath.Base(corePath))
 		return
 	}
 	if state.Global.CorePath != corePath {
