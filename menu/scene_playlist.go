@@ -97,18 +97,24 @@ func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 func (s *screenPlaylist) Entry() *entry {
 	return &s.entry
 }
+
 func (s *screenPlaylist) segueMount() {
 	genericSegueMount(&s.entry)
 }
+
 func (s *screenPlaylist) segueNext() {
 	genericSegueNext(&s.entry)
 }
+
 func (s *screenPlaylist) segueBack() {
 	genericAnimate(&s.entry)
 }
+
 func (s *screenPlaylist) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
+
+// Override rendering
 func (s *screenPlaylist) render() {
 	list := &s.entry
 
