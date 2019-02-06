@@ -60,7 +60,7 @@ func scrubIllegalChars(str string) string {
 	return str
 }
 
-func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32) {
+func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, color video.Color) {
 	folderPath := filepath.Join(settings.Current.ThumbnailsDirectory, system, "Named_Snaps")
 	path := filepath.Join(folderPath, gameName+".png")
 	legalName := scrubIllegalChars(gameName)
@@ -78,6 +78,6 @@ func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scal
 	vid.DrawImage(
 		list.children[i].thumbnail,
 		x, y, w, h, scale,
-		video.Color{R: 1, G: 1, B: 1, A: 1},
+		color,
 	)
 }

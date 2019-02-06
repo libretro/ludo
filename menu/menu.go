@@ -140,7 +140,7 @@ func genericSegueMount(list *entry) {
 			e.yp = 0.5 + 0.3
 			e.labelAlpha = 0
 			e.iconAlpha = 0
-			e.tagAlpha = 1
+			e.tagAlpha = 0
 			e.scale = 1.5
 		} else if i < list.ptr {
 			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
@@ -167,6 +167,11 @@ func genericAnimate(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
 
+		// performance improvement
+		// if math.Abs(float64(i-list.ptr)) > 6 && i > 6 && i < len(list.children)-6 {
+		// 	continue
+		// }
+
 		var yp, labelAlpha, iconAlpha, tagAlpha, scale float32
 		if i == list.ptr {
 			yp = 0.5
@@ -176,14 +181,14 @@ func genericAnimate(list *entry) {
 			scale = 1.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.75
-			iconAlpha = 0.75
+			labelAlpha = 1
+			iconAlpha = 1
 			tagAlpha = 0
 			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.75
-			iconAlpha = 0.75
+			labelAlpha = 1
+			iconAlpha = 1
 			tagAlpha = 0
 			scale = 0.5
 		}

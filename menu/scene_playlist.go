@@ -133,19 +133,19 @@ func (s *screenPlaylist) render() {
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio, 128*menu.ratio,
-				e.scale,
+				e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
 			)
 			vid.DrawBorder(
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
-				video.Color{R: color.R, G: color.G, B: color.B, A: 0.75})
+				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
 			if e.path == state.Global.GamePath {
 				vid.DrawImage(menu.icons["resume"],
 					680*menu.ratio-64*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 					128*menu.ratio, 128*menu.ratio,
-					e.scale, video.Color{R: 1, G: 1, B: 1, A: 1})
+					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
