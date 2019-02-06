@@ -16,6 +16,7 @@ before_script:
   - go get github.com/golang/lint/golint
   - go get honnef.co/go/tools/cmd/staticcheck
   - go get github.com/fzipp/gocyclo
+  - export PATH=$HOME/go/bin:$PATH
 
 matrix:
   include:
@@ -61,7 +62,6 @@ matrix:
         - brew update
         - brew install openal-soft
       script:
-        - export PATH=$HOME/go/bin:$PATH
         - go get -v ./...
         - go test -v -race ./...
         - go vet ./...
