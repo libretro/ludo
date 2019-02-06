@@ -2,6 +2,7 @@ package menu
 
 import (
 	"os/user"
+	"path/filepath"
 
 	"github.com/libretro/ludo/settings"
 
@@ -44,7 +45,7 @@ func buildMainMenu() Scene {
 					if err != nil {
 						ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 					}
-					ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded.")
+					ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded: %s", filepath.Base(path))
 				},
 				nil,
 			))

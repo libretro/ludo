@@ -51,7 +51,6 @@ func Test_coreLoad(t *testing.T) {
 [Core]: Valid extensions: bin|vec
 [Core]: Need fullpath: false
 [Core]: Block extract: false
-[Core]: Core loaded: VecX
 `
 		if got != want {
 			t.Errorf("got = %v, want %v", got, want)
