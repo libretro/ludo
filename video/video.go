@@ -317,10 +317,9 @@ func (video *Video) Render() {
 		gl.ClearColor(1, 1, 1, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		return
-	} else {
-		gl.ClearColor(0, 0, 0, 1)
-		gl.Clear(gl.COLOR_BUFFER_BIT)
 	}
+	gl.ClearColor(0, 0, 0, 1)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	fbw, fbh := video.Window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(fbw), int32(fbh))
