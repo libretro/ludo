@@ -16,7 +16,7 @@ before_script:
   - go get github.com/golang/lint/golint
   - go get honnef.co/go/tools/cmd/staticcheck
   - go get github.com/fzipp/gocyclo
-  - export PATH=$HOME/go/bin:$PATH
+  - export PATH=$GOPATH:$PATH
 
 matrix:
   include:
