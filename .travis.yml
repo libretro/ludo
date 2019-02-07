@@ -78,6 +78,9 @@ matrix:
         - nuget install WiX
         - go get github.com/mh-cbon/go-msi
         - export PATH="$PATH;/c/Program Files (x86)/WiX Toolset v3.11/bin"
+        - export PATH="$PATH;/c/Users/travis/gopath/src/github.com/libretro/ludo/"
+        - ls -la .
+        - ls -la "/c/Program Files (x86)/"
         - ls -la "/c/Program Files (x86)/WiX Toolset v3.11/"
         - ls -la "/c/Program Files (x86)/WiX Toolset v3.11/bin"
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
