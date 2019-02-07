@@ -92,7 +92,7 @@ matrix:
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v -ldflags '-H=windowsgui'
-        - OS="Windows" ARCH=x86_64 VERSION=0.3.2 make msi
+        - OS="Windows" ARCH=x86_64 VERSION=0.3.3 make msi
         - if [[ -n "$TRAVIS_TAG" ]]; then choco install go-msi; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then export PATH="$PATH;$WIX/bin"; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make msi; fi
@@ -106,7 +106,7 @@ deploy:
     - Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz
     - Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz
     - Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
-    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip
+    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.msi
   on:
     repo: libretro/ludo
     tags: true
