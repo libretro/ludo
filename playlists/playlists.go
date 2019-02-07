@@ -1,3 +1,6 @@
+// Package playlists is the playlist manager of Ludo. In Ludo, playlists are
+// CSV files containing the ROM path, name, and CRC32 checksum.
+// Playlists are kept into memory for fast lookup of entries and deduplication.
 package playlists
 
 import (
@@ -19,7 +22,6 @@ type PlaylistEntry struct {
 	Path  string // Absolute path of the game on the filesystem
 	Name  string // Human readable name of the game, comes from the RDB
 	CRC32 uint32 // Checksum of the game, used for deduplication
-	LPL   string
 }
 
 // Playlist is a list of games, result of scanning for games on the filesystem.
@@ -62,7 +64,6 @@ func Load() {
 					entry.CRC32 = uint32(u64)
 				}
 			}
-			entry.LPL = line[3]
 
 			playlist = append(playlist, entry)
 		}
