@@ -58,8 +58,8 @@ func (s *screenCoreOptions) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenCoreOptions) update() {
-	genericInput(&s.entry)
+func (s *screenCoreOptions) update(dt float32) {
+	genericInput(&s.entry, dt)
 }
 
 func (s *screenCoreOptions) render() {

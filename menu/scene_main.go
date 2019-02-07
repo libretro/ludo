@@ -2,6 +2,7 @@ package menu
 
 import (
 	"os/user"
+	"path/filepath"
 
 	"github.com/libretro/ludo/settings"
 
@@ -44,7 +45,7 @@ func buildMainMenu() Scene {
 					if err != nil {
 						ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 					}
-					ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded.")
+					ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded: %s", filepath.Base(path))
 				},
 				nil,
 			))
@@ -64,6 +65,7 @@ func buildMainMenu() Scene {
 							ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 							return
 						}
+						menu.WarpToQuickMenu()
 						state.Global.MenuActive = false
 					}, nil))
 			} else {
@@ -118,8 +120,8 @@ func (main *screenMain) segueNext() {
 	genericSegueNext(&main.entry)
 }
 
-func (main *screenMain) update() {
-	genericInput(&main.entry)
+func (main *screenMain) update(dt float32) {
+	genericInput(&main.entry, dt)
 }
 
 func (main *screenMain) render() {

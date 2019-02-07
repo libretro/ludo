@@ -313,11 +313,12 @@ func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
 
 // Render the current frame
 func (video *Video) Render() {
-	if state.Global.CoreRunning {
-		gl.ClearColor(0, 0, 0, 1)
-	} else {
+	if !state.Global.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		return
 	}
+	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	fbw, fbh := video.Window.GetFramebufferSize()

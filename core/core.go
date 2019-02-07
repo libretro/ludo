@@ -85,8 +85,6 @@ func Load(sofile string) error {
 		}
 	}
 
-	log.Println("[Core]: Core loaded: " + si.LibraryName)
-
 	return nil
 }
 

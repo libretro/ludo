@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"runtime"
+	"time"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/ludo/core"
@@ -23,9 +24,12 @@ func init() {
 }
 
 func runLoop(vid *video.Video) {
+	var currTime, prevTime time.Time
 	for !vid.Window.ShouldClose() {
+		currTime = time.Now()
+		dt := float32(currTime.Sub(prevTime)) / 1000000000
 		glfw.PollEvents()
-		ntf.Process()
+		ntf.Process(dt)
 		if !state.Global.MenuActive {
 			if state.Global.CoreRunning {
 				state.Global.Core.Run()
@@ -39,14 +43,15 @@ func runLoop(vid *video.Video) {
 			vid.Render()
 		} else {
 			input.Poll()
-			menu.Update()
+			menu.Update(dt)
 			vid.Render()
-			menu.Render()
+			menu.Render(dt)
 		}
 		input.ProcessActions()
 		menu.RenderNotifications()
 		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
+		prevTime = currTime
 	}
 }
 
@@ -84,7 +89,7 @@ func main() {
 		log.Println("Can't load game database:", err)
 	}
 
-	playlists.LoadPlaylists()
+	playlists.Load()
 
 	vid := video.Init(settings.Current.VideoFullscreen, settings.Current.GLVersion)
 

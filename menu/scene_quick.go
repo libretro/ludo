@@ -97,8 +97,8 @@ func (s *screenQuick) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenQuick) update() {
-	genericInput(&s.entry)
+func (s *screenQuick) update(dt float32) {
+	genericInput(&s.entry, dt)
 }
 
 func (s *screenQuick) render() {
