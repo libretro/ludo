@@ -78,3 +78,8 @@ func Contains(lplpath, path string, CRC32 uint32) bool {
 	}
 	return false
 }
+
+// Count is a quick way of knowing how many games are in a playlist
+func Count(path string) int {
+	return len(Playlists[path])
+}

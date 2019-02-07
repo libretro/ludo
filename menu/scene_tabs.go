@@ -2,7 +2,6 @@ package menu
 
 import (
 	"fmt"
-	"os"
 	"os/user"
 	"regexp"
 	"sort"
@@ -133,7 +132,7 @@ func getPlaylists() []entry {
 	for _, path := range keys {
 		path := path
 		filename := utils.Filename(path)
-		count := playlistCount(path)
+		count := playlists.Count(path)
 		pls = append(pls, entry{
 			label:    playlistShortName(filename),
 			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
@@ -157,16 +156,6 @@ func playlistShortName(in string) string {
 	out = strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
 	out = strings.Replace(out, "PC Engine", "PCE", -1)
 	return out
-}
-
-// Quick way of knowing how many games are in a playlist
-func playlistCount(path string) int {
-	file, _ := os.Open(path)
-	c, _ := utils.LinesInFile(file)
-	if c > 0 {
-		return c
-	}
-	return 0
 }
 
 func (tabs *screenTabs) Entry() *entry {
