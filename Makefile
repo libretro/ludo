@@ -93,7 +93,7 @@ tar: ludo $(SOBJS)
 	cp -r cores $(BUNDLENAME)/
 	tar -zcf $(BUNDLENAME).tar.gz $(BUNDLENAME)\
 
-msi: ludo.exe cores
+msi: ludo.exe $(DLLS)
 	go-msi.exe make --msi $(BUNDLENAME).msi --version=$(VERSION) --arch=x64
 
 clean:
