@@ -45,19 +45,17 @@ func ScanDir(dir string, doneCb func()) {
 		for game := range scannedGames {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
 			lplpath := settings.Current.PlaylistsDirectory + "/" + game.System + ".lpl"
-			if playlists.ExistsInPlaylist(lplpath, game.Path, game.CRC32) {
+			if playlists.Contains(lplpath, game.Path, game.CRC32) {
 				continue
 			}
 			i++
 			lpl, _ := os.OpenFile(lplpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-			lpl.WriteString(game.Path + "\n")
-			lpl.WriteString(game.Name + "\n")
-			lpl.WriteString("DETECT\n")
-			lpl.WriteString("DETECT\n")
+			lpl.WriteString(game.Path + "\t")
+			lpl.WriteString(game.Name + "\t")
 			if uint64(game.CRC32) > 0 {
-				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\n")
+				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\t")
 			} else {
-				lpl.WriteString("DETECT\n")
+				lpl.WriteString("DETECT\t")
 			}
 			lpl.WriteString(game.System + ".lpl\n")
 			lpl.Close()

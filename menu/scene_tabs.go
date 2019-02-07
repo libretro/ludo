@@ -120,7 +120,7 @@ func refreshTabs() {
 // a list of menu entries. It is used in the tabs, but could be used somewhere
 // else too.
 func getPlaylists() []entry {
-	playlists.LoadPlaylists()
+	playlists.Load()
 
 	// To store the keys in slice in sorted order
 	var keys []string
@@ -164,7 +164,7 @@ func playlistCount(path string) int {
 	file, _ := os.Open(path)
 	c, _ := utils.LinesInFile(file)
 	if c > 0 {
-		return c / 6
+		return c
 	}
 	return 0
 }

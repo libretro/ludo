@@ -2,6 +2,9 @@ package playlists
 
 import (
 	"bufio"
+	"encoding/csv"
+	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -24,9 +27,9 @@ type Playlist []PlaylistEntry
 // Playlists is a map of playlists organized per system.
 var Playlists = map[string]Playlist{}
 
-// LoadPlaylists loops over lpl files in ~/.ludo/playlists and loads them into
+// Load loops over lpl files in the playlists directory and loads them into
 // memory.
-func LoadPlaylists() {
+func Load() {
 	paths, _ := filepath.Glob(settings.Current.PlaylistsDirectory + "/*.lpl")
 
 	Playlists = map[string]Playlist{}
@@ -35,25 +38,30 @@ func LoadPlaylists() {
 
 		file, _ := os.Open(path)
 		defer file.Close()
-		scanner := bufio.NewScanner(file)
+		reader := csv.NewReader(bufio.NewReader(file))
+		reader.Comma = '\t'
 
 		playlist := Playlist{}
 		for {
-			more := scanner.Scan()
-			if !more {
+			line, err := reader.Read()
+			if err == io.EOF {
 				break
+			} else if err != nil {
+				log.Println(err)
+				continue
 			}
 			var entry PlaylistEntry
-			entry.Path = scanner.Text() // path
-			scanner.Scan()
-			entry.Name = scanner.Text()
-			scanner.Scan() // unused
-			scanner.Scan() // unused
-			scanner.Scan() // CRC
-			u64, _ := strconv.ParseUint(strings.Replace(scanner.Text(), "|crc", "", -1), 16, 32)
-			entry.CRC32 = uint32(u64)
-			scanner.Scan()             // LPL
-			entry.LPL = scanner.Text() // LPL
+			entry.Path = line[0]
+			entry.Name = line[1]
+			if line[2] != "DETECT" {
+				u64, err := strconv.ParseUint(strings.Replace(line[2], "|crc", "", -1), 16, 64)
+				if err != nil {
+					log.Println(err)
+				} else {
+					entry.CRC32 = uint32(u64)
+				}
+			}
+			entry.LPL = line[3]
 
 			playlist = append(playlist, entry)
 		}
@@ -61,8 +69,8 @@ func LoadPlaylists() {
 	}
 }
 
-// ExistsInPlaylist checks if a game is already in a playlist.
-func ExistsInPlaylist(lplpath, path string, CRC32 uint32) bool {
+// Contains checks if a game is already in a playlist.
+func Contains(lplpath, path string, CRC32 uint32) bool {
 	for _, entry := range Playlists[lplpath] {
 		// Be careful, sometimes we don't have a CRC32
 		if entry.Path == path || (CRC32 != 0 && entry.CRC32 == CRC32) {
