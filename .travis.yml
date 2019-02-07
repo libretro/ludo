@@ -76,7 +76,7 @@ matrix:
         - choco install make
         - choco install nuget.commandline
         - nuget install WiX
-        - choco install go-msi
+        - go get github.com/mh-cbon/go-msi
         - export PATH="$PATH;/c/Program Files (x86)/WiX Toolset v3.11/bin"
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
