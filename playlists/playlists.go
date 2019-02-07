@@ -7,7 +7,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/libretro/ludo/settings"
 )
@@ -82,4 +84,17 @@ func Contains(lplpath, path string, CRC32 uint32) bool {
 // Count is a quick way of knowing how many games are in a playlist
 func Count(path string) int {
 	return len(Playlists[path])
+}
+
+// ShortName shortens the name of some game systems that are too long to be
+// displayed in the menu
+func ShortName(in string) string {
+	if len(in) < 20 {
+		return in
+	}
+	r, _ := regexp.Compile(`(.*?) - (.*)`)
+	out := r.ReplaceAllString(in, "$2")
+	out = strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
+	out = strings.Replace(out, "PC Engine", "PCE", -1)
+	return out
 }

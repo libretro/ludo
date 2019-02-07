@@ -3,9 +3,7 @@ package menu
 import (
 	"fmt"
 	"os/user"
-	"regexp"
 	"sort"
-	"strings"
 
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
@@ -134,7 +132,7 @@ func getPlaylists() []entry {
 		filename := utils.Filename(path)
 		count := playlists.Count(path)
 		pls = append(pls, entry{
-			label:    playlistShortName(filename),
+			label:    playlists.ShortName(filename),
 			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
 			icon:     filename,
 			callbackOK: func() {
@@ -143,19 +141,6 @@ func getPlaylists() []entry {
 		})
 	}
 	return pls
-}
-
-// playlistShortName shortens the name of some game systems that are too long
-// to be displayed in the menu
-func playlistShortName(in string) string {
-	if len(in) < 20 {
-		return in
-	}
-	r, _ := regexp.Compile(`(.*?) - (.*)`)
-	out := r.ReplaceAllString(in, "$2")
-	out = strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
-	out = strings.Replace(out, "PC Engine", "PCE", -1)
-	return out
 }
 
 func (tabs *screenTabs) Entry() *entry {
