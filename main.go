@@ -89,7 +89,7 @@ func main() {
 		log.Println("Can't load game database:", err)
 	}
 
-	playlists.LoadPlaylists()
+	playlists.Load()
 
 	vid := video.Init(settings.Current.VideoFullscreen, settings.Current.GLVersion)
 

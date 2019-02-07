@@ -2,11 +2,8 @@ package menu
 
 import (
 	"fmt"
-	"os"
 	"os/user"
-	"regexp"
 	"sort"
-	"strings"
 
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
@@ -120,7 +117,7 @@ func refreshTabs() {
 // a list of menu entries. It is used in the tabs, but could be used somewhere
 // else too.
 func getPlaylists() []entry {
-	playlists.LoadPlaylists()
+	playlists.Load()
 
 	// To store the keys in slice in sorted order
 	var keys []string
@@ -133,9 +130,9 @@ func getPlaylists() []entry {
 	for _, path := range keys {
 		path := path
 		filename := utils.Filename(path)
-		count := playlistCount(path)
+		count := playlists.Count(path)
 		pls = append(pls, entry{
-			label:    playlistShortName(filename),
+			label:    playlists.ShortName(filename),
 			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
 			icon:     filename,
 			callbackOK: func() {
@@ -144,29 +141,6 @@ func getPlaylists() []entry {
 		})
 	}
 	return pls
-}
-
-// playlistShortName shortens the name of some game systems that are too long
-// to be displayed in the menu
-func playlistShortName(in string) string {
-	if len(in) < 20 {
-		return in
-	}
-	r, _ := regexp.Compile(`(.*?) - (.*)`)
-	out := r.ReplaceAllString(in, "$2")
-	out = strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
-	out = strings.Replace(out, "PC Engine", "PCE", -1)
-	return out
-}
-
-// Quick way of knowing how many games are in a playlist
-func playlistCount(path string) int {
-	file, _ := os.Open(path)
-	c, _ := utils.LinesInFile(file)
-	if c > 0 {
-		return c / 6
-	}
-	return 0
 }
 
 func (tabs *screenTabs) Entry() *entry {
