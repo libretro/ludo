@@ -53,9 +53,9 @@ func ScanDir(dir string, doneCb func()) {
 			lpl.WriteString(game.Path + "\t")
 			lpl.WriteString(game.Name + "\t")
 			if uint64(game.CRC32) > 0 {
-				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\t")
+				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "\t")
 			} else {
-				lpl.WriteString("DETECT\t")
+				lpl.WriteString("\t")
 			}
 			lpl.WriteString(game.System + ".lpl\n")
 			lpl.Close()

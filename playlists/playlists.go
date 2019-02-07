@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/libretro/ludo/settings"
 )
@@ -53,8 +52,8 @@ func Load() {
 			var entry PlaylistEntry
 			entry.Path = line[0]
 			entry.Name = line[1]
-			if line[2] != "DETECT" {
-				u64, err := strconv.ParseUint(strings.Replace(line[2], "|crc", "", -1), 16, 64)
+			if line[2] != "" {
+				u64, err := strconv.ParseUint(line[2], 16, 64)
 				if err != nil {
 					log.Println(err)
 				} else {
