@@ -77,10 +77,7 @@ matrix:
         - choco install nuget.commandline
         - nuget install WiX
         - go get github.com/mh-cbon/go-msi
-        - export PATH="$PATH;/c/Users/travis/gopath/src/github.com/libretro/ludo/WiX.3.11.1/bin"
-        - ls -la "./WiX.3.11.1"
-        - ls -la "./WiX.3.11.1/build"
-        - ls -la "./WiX.3.11.1/tools"
+        - export PATH="$PATH;/c/Users/travis/gopath/src/github.com/libretro/ludo/WiX.3.11.1/tools"
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
