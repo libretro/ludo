@@ -31,6 +31,9 @@ endif
 ludo:
 	go build
 
+ludo.exe:
+	go build -ldflags '-H=windowsgui'
+
 cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
 	mkdir -p cores
 	wget $(BUILDBOTURL)/$(@F).zip -O $@.zip
@@ -75,10 +78,10 @@ dmg: empty.dmg $(APP).app
 	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
 
 # For Windows
-zip: ludo $(DLLS)
+zip: ludo.exe $(DLLS)
 	mkdir -p $(BUNDLENAME)/
 	./rcedit-x64 ludo.exe --set-icon assets/icon.ico
-	cp ludo $(BUNDLENAME)/
+	cp ludo.exe $(BUNDLENAME)/
 	cp -r database $(BUNDLENAME)/
 	cp -r assets $(BUNDLENAME)/
 	cp -r cores $(BUNDLENAME)/
