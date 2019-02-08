@@ -43,7 +43,7 @@ func ScanDir(dir string, doneCb func()) {
 	go func() {
 		for game := range scannedGames {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
-			lplpath := settings.Current.PlaylistsDirectory + "/" + game.System + ".lpl"
+			lplpath := settings.Current.PlaylistsDirectory + "/" + game.System + ".csv"
 			if playlists.Contains(lplpath, game.Path, game.CRC32) {
 				continue
 			}

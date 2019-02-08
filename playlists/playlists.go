@@ -33,7 +33,7 @@ var Playlists = map[string]Playlist{}
 // Load loops over lpl files in the playlists directory and loads them into
 // memory.
 func Load() {
-	paths, _ := filepath.Glob(settings.Current.PlaylistsDirectory + "/*.lpl")
+	paths, _ := filepath.Glob(settings.Current.PlaylistsDirectory + "/*.csv")
 
 	Playlists = map[string]Playlist{}
 	for _, path := range paths {
