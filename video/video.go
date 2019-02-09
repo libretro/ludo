@@ -284,11 +284,11 @@ func (video *Video) gameFrameQuad(fbWidth int, fbHeight int) (float32, float32, 
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
-	w := fbw
-	h := fbw / float32(video.Geom.AspectRatio)
-	if h > fbh {
-		w = fbh * float32(video.Geom.AspectRatio)
-		h = fbh
+	h := fbh
+	w := fbh * float32(video.Geom.AspectRatio)
+	if w > fbw {
+		h = fbw / float32(video.Geom.AspectRatio)
+		w = fbw
 	}
 
 	// Place the content in the middle of the window.
