@@ -44,13 +44,15 @@ func (video *Video) TakeScreenshot() {
 	_, fbh := video.Window.GetFramebufferSize()
 	state.Global.MenuActive = false
 	video.renderScreenshot()
-	img := image.NewNRGBA(image.Rect(0, 0, video.Geom.BaseWidth, video.Geom.BaseHeight))
-	gl.ReadPixels(0, int32(fbh-video.Geom.BaseHeight), int32(video.Geom.BaseWidth), int32(video.Geom.BaseHeight), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+	img := image.NewRGBA(image.Rect(0, 0, video.Geom.BaseWidth, video.Geom.BaseHeight))
+	gl.ReadPixels(
+		0, int32(fbh-video.Geom.BaseHeight),
+		int32(video.Geom.BaseWidth), int32(video.Geom.BaseHeight),
+		gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 	os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
 	path := filepath.Join(settings.Current.ScreenshotsDirectory, screenshotName())
 	fd, _ := os.Create(path)
 	flipped := imaging.FlipV(img)
-	//resized := imaging.Resize(flipped, video.Geom.BaseWidth, video.Geom.BaseHeight, imaging.NearestNeighbor)
 	png.Encode(fd, flipped)
 	state.Global.MenuActive = true
 }
