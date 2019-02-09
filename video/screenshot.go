@@ -1,7 +1,6 @@
 package video
 
 import (
-	"fmt"
 	"image"
 	"image/png"
 	"os"
@@ -23,20 +22,35 @@ func screenshotName() string {
 	return name + "@" + date + ".png"
 }
 
+func (video *Video) renderScreenshot() {
+	va := video.vertexArray(0, 0, float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight), 1.0)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+
+	gl.UseProgram(video.program)
+	video.updateMaskUniform()
+	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), 1, 1, 1, 1)
+
+	gl.BindVertexArray(video.vao)
+
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+}
+
 // TakeScreenshot captures the ouput of video.Render and writes it to a file
 func (video *Video) TakeScreenshot() {
+	_, fbh := video.Window.GetFramebufferSize()
 	state.Global.MenuActive = false
-	video.Render()
-	fbWidth, fbHeight := video.Window.GetFramebufferSize()
-	x, y, w, h := video.gameFrameQuad(fbWidth, fbHeight)
-	fmt.Println(x, y, w, h)
-	img := image.NewNRGBA(image.Rect(0, 0, int(w), int(h)))
-	gl.ReadPixels(int32(x), int32(y), int32(w), int32(h), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+	video.renderScreenshot()
+	img := image.NewNRGBA(image.Rect(0, 0, video.Geom.BaseWidth, video.Geom.BaseHeight))
+	gl.ReadPixels(0, int32(fbh-video.Geom.BaseHeight), int32(video.Geom.BaseWidth), int32(video.Geom.BaseHeight), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 	os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
 	path := filepath.Join(settings.Current.ScreenshotsDirectory, screenshotName())
 	fd, _ := os.Create(path)
 	flipped := imaging.FlipV(img)
-	resized := imaging.Resize(flipped, video.Geom.BaseWidth, video.Geom.BaseHeight, imaging.NearestNeighbor)
-	png.Encode(fd, resized)
+	//resized := imaging.Resize(flipped, video.Geom.BaseWidth, video.Geom.BaseHeight, imaging.NearestNeighbor)
+	png.Encode(fd, flipped)
 	state.Global.MenuActive = true
 }
