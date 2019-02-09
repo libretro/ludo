@@ -280,9 +280,7 @@ func (video *Video) updateMaskUniform() {
 	}
 }
 
-// CoreRatioViewport configures the vertex array to display the game at the center of the window
-// while preserving the original ascpect ratio of the game or core
-func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
+func (video *Video) gameFrameQuad(fbWidth int, fbHeight int) (float32, float32, float32, float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
@@ -297,16 +295,14 @@ func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
 	x := (fbw - w) / 2
 	y := (fbh - h) / 2
 
-	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, fbh)
+	return x, y, w, h
+}
 
-	va := []float32{
-		//  X, Y, U, V
-		x1/fbw*2 - 1, y1/fbh*2 - 1, 0, 1, // left-bottom
-		x2/fbw*2 - 1, y2/fbh*2 - 1, 0, 0, // left-top
-		x3/fbw*2 - 1, y3/fbh*2 - 1, 1, 1, // right-bottom
-		x4/fbw*2 - 1, y4/fbh*2 - 1, 1, 0, // right-top
-	}
-
+// CoreRatioViewport configures the vertex array to display the game at the center of the window
+// while preserving the original ascpect ratio of the game or core
+func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
+	x, y, w, h := video.gameFrameQuad(fbWidth, fbHeight)
+	va := video.vertexArray(x, y, w, h, 1.0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 }

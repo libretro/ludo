@@ -1,6 +1,7 @@
 package video
 
 import (
+	"fmt"
 	"image"
 	"image/png"
 	"os"
@@ -26,12 +27,16 @@ func screenshotName() string {
 func (video *Video) TakeScreenshot() {
 	state.Global.MenuActive = false
 	video.Render()
-	fbw, fbh := video.Window.GetFramebufferSize()
-	img := image.NewNRGBA(image.Rect(0, 0, fbw, fbh))
-	gl.ReadPixels(0, 0, int32(fbw), int32(fbh), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+	fbWidth, fbHeight := video.Window.GetFramebufferSize()
+	x, y, w, h := video.gameFrameQuad(fbWidth, fbHeight)
+	fmt.Println(x, y, w, h)
+	img := image.NewNRGBA(image.Rect(0, 0, int(w), int(h)))
+	gl.ReadPixels(int32(x), int32(y), int32(w), int32(h), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 	os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
 	path := filepath.Join(settings.Current.ScreenshotsDirectory, screenshotName())
 	fd, _ := os.Create(path)
-	png.Encode(fd, imaging.FlipV(img))
+	flipped := imaging.FlipV(img)
+	resized := imaging.Resize(flipped, video.Geom.BaseWidth, video.Geom.BaseHeight, imaging.NearestNeighbor)
+	png.Encode(fd, resized)
 	state.Global.MenuActive = true
 }
