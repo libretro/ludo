@@ -23,6 +23,9 @@ func screenshotName() string {
 }
 
 func (video *Video) renderScreenshot() {
+	avi := state.Global.Core.GetSystemAVInfo()
+	video.Geom = avi.Geometry
+
 	va := video.vertexArray(0, 0, float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight), 1.0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)

@@ -312,6 +312,9 @@ func (video *Video) Render() {
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
+	avi := state.Global.Core.GetSystemAVInfo()
+	video.Geom = avi.Geometry
+
 	fbw, fbh := video.Window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(fbw), int32(fbh))
 	video.CoreRatioViewport(fbw, fbh)
