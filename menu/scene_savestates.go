@@ -25,7 +25,8 @@ func buildSavestates() Scene {
 		label: "Save State",
 		icon:  "savestate",
 		callbackOK: func() {
-			err := savestates.Save(vid)
+			vid.TakeScreenshot()
+			err := savestates.Save()
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			} else {
