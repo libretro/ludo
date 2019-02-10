@@ -10,6 +10,7 @@ import (
 
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/video"
 )
 
 func name() string {
@@ -21,7 +22,9 @@ func name() string {
 }
 
 // Save the current state to the filesystem
-func Save() error {
+func Save(vid *video.Video) error {
+	vid.TakeScreenshot()
+
 	s := state.Global.Core.SerializeSize()
 	bytes, err := state.Global.Core.Serialize(s)
 	if err != nil {

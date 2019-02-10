@@ -81,3 +81,17 @@ func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scal
 		color,
 	)
 }
+
+func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale float32, color video.Color) {
+	if list.children[i].thumbnail == 0 {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			list.children[i].thumbnail = video.NewImage(path)
+		}
+	}
+
+	vid.DrawImage(
+		list.children[i].thumbnail,
+		x, y, w, h, scale,
+		color,
+	)
+}
