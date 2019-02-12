@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -15,7 +16,8 @@ func name() string {
 	name := filepath.Base(state.Global.GamePath)
 	ext := filepath.Ext(name)
 	name = name[0 : len(name)-len(ext)]
-	return name + ".state"
+	date := time.Now().Format("2006-01-02-15-04-05")
+	return name + "@" + date + ".state"
 }
 
 // Save the current state to the filesystem
@@ -34,9 +36,8 @@ func Save() error {
 }
 
 // Load the state from the filesystem
-func Load() error {
+func Load(path string) error {
 	s := state.Global.Core.SerializeSize()
-	path := filepath.Join(settings.Current.SavestatesDirectory, name())
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
