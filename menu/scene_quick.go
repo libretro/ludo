@@ -32,7 +32,7 @@ func buildQuickMenu() Scene {
 
 	list.children = append(list.children, entry{
 		label: "Savestates",
-		icon:  "savestate",
+		icon:  "states",
 		callbackOK: func() {
 			list.segueNext()
 			menu.stack = append(menu.stack, buildSavestates())
