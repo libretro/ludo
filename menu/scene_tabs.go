@@ -129,7 +129,7 @@ func getPlaylists() []entry {
 	var pls []entry
 	for _, path := range keys {
 		path := path
-		filename := utils.Filename(path)
+		filename := utils.FileName(path)
 		count := playlists.Count(path)
 		pls = append(pls, entry{
 			label:    playlists.ShortName(filename),

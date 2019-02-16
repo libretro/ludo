@@ -57,7 +57,7 @@ func (o *Options) Save() error {
 		return err
 	}
 
-	name := utils.Filename(state.Global.CorePath)
+	name := utils.FileName(state.Global.CorePath)
 	f, err := os.Create(usr.HomeDir + "/.ludo/" + name + ".json")
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (o *Options) load() error {
 
 	usr, _ := user.Current()
 
-	name := utils.Filename(state.Global.CorePath)
+	name := utils.FileName(state.Global.CorePath)
 	b, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/" + name + ".json")
 	if err != nil {
 		return err

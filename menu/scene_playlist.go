@@ -21,7 +21,7 @@ type screenPlaylist struct {
 
 func buildPlaylist(path string) Scene {
 	var list screenPlaylist
-	list.label = utils.Filename(path)
+	list.label = utils.FileName(path)
 
 	for _, game := range playlists.Playlists[path] {
 		game := game // needed for callbackOK
@@ -31,7 +31,7 @@ func buildPlaylist(path string) Scene {
 			gameName:   game.Name,
 			path:       game.Path,
 			tags:       tags,
-			icon:       utils.Filename(path) + "-content",
+			icon:       utils.FileName(path) + "-content",
 			callbackOK: func() { loadEntry(&list, list.label, game.Path) },
 		})
 	}

@@ -25,8 +25,9 @@ func buildSavestates() Scene {
 		label: "Save State",
 		icon:  "savestate",
 		callbackOK: func() {
-			vid.TakeScreenshot()
-			err := savestates.Save()
+			name := utils.DatedName(state.Global.GamePath)
+			vid.TakeScreenshot(name)
+			err := savestates.Save(name)
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			} else {
@@ -37,12 +38,12 @@ func buildSavestates() Scene {
 		},
 	})
 
-	gameName := utils.Filename(state.Global.GamePath)
+	gameName := utils.FileName(state.Global.GamePath)
 	paths, _ := filepath.Glob(settings.Current.SavestatesDirectory + "/" + gameName + "@*.state")
 	sort.Sort(sort.Reverse(sort.StringSlice(paths)))
 	for _, path := range paths {
 		path := path
-		date := strings.Replace(utils.Filename(path), gameName+"@", "", 1)
+		date := strings.Replace(utils.FileName(path), gameName+"@", "", 1)
 		list.children = append(list.children, entry{
 			label: "Load " + date,
 			icon:  "loadstate",
@@ -105,7 +106,7 @@ func (s *screenSavestates) render() {
 		if e.labelAlpha > 0 {
 			drawSavestateThumbnail(
 				list, i,
-				filepath.Join(settings.Current.ScreenshotsDirectory, utils.Filename(e.path)+".png"),
+				filepath.Join(settings.Current.ScreenshotsDirectory, utils.FileName(e.path)+".png"),
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio, 128*menu.ratio,

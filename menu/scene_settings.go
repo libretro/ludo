@@ -37,7 +37,7 @@ func buildSettings() Scene {
 				icon:  "folder",
 				value: f.Value,
 				stringValue: func() string {
-					return "<" + utils.Filename(f.Value().(string)) + ">"
+					return "<" + utils.FileName(f.Value().(string)) + ">"
 				},
 				widget: widgets[f.Tag("widget")],
 				callbackOK: func() {

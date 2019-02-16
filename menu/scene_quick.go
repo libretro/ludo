@@ -3,6 +3,7 @@ package menu
 import (
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 )
 
 type screenQuick struct {
@@ -43,7 +44,8 @@ func buildQuickMenu() Scene {
 		label: "Take Screenshot",
 		icon:  "screenshot",
 		callbackOK: func() {
-			vid.TakeScreenshot()
+			name := utils.DatedName(state.Global.GamePath)
+			vid.TakeScreenshot(name)
 			ntf.DisplayAndLog(ntf.Success, "Menu", "Took a screenshot.")
 		},
 	})
