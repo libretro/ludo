@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 // StringInSlice check wether a string is contain in a string slice.
@@ -28,6 +29,14 @@ func Filename(path string) string {
 	ext := filepath.Ext(name)
 	name = name[0 : len(name)-len(ext)]
 	return name
+}
+
+// DatedName returns the name of a file with a date appended, without extension.
+// It is used for savestates and screenshot names.
+func DatedName(path string) string {
+	name := Filename(path)
+	date := time.Now().Format("2006-01-02-15-04-05")
+	return name + "@" + date
 }
 
 type logWriter struct {
