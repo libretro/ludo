@@ -1,6 +1,7 @@
 package core
 
 import (
+	"log"
 	"os"
 	"reflect"
 	"testing"
@@ -40,7 +41,7 @@ func Test_coreLoad(t *testing.T) {
 
 	t.Run("The core is loaded", func(t *testing.T) {
 		if state.Global.Core == nil {
-			t.Errorf("got = %v, want not libretro.Core{}", state.Global.Core)
+			t.Errorf("got = %v, want not nil", state.Global.Core)
 		}
 	})
 
@@ -188,4 +189,37 @@ func Test_unzipGame(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_coreLoadGame(t *testing.T) {
+	state.Global.Verbose = true
+
+	ext := utils.CoreExt()
+
+	Init(&video.Video{Window: &WindowMock{}}, &MenuMock{})
+
+	if err := glfw.Init(); err != nil {
+		log.Fatalln("failed to initialize glfw:", err)
+	}
+	defer glfw.Terminate()
+
+	Load("testdata/vecx_libretro" + ext)
+
+	out := utils.CaptureOutput(func() { LoadGame("testdata/Polar Rescue (USA).vec") })
+
+	t.Run("Logs information about the loaded game", func(t *testing.T) {
+		got := out
+		want := `[OpenAL]: Using 4 buffers of 4096 bytes.
+[Core]: Game loaded: testdata/Polar Rescue (USA).vec
+[Core]: open Polar Rescue (USA).srm: no such file or directory
+`
+		if got != want {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+
+	state.Global.Core.UnloadGame()
+	state.Global.Core.Deinit()
+	state.Global.GamePath = ""
+	state.Global.Verbose = false
 }
