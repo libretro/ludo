@@ -5,7 +5,6 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/go-gl/gl/all-core/gl"
@@ -14,14 +13,9 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-func screenshotName() string {
-	name := filepath.Base(state.Global.GamePath)
-	ext := filepath.Ext(name)
-	name = name[0 : len(name)-len(ext)]
-	date := time.Now().Format("2006-01-02-15-04-05")
-	return name + "@" + date + ".png"
-}
-
+// During the TakeScreenshot step, we need to render the current game frame at
+// the right resolution to later capture it using ReadPixels. renderScreenshot
+// taking care of this.
 func (video *Video) renderScreenshot() {
 	avi := state.Global.Core.GetSystemAVInfo()
 	video.Geom = avi.Geometry
@@ -43,7 +37,7 @@ func (video *Video) renderScreenshot() {
 }
 
 // TakeScreenshot captures the ouput of video.Render and writes it to a file
-func (video *Video) TakeScreenshot() {
+func (video *Video) TakeScreenshot(name string) {
 	_, fbh := video.Window.GetFramebufferSize()
 	state.Global.MenuActive = false
 	video.renderScreenshot()
@@ -53,7 +47,7 @@ func (video *Video) TakeScreenshot() {
 		int32(video.Geom.BaseWidth), int32(video.Geom.BaseHeight),
 		gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 	os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
-	path := filepath.Join(settings.Current.ScreenshotsDirectory, screenshotName())
+	path := filepath.Join(settings.Current.ScreenshotsDirectory, name+".png")
 	fd, _ := os.Create(path)
 	flipped := imaging.FlipV(img)
 	png.Encode(fd, flipped)

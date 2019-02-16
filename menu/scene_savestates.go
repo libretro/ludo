@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/savestates"
@@ -25,8 +26,10 @@ func buildSavestates() Scene {
 		label: "Save State",
 		icon:  "savestate",
 		callbackOK: func() {
-			vid.TakeScreenshot()
-			err := savestates.Save()
+			name := utils.Filename(state.Global.GamePath)
+			date := time.Now().Format("2006-01-02-15-04-05")
+			vid.TakeScreenshot(name + "@" + date)
+			err := savestates.Save(name + "@" + date)
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			} else {
