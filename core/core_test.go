@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
@@ -205,14 +206,11 @@ func Test_coreLoadGame(t *testing.T) {
 
 	Load("testdata/vecx_libretro" + ext)
 
-	out := utils.CaptureOutput(func() { LoadGame("testdata/Polar Rescue (USA).vec") })
+	got := utils.CaptureOutput(func() { LoadGame("testdata/Polar Rescue (USA).vec") })
 
 	t.Run("Logs information about the loaded game", func(t *testing.T) {
-		got := out
-		want := `[OpenAL]: Using 4 buffers of 4096 bytes.
-[Core]: Game loaded: testdata/Polar Rescue (USA).vec
-`
-		if got != want {
+		want := `[Core]: Game loaded: testdata/Polar Rescue (USA).vec`
+		if !strings.Contains(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
 		}
 	})
