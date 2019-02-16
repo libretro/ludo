@@ -41,7 +41,10 @@ func Init(v *video.Video, m MenuInterface) {
 	ticker := time.NewTicker(time.Second)
 	go func() {
 		for range ticker.C {
-			if state.Global.CoreRunning && !state.Global.MenuActive {
+			state.Global.Lock()
+			running := state.Global.CoreRunning
+			state.Global.Unlock()
+			if running && !state.Global.MenuActive {
 				savefiles.SaveSRAM()
 			}
 		}
@@ -164,7 +167,10 @@ func LoadGame(gamePath string) error {
 		state.Global.Core.AudioCallback.SetState(true)
 	}
 
+	state.Global.Lock()
 	state.Global.CoreRunning = true
+	state.Global.Unlock()
+
 	state.Global.GamePath = gamePath
 
 	state.Global.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
