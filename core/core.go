@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/libretro/ludo/audio"
@@ -29,6 +30,7 @@ type MenuInterface interface {
 
 var vid *video.Video
 var menu MenuInterface
+var mutex sync.Mutex
 
 // Options holds the settings for the current core
 var Options *options.Options
@@ -41,7 +43,10 @@ func Init(v *video.Video, m MenuInterface) {
 	ticker := time.NewTicker(time.Second)
 	go func() {
 		for range ticker.C {
-			if state.Global.CoreRunning && !state.Global.MenuActive {
+			mutex.Lock()
+			running := state.Global.CoreRunning
+			mutex.Unlock()
+			if running && !state.Global.MenuActive {
 				savefiles.SaveSRAM()
 			}
 		}
@@ -164,7 +169,10 @@ func LoadGame(gamePath string) error {
 		state.Global.Core.AudioCallback.SetState(true)
 	}
 
+	mutex.Lock()
 	state.Global.CoreRunning = true
+	mutex.Unlock()
+
 	state.Global.GamePath = gamePath
 
 	state.Global.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
