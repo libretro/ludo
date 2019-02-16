@@ -51,7 +51,6 @@ import "C"
 import (
 	"errors"
 	"strings"
-	"sync"
 	"unsafe"
 )
 
@@ -267,13 +266,10 @@ var (
 	getTimeUsec      getTimeUsecFunc
 )
 
-var mu sync.Mutex
-
 // Load dynamically loads a libretro core at the given path and returns a Core instance
 func Load(sofile string) (*Core, error) {
 	core := Core{}
 
-	mu.Lock()
 	var err error
 	core.handle, err = DlOpen(sofile)
 	if err != nil {
@@ -301,7 +297,6 @@ func Load(sofile string) (*Core, error) {
 	core.symRetroUnserialize = core.DlSym("retro_unserialize")
 	core.symRetroGetMemorySize = core.DlSym("retro_get_memory_size")
 	core.symRetroGetMemoryData = core.DlSym("retro_get_memory_data")
-	mu.Unlock()
 
 	return &core, nil
 }
