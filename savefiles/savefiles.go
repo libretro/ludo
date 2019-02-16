@@ -28,59 +28,61 @@ func Path() string {
 
 // SaveSRAM saves the game SRAM to the filesystem
 func SaveSRAM() {
-	if state.Global.CoreRunning {
-		len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
-		ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
-		if ptr == nil || len == 0 {
-			if state.Global.Verbose {
-				log.Println("[Core]: Unable to get SRAM address")
-			}
-			return
-		}
-		// convert the C array to a go slice
-		bytes := C.GoBytes(ptr, C.int(len))
-		err := os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
-		if err != nil {
-			log.Println("[Core]:", err)
-			return
-		}
-		fd, err := os.Create(Path())
-		if err != nil {
-			log.Println("[Core]:", err)
-			return
-		}
-		fd.Write(bytes)
+	if !state.Global.CoreRunning {
+		return
+	}
+	len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
+	ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
+	if ptr == nil || len == 0 {
 		if state.Global.Verbose {
-			log.Println("[Core]: Saved SRAM", Path())
+			log.Println("[Core]: Unable to get SRAM address")
 		}
+		return
+	}
+	// convert the C array to a go slice
+	bytes := C.GoBytes(ptr, C.int(len))
+	err := os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
+	if err != nil {
+		log.Println("[Core]:", err)
+		return
+	}
+	fd, err := os.Create(Path())
+	if err != nil {
+		log.Println("[Core]:", err)
+		return
+	}
+	fd.Write(bytes)
+	if state.Global.Verbose {
+		log.Println("[Core]: Saved SRAM", Path())
 	}
 }
 
 // LoadSRAM saves the game SRAM to the filesystem
 func LoadSRAM() {
-	if state.Global.CoreRunning {
-		fd, err := os.Open(Path())
-		if err != nil {
-			log.Println("[Core]:", err)
-			return
-		}
-		len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
-		ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
-		if ptr == nil || len == 0 {
-			log.Println("[Core]: Unable to get SRAM address")
-			return
-		}
-		// this *[1 << 30]byte points to the same memory as ptr, allowing to
-		// overwrite this memory
-		destination := (*[1 << 30]byte)(unsafe.Pointer(ptr))[:len:len]
-		source, err := ioutil.ReadAll(fd)
-		if err != nil {
-			log.Println("[Core]:", err)
-			return
-		}
-		copy(destination, source)
-		if state.Global.Verbose {
-			log.Println("[Core]: Loaded SRAM", Path())
-		}
+	if !state.Global.CoreRunning {
+		return
+	}
+	fd, err := os.Open(Path())
+	if err != nil {
+		log.Println("[Core]:", err)
+		return
+	}
+	len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
+	ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
+	if ptr == nil || len == 0 {
+		log.Println("[Core]: Unable to get SRAM address")
+		return
+	}
+	// this *[1 << 30]byte points to the same memory as ptr, allowing to
+	// overwrite this memory
+	destination := (*[1 << 30]byte)(unsafe.Pointer(ptr))[:len:len]
+	source, err := ioutil.ReadAll(fd)
+	if err != nil {
+		log.Println("[Core]:", err)
+		return
+	}
+	copy(destination, source)
+	if state.Global.Verbose {
+		log.Println("[Core]: Loaded SRAM", Path())
 	}
 }
