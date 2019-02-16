@@ -23,10 +23,8 @@ matrix:
     - name: Linux x86_64
       os: linux
       services: xvfb
-      env: AUDIODEV=null
       before_install:
-        - sudo apt-get install libasound2-dev alsa-utils alsa-oss libopenal-dev xorg-dev -y --allow-unauthenticated
-        - sudo modprobe snd-dummy
+        - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
       script:
         - go get -v ./...
         - xvfb-run go test -v -race ./...
