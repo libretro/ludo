@@ -28,7 +28,7 @@ func RenderNotifications() {
 	var h float32 = 75
 	stack := h
 	for _, n := range notifications.List() {
-		fading := float32(n.Frames) / 10
+		fading := float32(n.Duration) * 4
 		if fading > 1 {
 			fading = 1
 		}

@@ -52,7 +52,7 @@ type Scene interface {
 	segueMount()
 	segueNext()
 	segueBack()
-	update()
+	update(dt float32)
 	render()
 	drawHintBar()
 	Entry() *entry
@@ -62,7 +62,7 @@ type Scene interface {
 type Menu struct {
 	stack         []Scene
 	icons         map[string]uint32
-	inputCooldown int
+	inputCooldown float32
 	tweens        map[*float32]*gween.Tween
 	scroll        float32
 	ratio         float32
@@ -83,12 +83,12 @@ func updateTweens(dt float32) {
 }
 
 // Render takes care of rendering the menu
-func Render() {
-	menu.t += 0.1
+func Render(dt float32) {
+	menu.t += float64(dt * 8)
 	w, _ := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
-	updateTweens(1.0 / 60.0)
+	updateTweens(dt)
 
 	currentScreenIndex := len(menu.stack) - 1
 	for i := 0; i <= currentScreenIndex+1; i++ {
@@ -140,7 +140,7 @@ func genericSegueMount(list *entry) {
 			e.yp = 0.5 + 0.3
 			e.labelAlpha = 0
 			e.iconAlpha = 0
-			e.tagAlpha = 1
+			e.tagAlpha = 0
 			e.scale = 1.5
 		} else if i < list.ptr {
 			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
@@ -167,6 +167,11 @@ func genericAnimate(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
 
+		// performance improvement
+		// if math.Abs(float64(i-list.ptr)) > 6 && i > 6 && i < len(list.children)-6 {
+		// 	continue
+		// }
+
 		var yp, labelAlpha, iconAlpha, tagAlpha, scale float32
 		if i == list.ptr {
 			yp = 0.5
@@ -176,14 +181,14 @@ func genericAnimate(list *entry) {
 			scale = 1.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.75
-			iconAlpha = 0.75
+			labelAlpha = 1
+			iconAlpha = 1
 			tagAlpha = 0
 			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.75
-			iconAlpha = 0.75
+			labelAlpha = 1
+			iconAlpha = 1
 			tagAlpha = 0
 			scale = 0.5
 		}
@@ -305,14 +310,14 @@ func (menu *Menu) ContextReset() {
 	paths, _ := filepath.Glob(assets + "/*.png")
 	for _, path := range paths {
 		path := path
-		filename := utils.Filename(path)
+		filename := utils.FileName(path)
 		menu.icons[filename] = video.NewImage(assets + "/" + filename + ".png")
 	}
 
 	paths, _ = filepath.Glob(assets + "/flags/*.png")
 	for _, path := range paths {
 		path := path
-		filename := utils.Filename(path)
+		filename := utils.FileName(path)
 		menu.icons[filename] = video.NewImage(assets + "/flags/" + filename + ".png")
 	}
 
@@ -329,8 +334,9 @@ func fastForwardTweens() {
 }
 
 // WarpToQuickMenu loads the contextual menu for games that are launched from
-// the command line interface.
+// the command line interface or from 'Load Game'.
 func (menu *Menu) WarpToQuickMenu() {
+	menu.scroll = 0
 	menu.stack = []Scene{}
 	menu.stack = append(menu.stack, buildTabs())
 	menu.stack[0].segueNext()

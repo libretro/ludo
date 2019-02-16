@@ -11,21 +11,15 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-func name() string {
-	name := filepath.Base(state.Global.GamePath)
-	ext := filepath.Ext(name)
-	name = name[0 : len(name)-len(ext)]
-	return name + ".state"
-}
-
-// Save the current state to the filesystem
-func Save() error {
+// Save the current state to the filesystem. name is the name of the
+// savestate file to save to, without extension.
+func Save(name string) error {
 	s := state.Global.Core.SerializeSize()
 	bytes, err := state.Global.Core.Serialize(s)
 	if err != nil {
 		return err
 	}
-	path := filepath.Join(settings.Current.SavestatesDirectory, name())
+	path := filepath.Join(settings.Current.SavestatesDirectory, name+".state")
 	err = os.MkdirAll(settings.Current.SavestatesDirectory, os.ModePerm)
 	if err != nil {
 		return err
@@ -34,9 +28,8 @@ func Save() error {
 }
 
 // Load the state from the filesystem
-func Load() error {
+func Load(path string) error {
 	s := state.Global.Core.SerializeSize()
-	path := filepath.Join(settings.Current.SavestatesDirectory, name())
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err

@@ -286,39 +286,34 @@ func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
-	w := fbw
-	h := fbw / float32(video.Geom.AspectRatio)
-	if h > fbh {
-		w = fbh * float32(video.Geom.AspectRatio)
-		h = fbh
+	h := fbh
+	w := fbh * float32(video.Geom.AspectRatio)
+	if w > fbw {
+		h = fbw / float32(video.Geom.AspectRatio)
+		w = fbw
 	}
 
 	// Place the content in the middle of the window.
 	x := (fbw - w) / 2
 	y := (fbh - h) / 2
 
-	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, fbh)
-
-	va := []float32{
-		//  X, Y, U, V
-		x1/fbw*2 - 1, y1/fbh*2 - 1, 0, 1, // left-bottom
-		x2/fbw*2 - 1, y2/fbh*2 - 1, 0, 0, // left-top
-		x3/fbw*2 - 1, y3/fbh*2 - 1, 1, 1, // right-bottom
-		x4/fbw*2 - 1, y4/fbh*2 - 1, 1, 0, // right-top
-	}
-
+	va := video.vertexArray(x, y, w, h, 1.0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 }
 
 // Render the current frame
 func (video *Video) Render() {
-	if state.Global.CoreRunning {
-		gl.ClearColor(0, 0, 0, 1)
-	} else {
+	if !state.Global.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		return
 	}
+	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
+
+	avi := state.Global.Core.GetSystemAVInfo()
+	video.Geom = avi.Geometry
 
 	fbw, fbh := video.Window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(fbw), int32(fbh))

@@ -14,24 +14,25 @@ env:
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
   - go get github.com/golang/lint/golint
-  - go get honnef.co/go/tools/cmd/megacheck
+  - go get honnef.co/go/tools/cmd/staticcheck
   - go get github.com/fzipp/gocyclo
+  - export PATH=$GOPATH/bin:$PATH
 
 matrix:
   include:
     - name: Linux x86_64
       os: linux
+      services: xvfb
       before_install:
         - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
       script:
         - go get -v ./...
-        - go test -v -race ./...
+        - xvfb-run go test -v -race ./...
         - go vet ./...
-        - megacheck ./...
+        - staticcheck ./...
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v
-      before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
     - name: Linux arm
       os: linux
@@ -51,11 +52,10 @@ matrix:
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get -t -v ./...
         #- GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go test -v -race ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go vet ./...
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc megacheck ./...
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc staticcheck ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc gocyclo -over 19 $GO_FILES
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc golint -set_exit_status $(go list ./...)
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
-      before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
     - name: OSX
       os: osx
@@ -66,11 +66,10 @@ matrix:
         - go get -v ./...
         - go test -v -race ./...
         - go vet ./...
-        - megacheck ./...
+        - staticcheck ./...
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v
-      before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
     - name: Windows
       os: windows
@@ -93,14 +92,14 @@ matrix:
         - go get -v ./...
         - go test -v ./...
         #- go vet ./...
-        - megacheck ./...
+        - staticcheck ./...
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v -ldflags '-H=windowsgui'
-      before_deploy:
-        - if [[ -n "$TRAVIS_TAG" ]]; then choco install go-msi wixtoolset; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then export PATH="$PATH;$WIX/bin"; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make msi; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then cp *.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
 
 deploy:
   skip_cleanup: true
@@ -111,7 +110,7 @@ deploy:
     - Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz
     - Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz
     - Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
-    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.msi
+    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip
   on:
     repo: libretro/ludo
     tags: true

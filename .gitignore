@@ -1,8 +1,6 @@
 ludo
 ludo.exe
 settings.json
-Ludo.app
-Ludo.dmg
+*.app
+*.dmg
 cores
-*.dll
-*.msi
