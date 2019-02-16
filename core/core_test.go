@@ -211,7 +211,6 @@ func Test_coreLoadGame(t *testing.T) {
 		got := out
 		want := `[OpenAL]: Using 4 buffers of 4096 bytes.
 [Core]: Game loaded: testdata/Polar Rescue (USA).vec
-[Core]: open Polar Rescue (USA).srm: no such file or directory
 `
 		if got != want {
 			t.Errorf("got = %v, want %v", got, want)
