@@ -310,14 +310,14 @@ func (menu *Menu) ContextReset() {
 	paths, _ := filepath.Glob(assets + "/*.png")
 	for _, path := range paths {
 		path := path
-		filename := utils.Filename(path)
+		filename := utils.FileName(path)
 		menu.icons[filename] = video.NewImage(assets + "/" + filename + ".png")
 	}
 
 	paths, _ = filepath.Glob(assets + "/flags/*.png")
 	for _, path := range paths {
 		path := path
-		filename := utils.Filename(path)
+		filename := utils.FileName(path)
 		menu.icons[filename] = video.NewImage(assets + "/flags/" + filename + ".png")
 	}
 

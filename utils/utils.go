@@ -23,8 +23,8 @@ func StringInSlice(a string, list []string) bool {
 	return false
 }
 
-// Filename returns the name of a file, without the path and extension.
-func Filename(path string) string {
+// FileName returns the name of a file, without the path and extension.
+func FileName(path string) string {
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
 	name = name[0 : len(name)-len(ext)]
@@ -34,7 +34,7 @@ func Filename(path string) string {
 // DatedName returns the name of a file with a date appended, without extension.
 // It is used for savestates and screenshot names.
 func DatedName(path string) string {
-	name := Filename(path)
+	name := FileName(path)
 	date := time.Now().Format("2006-01-02-15-04-05")
 	return name + "@" + date
 }
