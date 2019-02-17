@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"path/filepath"
 	"sync"
 
 	"github.com/libretro/ludo/libretro"
@@ -58,7 +59,7 @@ func (o *Options) Save() error {
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	f, err := os.Create(usr.HomeDir + "/.ludo/" + name + ".json")
+	f, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,7 @@ func (o *Options) load() error {
 	usr, _ := user.Current()
 
 	name := utils.FileName(state.Global.CorePath)
-	b, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/" + name + ".json")
+	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
 	if err != nil {
 		return err
 	}
