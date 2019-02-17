@@ -131,8 +131,8 @@ func genericDrawHintBar() {
 		stack += 30 * menu.ratio
 		vid.DrawImage(menu.icons["key-p"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
 		stack += 70 * menu.ratio
-		vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "TOGGLE MENU")
-		stack += vid.Font.Width(0.5*menu.ratio, "TOGGLE MENU")
+		vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "RESUME")
+		stack += vid.Font.Width(0.5*menu.ratio, "RESUME")
 	}
 }
 
