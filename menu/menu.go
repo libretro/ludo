@@ -111,30 +111,11 @@ func genericDrawHintBar() {
 
 	var stack float32
 	if state.Global.CoreRunning {
-		stack += 30 * menu.ratio
-		vid.DrawImage(menu.icons["key-p"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-		stack += 70 * menu.ratio
-		vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "RESUME")
-		stack += vid.Font.Width(0.5*menu.ratio, "RESUME")
+		stack = stackHint(stack, "key-p", "RESUME", h, c)
 	}
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-up-down"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "NAVIGATE")
-	stack += vid.Font.Width(0.5*menu.ratio, "NAVIGATE")
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-z"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "BACK")
-	stack += vid.Font.Width(0.5*menu.ratio, "BACK")
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-x"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "OK")
-	stack += vid.Font.Width(0.5*menu.ratio, "OK")
+	stack = stackHint(stack, "key-up-down", "NAVIGATE", h, c)
+	stack = stackHint(stack, "key-z", "BACK", h, c)
+	stack = stackHint(stack, "key-x", "OK", h, c)
 }
 
 // genericSegueMount is the smooth transition of the menu entries first appearance
