@@ -9,6 +9,7 @@ import (
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
+	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 	colorful "github.com/lucasb-eyer/go-colorful"
@@ -286,22 +287,13 @@ func (tabs screenTabs) render() {
 
 func (tabs screenTabs) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
-	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
 
-	stack := 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-left-right"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "NAVIGATE")
-	stack += vid.Font.Width(0.5*menu.ratio, "NAVIGATE")
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-x"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "OPEN")
-	stack += vid.Font.Width(0.5*menu.ratio, "OPEN")
+	var stack float32
+	if state.Global.CoreRunning {
+		stackHint(&stack, "key-p", "RESUME", h)
+	}
+	stackHint(&stack, "key-left-right", "NAVIGATE", h)
+	stackHint(&stack, "key-x", "OPEN", h)
 }

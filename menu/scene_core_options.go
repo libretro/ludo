@@ -4,6 +4,8 @@ import (
 	"strings"
 
 	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/video"
 )
 
 type screenCoreOptions struct {
@@ -67,5 +69,15 @@ func (s *screenCoreOptions) render() {
 }
 
 func (s *screenCoreOptions) drawHintBar() {
-	genericDrawHintBar()
+	w, h := vid.Window.GetFramebufferSize()
+	menu.ratio = float32(w) / 1920
+	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+
+	var stack float32
+	if state.Global.CoreRunning {
+		stackHint(&stack, "key-p", "RESUME", h)
+	}
+	stackHint(&stack, "key-up-down", "NAVIGATE", h)
+	stackHint(&stack, "key-z", "BACK", h)
+	stackHint(&stack, "key-left-right", "SET", h)
 }
