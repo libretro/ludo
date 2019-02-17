@@ -32,6 +32,7 @@ func buildSettings() Scene {
 		}
 
 		if f.Tag("widget") == "dir" {
+			// Directory settings
 			list.children = append(list.children, entry{
 				label: f.Tag("label"),
 				icon:  "folder",
@@ -45,21 +46,7 @@ func buildSettings() Scene {
 					menu.stack = append(menu.stack, buildExplorer(
 						f.Value().(string),
 						nil,
-						func(path string) {
-							var err error
-							path, err = filepath.Abs(path)
-							if err != nil {
-								ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
-								return
-							}
-							f.Set(path)
-							ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
-							err = settings.Save()
-							if err != nil {
-								ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
-								return
-							}
-						},
+						func(path string) { dirExplorerCb(path, f) },
 						&entry{
 							label: "<Select this directory>",
 							icon:  "scan",
@@ -68,6 +55,7 @@ func buildSettings() Scene {
 				},
 			})
 		} else {
+			// Regular settings
 			list.children = append(list.children, entry{
 				label: f.Tag("label"),
 				icon:  "subsetting",
@@ -86,6 +74,23 @@ func buildSettings() Scene {
 	list.segueMount()
 
 	return &list
+}
+
+// triggered when selecting a directory in the settings file explorer
+func dirExplorerCb(path string, f *structs.Field) {
+	var err error
+	path, err = filepath.Abs(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
+	f.Set(path)
+	ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
+	err = settings.Save()
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
 }
 
 // Widgets to display settings values
