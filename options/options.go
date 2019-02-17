@@ -18,13 +18,13 @@ import (
 	"github.com/libretro/ludo/utils"
 )
 
-var lock sync.Mutex
-
 // Options is a container type for core options internals
 type Options struct {
 	Vars    []libretro.Variable
 	Choices []int
 	Updated bool
+
+	sync.Mutex
 }
 
 // New instanciate a core options manager
@@ -44,8 +44,8 @@ func (o *Options) NumChoices(choiceIndex int) int {
 
 // Save core options to a file
 func (o *Options) Save() error {
-	lock.Lock()
-	defer lock.Unlock()
+	o.Lock()
+	defer o.Unlock()
 
 	usr, _ := user.Current()
 
@@ -70,8 +70,8 @@ func (o *Options) Save() error {
 
 // Load core options from a file
 func (o *Options) load() error {
-	lock.Lock()
-	defer lock.Unlock()
+	o.Lock()
+	defer o.Unlock()
 
 	usr, _ := user.Current()
 
