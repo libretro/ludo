@@ -44,6 +44,7 @@ func buildMainMenu() Scene {
 					err := core.Load(path)
 					if err != nil {
 						ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
+						return
 					}
 					ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded: %s", filepath.Base(path))
 				},
