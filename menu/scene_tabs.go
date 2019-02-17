@@ -292,8 +292,8 @@ func (tabs screenTabs) drawHintBar() {
 
 	var stack float32
 	if state.Global.CoreRunning {
-		stack = stackHint(stack, "key-p", "RESUME", h)
+		stackHint(&stack, "key-p", "RESUME", h)
 	}
-	stack = stackHint(stack, "key-left-right", "NAVIGATE", h)
-	stack = stackHint(stack, "key-x", "OPEN", h)
+	stackHint(&stack, "key-left-right", "NAVIGATE", h)
+	stackHint(&stack, "key-x", "OPEN", h)
 }

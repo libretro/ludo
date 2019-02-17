@@ -143,13 +143,13 @@ func (s *screenSavestates) drawHintBar() {
 
 	var stack float32
 	if state.Global.CoreRunning {
-		stack = stackHint(stack, "key-p", "RESUME", h)
+		stackHint(&stack, "key-p", "RESUME", h)
 	}
-	stack = stackHint(stack, "key-up-down", "NAVIGATE", h)
-	stack = stackHint(stack, "key-z", "BACK", h)
+	stackHint(&stack, "key-up-down", "NAVIGATE", h)
+	stackHint(&stack, "key-z", "BACK", h)
 	if ptr == 0 {
-		stack = stackHint(stack, "key-x", "SAVE", h)
+		stackHint(&stack, "key-x", "SAVE", h)
 	} else {
-		stack = stackHint(stack, "key-x", "LOAD", h)
+		stackHint(&stack, "key-x", "LOAD", h)
 	}
 }

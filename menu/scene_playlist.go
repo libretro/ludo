@@ -184,9 +184,9 @@ func (s *screenPlaylist) drawHintBar() {
 
 	var stack float32
 	if state.Global.CoreRunning {
-		stack = stackHint(stack, "key-p", "RESUME", h)
+		stackHint(&stack, "key-p", "RESUME", h)
 	}
-	stack = stackHint(stack, "key-up-down", "NAVIGATE", h)
-	stack = stackHint(stack, "key-z", "BACK", h)
-	stack = stackHint(stack, "key-x", "RUN", h)
+	stackHint(&stack, "key-up-down", "NAVIGATE", h)
+	stackHint(&stack, "key-z", "BACK", h)
+	stackHint(&stack, "key-x", "RUN", h)
 }
