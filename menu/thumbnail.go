@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/libretro/ludo/settings"
-
 	"github.com/libretro/ludo/video"
 )
 
+// Downloads a thumbnail from the web and cache it to the local filesystem.
 func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -60,6 +60,7 @@ func scrubIllegalChars(str string) string {
 	return str
 }
 
+// Draws a thumbnail in the playlist scene.
 func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, color video.Color) {
 	folderPath := filepath.Join(settings.Current.ThumbnailsDirectory, system, "Named_Snaps")
 	path := filepath.Join(folderPath, gameName+".png")
@@ -82,6 +83,7 @@ func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scal
 	)
 }
 
+// Draws a thumbnail in the savestates scene.
 func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale float32, color video.Color) {
 	if list.children[i].thumbnail == 0 {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
