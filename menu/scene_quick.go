@@ -6,12 +6,12 @@ import (
 	"github.com/libretro/ludo/utils"
 )
 
-type screenQuick struct {
+type sceneQuick struct {
 	entry
 }
 
 func buildQuickMenu() Scene {
-	var list screenQuick
+	var list sceneQuick
 	list.label = "Quick Menu"
 
 	list.children = append(list.children, entry{
@@ -64,30 +64,30 @@ func buildQuickMenu() Scene {
 	return &list
 }
 
-func (s *screenQuick) Entry() *entry {
+func (s *sceneQuick) Entry() *entry {
 	return &s.entry
 }
 
-func (s *screenQuick) segueMount() {
+func (s *sceneQuick) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *screenQuick) segueNext() {
+func (s *sceneQuick) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *screenQuick) segueBack() {
+func (s *sceneQuick) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenQuick) update(dt float32) {
+func (s *sceneQuick) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
 
-func (s *screenQuick) render() {
+func (s *sceneQuick) render() {
 	genericRender(&s.entry)
 }
 
-func (s *screenQuick) drawHintBar() {
+func (s *sceneQuick) drawHintBar() {
 	genericDrawHintBar()
 }

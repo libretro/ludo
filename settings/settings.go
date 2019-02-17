@@ -59,7 +59,7 @@ func Load() error {
 		json.Unmarshal(b, &Current)
 	}
 
-	b, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/settings.json")
+	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
 	if err != nil {
 		return err
 	}
@@ -72,10 +72,10 @@ func Load() error {
 func Save() error {
 	usr, _ := user.Current()
 
-	os.MkdirAll(usr.HomeDir+"/.ludo", os.ModePerm)
+	os.MkdirAll(filepath.Join(usr.HomeDir, ".ludo"), os.ModePerm)
 
 	b, _ := json.MarshalIndent(Current, "", "  ")
-	f, err := os.Create(usr.HomeDir + "/.ludo/settings.json")
+	f, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
 	if err != nil {
 		return err
 	}

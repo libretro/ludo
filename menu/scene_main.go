@@ -11,12 +11,12 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-type screenMain struct {
+type sceneMain struct {
 	entry
 }
 
 func buildMainMenu() Scene {
-	var list screenMain
+	var list sceneMain
 	list.label = "Main Menu"
 
 	usr, _ := user.Current()
@@ -40,14 +40,7 @@ func buildMainMenu() Scene {
 			menu.stack = append(menu.stack, buildExplorer(
 				settings.Current.CoresDirectory,
 				[]string{".dll", ".dylib", ".so"},
-				func(path string) {
-					err := core.Load(path)
-					if err != nil {
-						ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
-						return
-					}
-					ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded: %s", filepath.Base(path))
-				},
+				coreExplorerCb,
 				nil,
 			))
 		},
@@ -59,16 +52,12 @@ func buildMainMenu() Scene {
 		callbackOK: func() {
 			if state.Global.Core != nil {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil,
-					func(path string) {
-						err := core.LoadGame(path)
-						if err != nil {
-							ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
-							return
-						}
-						menu.WarpToQuickMenu()
-						state.Global.MenuActive = false
-					}, nil))
+				menu.stack = append(menu.stack, buildExplorer(
+					usr.HomeDir,
+					nil,
+					gameExplorerCb,
+					nil,
+				))
 			} else {
 				ntf.DisplayAndLog(ntf.Warning, "Menu", "Please load a core first.")
 			}
@@ -105,30 +94,51 @@ func buildMainMenu() Scene {
 	return &list
 }
 
-func (main *screenMain) Entry() *entry {
+// triggered when a core is selected in the file explorer of Load Core
+func coreExplorerCb(path string) {
+	err := core.Load(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
+		return
+	}
+	ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded: %s", filepath.Base(path))
+}
+
+// triggered when a game is selected in the file explorer of Load Game
+func gameExplorerCb(path string) {
+	err := core.LoadGame(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
+		return
+	}
+	menu.WarpToQuickMenu()
+	state.Global.MenuActive = false
+}
+
+func (main *sceneMain) Entry() *entry {
 	return &main.entry
 }
 
-func (main *screenMain) segueMount() {
+func (main *sceneMain) segueMount() {
 	genericSegueMount(&main.entry)
 }
 
-func (main *screenMain) segueBack() {
+func (main *sceneMain) segueBack() {
 	genericAnimate(&main.entry)
 }
 
-func (main *screenMain) segueNext() {
+func (main *sceneMain) segueNext() {
 	genericSegueNext(&main.entry)
 }
 
-func (main *screenMain) update(dt float32) {
+func (main *sceneMain) update(dt float32) {
 	genericInput(&main.entry, dt)
 }
 
-func (main *screenMain) render() {
+func (main *sceneMain) render() {
 	genericRender(&main.entry)
 }
 
-func (main *screenMain) drawHintBar() {
+func (main *sceneMain) drawHintBar() {
 	genericDrawHintBar()
 }

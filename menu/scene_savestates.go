@@ -13,12 +13,12 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-type screenSavestates struct {
+type sceneSavestates struct {
 	entry
 }
 
 func buildSavestates() Scene {
-	var list screenSavestates
+	var list sceneSavestates
 	list.label = "Savestates"
 
 	list.children = append(list.children, entry{
@@ -65,28 +65,28 @@ func buildSavestates() Scene {
 	return &list
 }
 
-func (s *screenSavestates) Entry() *entry {
+func (s *sceneSavestates) Entry() *entry {
 	return &s.entry
 }
 
-func (s *screenSavestates) segueMount() {
+func (s *sceneSavestates) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *screenSavestates) segueNext() {
+func (s *sceneSavestates) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *screenSavestates) segueBack() {
+func (s *sceneSavestates) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenSavestates) update(dt float32) {
+func (s *sceneSavestates) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
 
 // Override rendering
-func (s *screenSavestates) render() {
+func (s *sceneSavestates) render() {
 	list := &s.entry
 
 	_, h := vid.Window.GetFramebufferSize()
@@ -134,7 +134,7 @@ func (s *screenSavestates) render() {
 	}
 }
 
-func (s *screenSavestates) drawHintBar() {
+func (s *sceneSavestates) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})

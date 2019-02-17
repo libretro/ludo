@@ -18,12 +18,12 @@ import (
 	"github.com/tanema/gween/ease"
 )
 
-type screenTabs struct {
+type sceneTags struct {
 	entry
 }
 
 func buildTabs() Scene {
-	var list screenTabs
+	var list sceneTags
 	list.label = "Ludo"
 
 	list.children = append(list.children, entry{
@@ -144,11 +144,11 @@ func getPlaylists() []entry {
 	return pls
 }
 
-func (tabs *screenTabs) Entry() *entry {
+func (tabs *sceneTags) Entry() *entry {
 	return &tabs.entry
 }
 
-func (tabs *screenTabs) segueMount() {
+func (tabs *sceneTags) segueMount() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
@@ -176,11 +176,11 @@ func (tabs *screenTabs) segueMount() {
 	tabs.animate()
 }
 
-func (tabs *screenTabs) segueBack() {
+func (tabs *sceneTags) segueBack() {
 	tabs.animate()
 }
 
-func (tabs *screenTabs) animate() {
+func (tabs *sceneTags) animate() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
@@ -214,13 +214,13 @@ func (tabs *screenTabs) animate() {
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.15, ease.OutSine)
 }
 
-func (tabs *screenTabs) segueNext() {
+func (tabs *sceneTags) segueNext() {
 	cur := &tabs.children[tabs.ptr]
 	menu.tweens[&cur.width] = gween.New(cur.width, 5200, 0.15, ease.OutSine)
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+3030, 0.15, ease.OutSine)
 }
 
-func (tabs *screenTabs) update(dt float32) {
+func (tabs *sceneTags) update(dt float32) {
 	menu.inputCooldown -= dt
 	if menu.inputCooldown < 0 {
 		menu.inputCooldown = 0
@@ -255,7 +255,7 @@ func (tabs *screenTabs) update(dt float32) {
 	}
 }
 
-func (tabs screenTabs) render() {
+func (tabs sceneTags) render() {
 	_, h := vid.Window.GetFramebufferSize()
 
 	stackWidth := 710 * menu.ratio
@@ -285,7 +285,7 @@ func (tabs screenTabs) render() {
 	}
 }
 
-func (tabs screenTabs) drawHintBar() {
+func (tabs sceneTags) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})

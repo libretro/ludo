@@ -15,12 +15,12 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-type screenSettings struct {
+type sceneSettings struct {
 	entry
 }
 
 func buildSettings() Scene {
-	var list screenSettings
+	var list sceneSettings
 	list.label = "Settings"
 
 	fields := structs.Fields(&settings.Current)
@@ -32,6 +32,7 @@ func buildSettings() Scene {
 		}
 
 		if f.Tag("widget") == "dir" {
+			// Directory settings
 			list.children = append(list.children, entry{
 				label: f.Tag("label"),
 				icon:  "folder",
@@ -45,21 +46,7 @@ func buildSettings() Scene {
 					menu.stack = append(menu.stack, buildExplorer(
 						f.Value().(string),
 						nil,
-						func(path string) {
-							var err error
-							path, err = filepath.Abs(path)
-							if err != nil {
-								ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
-								return
-							}
-							f.Set(path)
-							ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
-							err = settings.Save()
-							if err != nil {
-								ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
-								return
-							}
-						},
+						func(path string) { dirExplorerCb(path, f) },
 						&entry{
 							label: "<Select this directory>",
 							icon:  "scan",
@@ -68,6 +55,7 @@ func buildSettings() Scene {
 				},
 			})
 		} else {
+			// Regular settings
 			list.children = append(list.children, entry{
 				label: f.Tag("label"),
 				icon:  "subsetting",
@@ -86,6 +74,23 @@ func buildSettings() Scene {
 	list.segueMount()
 
 	return &list
+}
+
+// triggered when selecting a directory in the settings file explorer
+func dirExplorerCb(path string, f *structs.Field) {
+	var err error
+	path, err = filepath.Abs(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
+	f.Set(path)
+	ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
+	err = settings.Save()
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
 }
 
 // Widgets to display settings values
@@ -170,31 +175,31 @@ var incrCallbacks = map[string]callbackIncrement{
 
 // Generic stuff
 
-func (s *screenSettings) Entry() *entry {
+func (s *sceneSettings) Entry() *entry {
 	return &s.entry
 }
 
-func (s *screenSettings) segueMount() {
+func (s *sceneSettings) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *screenSettings) segueNext() {
+func (s *sceneSettings) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *screenSettings) segueBack() {
+func (s *sceneSettings) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenSettings) update(dt float32) {
+func (s *sceneSettings) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
 
-func (s *screenSettings) render() {
+func (s *sceneSettings) render() {
 	genericRender(&s.entry)
 }
 
-func (s *screenSettings) drawHintBar() {
+func (s *sceneSettings) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})

@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"path/filepath"
 	"sync"
 
 	"github.com/libretro/ludo/libretro"
@@ -17,13 +18,13 @@ import (
 	"github.com/libretro/ludo/utils"
 )
 
-var lock sync.Mutex
-
 // Options is a container type for core options internals
 type Options struct {
 	Vars    []libretro.Variable
 	Choices []int
 	Updated bool
+
+	sync.Mutex
 }
 
 // New instanciate a core options manager
@@ -43,8 +44,8 @@ func (o *Options) NumChoices(choiceIndex int) int {
 
 // Save core options to a file
 func (o *Options) Save() error {
-	lock.Lock()
-	defer lock.Unlock()
+	o.Lock()
+	defer o.Unlock()
 
 	usr, _ := user.Current()
 
@@ -58,7 +59,7 @@ func (o *Options) Save() error {
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	f, err := os.Create(usr.HomeDir + "/.ludo/" + name + ".json")
+	f, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
 	if err != nil {
 		return err
 	}
@@ -69,13 +70,13 @@ func (o *Options) Save() error {
 
 // Load core options from a file
 func (o *Options) load() error {
-	lock.Lock()
-	defer lock.Unlock()
+	o.Lock()
+	defer o.Unlock()
 
 	usr, _ := user.Current()
 
 	name := utils.FileName(state.Global.CorePath)
-	b, err := ioutil.ReadFile(usr.HomeDir + "/.ludo/" + name + ".json")
+	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
 	if err != nil {
 		return err
 	}
