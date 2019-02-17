@@ -14,7 +14,7 @@ type sceneExplorer struct {
 	entry
 }
 
-func contains(f os.FileInfo, exts []string) bool {
+func matchesExtensions(f os.FileInfo, exts []string) bool {
 	if len(exts) > 0 {
 		var fileExtension = filepath.Ext(f.Name())
 		for _, ext := range exts {
@@ -66,7 +66,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		}
 
 		// Filter files by extension.
-		if exts != nil && !f.IsDir() && !contains(f, exts) {
+		if exts != nil && !f.IsDir() && !matchesExtensions(f, exts) {
 			continue
 		}
 
