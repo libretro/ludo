@@ -12,6 +12,7 @@ func Update(dt float32) {
 	currentScene.update(dt)
 }
 
+// Used to mesure how long the direction keys have been pressed.
 var downPressed, upPressed, downDelay, upDelay float32
 
 // Used to speed up the scrolling when up or down are hold by reducing the
@@ -24,6 +25,8 @@ func scrollSpeed(pressedSeconds float32) float32 {
 	return delay
 }
 
+// This is the generic menu input handler. It encapsulate the logic to scroll
+// vertically in entry lists, and also respond to presses on OK and Cancel.
 func genericInput(list *entry, dt float32) {
 	menu.inputCooldown -= dt
 	if menu.inputCooldown < 0 {
