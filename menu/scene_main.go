@@ -40,14 +40,7 @@ func buildMainMenu() Scene {
 			menu.stack = append(menu.stack, buildExplorer(
 				settings.Current.CoresDirectory,
 				[]string{".dll", ".dylib", ".so"},
-				func(path string) {
-					err := core.Load(path)
-					if err != nil {
-						ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
-						return
-					}
-					ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded: %s", filepath.Base(path))
-				},
+				coreExplorerCb,
 				nil,
 			))
 		},
@@ -59,16 +52,12 @@ func buildMainMenu() Scene {
 		callbackOK: func() {
 			if state.Global.Core != nil {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil,
-					func(path string) {
-						err := core.LoadGame(path)
-						if err != nil {
-							ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
-							return
-						}
-						menu.WarpToQuickMenu()
-						state.Global.MenuActive = false
-					}, nil))
+				menu.stack = append(menu.stack, buildExplorer(
+					usr.HomeDir,
+					nil,
+					gameExplorerCb,
+					nil,
+				))
 			} else {
 				ntf.DisplayAndLog(ntf.Warning, "Menu", "Please load a core first.")
 			}
@@ -103,6 +92,27 @@ func buildMainMenu() Scene {
 	list.segueMount()
 
 	return &list
+}
+
+// triggered when a core is selected in the file explorer of Load Core
+func coreExplorerCb(path string) {
+	err := core.Load(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
+		return
+	}
+	ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded: %s", filepath.Base(path))
+}
+
+// triggered when a game is selected in the file explorer of Load Game
+func gameExplorerCb(path string) {
+	err := core.LoadGame(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
+		return
+	}
+	menu.WarpToQuickMenu()
+	state.Global.MenuActive = false
 }
 
 func (main *screenMain) Entry() *entry {
