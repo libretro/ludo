@@ -8,12 +8,12 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-type screenCoreOptions struct {
+type sceneCoreOptions struct {
 	entry
 }
 
 func buildCoreOptions() Scene {
-	var list screenCoreOptions
+	var list sceneCoreOptions
 	list.label = "Core Options"
 
 	for i, v := range core.Options.Vars {
@@ -44,31 +44,31 @@ func buildCoreOptions() Scene {
 	return &list
 }
 
-func (s *screenCoreOptions) Entry() *entry {
+func (s *sceneCoreOptions) Entry() *entry {
 	return &s.entry
 }
 
-func (s *screenCoreOptions) segueMount() {
+func (s *sceneCoreOptions) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *screenCoreOptions) segueNext() {
+func (s *sceneCoreOptions) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *screenCoreOptions) segueBack() {
+func (s *sceneCoreOptions) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenCoreOptions) update(dt float32) {
+func (s *sceneCoreOptions) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
 
-func (s *screenCoreOptions) render() {
+func (s *sceneCoreOptions) render() {
 	genericRender(&s.entry)
 }
 
-func (s *screenCoreOptions) drawHintBar() {
+func (s *sceneCoreOptions) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})

@@ -15,12 +15,12 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-type screenPlaylist struct {
+type scenePlaylist struct {
 	entry
 }
 
 func buildPlaylist(path string) Scene {
-	var list screenPlaylist
+	var list scenePlaylist
 	list.label = utils.FileName(path)
 
 	for _, game := range playlists.Playlists[path] {
@@ -56,7 +56,7 @@ func extractTags(name string) (string, []string) {
 	return name, tags
 }
 
-func loadEntry(list *screenPlaylist, playlist, gamePath string) {
+func loadEntry(list *scenePlaylist, playlist, gamePath string) {
 	if _, err := os.Stat(gamePath); os.IsNotExist(err) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Game not found.")
 		return
@@ -94,28 +94,28 @@ func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 }
 
 // Generic stuff
-func (s *screenPlaylist) Entry() *entry {
+func (s *scenePlaylist) Entry() *entry {
 	return &s.entry
 }
 
-func (s *screenPlaylist) segueMount() {
+func (s *scenePlaylist) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *screenPlaylist) segueNext() {
+func (s *scenePlaylist) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *screenPlaylist) segueBack() {
+func (s *scenePlaylist) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenPlaylist) update(dt float32) {
+func (s *scenePlaylist) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
 
 // Override rendering
-func (s *screenPlaylist) render() {
+func (s *scenePlaylist) render() {
 	list := &s.entry
 
 	_, h := vid.Window.GetFramebufferSize()
@@ -177,7 +177,7 @@ func (s *screenPlaylist) render() {
 	}
 }
 
-func (s *screenPlaylist) drawHintBar() {
+func (s *scenePlaylist) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})

@@ -15,12 +15,12 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-type screenSettings struct {
+type sceneSettings struct {
 	entry
 }
 
 func buildSettings() Scene {
-	var list screenSettings
+	var list sceneSettings
 	list.label = "Settings"
 
 	fields := structs.Fields(&settings.Current)
@@ -170,31 +170,31 @@ var incrCallbacks = map[string]callbackIncrement{
 
 // Generic stuff
 
-func (s *screenSettings) Entry() *entry {
+func (s *sceneSettings) Entry() *entry {
 	return &s.entry
 }
 
-func (s *screenSettings) segueMount() {
+func (s *sceneSettings) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *screenSettings) segueNext() {
+func (s *sceneSettings) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *screenSettings) segueBack() {
+func (s *sceneSettings) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenSettings) update(dt float32) {
+func (s *sceneSettings) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
 
-func (s *screenSettings) render() {
+func (s *sceneSettings) render() {
 	genericRender(&s.entry)
 }
 
-func (s *screenSettings) drawHintBar() {
+func (s *sceneSettings) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})

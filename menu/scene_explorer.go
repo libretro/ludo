@@ -10,7 +10,7 @@ import (
 	"github.com/libretro/ludo/utils"
 )
 
-type screenExplorer struct {
+type sceneExplorer struct {
 	entry
 }
 
@@ -27,7 +27,7 @@ func contains(f os.FileInfo, exts []string) bool {
 }
 
 func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
-	var list screenExplorer
+	var list sceneExplorer
 	list.label = "Explorer"
 
 	files, err := ioutil.ReadDir(path)
@@ -104,30 +104,30 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	return &list
 }
 
-func (explorer *screenExplorer) Entry() *entry {
+func (explorer *sceneExplorer) Entry() *entry {
 	return &explorer.entry
 }
 
-func (explorer *screenExplorer) segueMount() {
+func (explorer *sceneExplorer) segueMount() {
 	genericSegueMount(&explorer.entry)
 }
 
-func (explorer *screenExplorer) segueNext() {
+func (explorer *sceneExplorer) segueNext() {
 	genericSegueNext(&explorer.entry)
 }
 
-func (explorer *screenExplorer) segueBack() {
+func (explorer *sceneExplorer) segueBack() {
 	genericAnimate(&explorer.entry)
 }
 
-func (explorer *screenExplorer) update(dt float32) {
+func (explorer *sceneExplorer) update(dt float32) {
 	genericInput(&explorer.entry, dt)
 }
 
-func (explorer *screenExplorer) render() {
+func (explorer *sceneExplorer) render() {
 	genericRender(&explorer.entry)
 }
 
-func (explorer *screenExplorer) drawHintBar() {
+func (explorer *sceneExplorer) drawHintBar() {
 	genericDrawHintBar()
 }

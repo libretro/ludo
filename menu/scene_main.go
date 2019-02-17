@@ -11,12 +11,12 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-type screenMain struct {
+type sceneMain struct {
 	entry
 }
 
 func buildMainMenu() Scene {
-	var list screenMain
+	var list sceneMain
 	list.label = "Main Menu"
 
 	usr, _ := user.Current()
@@ -115,30 +115,30 @@ func gameExplorerCb(path string) {
 	state.Global.MenuActive = false
 }
 
-func (main *screenMain) Entry() *entry {
+func (main *sceneMain) Entry() *entry {
 	return &main.entry
 }
 
-func (main *screenMain) segueMount() {
+func (main *sceneMain) segueMount() {
 	genericSegueMount(&main.entry)
 }
 
-func (main *screenMain) segueBack() {
+func (main *sceneMain) segueBack() {
 	genericAnimate(&main.entry)
 }
 
-func (main *screenMain) segueNext() {
+func (main *sceneMain) segueNext() {
 	genericSegueNext(&main.entry)
 }
 
-func (main *screenMain) update(dt float32) {
+func (main *sceneMain) update(dt float32) {
 	genericInput(&main.entry, dt)
 }
 
-func (main *screenMain) render() {
+func (main *sceneMain) render() {
 	genericRender(&main.entry)
 }
 
-func (main *screenMain) drawHintBar() {
+func (main *sceneMain) drawHintBar() {
 	genericDrawHintBar()
 }
