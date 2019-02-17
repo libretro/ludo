@@ -24,8 +24,8 @@ func name() string {
 	return name + ".srm"
 }
 
-// Path returns the path of the SRAM file for the current core
-func Path() string {
+// path returns the path of the SRAM file for the current core
+func path() string {
 	return filepath.Join(settings.Current.SavefilesDirectory, name())
 }
 
@@ -51,7 +51,7 @@ func SaveSRAM() error {
 		return err
 	}
 
-	fd, err := os.Create(Path())
+	fd, err := os.Create(path())
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func LoadSRAM() error {
 		return errors.New("core not running")
 	}
 
-	fd, err := os.Open(Path())
+	fd, err := os.Open(path())
 	if err != nil {
 		return err
 	}
