@@ -206,7 +206,12 @@ func (s *screenSettings) drawHintBar() {
 		stack = stackHint(stack, "key-p", "RESUME", h, c)
 	}
 	stack = stackHint(stack, "key-up-down", "NAVIGATE", h, c)
-	stack = stackHint(stack, "key-left-right", "SET", h, c)
 	stack = stackHint(stack, "key-z", "BACK", h, c)
-	stack = stackHint(stack, "key-x", "SET", h, c)
+
+	list := menu.stack[len(menu.stack)-1].Entry()
+	if list.children[list.ptr].callbackOK != nil {
+		stack = stackHint(stack, "key-x", "SET", h, c)
+	} else {
+		stack = stackHint(stack, "key-left-right", "SET", h, c)
+	}
 }
