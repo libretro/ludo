@@ -9,6 +9,7 @@ import (
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
+	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 	colorful "github.com/lucasb-eyer/go-colorful"
@@ -294,14 +295,20 @@ func (tabs screenTabs) drawHintBar() {
 	stack := 30 * menu.ratio
 	vid.DrawImage(menu.icons["key-left-right"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
 	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
 	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "NAVIGATE")
 	stack += vid.Font.Width(0.5*menu.ratio, "NAVIGATE")
 
 	stack += 30 * menu.ratio
 	vid.DrawImage(menu.icons["key-x"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
 	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
 	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "OPEN")
 	stack += vid.Font.Width(0.5*menu.ratio, "OPEN")
+
+	if state.Global.CoreRunning {
+		stack += 30 * menu.ratio
+		vid.DrawImage(menu.icons["key-p"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
+		stack += 70 * menu.ratio
+		vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "TOGGLE MENU")
+		stack += vid.Font.Width(0.5*menu.ratio, "TOGGLE MENU")
+	}
 }
