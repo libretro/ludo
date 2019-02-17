@@ -136,22 +136,20 @@ func (s *screenSavestates) render() {
 
 func (s *screenSavestates) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
-	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 
 	var stack float32
 	if state.Global.CoreRunning {
-		stack = stackHint(stack, "key-p", "RESUME", h, c)
+		stack = stackHint(stack, "key-p", "RESUME", h)
 	}
-	stack = stackHint(stack, "key-up-down", "NAVIGATE", h, c)
-	stack = stackHint(stack, "key-z", "BACK", h, c)
+	stack = stackHint(stack, "key-up-down", "NAVIGATE", h)
+	stack = stackHint(stack, "key-z", "BACK", h)
 	if ptr == 0 {
-		stack = stackHint(stack, "key-x", "SAVE", h, c)
+		stack = stackHint(stack, "key-x", "SAVE", h)
 	} else {
-		stack = stackHint(stack, "key-x", "LOAD", h, c)
+		stack = stackHint(stack, "key-x", "LOAD", h)
 	}
 }

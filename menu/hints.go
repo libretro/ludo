@@ -2,7 +2,9 @@ package menu
 
 import "github.com/libretro/ludo/video"
 
-func stackHint(stack float32, icon, label string, h int, c video.Color) float32 {
+func stackHint(stack float32, icon, label string, h int) float32 {
+	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
+	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
 	stack += 30 * menu.ratio
 	vid.DrawImage(menu.icons[icon], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
 	stack += 70 * menu.ratio
