@@ -6,7 +6,6 @@ package core
 import (
 	"archive/zip"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -184,7 +183,6 @@ func LoadGame(gamePath string) error {
 
 	ntf.Display(ntf.Info, "Press P to toggle the menu", ntf.Medium)
 
-	fmt.Println(vid.Geom.BaseWidth)
 	vid.InitFramebuffer(vid.Geom.BaseWidth, vid.Geom.BaseHeight)
 
 	return nil

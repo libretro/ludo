@@ -340,6 +340,7 @@ func (video *Video) Render() {
 
 // Refresh the texture framebuffer
 func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
+	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
 
