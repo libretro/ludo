@@ -1,3 +1,6 @@
+// Package scanner generates game playlists by scanning your game collection
+// against the database. It uses CRC checksums for No-Intro zip files and
+// name matching for Redump cue files.
 package scanner
 
 import (

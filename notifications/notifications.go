@@ -1,3 +1,5 @@
+// Package notifications exposes functions to display messages in toast
+// widgets.
 package notifications
 
 import (

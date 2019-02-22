@@ -20,9 +20,9 @@ import (
 
 // Options is a container type for core options internals
 type Options struct {
-	Vars    []libretro.Variable
-	Choices []int
-	Updated bool
+	Vars    []libretro.Variable // the variables exposed by the core
+	Choices []int               // the number of choices each variable can take
+	Updated bool                // notify the core that values have been updated
 
 	sync.Mutex
 }
