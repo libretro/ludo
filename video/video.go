@@ -279,6 +279,11 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
 	video.white = newWhite()
+
+	if state.Global.CoreRunning {
+		video.InitFramebuffer(video.Geom.BaseWidth, video.Geom.BaseHeight)
+		state.Global.Core.HWRenderCallback.ContextReset()
+	}
 }
 
 // SetPixelFormat is a callback passed to the libretro implementation.
