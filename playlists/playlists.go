@@ -17,15 +17,15 @@ import (
 	"github.com/libretro/ludo/settings"
 )
 
-// PlaylistEntry represents a game in a playlist.
-type PlaylistEntry struct {
+// Game represents a game in a playlist.
+type Game struct {
 	Path  string // Absolute path of the game on the filesystem
 	Name  string // Human readable name of the game, comes from the RDB
 	CRC32 uint32 // Checksum of the game, used for deduplication
 }
 
 // Playlist is a list of games, result of scanning for games on the filesystem.
-type Playlist []PlaylistEntry
+type Playlist []Game
 
 // Playlists is a map of playlists organized per system.
 var Playlists = map[string]Playlist{}
@@ -53,7 +53,7 @@ func Load() {
 				log.Println(err)
 				continue
 			}
-			var entry PlaylistEntry
+			var entry Game
 			entry.Path = line[0]
 			entry.Name = line[1]
 			if line[2] != "" {

@@ -29,7 +29,7 @@ func TestEntry_SetField(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := &Entry{}
+			g := &Game{}
 			g.SetField(tt.args.key, tt.args.value)
 			got := reflect.ValueOf(*g).FieldByName(tt.args.fieldName)
 			if !reflect.DeepEqual(got.Interface(), tt.want) {
@@ -73,13 +73,13 @@ func TestDB_FindByCRC(t *testing.T) {
 		romPath string
 		romName string
 		CRC32   uint32
-		games   chan (Entry)
+		games   chan (Game)
 	}
 	tests := []struct {
 		name string
 		db   *DB
 		args args
-		want Entry
+		want Game
 	}{
 		{
 			name: "Can find a game in a DB with a single RDB",
@@ -88,9 +88,9 @@ func TestDB_FindByCRC(t *testing.T) {
 				romPath: "/foo/Urban Champion (Germany).bin",
 				romName: "Urban Champion (Germany).bin",
 				CRC32:   3577638060,
-				games:   make(chan (Entry)),
+				games:   make(chan (Game)),
 			},
-			want: Entry{
+			want: Game{
 				System:  "Foo - Bar",
 				Path:    "/foo/Urban Champion (Germany).bin",
 				Name:    "Urban Champion (Germany)",

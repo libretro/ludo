@@ -27,12 +27,12 @@ func LoadDB(dir string) (rdb.DB, error) {
 	}
 	db := make(rdb.DB)
 	for _, f := range files {
-		if !strings.Contains(f.Name(), ".rdb") {
+		name := f.Name()
+		if !strings.Contains(name, ".rdb") {
 			continue
 		}
-		filename := f.Name()
-		system := filename[0 : len(filename)-4]
-		bytes, _ := ioutil.ReadFile(dir + "/" + f.Name())
+		system := name[0 : len(name)-4]
+		bytes, _ := ioutil.ReadFile(dir + "/" + name)
 		db[system] = rdb.Parse(bytes)
 	}
 	return db, nil
@@ -41,7 +41,7 @@ func LoadDB(dir string) (rdb.DB, error) {
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
 	roms := utils.AllFilesIn(dir)
-	scannedGames := make(chan (rdb.Entry))
+	scannedGames := make(chan (rdb.Game))
 	go Scan(dir, roms, scannedGames, doneCb)
 	go func() {
 		for game := range scannedGames {
@@ -63,7 +63,7 @@ func ScanDir(dir string, doneCb func()) {
 }
 
 // Scan scans a list of roms against the database
-func Scan(dir string, roms []string, games chan (rdb.Entry), doneCb func()) {
+func Scan(dir string, roms []string, games chan (rdb.Game), doneCb func()) {
 	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
 	for i, f := range roms {
 		ext := filepath.Ext(f)

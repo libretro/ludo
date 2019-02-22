@@ -11,10 +11,10 @@ import (
 type DB map[string]RDB
 
 // RDB contains all the game descriptions for a system
-type RDB []Entry
+type RDB []Game
 
-// Entry represents a game in the libretro database
-type Entry struct {
+// Game represents a game in the libretro database
+type Game struct {
 	Path        string
 	Name        string
 	Description string
@@ -57,7 +57,7 @@ const (
 )
 
 // SetField sets a field in the entry
-func (g *Entry) SetField(key string, value string) {
+func (g *Game) SetField(key string, value string) {
 	switch key {
 	case "name":
 		g.Name = string(value[:])
@@ -92,16 +92,16 @@ func Parse(rdb []byte) RDB {
 	pos := 0x10
 	iskey := false
 	key := ""
-	g := Entry{}
+	g := Game{}
 	for int(rdb[pos]) != mpfNil {
 		fieldtype := int(rdb[pos])
 		var value []byte
 		if fieldtype < mpfFixMap {
 		} else if fieldtype < mpfFixArray {
-			if (g != Entry{}) {
+			if (g != Game{}) {
 				output = append(output, g)
 			}
-			g = Entry{}
+			g = Game{}
 			pos++
 			iskey = true
 			continue
@@ -155,14 +155,14 @@ func Parse(rdb []byte) RDB {
 		iskey = !iskey
 	}
 	// Don't forget to add the last rdb entry
-	if (g != Entry{}) {
+	if (g != Game{}) {
 		output = append(output, g)
 	}
 	return output
 }
 
 // FindByCRC loops over the RDBs in the DB and concurrently matches CRC32 checksums.
-func (db *DB) FindByCRC(romPath string, romName string, CRC32 uint32, games chan (Entry)) {
+func (db *DB) FindByCRC(romPath string, romName string, CRC32 uint32, games chan (Game)) {
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
 	// For every RDB in the DB
@@ -172,7 +172,7 @@ func (db *DB) FindByCRC(romPath string, romName string, CRC32 uint32, games chan
 			for _, game := range rdb {
 				// If the checksums match
 				if CRC32 == game.CRC32 {
-					games <- Entry{Path: romPath, ROMName: romName, Name: game.Name, CRC32: CRC32, System: system}
+					games <- Game{Path: romPath, ROMName: romName, Name: game.Name, CRC32: CRC32, System: system}
 				}
 			}
 			wg.Done()
@@ -183,7 +183,7 @@ func (db *DB) FindByCRC(romPath string, romName string, CRC32 uint32, games chan
 }
 
 // FindByROMName loops over the RDBs in the DB and concurrently matches ROM names.
-func (db *DB) FindByROMName(romPath string, romName string, CRC32 uint32, games chan (Entry)) {
+func (db *DB) FindByROMName(romPath string, romName string, CRC32 uint32, games chan (Game)) {
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
 	// For every RDB in the DB
@@ -193,7 +193,7 @@ func (db *DB) FindByROMName(romPath string, romName string, CRC32 uint32, games 
 			for _, game := range rdb {
 				// If the checksums match
 				if romName == game.ROMName {
-					games <- Entry{Path: romPath, ROMName: romName, Name: game.Name, CRC32: CRC32, System: system}
+					games <- Game{Path: romPath, ROMName: romName, Name: game.Name, CRC32: CRC32, System: system}
 				}
 			}
 			wg.Done()
