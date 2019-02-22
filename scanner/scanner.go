@@ -1,17 +1,20 @@
+// Package scanner generates game playlists by scanning your game collection
+// against the database. It uses CRC checksums for No-Intro zip files and
+// name matching for Redump cue files.
 package scanner
 
 import (
 	"archive/zip"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
 
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/rdb"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 )
@@ -24,12 +27,12 @@ func LoadDB(dir string) (rdb.DB, error) {
 	}
 	db := make(rdb.DB)
 	for _, f := range files {
-		if !strings.Contains(f.Name(), ".rdb") {
+		name := f.Name()
+		if !strings.Contains(name, ".rdb") {
 			continue
 		}
-		filename := f.Name()
-		system := filename[0 : len(filename)-4]
-		bytes, _ := ioutil.ReadFile(dir + f.Name())
+		system := name[0 : len(name)-4]
+		bytes, _ := ioutil.ReadFile(dir + "/" + name)
 		db[system] = rdb.Parse(bytes)
 	}
 	return db, nil
@@ -37,37 +40,31 @@ func LoadDB(dir string) (rdb.DB, error) {
 
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
-	usr, _ := user.Current()
 	roms := utils.AllFilesIn(dir)
-	scannedGames := make(chan (rdb.Entry))
+	scannedGames := make(chan (rdb.Game))
 	go Scan(dir, roms, scannedGames, doneCb)
 	go func() {
-		i := 0
 		for game := range scannedGames {
-			lplpath := usr.HomeDir + "/.ludo/playlists/" + game.System + ".lpl"
-			if playlists.ExistsInPlaylist(lplpath, game.Path, game.CRC32) {
+			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
+			lplpath := settings.Current.PlaylistsDirectory + "/" + game.System + ".csv"
+			if playlists.Contains(lplpath, game.Path, game.CRC32) {
 				continue
 			}
-			i++
 			lpl, _ := os.OpenFile(lplpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-			lpl.WriteString(game.Path + "\n")
-			lpl.WriteString(game.Name + "\n")
-			lpl.WriteString("DETECT\n")
-			lpl.WriteString("DETECT\n")
+			lpl.WriteString(game.Path + "\t")
+			lpl.WriteString(game.Name + "\t")
 			if uint64(game.CRC32) > 0 {
-				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\n")
-			} else {
-				lpl.WriteString("DETECT\n")
+				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10))
 			}
-			lpl.WriteString(game.System + ".lpl\n")
+			lpl.WriteString("\n")
 			lpl.Close()
 		}
 	}()
 }
 
 // Scan scans a list of roms against the database
-func Scan(dir string, roms []string, games chan (rdb.Entry), doneCb func()) {
-	nid := notifications.DisplayAndLog("Menu", "Scanning %s", dir)
+func Scan(dir string, roms []string, games chan (rdb.Game), doneCb func()) {
+	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
 	for i, f := range roms {
 		ext := filepath.Ext(f)
 		switch ext {
@@ -78,16 +75,16 @@ func Scan(dir string, roms []string, games chan (rdb.Entry), doneCb func()) {
 				if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
 					state.Global.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
-					notifications.Update(nid, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				}
 			}
 			z.Close()
 		case ".cue":
 			// Look for a matching game entry in the database
 			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
-			notifications.Update(nid, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}
 	}
-	notifications.Update(nid, "Done scanning.")
+	ntf.Update(nid, ntf.Success, "Done scanning.")
 	doneCb()
 }

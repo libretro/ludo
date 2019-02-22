@@ -36,8 +36,8 @@ Setup openal headers and dll in mingw-w64 `include` and `lib` folders.
 
 ## Building
 
-    go get github.com/libretro/ludo
-    cd $GOPATH/src/github.com/libretro/ludo
+    git clone --recursive https://github.com/libretro/ludo.git
+    cd ludo
     go build
 
 ## Running
@@ -46,4 +46,4 @@ Setup openal headers and dll in mingw-w64 `include` and `lib` folders.
 
 If on a RaspberryPi:
 
-    ./ludo -glver=21
+    ./ludo -glver=2.1

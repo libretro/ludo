@@ -8,16 +8,31 @@ language: go
 go:
   - "1.11"
 
+env:
+  - GO111MODULE=on
+
+before_script:
+  - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
+  - go get github.com/golang/lint/golint
+  - go get honnef.co/go/tools/cmd/staticcheck
+  - go get github.com/fzipp/gocyclo
+  - export PATH=$GOPATH/bin:$PATH
+
 matrix:
   include:
     - name: Linux x86_64
       os: linux
+      services: xvfb
       before_install:
         - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
       script:
-        - go get -t -v ./...
+        - go get -v ./...
+        - xvfb-run go test -v -race ./...
+        - go vet ./...
+        - staticcheck ./...
+        - gocyclo -over 19 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
         - go build -v
-      before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
     - name: Linux arm
       os: linux
@@ -35,17 +50,26 @@ matrix:
         - sudo apt-get install gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
       script:
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get -t -v ./...
+        #- GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go test -v -race ./...
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go vet ./...
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc staticcheck ./...
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc gocyclo -over 19 $GO_FILES
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc golint -set_exit_status $(go list ./...)
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
-      before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
     - name: OSX
       os: osx
       before_install:
+        - brew update
         - brew install openal-soft
       script:
-        - go get -t -v ./...
+        - go get -v ./...
+        - go test -v -race ./...
+        - go vet ./...
+        - staticcheck ./...
+        - gocyclo -over 19 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
         - go build -v
-      before_deploy:
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
     - name: Windows
       os: windows
@@ -55,10 +79,19 @@ matrix:
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
         - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
+        - cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
+        - cp /c/Users/travis/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
       script:
-        - go get -t -v ./...
-        - go build -v
-      before_deploy:
+        - go get -v ./...
+        #- go test -v ./...
+        #- go vet ./...
+        - staticcheck ./...
+        - gocyclo -over 19 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
+        - go build -v -ldflags '-H=windowsgui'
+        - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then cp *.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
 
 deploy:

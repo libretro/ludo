@@ -2,53 +2,72 @@ package menu
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/utils"
 )
 
-type screenExplorer struct {
+type sceneExplorer struct {
 	entry
 }
 
-func buildExplorer(path string, exts []string, cb func(string) error, dirAction *entry) Scene {
-	var list screenExplorer
+func matchesExtensions(f os.FileInfo, exts []string) bool {
+	if len(exts) > 0 {
+		var fileExtension = filepath.Ext(f.Name())
+		for _, ext := range exts {
+			if ext == fileExtension {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
+	var list sceneExplorer
 	list.label = "Explorer"
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		notifications.DisplayAndLog("Menu", err.Error())
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}
 
+	// Display the special directory action entry.
 	if dirAction != nil && dirAction.label != "" {
 		dirAction.callbackOK = func() { cb(path) }
 		list.children = append(list.children, *dirAction)
 	}
 
+	// Add a first entry for the parent directory.
+	list.children = append(list.children, entry{
+		label: "..",
+		icon:  "folder",
+		callbackOK: func() {
+			list.segueNext()
+			newPath := filepath.Clean(path + "/..")
+			if dirAction != nil {
+				dirAction.callbackOK = func() { cb(newPath) }
+			}
+			menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
+		},
+	})
+
+	// Loop over files in the directory and add one entry for each.
 	for _, f := range files {
 		f := f
 		icon := "file"
 
 		// Check whether or not we are to display hidden files.
-		if f.Name()[:1] == "." && settings.Settings.ShowHiddenFiles {
+		if f.Name()[:1] == "." && settings.Current.ShowHiddenFiles {
 			continue
 		}
 
 		// Filter files by extension.
-		if !f.IsDir() && len(exts) > 0 {
-			var extensionFound = false
-			var fileExtension = filepath.Ext(f.Name())
-			for _, extension := range exts {
-				if (extension == fileExtension) {
-					extensionFound = true
-					break
-				}
-			}
-			if !extensionFound {
-				continue
-			}
+		if exts != nil && !f.IsDir() && !matchesExtensions(f, exts) {
+			continue
 		}
 
 		if f.IsDir() {
@@ -85,30 +104,30 @@ func buildExplorer(path string, exts []string, cb func(string) error, dirAction 
 	return &list
 }
 
-func (explorer *screenExplorer) Entry() *entry {
+func (explorer *sceneExplorer) Entry() *entry {
 	return &explorer.entry
 }
 
-func (explorer *screenExplorer) segueMount() {
+func (explorer *sceneExplorer) segueMount() {
 	genericSegueMount(&explorer.entry)
 }
 
-func (explorer *screenExplorer) segueNext() {
+func (explorer *sceneExplorer) segueNext() {
 	genericSegueNext(&explorer.entry)
 }
 
-func (explorer *screenExplorer) segueBack() {
+func (explorer *sceneExplorer) segueBack() {
 	genericAnimate(&explorer.entry)
 }
 
-func (explorer *screenExplorer) update() {
-	genericInput(&explorer.entry)
+func (explorer *sceneExplorer) update(dt float32) {
+	genericInput(&explorer.entry, dt)
 }
 
-func (explorer *screenExplorer) render() {
+func (explorer *sceneExplorer) render() {
 	genericRender(&explorer.entry)
 }
 
-func (explorer *screenExplorer) drawHintBar() {
+func (explorer *sceneExplorer) drawHintBar() {
 	genericDrawHintBar()
 }

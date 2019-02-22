@@ -2,49 +2,95 @@ package menu
 
 import (
 	"fmt"
+	"path/filepath"
 
+	"github.com/fatih/structs"
 	"github.com/go-gl/glfw/v3.2/glfw"
 
 	"github.com/libretro/ludo/audio"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
-
-	"github.com/fatih/structs"
 )
 
-type screenSettings struct {
+type sceneSettings struct {
 	entry
 }
 
 func buildSettings() Scene {
-	var list screenSettings
+	var list sceneSettings
 	list.label = "Settings"
 
-	fields := structs.Fields(&settings.Settings)
+	fields := structs.Fields(&settings.Current)
 	for _, f := range fields {
 		f := f
 		// Don't expose settings without label
 		if f.Tag("label") == "" {
 			continue
 		}
-		list.children = append(list.children, entry{
-			label: f.Tag("label"),
-			icon:  "subsetting",
-			incr: func(direction int) {
-				incrCallbacks[f.Name()](f, direction)
-			},
-			value: f.Value,
-			stringValue: func() string {
-				return fmt.Sprintf(f.Tag("fmt"), f.Value())
-			},
-			widget: widgets[f.Tag("widget")],
-		})
+
+		if f.Tag("widget") == "dir" {
+			// Directory settings
+			list.children = append(list.children, entry{
+				label: f.Tag("label"),
+				icon:  "folder",
+				value: f.Value,
+				stringValue: func() string {
+					return "<" + utils.FileName(f.Value().(string)) + ">"
+				},
+				widget: widgets[f.Tag("widget")],
+				callbackOK: func() {
+					list.segueNext()
+					menu.stack = append(menu.stack, buildExplorer(
+						f.Value().(string),
+						nil,
+						func(path string) { dirExplorerCb(path, f) },
+						&entry{
+							label: "<Select this directory>",
+							icon:  "scan",
+						}),
+					)
+				},
+			})
+		} else {
+			// Regular settings
+			list.children = append(list.children, entry{
+				label: f.Tag("label"),
+				icon:  "subsetting",
+				incr: func(direction int) {
+					incrCallbacks[f.Name()](f, direction)
+				},
+				value: f.Value,
+				stringValue: func() string {
+					return fmt.Sprintf(f.Tag("fmt"), f.Value())
+				},
+				widget: widgets[f.Tag("widget")],
+			})
+		}
 	}
 
 	list.segueMount()
 
 	return &list
+}
+
+// triggered when selecting a directory in the settings file explorer
+func dirExplorerCb(path string, f *structs.Field) {
+	var err error
+	path, err = filepath.Abs(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
+	f.Set(path)
+	ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
+	err = settings.Save()
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
 }
 
 // Widgets to display settings values
@@ -94,7 +140,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
-		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		vid.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
 		settings.Save()
 	},
@@ -108,7 +154,7 @@ var incrCallbacks = map[string]callbackIncrement{
 			v = len(glfw.GetMonitors()) - 1
 		}
 		f.Set(v)
-		vid.Reconfigure(settings.Settings.VideoFullscreen)
+		vid.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
 		settings.Save()
 	},
@@ -129,55 +175,46 @@ var incrCallbacks = map[string]callbackIncrement{
 
 // Generic stuff
 
-func (s *screenSettings) Entry() *entry {
+func (s *sceneSettings) Entry() *entry {
 	return &s.entry
 }
 
-func (s *screenSettings) segueMount() {
+func (s *sceneSettings) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *screenSettings) segueNext() {
+func (s *sceneSettings) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *screenSettings) segueBack() {
+func (s *sceneSettings) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenSettings) update() {
-	genericInput(&s.entry)
+func (s *sceneSettings) update(dt float32) {
+	genericInput(&s.entry, dt)
 }
 
-func (s *screenSettings) render() {
+func (s *sceneSettings) render() {
 	genericRender(&s.entry)
 }
 
-func (s *screenSettings) drawHintBar() {
+func (s *sceneSettings) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
-	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
 
-	stack := 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-up-down"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "NAVIGATE")
-	stack += vid.Font.Width(0.5*menu.ratio, "NAVIGATE")
+	var stack float32
+	if state.Global.CoreRunning {
+		stackHint(&stack, "key-p", "RESUME", h)
+	}
+	stackHint(&stack, "key-up-down", "NAVIGATE", h)
+	stackHint(&stack, "key-z", "BACK", h)
 
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-left-right"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "SET")
-	stack += vid.Font.Width(0.5*menu.ratio, "SET")
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-z"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "BACK")
-	stack += vid.Font.Width(0.5*menu.ratio, "BACK")
+	list := menu.stack[len(menu.stack)-1].Entry()
+	if list.children[list.ptr].callbackOK != nil {
+		stackHint(&stack, "key-x", "SET", h)
+	} else {
+		stackHint(&stack, "key-left-right", "SET", h)
+	}
 }

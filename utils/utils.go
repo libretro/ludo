@@ -5,23 +5,13 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
-
-// Slurp reads a file completely and returns the content as a []byte.
-func Slurp(path string) ([]byte, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	return ioutil.ReadAll(f)
-}
 
 // StringInSlice check wether a string is contain in a string slice.
 func StringInSlice(a string, list []string) bool {
@@ -33,12 +23,20 @@ func StringInSlice(a string, list []string) bool {
 	return false
 }
 
-// Filename returns the name of a file, without the path and extension.
-func Filename(path string) string {
+// FileName returns the name of a file, without the path and extension.
+func FileName(path string) string {
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
 	name = name[0 : len(name)-len(ext)]
 	return name
+}
+
+// DatedName returns the name of a file with a date appended, without extension.
+// It is used for savestates and screenshot names.
+func DatedName(path string) string {
+	name := FileName(path)
+	date := time.Now().Format("2006-01-02-15-04-05")
+	return name + "@" + date
 }
 
 type logWriter struct {

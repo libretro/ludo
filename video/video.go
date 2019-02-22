@@ -33,7 +33,7 @@ type WindowInterface interface {
 
 // Video holds the state of the video package
 type Video struct {
-	GLVersion uint
+	GLVersion string
 	Window    WindowInterface
 	Geom      libretro.GameGeometry
 	Font      *glfont.Font
@@ -55,7 +55,7 @@ type Video struct {
 }
 
 // Init instanciates the video package
-func Init(fullscreen bool, GLVersion uint) *Video {
+func Init(fullscreen bool, GLVersion string) *Video {
 	vid := &Video{}
 	vid.GLVersion = GLVersion
 	vid.Configure(fullscreen)
@@ -73,49 +73,49 @@ func (video *Video) Reconfigure(fullscreen bool) {
 func (video *Video) configureContext() uint {
 	var GLSLVersion uint
 	switch video.GLVersion {
-	case 20:
+	case "2.0":
 		glfw.WindowHint(glfw.ContextVersionMajor, 2)
 		glfw.WindowHint(glfw.ContextVersionMinor, 0)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 		GLSLVersion = 110
-	case 21:
+	case "2.1":
 		glfw.WindowHint(glfw.ContextVersionMajor, 2)
 		glfw.WindowHint(glfw.ContextVersionMinor, 1)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 		GLSLVersion = 120
-	case 30:
+	case "3.0":
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 0)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 		GLSLVersion = 130
-	case 31:
+	case "3.1":
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 1)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 		GLSLVersion = 140
-	case 32:
+	case "3.2":
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 2)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 		GLSLVersion = 150
-	case 41:
+	case "4.1":
 		glfw.WindowHint(glfw.ContextVersionMajor, 4)
 		glfw.WindowHint(glfw.ContextVersionMinor, 1)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 		GLSLVersion = 410
-	case 42:
+	case "4.2":
 		glfw.WindowHint(glfw.ContextVersionMajor, 4)
 		glfw.WindowHint(glfw.ContextVersionMinor, 2)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 		GLSLVersion = 420
-	default: // 32
+	default: // 3.2
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 2)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
@@ -138,7 +138,7 @@ func (video *Video) Configure(fullscreen bool) {
 	GLSLVersion := video.configureContext()
 
 	if fullscreen {
-		m = glfw.GetMonitors()[settings.Settings.VideoMonitorIndex]
+		m = glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
 		vm := m.GetVideoMode()
 		width = vm.Width
 		height = vm.Height
@@ -169,7 +169,8 @@ func (video *Video) Configure(fullscreen bool) {
 	video.CoreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
-	video.Font, err = glfont.LoadFont("assets/font.ttf", int32(64), fbw, fbh, GLSLVersion)
+	assets := settings.Current.AssetsDirectory
+	video.Font, err = glfont.LoadFont(assets+"/font.ttf", int32(64), fbw, fbh, GLSLVersion)
 	if err != nil {
 		panic(err)
 	}
@@ -292,39 +293,34 @@ func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
-	w := fbw
-	h := fbw / float32(video.Geom.AspectRatio)
-	if h > fbh {
-		w = fbh * float32(video.Geom.AspectRatio)
-		h = fbh
+	h := fbh
+	w := fbh * float32(video.Geom.AspectRatio)
+	if w > fbw {
+		h = fbw / float32(video.Geom.AspectRatio)
+		w = fbw
 	}
 
 	// Place the content in the middle of the window.
 	x := (fbw - w) / 2
 	y := (fbh - h) / 2
 
-	x1, y1, x2, y2, x3, y3, x4, y4 := XYWHTo4points(x, y, w, h, fbh)
-
-	va := []float32{
-		//  X, Y, U, V
-		x1/fbw*2 - 1, y1/fbh*2 - 1, 0, 1, // left-bottom
-		x2/fbw*2 - 1, y2/fbh*2 - 1, 0, 0, // left-top
-		x3/fbw*2 - 1, y3/fbh*2 - 1, 1, 1, // right-bottom
-		x4/fbw*2 - 1, y4/fbh*2 - 1, 1, 0, // right-top
-	}
-
+	va := video.vertexArray(x, y, w, h, 1.0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 }
 
 // Render the current frame
 func (video *Video) Render() {
-	if state.Global.CoreRunning {
-		gl.ClearColor(0, 0, 0, 1)
-	} else {
+	if !state.Global.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		return
 	}
+	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
+
+	avi := state.Global.Core.GetSystemAVInfo()
+	video.Geom = avi.Geometry
 
 	fbw, fbh := video.Window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(fbw), int32(fbh))
@@ -360,19 +356,9 @@ func (video *Video) CurrentFramebuffer() uintptr {
 	return uintptr(video.fboID)
 }
 
-/*
-Added this in glfw context.go
-
-func GetProcAddress(procName string) uintptr {
-	p := C.CString(procName)
-	defer C.free(unsafe.Pointer(p))
-	ret := unsafe.Pointer(C.glfwGetProcAddress(p))
-	panicError()
-	return uintptr(ret)
-}
-*/
+// ProcAddress returns the address of the proc from GLFW
 func (video *Video) ProcAddress(procName string) uintptr {
-	return glfw.GetProcAddress(procName)
+	return uintptr(glfw.GetProcAddress(procName))
 }
 
 var vertices = []float32{

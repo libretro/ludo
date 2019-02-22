@@ -3,12 +3,14 @@ package core
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/user"
 	"time"
 	"unsafe"
 
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 )
 
@@ -43,14 +45,14 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetPerfInterface:
 		state.Global.Core.BindPerfCallback(data, getTimeUsec)
 	case libretro.EnvironmentSetFrameTimeCallback:
-		state.Global.FrameTimeCb = libretro.SetFrameTimeCallback(data)
+		state.Global.Core.SetFrameTimeCallback(data)
 	case libretro.EnvironmentSetAudioCallback:
-		state.Global.AudioCb = libretro.SetAudioCallback(data)
+		state.Global.Core.SetAudioCallback(data)
 	case libretro.EnvironmentSetHWRenderer:
-		state.Global.HWRenderCb = libretro.SetHWRenderCallback(data)
-		state.Global.HWRenderCb.GetCurrentFramebuffer = vid.CurrentFramebuffer
-		state.Global.HWRenderCb.GetProcAddress = vid.ProcAddress
-		fmt.Println(state.Global.HWRenderCb)
+		state.Global.Core.HWRenderCallback = libretro.SetHWRenderCallback(data)
+		state.Global.Core.HWRenderCallback.GetCurrentFramebuffer = vid.CurrentFramebuffer
+		state.Global.Core.HWRenderCallback.GetProcAddress = vid.ProcAddress
+		fmt.Println(state.Global.Core.HWRenderCallback)
 		return true
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
@@ -61,29 +63,28 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		}
 		return vid.SetPixelFormat(format)
 	case libretro.EnvironmentGetSystemDirectory:
-		usr, _ := user.Current()
-		libretro.SetString(data, usr.HomeDir+"/.ludo/system/")
+		os.MkdirAll(settings.Current.SystemDirectory, os.ModePerm)
+		libretro.SetString(data, settings.Current.SystemDirectory)
 	case libretro.EnvironmentGetSaveDirectory:
-		usr, _ := user.Current()
-		libretro.SetString(data, usr.HomeDir+"/.ludo/savefiles/")
+		os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
+		libretro.SetString(data, settings.Current.SavefilesDirectory)
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:
 		variable := libretro.GetVariable(data)
-		for i, v := range opts.Vars {
+		for i, v := range Options.Vars {
 			if variable.Key() == v.Key() {
-				variable.SetValue(v.Choices()[opts.Choices[i]])
+				variable.SetValue(v.Choices()[Options.Choices[i]])
 				return true
 			}
 		}
 		return false
 	case libretro.EnvironmentSetVariables:
-		opts = options.New(libretro.GetVariables(data))
-		menu.UpdateOptions(opts)
+		Options = options.New(libretro.GetVariables(data))
 		return true
 	case libretro.EnvironmentGetVariableUpdate:
-		libretro.SetBool(data, opts.Updated)
-		opts.Updated = false
+		libretro.SetBool(data, Options.Updated)
+		Options.Updated = false
 		return true
 	default:
 		//log.Println("[Env]: Not implemented:", cmd)

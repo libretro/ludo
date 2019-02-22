@@ -20,6 +20,7 @@ void bridge_retro_get_system_info(void *f, struct retro_system_info *si);
 void bridge_retro_get_system_av_info(void *f, struct retro_system_av_info *si);
 bool bridge_retro_set_environment(void *f, void *callback);
 void bridge_retro_set_video_refresh(void *f, void *callback);
+void bridge_retro_set_controller_port_device(void *f, unsigned port, unsigned device);
 void bridge_retro_set_input_poll(void *f, void *callback);
 void bridge_retro_set_input_state(void *f, void *callback);
 void bridge_retro_set_audio_sample(void *f, void *callback);
@@ -37,6 +38,8 @@ uintptr_t bridge_retro_hw_get_current_framebuffer(retro_hw_get_current_framebuff
 void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f);
 void bridge_retro_audio_callback(retro_audio_callback_t f);
 void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
+size_t bridge_retro_get_memory_size(void *f, unsigned id);
+void* bridge_retro_get_memory_data(void *f, unsigned id);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -51,7 +54,6 @@ import "C"
 import (
 	"errors"
 	"strings"
-	"sync"
 	"unsafe"
 )
 
@@ -155,10 +157,53 @@ const (
 	PixelFormatRGB565   = uint32(C.RETRO_PIXEL_FORMAT_RGB565)
 )
 
-// DeviceJoypad represents the RetroPad. It is essentially a Super Nintendo
-// controller, but with additional L2/R2/L3/R3 buttons, similar to a
-// PS1 DualShock.
-const DeviceJoypad = uint32(C.RETRO_DEVICE_JOYPAD)
+// Libretro's fundamental device abstractions.
+//
+// Libretro's input system consists of some standardized device types,
+// such as a joypad (with/without analog), mouse, keyboard, lightgun
+// and a pointer.
+//
+// The functionality of these devices are fixed, and individual cores
+// map their own concept of a controller to libretro's abstractions.
+// This makes it possible for frontends to map the abstract types to a
+// real input device, and not having to worry about binding input
+// correctly to arbitrary controller layouts.
+const (
+	// DeviceNone means that input is disabled.
+	DeviceNone = uint32(C.RETRO_DEVICE_NONE)
+
+	// DeviceJoypad represents the RetroPad. It is essentially a Super Nintendo
+	// controller, but with additional L2/R2/L3/R3 buttons, similar to a
+	// PS1 DualShock.
+	DeviceJoypad = uint32(C.RETRO_DEVICE_JOYPAD)
+
+	// DeviceMouse is a simple mouse, similar to Super Nintendo's mouse.
+	// X and Y coordinates are reported relatively to last poll (poll callback).
+	// It is up to the libretro implementation to keep track of where the mouse
+	// pointer is supposed to be on the screen.
+	// The frontend must make sure not to interfere with its own hardware
+	// mouse pointer.
+	DeviceMouse = uint32(C.RETRO_DEVICE_MOUSE)
+
+	// DeviceKeyboard lets one poll for raw key pressed.
+	// It is poll based, so input callback will return with the current
+	// pressed state.
+	// For event/text based keyboard input, see
+	// RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK.
+	DeviceKeyboard = uint32(C.RETRO_DEVICE_KEYBOARD)
+
+	// DeviceLightgun X/Y coordinates are reported relatively to last poll,
+	// similar to mouse. */
+	DeviceLightgun = uint32(C.RETRO_DEVICE_LIGHTGUN)
+
+	// DeviceAnalog device is an extension to JOYPAD (RetroPad).
+	// Similar to DualShock it adds two analog sticks.
+	// This is treated as a separate device type as it returns values in the
+	// full analog range of [-0x8000, 0x7fff]. Positive X axis is right.
+	// Positive Y axis is down.
+	// Only use ANALOG type when polling for analog values of the axes.
+	DeviceAnalog = uint32(C.RETRO_DEVICE_ANALOG)
+)
 
 // Buttons for the RetroPad (JOYPAD).
 // The placement of these is equivalent to placements on the
@@ -210,6 +255,15 @@ const (
 	LogLevelDummy = uint32(C.RETRO_LOG_DUMMY)
 )
 
+// Memory constants
+const (
+	MemoryMask      = uint32(C.RETRO_MEMORY_MASK)
+	MemorySaveRAM   = uint32(C.RETRO_MEMORY_SAVE_RAM)
+	MemoryRTC       = uint32(C.RETRO_MEMORY_RTC)
+	MemorySystemRAM = uint32(C.RETRO_MEMORY_SYSTEM_RAM)
+	MemoryVideoRAM  = uint32(C.RETRO_MEMORY_VIDEO_RAM)
+)
+
 type (
 	environmentFunc      func(uint32, unsafe.Pointer) bool
 	videoRefreshFunc     func(unsafe.Pointer, int32, int32, int32)
@@ -232,17 +286,14 @@ var (
 	getTimeUsec      getTimeUsecFunc
 )
 
-var mu sync.Mutex
-
 // Load dynamically loads a libretro core at the given path and returns a Core instance
-func Load(sofile string) (Core, error) {
+func Load(sofile string) (*Core, error) {
 	core := Core{}
 
-	mu.Lock()
 	var err error
 	core.handle, err = DlOpen(sofile)
 	if err != nil {
-		return core, err
+		return nil, err
 	}
 
 	core.symRetroInit = core.DlSym("retro_init")
@@ -252,6 +303,7 @@ func Load(sofile string) (Core, error) {
 	core.symRetroGetSystemAVInfo = core.DlSym("retro_get_system_av_info")
 	core.symRetroSetEnvironment = core.DlSym("retro_set_environment")
 	core.symRetroSetVideoRefresh = core.DlSym("retro_set_video_refresh")
+	core.symRetroSetControllerPortDevice = core.DlSym("retro_set_controller_port_device")
 	core.symRetroSetInputPoll = core.DlSym("retro_set_input_poll")
 	core.symRetroSetInputState = core.DlSym("retro_set_input_state")
 	core.symRetroSetAudioSample = core.DlSym("retro_set_audio_sample")
@@ -263,9 +315,10 @@ func Load(sofile string) (Core, error) {
 	core.symRetroSerializeSize = core.DlSym("retro_serialize_size")
 	core.symRetroSerialize = core.DlSym("retro_serialize")
 	core.symRetroUnserialize = core.DlSym("retro_unserialize")
-	mu.Unlock()
+	core.symRetroGetMemorySize = core.DlSym("retro_get_memory_size")
+	core.symRetroGetMemoryData = core.DlSym("retro_get_memory_data")
 
-	return core, nil
+	return &core, nil
 }
 
 // Init takes care of the library global initialization
@@ -435,6 +488,11 @@ func (core *Core) BindPerfCallback(data unsafe.Pointer, f getTimeUsecFunc) {
 	cb.get_time_usec = (C.retro_perf_get_time_usec_t)(C.coreGetTimeUsec_cgo)
 }
 
+// SetControllerPortDevice sets the device type attached to a controller port
+func (core *Core) SetControllerPortDevice(port uint, device uint32) {
+	C.bridge_retro_set_controller_port_device(core.symRetroSetControllerPortDevice, C.unsigned(port), C.unsigned(device))
+}
+
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
 	if environment == nil {
@@ -541,18 +599,18 @@ func SetString(data unsafe.Pointer, val string) {
 }
 
 // SetFrameTimeCallback is an environment callback helper to set the FrameTimeCallback
-func SetFrameTimeCallback(data unsafe.Pointer) FrameTimeCallback {
+func (core *Core) SetFrameTimeCallback(data unsafe.Pointer) {
 	c := *(*C.struct_retro_frame_time_callback)(data)
-	ftc := FrameTimeCallback{}
+	ftc := &FrameTimeCallback{}
 	ftc.Reference = int64(c.reference)
 	ftc.Callback = func(usec int64) {
 		C.bridge_retro_frame_time_callback(c.callback, C.retro_usec_t(usec))
 	}
-	return ftc
+	core.FrameTimeCallback = ftc
 }
 
 // SetHWRenderCallback is an environment callback helper to set the HWRenderCallback
-func SetHWRenderCallback(data unsafe.Pointer) HWRenderCallback {
+func SetHWRenderCallback(data unsafe.Pointer) *HWRenderCallback {
 	c := *(*C.struct_retro_hw_render_callback)(data)
 	hwrc := HWRenderCallback{}
 	hwrc.HWContextType = uint(c.context_type)
@@ -572,18 +630,30 @@ func SetHWRenderCallback(data unsafe.Pointer) HWRenderCallback {
 		C.bridge_retro_hw_context_destroy(c.context_destroy)
 	}
 	hwrc.DebugContext = bool(c.debug_context)
-	return hwrc
+	return &hwrc
 }
 
 // SetAudioCallback is an environment callback helper to set the AudioCallback
-func SetAudioCallback(data unsafe.Pointer) AudioCallback {
+func (core *Core) SetAudioCallback(data unsafe.Pointer) {
 	c := *(*C.struct_retro_audio_callback)(data)
-	auc := AudioCallback{}
+	auc := &AudioCallback{}
 	auc.Callback = func() {
 		C.bridge_retro_audio_callback(c.callback)
 	}
 	auc.SetState = func(state bool) {
 		C.bridge_retro_audio_set_state(c.set_state, C.bool(state))
 	}
-	return auc
+	core.AudioCallback = auc
+}
+
+// GetMemorySize returns the size of a region of the memory.
+// See memory constants.
+func (core *Core) GetMemorySize(id uint32) uint {
+	return uint(C.bridge_retro_get_memory_size(core.symRetroGetMemorySize, C.unsigned(id)))
+}
+
+// GetMemoryData returns the size of a region of the memory.
+// See memory constants.
+func (core *Core) GetMemoryData(id uint32) unsafe.Pointer {
+	return C.bridge_retro_get_memory_data(core.symRetroGetMemoryData, C.unsigned(id))
 }

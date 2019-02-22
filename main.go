@@ -3,15 +3,14 @@ package main
 import (
 	"flag"
 	"log"
-	"os"
-	"os/user"
 	"runtime"
+	"time"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/ludo/core"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/menu"
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/settings"
@@ -22,70 +21,62 @@ import (
 func init() {
 	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
-	// Create base folders
-	usr, _ := user.Current()
-	os.Mkdir(usr.HomeDir+"/.ludo/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/playlists/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/savefiles/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/savestates/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/screenshots/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/system/", 0777)
-	os.Mkdir(usr.HomeDir+"/.ludo/cores/", 0777)
 }
 
 func runLoop(vid *video.Video) {
+	var currTime, prevTime time.Time
 	for !vid.Window.ShouldClose() {
+		currTime = time.Now()
+		dt := float32(currTime.Sub(prevTime)) / 1000000000
 		glfw.PollEvents()
-		notifications.Process()
+		ntf.Process(dt)
 		if !state.Global.MenuActive {
 			if state.Global.CoreRunning {
 				state.Global.Core.Run()
-				if state.Global.FrameTimeCb.Callback != nil {
-					state.Global.FrameTimeCb.Callback(state.Global.FrameTimeCb.Reference)
+				if state.Global.Core.FrameTimeCallback != nil {
+					state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
 				}
-				if state.Global.AudioCb.Callback != nil {
-					state.Global.AudioCb.Callback()
+				if state.Global.Core.AudioCallback != nil {
+					state.Global.Core.AudioCallback.Callback()
 				}
 			}
 			vid.Render()
 		} else {
 			input.Poll()
-			menu.Update()
+			menu.Update(dt)
 			vid.Render()
-			menu.Render()
+			menu.Render(dt)
 		}
 		input.ProcessActions()
 		menu.RenderNotifications()
 		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
+		prevTime = currTime
 	}
 }
 
 func main() {
-	var GLVersion uint
-	var fullscreen bool
-	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
-	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
-	flag.UintVar(&GLVersion, "glver", 32, "OpenGL version")
-	flag.BoolVar(&fullscreen, "fullscreen", false, "Force starting in full screen mode")
-	flag.Parse()
-	args := flag.Args()
-
-	var gamePath string
-	if len(args) > 0 {
-		gamePath = args[0]
-	}
-
 	err := settings.Load()
 	if err != nil {
 		log.Println("[Settings]: Loading failed:", err)
 		log.Println("[Settings]: Using default settings")
+	}
+
+	var GLVersion string
+	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
+	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
+	flag.StringVar(&GLVersion, "glver", settings.Defaults.GLVersion, "OpenGL version, possible values are 2.0, 2.1, 3.0, 3.1, 3.2, 4.1, 4.2")
+	flag.Parse()
+	args := flag.Args()
+
+	if GLVersion != settings.Defaults.GLVersion {
+		settings.Current.GLVersion = GLVersion
 		settings.Save()
 	}
 
-	if fullscreen {
-		settings.Settings.VideoFullscreen = fullscreen
-		settings.Save()
+	var gamePath string
+	if len(args) > 0 {
+		gamePath = args[0]
 	}
 
 	if err := glfw.Init(); err != nil {
@@ -93,14 +84,14 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	state.Global.DB, err = scanner.LoadDB("database/")
+	state.Global.DB, err = scanner.LoadDB(settings.Current.DatabaseDirectory)
 	if err != nil {
 		log.Println("Can't load game database:", err)
 	}
 
-	playlists.LoadPlaylists()
+	playlists.Load()
 
-	vid := video.Init(settings.Settings.VideoFullscreen, GLVersion)
+	vid := video.Init(settings.Current.VideoFullscreen, settings.Current.GLVersion)
 
 	m := menu.Init(vid)
 	m.ContextReset()
@@ -119,7 +110,7 @@ func main() {
 	if len(gamePath) > 0 {
 		err := core.LoadGame(gamePath)
 		if err != nil {
-			notifications.DisplayAndLog("Menu", err.Error())
+			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 		} else {
 			m.WarpToQuickMenu()
 		}
@@ -131,8 +122,5 @@ func main() {
 	runLoop(vid)
 
 	// Unload and deinit in the core.
-	if state.Global.CoreRunning {
-		state.Global.Core.UnloadGame()
-		state.Global.Core.Deinit()
-	}
+	core.Unload()
 }

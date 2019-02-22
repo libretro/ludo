@@ -117,9 +117,8 @@ func Test_buildExplorer(t *testing.T) {
 	menu.stack = []Scene{}
 
 	exec := 0
-	cbMock := func(str string) error {
+	cbMock := func(str string) {
 		exec++
-		return nil
 	}
 
 	dirActionMock := &entry{
@@ -136,6 +135,9 @@ func Test_buildExplorer(t *testing.T) {
 	os.Create(tmp + "File 2.img")
 	os.Create(tmp + "File 3.txt")
 	os.Create(tmp + "File 4.img")
+	os.Create(tmp + "File 5.txt")
+	os.Create(tmp + "File 6.txt")
+	os.Create(tmp + "File 7.txt")
 	os.Mkdir(tmp+"Folder 1", 0777)
 
 	scene := buildExplorer(os.TempDir()+"/Test_buildExplorer/", []string{".img"}, cbMock, dirActionMock)
@@ -144,8 +146,9 @@ func Test_buildExplorer(t *testing.T) {
 	children := scene.Entry().children
 
 	t.Run("Should display the right number of menu entries", func(t *testing.T) {
-		if !(len(children) == 6) {
-			t.Errorf("buildExplorer = %v, want %v", len(children), 6)
+		// txt files are ignored because we filter on .img
+		if len(children) != 5 {
+			t.Errorf("buildExplorer = %v, want %v", len(children), 5)
 		}
 	})
 
@@ -155,28 +158,27 @@ func Test_buildExplorer(t *testing.T) {
 		}
 	})
 
-	t.Run("Normal files have no OK callbacks", func(t *testing.T) {
-		children[1].callbackOK()
-		if exec != 0 {
-			t.Errorf("buildExplorer = %v, want %v", exec, 0)
+	t.Run("Inserts the directory .. as second entry", func(t *testing.T) {
+		if children[1].label != ".." {
+			t.Errorf("buildExplorer = %v, want %v", children[1].label, "..")
 		}
 	})
 
 	t.Run("Files have file icon", func(t *testing.T) {
-		if children[1].icon != "file" {
+		if children[2].icon != "file" {
 			t.Errorf("buildExplorer = %v, want %v", children[1].icon, "file")
 		}
 	})
 
 	t.Run("Targeted files have OK callbacks", func(t *testing.T) {
-		children[2].callbackOK()
+		children[3].callbackOK()
 		if exec != 1 {
 			t.Errorf("buildExplorer = %v, want %v", exec, 1)
 		}
 	})
 
 	t.Run("Folders have folder icon", func(t *testing.T) {
-		if children[5].icon != "folder" {
+		if children[4].icon != "folder" {
 			t.Errorf("buildExplorer = %v, want %v", children[1].icon, "folder")
 		}
 	})
@@ -185,7 +187,7 @@ func Test_buildExplorer(t *testing.T) {
 		if len(menu.stack) != 1 {
 			t.Errorf("buildExplorer = %v, want %v", len(menu.stack), 1)
 		}
-		children[5].callbackOK()
+		children[4].callbackOK()
 		if len(menu.stack) != 2 {
 			t.Errorf("buildExplorer = %v, want %v", len(menu.stack), 2)
 		}

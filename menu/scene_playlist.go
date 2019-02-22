@@ -2,11 +2,12 @@ package menu
 
 import (
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/libretro/ludo/core"
-	"github.com/libretro/ludo/notifications"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -14,13 +15,13 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-type screenPlaylist struct {
+type scenePlaylist struct {
 	entry
 }
 
 func buildPlaylist(path string) Scene {
-	var list screenPlaylist
-	list.label = utils.Filename(path)
+	var list scenePlaylist
+	list.label = utils.FileName(path)
 
 	for _, game := range playlists.Playlists[path] {
 		game := game // needed for callbackOK
@@ -30,7 +31,7 @@ func buildPlaylist(path string) Scene {
 			gameName:   game.Name,
 			path:       game.Path,
 			tags:       tags,
-			icon:       utils.Filename(path) + "-content",
+			icon:       utils.FileName(path) + "-content",
 			callbackOK: func() { loadEntry(&list, list.label, game.Path) },
 		})
 	}
@@ -55,32 +56,37 @@ func extractTags(name string) (string, []string) {
 	return name, tags
 }
 
-func loadEntry(list *screenPlaylist, playlist, gamePath string) {
+func loadEntry(list *scenePlaylist, playlist, gamePath string) {
+	if _, err := os.Stat(gamePath); os.IsNotExist(err) {
+		ntf.DisplayAndLog(ntf.Error, "Menu", "Game not found.")
+		return
+	}
 	corePath, err := settings.CoreForPlaylist(playlist)
 	if err != nil {
-		notifications.DisplayAndLog("Menu", err.Error())
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 		return
 	}
 	if _, err := os.Stat(corePath); os.IsNotExist(err) {
-		notifications.DisplayAndLog("Menu", "Core not found.")
+		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
 		return
 	}
 	if state.Global.CorePath != corePath {
 		err := core.Load(corePath)
 		if err != nil {
-			notifications.DisplayAndLog("Menu", err.Error())
+			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
 		}
 	}
 	if state.Global.GamePath != gamePath {
 		err := core.LoadGame(gamePath)
 		if err != nil {
-			notifications.DisplayAndLog("Menu", err.Error())
+			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
 		}
 		list.segueNext()
 		menu.stack = append(menu.stack, buildQuickMenu())
 		fastForwardTweens() // position the elements without animating
+		state.Global.MenuActive = false
 	} else {
 		list.segueNext()
 		menu.stack = append(menu.stack, buildQuickMenu())
@@ -88,22 +94,28 @@ func loadEntry(list *screenPlaylist, playlist, gamePath string) {
 }
 
 // Generic stuff
-func (s *screenPlaylist) Entry() *entry {
+func (s *scenePlaylist) Entry() *entry {
 	return &s.entry
 }
-func (s *screenPlaylist) segueMount() {
+
+func (s *scenePlaylist) segueMount() {
 	genericSegueMount(&s.entry)
 }
-func (s *screenPlaylist) segueNext() {
+
+func (s *scenePlaylist) segueNext() {
 	genericSegueNext(&s.entry)
 }
-func (s *screenPlaylist) segueBack() {
+
+func (s *scenePlaylist) segueBack() {
 	genericAnimate(&s.entry)
 }
-func (s *screenPlaylist) update() {
-	genericInput(&s.entry)
+
+func (s *scenePlaylist) update(dt float32) {
+	genericInput(&s.entry, dt)
 }
-func (s *screenPlaylist) render() {
+
+// Override rendering
+func (s *scenePlaylist) render() {
 	list := &s.entry
 
 	_, h := vid.Window.GetFramebufferSize()
@@ -127,19 +139,19 @@ func (s *screenPlaylist) render() {
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio, 128*menu.ratio,
-				e.scale,
+				e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
 			)
 			vid.DrawBorder(
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
-				video.Color{R: color.R, G: color.G, B: color.B, A: 0.75})
+				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
 			if e.path == state.Global.GamePath {
 				vid.DrawImage(menu.icons["resume"],
 					680*menu.ratio-64*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 					128*menu.ratio, 128*menu.ratio,
-					e.scale, video.Color{R: 1, G: 1, B: 1, A: 1})
+					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
@@ -165,31 +177,16 @@ func (s *screenPlaylist) render() {
 	}
 }
 
-func (s *screenPlaylist) drawHintBar() {
+func (s *scenePlaylist) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
-	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
 
-	stack := 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-up-down"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "NAVIGATE")
-	stack += vid.Font.Width(0.5*menu.ratio, "NAVIGATE")
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-z"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "BACK")
-	stack += vid.Font.Width(0.5*menu.ratio, "BACK")
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-x"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "RUN")
-	stack += vid.Font.Width(0.5*menu.ratio, "RUN")
+	var stack float32
+	if state.Global.CoreRunning {
+		stackHint(&stack, "key-p", "RESUME", h)
+	}
+	stackHint(&stack, "key-up-down", "NAVIGATE", h)
+	stackHint(&stack, "key-z", "BACK", h)
+	stackHint(&stack, "key-x", "RUN", h)
 }

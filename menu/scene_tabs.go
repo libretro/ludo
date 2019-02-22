@@ -2,16 +2,14 @@ package menu
 
 import (
 	"fmt"
-	"os"
 	"os/user"
-	"regexp"
 	"sort"
-	"strings"
 
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
+	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 	colorful "github.com/lucasb-eyer/go-colorful"
@@ -20,12 +18,12 @@ import (
 	"github.com/tanema/gween/ease"
 )
 
-type screenTabs struct {
+type sceneTags struct {
 	entry
 }
 
 func buildTabs() Scene {
-	var list screenTabs
+	var list sceneTags
 	list.label = "Ludo"
 
 	list.children = append(list.children, entry{
@@ -55,9 +53,8 @@ func buildTabs() Scene {
 		callbackOK: func() {
 			usr, _ := user.Current()
 			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil,
-				func(path string) error {
+				func(path string) {
 					scanner.ScanDir(path, refreshTabs)
-					return nil
 				},
 				&entry{
 					label: "<Scan this directory>",
@@ -121,7 +118,7 @@ func refreshTabs() {
 // a list of menu entries. It is used in the tabs, but could be used somewhere
 // else too.
 func getPlaylists() []entry {
-	playlists.LoadPlaylists()
+	playlists.Load()
 
 	// To store the keys in slice in sorted order
 	var keys []string
@@ -133,10 +130,10 @@ func getPlaylists() []entry {
 	var pls []entry
 	for _, path := range keys {
 		path := path
-		filename := utils.Filename(path)
-		count := playlistCount(path)
+		filename := utils.FileName(path)
+		count := playlists.Count(path)
 		pls = append(pls, entry{
-			label:    playlistShortName(filename),
+			label:    playlists.ShortName(filename),
 			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
 			icon:     filename,
 			callbackOK: func() {
@@ -147,34 +144,11 @@ func getPlaylists() []entry {
 	return pls
 }
 
-// playlistShortName shortens the name of some game systems that are too long
-// to be displayed in the menu
-func playlistShortName(in string) string {
-	if len(in) < 20 {
-		return in
-	}
-	r, _ := regexp.Compile(`(.*?) - (.*)`)
-	out := r.ReplaceAllString(in, "$2")
-	out = strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
-	out = strings.Replace(out, "PC Engine", "PCE", -1)
-	return out
-}
-
-// Quick way of knowing how many games are in a playlist
-func playlistCount(path string) int {
-	file, _ := os.Open(path)
-	c, _ := utils.LinesInFile(file)
-	if c > 0 {
-		return c / 6
-	}
-	return 0
-}
-
-func (tabs *screenTabs) Entry() *entry {
+func (tabs *sceneTags) Entry() *entry {
 	return &tabs.entry
 }
 
-func (tabs *screenTabs) segueMount() {
+func (tabs *sceneTags) segueMount() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
@@ -202,11 +176,11 @@ func (tabs *screenTabs) segueMount() {
 	tabs.animate()
 }
 
-func (tabs *screenTabs) segueBack() {
+func (tabs *sceneTags) segueBack() {
 	tabs.animate()
 }
 
-func (tabs *screenTabs) animate() {
+func (tabs *sceneTags) animate() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
@@ -240,15 +214,16 @@ func (tabs *screenTabs) animate() {
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.15, ease.OutSine)
 }
 
-func (tabs *screenTabs) segueNext() {
+func (tabs *sceneTags) segueNext() {
 	cur := &tabs.children[tabs.ptr]
 	menu.tweens[&cur.width] = gween.New(cur.width, 5200, 0.15, ease.OutSine)
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+3030, 0.15, ease.OutSine)
 }
 
-func (tabs *screenTabs) update() {
-	if menu.inputCooldown > 0 {
-		menu.inputCooldown--
+func (tabs *sceneTags) update(dt float32) {
+	menu.inputCooldown -= dt
+	if menu.inputCooldown < 0 {
+		menu.inputCooldown = 0
 	}
 
 	// Right
@@ -258,7 +233,7 @@ func (tabs *screenTabs) update() {
 			tabs.ptr = 0
 		}
 		tabs.animate()
-		menu.inputCooldown = 10
+		menu.inputCooldown = 0.15
 	}
 
 	// Left
@@ -268,7 +243,7 @@ func (tabs *screenTabs) update() {
 			tabs.ptr = len(tabs.children) - 1
 		}
 		tabs.animate()
-		menu.inputCooldown = 10
+		menu.inputCooldown = 0.15
 	}
 
 	// OK
@@ -280,7 +255,7 @@ func (tabs *screenTabs) update() {
 	}
 }
 
-func (tabs screenTabs) render() {
+func (tabs sceneTags) render() {
 	_, h := vid.Window.GetFramebufferSize()
 
 	stackWidth := 710 * menu.ratio
@@ -310,24 +285,15 @@ func (tabs screenTabs) render() {
 	}
 }
 
-func (tabs screenTabs) drawHintBar() {
+func (tabs sceneTags) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
-	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
 
-	stack := 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-left-right"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "NAVIGATE")
-	stack += vid.Font.Width(0.5*menu.ratio, "NAVIGATE")
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-x"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "OPEN")
-	stack += vid.Font.Width(0.5*menu.ratio, "OPEN")
+	var stack float32
+	if state.Global.CoreRunning {
+		stackHint(&stack, "key-p", "RESUME", h)
+	}
+	stackHint(&stack, "key-left-right", "NAVIGATE", h)
+	stackHint(&stack, "key-x", "OPEN", h)
 }

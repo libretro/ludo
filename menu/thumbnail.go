@@ -5,12 +5,14 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/user"
+	"path/filepath"
 	"strings"
 
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
 )
 
+// Downloads a thumbnail from the web and cache it to the local filesystem.
 func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -58,10 +60,10 @@ func scrubIllegalChars(str string) string {
 	return str
 }
 
-func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32) {
-	usr, _ := user.Current()
-	folderPath := usr.HomeDir + "/.ludo/thumbnails/" + system + "/Named_Snaps/"
-	path := folderPath + gameName + ".png"
+// Draws a thumbnail in the playlist scene.
+func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, color video.Color) {
+	folderPath := filepath.Join(settings.Current.ThumbnailsDirectory, system, "Named_Snaps")
+	path := filepath.Join(folderPath, gameName+".png")
 	legalName := scrubIllegalChars(gameName)
 	url := "http://thumbnails.libretro.com/" + system + "/Named_Snaps/" + legalName + ".png"
 
@@ -77,6 +79,21 @@ func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scal
 	vid.DrawImage(
 		list.children[i].thumbnail,
 		x, y, w, h, scale,
-		video.Color{R: 1, G: 1, B: 1, A: 1},
+		color,
+	)
+}
+
+// Draws a thumbnail in the savestates scene.
+func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale float32, color video.Color) {
+	if list.children[i].thumbnail == 0 {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			list.children[i].thumbnail = video.NewImage(path)
+		}
+	}
+
+	vid.DrawImage(
+		list.children[i].thumbnail,
+		x, y, w, h, scale,
+		color,
 	)
 }

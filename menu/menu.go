@@ -7,7 +7,7 @@ import (
 	"math"
 	"path/filepath"
 
-	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
@@ -17,7 +17,6 @@ import (
 )
 
 var vid *video.Video
-var opts *options.Options
 
 // entry is a menu entry. It can also represent a scene.
 // The menu data is a tree of entries.
@@ -53,7 +52,7 @@ type Scene interface {
 	segueMount()
 	segueNext()
 	segueBack()
-	update()
+	update(dt float32)
 	render()
 	drawHintBar()
 	Entry() *entry
@@ -63,7 +62,7 @@ type Scene interface {
 type Menu struct {
 	stack         []Scene
 	icons         map[string]uint32
-	inputCooldown int
+	inputCooldown float32
 	tweens        map[*float32]*gween.Tween
 	scroll        float32
 	ratio         float32
@@ -84,12 +83,12 @@ func updateTweens(dt float32) {
 }
 
 // Render takes care of rendering the menu
-func Render() {
-	menu.t += 0.1
+func Render(dt float32) {
+	menu.t += float64(dt * 8)
 	w, _ := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 
-	updateTweens(1.0 / 60.0)
+	updateTweens(dt)
 
 	currentScreenIndex := len(menu.stack) - 1
 	for i := 0; i <= currentScreenIndex+1; i++ {
@@ -105,31 +104,16 @@ func Render() {
 
 func genericDrawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
 	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
-	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
 
-	stack := 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-up-down"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "NAVIGATE")
-	stack += vid.Font.Width(0.5*menu.ratio, "NAVIGATE")
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-z"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "BACK")
-	stack += vid.Font.Width(0.5*menu.ratio, "BACK")
-
-	stack += 30 * menu.ratio
-	vid.DrawImage(menu.icons["key-x"], stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	stack += 70 * menu.ratio
-	stack += 10 * menu.ratio
-	vid.Font.Printf(stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, "OK")
-	stack += vid.Font.Width(0.5*menu.ratio, "OK")
+	var stack float32
+	if state.Global.CoreRunning {
+		stackHint(&stack, "key-p", "RESUME", h)
+	}
+	stackHint(&stack, "key-up-down", "NAVIGATE", h)
+	stackHint(&stack, "key-z", "BACK", h)
+	stackHint(&stack, "key-x", "OK", h)
 }
 
 // genericSegueMount is the smooth transition of the menu entries first appearance
@@ -141,7 +125,7 @@ func genericSegueMount(list *entry) {
 			e.yp = 0.5 + 0.3
 			e.labelAlpha = 0
 			e.iconAlpha = 0
-			e.tagAlpha = 1
+			e.tagAlpha = 0
 			e.scale = 1.5
 		} else if i < list.ptr {
 			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
@@ -168,6 +152,11 @@ func genericAnimate(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
 
+		// performance improvement
+		// if math.Abs(float64(i-list.ptr)) > 6 && i > 6 && i < len(list.children)-6 {
+		// 	continue
+		// }
+
 		var yp, labelAlpha, iconAlpha, tagAlpha, scale float32
 		if i == list.ptr {
 			yp = 0.5
@@ -177,14 +166,14 @@ func genericAnimate(list *entry) {
 			scale = 1.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.75
-			iconAlpha = 0.75
+			labelAlpha = 1
+			iconAlpha = 1
 			tagAlpha = 0
 			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 + 0.08*float32(i-list.ptr)
-			labelAlpha = 0.75
-			iconAlpha = 0.75
+			labelAlpha = 1
+			iconAlpha = 1
 			tagAlpha = 0
 			scale = 0.5
 		}
@@ -301,18 +290,20 @@ func genericRender(list *entry) {
 // ContextReset uploads the UI images to the GPU.
 // It should be called after each time the window is recreated.
 func (menu *Menu) ContextReset() {
-	paths, _ := filepath.Glob("assets/*.png")
+	assets := settings.Current.AssetsDirectory
+
+	paths, _ := filepath.Glob(assets + "/*.png")
 	for _, path := range paths {
 		path := path
-		filename := utils.Filename(path)
-		menu.icons[filename] = video.NewImage("assets/" + filename + ".png")
+		filename := utils.FileName(path)
+		menu.icons[filename] = video.NewImage(assets + "/" + filename + ".png")
 	}
 
-	paths, _ = filepath.Glob("assets/flags/*.png")
+	paths, _ = filepath.Glob(assets + "/flags/*.png")
 	for _, path := range paths {
 		path := path
-		filename := utils.Filename(path)
-		menu.icons[filename] = video.NewImage("assets/flags/" + filename + ".png")
+		filename := utils.FileName(path)
+		menu.icons[filename] = video.NewImage(assets + "/flags/" + filename + ".png")
 	}
 
 	currentScreenIndex := len(menu.stack) - 1
@@ -327,15 +318,10 @@ func fastForwardTweens() {
 	updateTweens(10)
 }
 
-// UpdateOptions updates the menu with the core options of the newly loaded
-// libretro core.
-func (menu *Menu) UpdateOptions(o *options.Options) {
-	opts = o
-}
-
 // WarpToQuickMenu loads the contextual menu for games that are launched from
-// the command line interface.
+// the command line interface or from 'Load Game'.
 func (menu *Menu) WarpToQuickMenu() {
+	menu.scroll = 0
 	menu.stack = []Scene{}
 	menu.stack = append(menu.stack, buildTabs())
 	menu.stack[0].segueNext()

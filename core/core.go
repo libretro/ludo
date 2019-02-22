@@ -1,5 +1,6 @@
 // Package core takes care of instanciating the libretro core, setting the
 // input, audio, video, environment callbacks needed to play the games.
+// It also deals with core options and persisting SRAM periodically.
 package core
 
 import (
@@ -7,16 +8,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/savefiles"
 	"github.com/libretro/ludo/state"
-	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 )
 
@@ -24,29 +28,40 @@ import (
 // cyclic dependencies.
 type MenuInterface interface {
 	ContextReset()
-	UpdateOptions(*options.Options)
 }
 
 var vid *video.Video
-var opts *options.Options
 var menu MenuInterface
+
+// Options holds the settings for the current core
+var Options *options.Options
 
 // Init is there mainly for dependency injection.
 // Call Init before calling other functions of this package.
 func Init(v *video.Video, m MenuInterface) {
 	vid = v
 	menu = m
+	ticker := time.NewTicker(time.Second)
+	go func() {
+		for range ticker.C {
+			state.Global.Lock()
+			running := state.Global.CoreRunning
+			state.Global.Unlock()
+			if running && !state.Global.MenuActive {
+				savefiles.SaveSRAM()
+			}
+		}
+	}()
 }
 
 // Load loads a libretro core
 func Load(sofile string) error {
+	// In case the a core is already loaded, we need to close it properly
+	// before loading the new core
+	Unload()
+
+	// This must be set before the environment callback is called
 	state.Global.CorePath = sofile
-	if state.Global.CoreRunning {
-		state.Global.Core.UnloadGame()
-		state.Global.Core.Deinit()
-		state.Global.GamePath = ""
-		state.Global.CoreRunning = false
-	}
 
 	var err error
 	state.Global.Core, err = libretro.Load(sofile)
@@ -76,9 +91,6 @@ func Load(sofile string) error {
 		}
 	}
 
-	menu.UpdateOptions(opts)
-
-	log.Println("[Core]: Core loaded: " + si.LibraryName)
 	return nil
 }
 
@@ -114,23 +126,30 @@ func unzipGame(filename string) (string, int64, error) {
 }
 
 // LoadGame loads a game. A core has to be loaded first.
-func LoadGame(filename string) error {
+func LoadGame(gamePath string) error {
+
+	// If we're loading a new game on the same core, save the RAM of the previous
+	// game before closing it.
+	if state.Global.GamePath != gamePath {
+		UnloadGame()
+	}
+
 	si := state.Global.Core.GetSystemInfo()
 
-	gi, err := getGameInfo(filename, si.BlockExtract)
+	gi, err := getGameInfo(gamePath, si.BlockExtract)
 	if err != nil {
 		return err
 	}
 
 	if !si.NeedFullpath {
-		bytes, err := utils.Slurp(gi.Path)
+		bytes, err := ioutil.ReadFile(gi.Path)
 		if err != nil {
 			return err
 		}
 		gi.SetData(bytes)
 	}
 
-	ok := state.Global.Core.LoadGame(gi)
+	ok := state.Global.Core.LoadGame(*gi)
 	if !ok {
 		state.Global.CoreRunning = false
 		return errors.New("failed to load the game")
@@ -147,39 +166,68 @@ func LoadGame(filename string) error {
 
 	input.Init(vid, menu)
 	audio.Init(int32(avi.Timing.SampleRate))
-	if state.Global.AudioCb.SetState != nil {
-		state.Global.AudioCb.SetState(true)
+	if state.Global.Core.AudioCallback != nil {
+		state.Global.Core.AudioCallback.SetState(true)
 	}
 
+	state.Global.Lock()
 	state.Global.CoreRunning = true
-	state.Global.MenuActive = false
-	state.Global.GamePath = filename
+	state.Global.Unlock()
+
+	state.Global.GamePath = gamePath
+
+	state.Global.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
+	state.Global.Core.SetControllerPortDevice(1, libretro.DeviceJoypad)
+
+	log.Println("[Core]: Game loaded: " + gamePath)
+	savefiles.LoadSRAM()
+
+	ntf.Display(ntf.Info, "Press P to toggle the menu", ntf.Medium)
 
 	fmt.Println(vid.Geom.BaseWidth)
 	vid.InitFramebuffer(vid.Geom.BaseWidth, vid.Geom.BaseHeight)
 
-	log.Println("[Core]: Game loaded: " + filename)
 	return nil
 }
 
+// Unload unloads a libretro core
+func Unload() {
+	if state.Global.CoreRunning {
+		UnloadGame()
+		state.Global.Core.Deinit()
+		state.Global.CorePath = ""
+		state.Global.Core = nil
+	}
+}
+
+// UnloadGame unloads a game.
+func UnloadGame() {
+	if state.Global.CoreRunning {
+		savefiles.SaveSRAM()
+		state.Global.Core.UnloadGame()
+		state.Global.GamePath = ""
+		state.Global.CoreRunning = false
+	}
+}
+
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it
-func getGameInfo(filename string, blockExtract bool) (libretro.GameInfo, error) {
+func getGameInfo(filename string, blockExtract bool) (*libretro.GameInfo, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return libretro.GameInfo{}, err
+		return nil, err
 	}
 
 	fi, err := file.Stat()
 	if err != nil {
-		return libretro.GameInfo{}, err
+		return nil, err
 	}
 
 	if filepath.Ext(filename) == ".zip" && !blockExtract {
 		path, size, err := unzipGame(filename)
 		if err != nil {
-			return libretro.GameInfo{}, err
+			return nil, err
 		}
-		return libretro.GameInfo{Path: path, Size: size}, nil
+		return &libretro.GameInfo{Path: path, Size: size}, nil
 	}
-	return libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
+	return &libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
 }

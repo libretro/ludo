@@ -1,7 +1,15 @@
 APP = Ludo
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 
-CORES = atari800 fbalpha gambatte genesis_plus_gx handy mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba nestopia pcsx_rearmed picodrive prosystem snes9x stella vecx virtualjaguar
+CORES = fbalpha fceumm gambatte genesis_plus_gx handy mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba pcsx_rearmed picodrive prosystem snes9x stella vecx virtualjaguar
+
+ifeq ($(ARCH), arm)
+	CORES := $(filter-out mednafen_saturn,$(CORES))
+endif
+
+DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
+DLLS = $(addprefix cores/, $(addsuffix _libretro.dll,$(CORES)))
+SOBJS = $(addprefix cores/, $(addsuffix _libretro.so,$(CORES)))
 
 ifeq ($(OS), OSX)
 	BUILDBOTURL=http://buildbot.libretro.com/nightly/apple/osx/$(ARCH)/latest
@@ -23,15 +31,16 @@ endif
 ludo:
 	go build
 
-cores:
-	mkdir -p cores
-	for CORE in ${CORES} ; do \
-		wget $(BUILDBOTURL)/$${CORE}_libretro.$(EXT).zip -O cores/$${CORE}_libretro.$(EXT).zip; \
-		unzip cores/$${CORE}_libretro.$(EXT).zip -d cores; \
-		rm cores/$${CORE}_libretro.$(EXT).zip; \
-	done
+ludo.exe:
+	go build -ldflags '-H=windowsgui'
 
-$(APP).app: ludo cores
+cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
+	mkdir -p cores
+	wget $(BUILDBOTURL)/$(@F).zip -O $@.zip
+	unzip $@.zip -d cores
+	rm $@.zip
+
+$(APP).app: ludo $(DYLIBS)
 	mkdir -p $(APP).app/Contents/MacOS
 	mkdir -p $(APP).app/Contents/Resources/$(APP).iconset
 	cp pkg/Info.plist $(APP).app/Contents/
@@ -57,6 +66,7 @@ empty.dmg:
 	hdiutil create -fs HFSX -layout SPUD -size 200m empty.dmg -srcfolder template -format UDRW -volname $(BUNDLENAME) -quiet
 	rmdir template
 
+# For OSX
 dmg: empty.dmg $(APP).app
 	mkdir -p wc
 	hdiutil attach empty.dmg -noautoopen -quiet -mountpoint wc
@@ -67,15 +77,18 @@ dmg: empty.dmg $(APP).app
 	rm -f $(BUNDLENAME)-*.dmg
 	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
 
-zip: ludo cores
+# For Windows
+zip: ludo.exe $(DLLS)
 	mkdir -p $(BUNDLENAME)/
-	cp ludo $(BUNDLENAME)/
+	./rcedit-x64 ludo.exe --set-icon assets/icon.ico
+	cp ludo.exe $(BUNDLENAME)/
 	cp -r database $(BUNDLENAME)/
 	cp -r assets $(BUNDLENAME)/
 	cp -r cores $(BUNDLENAME)/
 	7z a $(BUNDLENAME).zip $(BUNDLENAME)\
 
-tar: ludo cores
+# For Linux
+tar: ludo $(SOBJS)
 	mkdir -p $(BUNDLENAME)/
 	cp ludo $(BUNDLENAME)/
 	cp -r database $(BUNDLENAME)/
