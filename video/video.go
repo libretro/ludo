@@ -52,6 +52,7 @@ type Video struct {
 	pixType        uint32
 	bpp            int32
 	fboID          uint32
+	rboID          uint32
 }
 
 // Init instanciates the video package
@@ -129,6 +130,37 @@ func (video *Video) InitFramebuffer(width, height int) {
 	gl.GenFramebuffers(1, &video.fboID)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
 	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
+
+	hw := state.Global.Core.HWRenderCallback
+
+	if hw != nil {
+		if hw.Depth && hw.Stencil {
+			gl.GenRenderbuffers(1, &video.rboID)
+			gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
+			gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, int32(width), int32(height))
+
+			gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
+		} else if hw.Depth {
+			gl.GenRenderbuffers(1, &video.rboID)
+			gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
+			gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, int32(width), int32(height))
+
+			gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
+		}
+
+		if hw.Depth || hw.Stencil {
+			gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
+		}
+	}
+
+	gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
+
+	//SDL_assert(glCheckFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE)
+
+	gl.ClearColor(0, 0, 0, 1)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+
+	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 }
 
 // Configure instanciates the video package
