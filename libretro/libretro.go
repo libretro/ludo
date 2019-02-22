@@ -373,6 +373,7 @@ func (core *Core) GetSystemAVInfo() SystemAVInfo {
 func (core *Core) LoadGame(gi GameInfo) bool {
 	rgi := C.struct_retro_game_info{}
 	rgi.path = C.CString(gi.Path)
+	defer C.free(unsafe.Pointer(rgi.path))
 	rgi.size = C.size_t(gi.Size)
 	rgi.data = gi.Data
 	return bool(C.bridge_retro_load_game(core.symRetroLoadGame, &rgi))
@@ -534,6 +535,7 @@ func coreGetTimeUsec() C.uint64_t {
 // SetData is a setter for the data of a GameInfo type
 func (gi *GameInfo) SetData(bytes []byte) {
 	cstr := C.CString(string(bytes))
+	defer C.free(unsafe.Pointer(cstr))
 	gi.Data = unsafe.Pointer(cstr)
 }
 
