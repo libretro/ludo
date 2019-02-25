@@ -12,4 +12,5 @@ require (
 	github.com/tanema/gween v0.0.0-20171018143308-f05d97ee644d
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2 // indirect
 	golang.org/x/mobile v0.0.0-20190127143845-a42111704963
+	golang.org/x/net v0.0.0-20190225153610-fe579d43d832
 )
