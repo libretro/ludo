@@ -84,7 +84,7 @@ func Scan(dir string, roms []string, games chan (rdb.Game), doneCb func()) {
 			// Look for a matching game entry in the database
 			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
 			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
-		case ".pce", ".gb", ".gba", ".md", ".nes", ".rom", ".sfc", ".sms":
+		case ".32x", "a52", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".jag", ".lnx", ".md", ".n64", ".nes", ".nds", ".rom", ".sfc", ".smd", ".sms":
 			fd, _ := os.Open(f)
 			bytes, _ := ioutil.ReadAll(fd)
 			CRC32 := crc32.ChecksumIEEE(bytes)
