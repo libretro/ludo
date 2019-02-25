@@ -46,7 +46,9 @@ type Core struct {
 
 // DlSym loads a symbol from a dynamic library
 func (core *Core) DlSym(name string) unsafe.Pointer {
-	return C.dlsym(core.handle, C.CString(name))
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+	return C.dlsym(core.handle, cname)
 }
 
 // DlOpen opens a dynamic library
