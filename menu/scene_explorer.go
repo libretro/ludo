@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
@@ -26,6 +27,17 @@ func matchesExtensions(f os.FileInfo, exts []string) bool {
 	return false
 }
 
+func getWindowsDrives() (r []string) {
+	for _, drive := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
+		fd, err := os.Open(string(drive) + ":\\")
+		if err == nil {
+			r = append(r, string(drive))
+			fd.Close()
+		}
+	}
+	return r
+}
+
 func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
 	var list sceneExplorer
 	list.label = "Explorer"
@@ -41,19 +53,40 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		list.children = append(list.children, *dirAction)
 	}
 
-	// Add a first entry for the parent directory.
-	list.children = append(list.children, entry{
-		label: "..",
-		icon:  "folder",
-		callbackOK: func() {
-			list.segueNext()
-			newPath := filepath.Clean(path + "/..")
-			if dirAction != nil {
-				dirAction.callbackOK = func() { cb(newPath) }
+	if path == "/" {
+		// Add windows drives.
+		if runtime.GOOS == "windows" {
+			drives := getWindowsDrives()
+			for _, drive := range drives {
+				list.children = append(list.children, entry{
+					label: drive + ":\\",
+					icon:  "folder",
+					callbackOK: func() {
+						list.segueNext()
+						newPath := drive + ":\\"
+						if dirAction != nil {
+							dirAction.callbackOK = func() { cb(newPath) }
+						}
+						menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
+					},
+				})
 			}
-			menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
-		},
-	})
+		}
+	} else {
+		// Add a first entry for the parent directory.
+		list.children = append(list.children, entry{
+			label: "..",
+			icon:  "folder",
+			callbackOK: func() {
+				list.segueNext()
+				newPath := filepath.Clean(path + "/..")
+				if dirAction != nil {
+					dirAction.callbackOK = func() { cb(newPath) }
+				}
+				menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
+			},
+		})
+	}
 
 	// Loop over files in the directory and add one entry for each.
 	for _, f := range files {
