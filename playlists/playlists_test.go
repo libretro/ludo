@@ -85,3 +85,50 @@ func TestCount(t *testing.T) {
 		}
 	})
 }
+
+func TestShortName(t *testing.T) {
+	type args struct {
+		in string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Should change nothing",
+			args: args{
+				in: "Sega - 32X",
+			},
+			want: "Sega - 32X",
+		},
+		{
+			name: "Should skip the vendor",
+			args: args{
+				in: "FB Alpha - Arcade Games",
+			},
+			want: "Arcade Games",
+		},
+		{
+			name: "Should replace with acronym",
+			args: args{
+				in: "NEC - PC Engine - TurboGrafx 16",
+			},
+			want: "PCE - TurboGrafx 16",
+		},
+		{
+			name: "Should replace with acronym",
+			args: args{
+				in: "Nintendo - Super Nintendo Entertainment System",
+			},
+			want: "Super NES",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ShortName(tt.args.in); got != tt.want {
+				t.Errorf("ShortName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
