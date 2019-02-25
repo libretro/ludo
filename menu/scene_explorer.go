@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 
 	ntf "github.com/libretro/ludo/notifications"
@@ -42,6 +43,8 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	var list sceneExplorer
 	list.label = "Explorer"
 
+	path, _ = filepath.Abs(path)
+
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
@@ -53,7 +56,9 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		list.children = append(list.children, *dirAction)
 	}
 
-	if path == "/" {
+	validWindowsDrive := regexp.MustCompile(`^[A-Z]\:\\$`)
+
+	if path == "/" || (validWindowsDrive.MatchString(path)) {
 		// Add windows drives.
 		if runtime.GOOS == "windows" {
 			drives := getWindowsDrives()
