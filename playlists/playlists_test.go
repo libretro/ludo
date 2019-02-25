@@ -41,3 +41,33 @@ func TestLoad(t *testing.T) {
 		}
 	})
 }
+
+func TestContains(t *testing.T) {
+	settings.Current.PlaylistsDirectory = "./testdata"
+
+	Load()
+
+	t.Run("Should find an existing entry by path", func(t *testing.T) {
+		got := Contains("testdata/Sega - Master System - Mark III.csv", "/Users/kivutar/testroms/Sega - Master System - Mark III/Alex Kidd in Miracle World (USA, Europe) (Rev 1).zip", 0)
+		want := true
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("Should find an existing entry by CRC", func(t *testing.T) {
+		got := Contains("testdata/Sega - Master System - Mark III.csv", "", 2933500612)
+		want := true
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("Should not generate false positive", func(t *testing.T) {
+		got := Contains("testdata/Sega - Master System - Mark III.csv", "", 2933500613)
+		want := false
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+}
