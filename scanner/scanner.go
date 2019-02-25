@@ -47,15 +47,15 @@ func ScanDir(dir string, doneCb func()) {
 	go func() {
 		for game := range scannedGames {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
-			lplpath := settings.Current.PlaylistsDirectory + "/" + game.System + ".csv"
-			if playlists.Contains(lplpath, game.Path, game.CRC32) {
+			CSVPath := settings.Current.PlaylistsDirectory + "/" + game.System + ".csv"
+			if playlists.Contains(CSVPath, game.Path, game.CRC32) {
 				continue
 			}
-			lpl, _ := os.OpenFile(lplpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+			lpl, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 			lpl.WriteString(game.Path + "\t")
 			lpl.WriteString(game.Name + "\t")
 			if uint64(game.CRC32) > 0 {
-				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10))
+				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 16))
 			}
 			lpl.WriteString("\n")
 			lpl.Close()
