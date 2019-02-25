@@ -72,8 +72,8 @@ func Load() {
 }
 
 // Contains checks if a game is already in a playlist.
-func Contains(lplpath, path string, CRC32 uint32) bool {
-	for _, entry := range Playlists[lplpath] {
+func Contains(CSVPath, path string, CRC32 uint32) bool {
+	for _, entry := range Playlists[CSVPath] {
 		// Be careful, sometimes we don't have a CRC32
 		if entry.Path == path || (CRC32 != 0 && entry.CRC32 == CRC32) {
 			return true

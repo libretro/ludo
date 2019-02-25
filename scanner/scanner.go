@@ -5,6 +5,7 @@ package scanner
 
 import (
 	"archive/zip"
+	"hash/crc32"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -46,15 +47,15 @@ func ScanDir(dir string, doneCb func()) {
 	go func() {
 		for game := range scannedGames {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
-			lplpath := settings.Current.PlaylistsDirectory + "/" + game.System + ".csv"
-			if playlists.Contains(lplpath, game.Path, game.CRC32) {
+			CSVPath := settings.Current.PlaylistsDirectory + "/" + game.System + ".csv"
+			if playlists.Contains(CSVPath, game.Path, game.CRC32) {
 				continue
 			}
-			lpl, _ := os.OpenFile(lplpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+			lpl, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 			lpl.WriteString(game.Path + "\t")
 			lpl.WriteString(game.Name + "\t")
 			if uint64(game.CRC32) > 0 {
-				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10))
+				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 16))
 			}
 			lpl.WriteString("\n")
 			lpl.Close()
@@ -83,6 +84,13 @@ func Scan(dir string, roms []string, games chan (rdb.Game), doneCb func()) {
 			// Look for a matching game entry in the database
 			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
 			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+		case ".32x", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smd", ".sms", ".ws", ".wsc":
+			fd, _ := os.Open(f)
+			bytes, _ := ioutil.ReadAll(fd)
+			CRC32 := crc32.ChecksumIEEE(bytes)
+			state.Global.DB.FindByCRC(f, utils.FileName(f), CRC32, games)
+			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			fd.Close()
 		}
 	}
 	ntf.Update(nid, ntf.Success, "Done scanning.")
