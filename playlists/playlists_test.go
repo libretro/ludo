@@ -71,3 +71,17 @@ func TestContains(t *testing.T) {
 		}
 	})
 }
+
+func TestCount(t *testing.T) {
+	settings.Current.PlaylistsDirectory = "./testdata"
+
+	Load()
+
+	t.Run("Should find an existing entry by path", func(t *testing.T) {
+		got := Count("testdata/Sega - Master System - Mark III.csv")
+		want := 3
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got = %v, want %v", got, want)
+		}
+	})
+}
