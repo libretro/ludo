@@ -54,7 +54,7 @@ func Load() {
 				continue
 			}
 			var entry Game
-			entry.Path = line[0]
+			entry.Path = filepath.Clean(line[0])
 			entry.Name = line[1]
 			if line[2] != "" {
 				u64, err := strconv.ParseUint(line[2], 16, 64)
@@ -73,9 +73,9 @@ func Load() {
 
 // Contains checks if a game is already in a playlist.
 func Contains(CSVPath, path string, CRC32 uint32) bool {
-	for _, entry := range Playlists[CSVPath] {
+	for _, entry := range Playlists[filepath.Clean(CSVPath)] {
 		// Be careful, sometimes we don't have a CRC32
-		if entry.Path == path || (CRC32 != 0 && entry.CRC32 == CRC32) {
+		if filepath.Clean(entry.Path) == filepath.Clean(path) || (CRC32 != 0 && entry.CRC32 == CRC32) {
 			return true
 		}
 	}
@@ -84,7 +84,7 @@ func Contains(CSVPath, path string, CRC32 uint32) bool {
 
 // Count is a quick way of knowing how many games are in a playlist
 func Count(path string) int {
-	return len(Playlists[path])
+	return len(Playlists[filepath.Clean(path)])
 }
 
 // ShortName shortens the name of some game systems that are too long to be

@@ -114,7 +114,7 @@ func refreshTabs() {
 	}
 }
 
-// getPlaylists browse the filesystem for lpl files, parse them and returns
+// getPlaylists browse the filesystem for CSV files, parse them and returns
 // a list of menu entries. It is used in the tabs, but could be used somewhere
 // else too.
 func getPlaylists() []entry {

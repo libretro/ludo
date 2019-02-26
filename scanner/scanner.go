@@ -18,6 +18,7 @@ import (
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
+	"github.com/rs/xid"
 )
 
 // LoadDB loops over the RDBs in a given directory and parses them
@@ -33,7 +34,7 @@ func LoadDB(dir string) (rdb.DB, error) {
 			continue
 		}
 		system := name[0 : len(name)-4]
-		bytes, _ := ioutil.ReadFile(dir + "/" + name)
+		bytes, _ := ioutil.ReadFile(filepath.Join(dir, name))
 		db[system] = rdb.Parse(bytes)
 	}
 	return db, nil
@@ -41,31 +42,33 @@ func LoadDB(dir string) (rdb.DB, error) {
 
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
+	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
 	roms := utils.AllFilesIn(dir)
-	scannedGames := make(chan (rdb.Game))
-	go Scan(dir, roms, scannedGames, doneCb)
+	games := make(chan (rdb.Game))
+	go Scan(dir, roms, games, nid)
 	go func() {
-		for game := range scannedGames {
+		for game := range games {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
-			CSVPath := settings.Current.PlaylistsDirectory + "/" + game.System + ".csv"
+			CSVPath := filepath.Join(settings.Current.PlaylistsDirectory, game.System+".csv")
 			if playlists.Contains(CSVPath, game.Path, game.CRC32) {
 				continue
 			}
-			lpl, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-			lpl.WriteString(game.Path + "\t")
-			lpl.WriteString(game.Name + "\t")
+			f, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+			f.WriteString(game.Path + "\t")
+			f.WriteString(game.Name + "\t")
 			if uint64(game.CRC32) > 0 {
-				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 16))
+				f.WriteString(strconv.FormatUint(uint64(game.CRC32), 16))
 			}
-			lpl.WriteString("\n")
-			lpl.Close()
+			f.WriteString("\n")
+			f.Close()
 		}
+		doneCb()
+		ntf.Update(nid, ntf.Success, "Done scanning.")
 	}()
 }
 
 // Scan scans a list of roms against the database
-func Scan(dir string, roms []string, games chan (rdb.Game), doneCb func()) {
-	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
+func Scan(dir string, roms []string, games chan (rdb.Game), nid xid.ID) {
 	for i, f := range roms {
 		ext := filepath.Ext(f)
 		switch ext {
@@ -93,6 +96,5 @@ func Scan(dir string, roms []string, games chan (rdb.Game), doneCb func()) {
 			fd.Close()
 		}
 	}
-	ntf.Update(nid, ntf.Success, "Done scanning.")
-	doneCb()
+	close(games)
 }
