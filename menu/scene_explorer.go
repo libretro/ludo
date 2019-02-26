@@ -59,6 +59,14 @@ func appendFolder(list *sceneExplorer, path, dest string, exts []string, cb func
 	})
 }
 
+func explorerIcon(f os.FileInfo) string {
+	icon := "file"
+	if f.IsDir() {
+		icon = "folder"
+	}
+	return icon
+}
+
 func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
 	var list sceneExplorer
 	list.label = "Explorer"
@@ -92,7 +100,6 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	// Loop over files in the directory and add one entry for each.
 	for _, f := range files {
 		f := f
-		icon := "file"
 
 		// Check whether or not we are to display hidden files.
 		if f.Name()[:1] == "." && settings.Current.ShowHiddenFiles {
@@ -104,13 +111,9 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 			continue
 		}
 
-		if f.IsDir() {
-			icon = "folder"
-		}
-
 		list.children = append(list.children, entry{
 			label: f.Name(),
-			icon:  icon,
+			icon:  explorerIcon(f),
 			callbackOK: func() {
 				if f.IsDir() {
 					list.segueNext()
