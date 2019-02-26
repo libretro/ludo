@@ -302,6 +302,12 @@ func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 }
 
+// ResizeViewport resizes the GL viewport to the framebuffer size
+func (video *Video) ResizeViewport() {
+	fbw, fbh := video.Window.GetFramebufferSize()
+	gl.Viewport(0, 0, int32(fbw), int32(fbh))
+}
+
 // Render the current frame
 func (video *Video) Render() {
 	if !state.Global.CoreRunning {
@@ -316,7 +322,6 @@ func (video *Video) Render() {
 	video.Geom = avi.Geometry
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	gl.Viewport(0, 0, int32(fbw), int32(fbh))
 	video.CoreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
