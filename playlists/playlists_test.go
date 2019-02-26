@@ -4,6 +4,7 @@
 package playlists
 
 import (
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -18,7 +19,7 @@ func TestLoad(t *testing.T) {
 	t.Run("Should load playlists", func(t *testing.T) {
 		got := Playlists
 		want := map[string]Playlist{
-			"testdata/Sega - Master System - Mark III.csv": Playlist{
+			filepath.Join("testdata", "Sega - Master System - Mark III.csv"): Playlist{
 				{
 					"/Users/kivutar/testroms/Sega - Master System - Mark III/Aleste (Japan).zip",
 					"Aleste (Japan)",
@@ -77,7 +78,7 @@ func TestCount(t *testing.T) {
 
 	Load()
 
-	t.Run("Should find an existing entry by path", func(t *testing.T) {
+	t.Run("Should return the number of playlist entries", func(t *testing.T) {
 		got := Count("testdata/Sega - Master System - Mark III.csv")
 		want := 3
 		if !reflect.DeepEqual(got, want) {
