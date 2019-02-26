@@ -28,15 +28,35 @@ func matchesExtensions(f os.FileInfo, exts []string) bool {
 	return false
 }
 
-func getWindowsDrives() (r []string) {
+func isRoot(path string) bool {
+	validWindowsDrive := regexp.MustCompile(`^[A-Z]\:\\$`)
+	return path == "/" || (validWindowsDrive.MatchString(path))
+}
+
+func getWindowsDrives() (drives []string) {
 	for _, drive := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
 		fd, err := os.Open(string(drive) + ":\\")
 		if err == nil {
-			r = append(r, string(drive))
+			drives = append(drives, string(drive))
 			fd.Close()
 		}
 	}
-	return r
+	return drives
+}
+
+func appendFolder(list *sceneExplorer, path, dest string, exts []string, cb func(string), dirAction *entry) {
+	list.children = append(list.children, entry{
+		label: dest,
+		icon:  "folder",
+		callbackOK: func() {
+			list.segueNext()
+			newPath := filepath.Clean(filepath.Join(path, dest))
+			if dirAction != nil {
+				dirAction.callbackOK = func() { cb(newPath) }
+			}
+			menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
+		},
+	})
 }
 
 func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
@@ -56,41 +76,17 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		list.children = append(list.children, *dirAction)
 	}
 
-	validWindowsDrive := regexp.MustCompile(`^[A-Z]\:\\$`)
-
-	if path == "/" || (validWindowsDrive.MatchString(path)) {
+	if isRoot(path) {
 		// Add windows drives.
 		if runtime.GOOS == "windows" {
 			drives := getWindowsDrives()
 			for _, drive := range drives {
-				list.children = append(list.children, entry{
-					label: drive + ":\\",
-					icon:  "folder",
-					callbackOK: func() {
-						list.segueNext()
-						newPath := drive + ":\\"
-						if dirAction != nil {
-							dirAction.callbackOK = func() { cb(newPath) }
-						}
-						menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
-					},
-				})
+				appendFolder(&list, "", drive+":\\", exts, cb, dirAction)
 			}
 		}
 	} else {
 		// Add a first entry for the parent directory.
-		list.children = append(list.children, entry{
-			label: "..",
-			icon:  "folder",
-			callbackOK: func() {
-				list.segueNext()
-				newPath := filepath.Clean(path + "/..")
-				if dirAction != nil {
-					dirAction.callbackOK = func() { cb(newPath) }
-				}
-				menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
-			},
-		})
+		appendFolder(&list, path, "..", exts, cb, dirAction)
 	}
 
 	// Loop over files in the directory and add one entry for each.
@@ -118,13 +114,13 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 			callbackOK: func() {
 				if f.IsDir() {
 					list.segueNext()
-					newPath := path + "/" + f.Name()
+					newPath := filepath.Clean(filepath.Join(path, f.Name()))
 					if dirAction != nil {
 						dirAction.callbackOK = func() { cb(newPath) }
 					}
 					menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
 				} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(f.Name()), exts)) {
-					cb(path + "/" + f.Name())
+					cb(filepath.Clean(filepath.Join(path, f.Name())))
 				}
 			},
 		})
