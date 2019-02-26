@@ -68,6 +68,35 @@ func explorerIcon(f os.FileInfo) string {
 	return icon
 }
 
+func appendNode(list *sceneExplorer, path string, f os.FileInfo, exts []string, cb func(string), dirAction *entry) {
+	// Check whether or not we are to display hidden files.
+	if f.Name()[:1] == "." && settings.Current.ShowHiddenFiles {
+		return
+	}
+
+	// Filter files by extension.
+	if exts != nil && !f.IsDir() && !matchesExtensions(f, exts) {
+		return
+	}
+
+	list.children = append(list.children, entry{
+		label: f.Name(),
+		icon:  explorerIcon(f),
+		callbackOK: func() {
+			if f.IsDir() {
+				list.segueNext()
+				newPath := filepath.Clean(filepath.Join(path, f.Name()))
+				if dirAction != nil {
+					dirAction.callbackOK = func() { cb(newPath) }
+				}
+				menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
+			} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(f.Name()), exts)) {
+				cb(filepath.Clean(filepath.Join(path, f.Name())))
+			}
+		},
+	})
+}
+
 func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
 	var list sceneExplorer
 	list.label = "Explorer"
@@ -104,33 +133,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	// Loop over files in the directory and add one entry for each.
 	for _, f := range files {
 		f := f
-
-		// Check whether or not we are to display hidden files.
-		if f.Name()[:1] == "." && settings.Current.ShowHiddenFiles {
-			continue
-		}
-
-		// Filter files by extension.
-		if exts != nil && !f.IsDir() && !matchesExtensions(f, exts) {
-			continue
-		}
-
-		list.children = append(list.children, entry{
-			label: f.Name(),
-			icon:  explorerIcon(f),
-			callbackOK: func() {
-				if f.IsDir() {
-					list.segueNext()
-					newPath := filepath.Clean(filepath.Join(path, f.Name()))
-					if dirAction != nil {
-						dirAction.callbackOK = func() { cb(newPath) }
-					}
-					menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
-				} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(f.Name()), exts)) {
-					cb(filepath.Clean(filepath.Join(path, f.Name())))
-				}
-			},
-		})
+		appendNode(&list, path, f, exts, cb, dirAction)
 	}
 
 	if len(files) == 0 {
