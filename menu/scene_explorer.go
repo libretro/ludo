@@ -28,9 +28,10 @@ func matchesExtensions(f os.FileInfo, exts []string) bool {
 	return false
 }
 
-func isRoot(path string) bool {
+func isWindowsDrive(path string) bool {
+	path, _ = filepath.Abs(path)
 	validWindowsDrive := regexp.MustCompile(`^[A-Z]\:\\$`)
-	return path == "/" || (validWindowsDrive.MatchString(path))
+	return validWindowsDrive.MatchString(path)
 }
 
 func getWindowsDrives() (drives []string) {
@@ -44,13 +45,13 @@ func getWindowsDrives() (drives []string) {
 	return drives
 }
 
-func appendFolder(list *sceneExplorer, path, dest string, exts []string, cb func(string), dirAction *entry) {
+func appendFolder(list *sceneExplorer, label, newPath string, exts []string, cb func(string), dirAction *entry) {
 	list.children = append(list.children, entry{
-		label: dest,
+		label: label,
 		icon:  "folder",
 		callbackOK: func() {
 			list.segueNext()
-			newPath := filepath.Clean(filepath.Join(path, dest))
+			newPath := newPath
 			if dirAction != nil {
 				dirAction.callbackOK = func() { cb(newPath) }
 			}
@@ -71,30 +72,33 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	var list sceneExplorer
 	list.label = "Explorer"
 
-	path, _ = filepath.Abs(path)
-
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-	}
-
 	// Display the special directory action entry.
 	if dirAction != nil && dirAction.label != "" {
 		dirAction.callbackOK = func() { cb(path) }
 		list.children = append(list.children, *dirAction)
 	}
 
-	if isRoot(path) {
-		// Add windows drives.
+	if path == "/" {
+		// On Windows there is no / and we want to display a list of drives instead
 		if runtime.GOOS == "windows" {
 			drives := getWindowsDrives()
 			for _, drive := range drives {
-				appendFolder(&list, "", drive+":\\", exts, cb, dirAction)
+				appendFolder(&list, drive+":\\", drive+":\\", exts, cb, dirAction)
 			}
+			list.segueMount()
+			return &list
 		}
+	} else if isWindowsDrive(path) {
+		// Special .. entry pointing to the list of drives on Windows
+		appendFolder(&list, "..", "/", exts, cb, dirAction)
 	} else {
 		// Add a first entry for the parent directory.
-		appendFolder(&list, path, "..", exts, cb, dirAction)
+		appendFolder(&list, "..", filepath.Clean(path+"/.."), exts, cb, dirAction)
+	}
+
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}
 
 	// Loop over files in the directory and add one entry for each.
