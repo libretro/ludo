@@ -21,17 +21,17 @@ func TestLoad(t *testing.T) {
 		want := map[string]Playlist{
 			filepath.Join("testdata", "Sega - Master System - Mark III.csv"): Playlist{
 				{
-					"/Users/kivutar/testroms/Sega - Master System - Mark III/Aleste (Japan).zip",
+					filepath.Clean("/Users/kivutar/testroms/Sega - Master System - Mark III/Aleste (Japan).zip"),
 					"Aleste (Japan)",
 					3636729435,
 				},
 				{
-					"/Users/kivutar/testroms/Sega - Master System - Mark III/Alex Kidd in Miracle World (USA, Europe) (Rev 1).zip",
+					filepath.Clean("/Users/kivutar/testroms/Sega - Master System - Mark III/Alex Kidd in Miracle World (USA, Europe) (Rev 1).zip"),
 					"Alex Kidd in Miracle World (USA, Europe, Brazil) (Rev 1)",
 					2933500612,
 				},
 				{
-					"/Users/kivutar/testroms/Sega - Master System - Mark III/Aztec Adventure - The Golden Road to Paradise (World).zip",
+					filepath.Clean("/Users/kivutar/testroms/Sega - Master System - Mark III/Aztec Adventure - The Golden Road to Paradise (World).zip"),
 					"Aztec Adventure (World)",
 					4284567219,
 				},

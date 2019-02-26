@@ -54,7 +54,7 @@ func Load() {
 				continue
 			}
 			var entry Game
-			entry.Path = line[0]
+			entry.Path = filepath.Clean(line[0])
 			entry.Name = line[1]
 			if line[2] != "" {
 				u64, err := strconv.ParseUint(line[2], 16, 64)

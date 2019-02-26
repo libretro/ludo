@@ -33,7 +33,7 @@ func LoadDB(dir string) (rdb.DB, error) {
 			continue
 		}
 		system := name[0 : len(name)-4]
-		bytes, _ := ioutil.ReadFile(dir + "/" + name)
+		bytes, _ := ioutil.ReadFile(filepath.Join(dir, name))
 		db[system] = rdb.Parse(bytes)
 	}
 	return db, nil
@@ -47,7 +47,7 @@ func ScanDir(dir string, doneCb func()) {
 	go func() {
 		for game := range scannedGames {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
-			CSVPath := settings.Current.PlaylistsDirectory + "/" + game.System + ".csv"
+			CSVPath := filepath.Join(settings.Current.PlaylistsDirectory, game.System+".csv")
 			if playlists.Contains(CSVPath, game.Path, game.CRC32) {
 				continue
 			}
