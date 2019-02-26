@@ -302,7 +302,8 @@ func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 }
 
-func (video *Video) UpdateViewport() {
+// ResizeViewport resizes the GL viewport to the framebuffer size
+func (video *Video) ResizeViewport() {
 	fbw, fbh := video.Window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(fbw), int32(fbh))
 }
