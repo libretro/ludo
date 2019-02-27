@@ -174,7 +174,7 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	// Configure the vertex and fragment shaders
-	video.program, err = newProgram(GLSLVersion, vertexShader, darkenFragmentShader)
+	video.program, err = newProgram(GLSLVersion, vertexShader, gameFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -201,7 +201,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	gl.UseProgram(video.program)
 
-	textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
+	textureUniform := gl.GetUniformLocation(video.program, gl.Str("Texture\x00"))
 	gl.Uniform1i(textureUniform, 0)
 
 	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
@@ -271,15 +271,6 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 	return true
 }
 
-func (video *Video) updateMaskUniform() {
-	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
-	if state.Global.MenuActive {
-		gl.Uniform1f(maskUniform, 1.0)
-	} else {
-		gl.Uniform1f(maskUniform, 0.0)
-	}
-}
-
 // CoreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
 func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
@@ -324,9 +315,19 @@ func (video *Video) Render() {
 	fbw, fbh := video.Window.GetFramebufferSize()
 	video.CoreRatioViewport(fbw, fbh)
 
+	ffbw := float32(fbw)
+	ffbh := float32(fbh)
+	h := ffbh
+	w := ffbh * float32(video.Geom.AspectRatio)
+	if w > ffbw {
+		h = ffbw / float32(video.Geom.AspectRatio)
+		w = ffbw
+	}
+
 	gl.UseProgram(video.program)
-	video.updateMaskUniform()
-	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), 1, 1, 1, 1)
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), float32(w), float32(h))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight))
 
 	gl.BindVertexArray(video.vao)
 
