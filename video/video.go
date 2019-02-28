@@ -222,16 +222,10 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.EnableVertexAttribArray(texCoordAttrib)
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
-	// Sets a default pixel format
-	if video.pixFmt == 0 {
-		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-	}
-	if video.pixType == 0 {
-		video.pixType = gl.BGRA
-	}
-	if video.bpp == 0 {
-		video.bpp = 2
-	}
+	// Some cores won't call SetPixelFormat, provide default values
+	video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+	video.pixType = gl.BGRA
+	video.bpp = 2
 
 	gl.GenTextures(1, &video.texID)
 
