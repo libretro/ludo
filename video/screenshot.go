@@ -16,11 +16,8 @@ import (
 // During the TakeScreenshot step, we need to render the current game frame at
 // the right resolution to later capture it using ReadPixels. renderScreenshot
 // taking care of this.
-func (video *Video) renderScreenshot() {
-	avi := state.Global.Core.GetSystemAVInfo()
-	video.Geom = avi.Geometry
-
-	va := video.vertexArray(0, 0, float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight), 1.0)
+func (video *Video) renderScreenshot(width, height float32) {
+	va := video.vertexArray(0, 0, width, height, 1.0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
@@ -38,13 +35,16 @@ func (video *Video) renderScreenshot() {
 
 // TakeScreenshot captures the ouput of video.Render and writes it to a file
 func (video *Video) TakeScreenshot(name string) {
-	_, fbh := video.Window.GetFramebufferSize()
+	avi := state.Global.Core.GetSystemAVInfo()
+	width := float32(avi.Geometry.BaseWidth)
+	height := float32(avi.Geometry.BaseHeight)
 	state.Global.MenuActive = false
-	video.renderScreenshot()
-	img := image.NewRGBA(image.Rect(0, 0, video.Geom.BaseWidth, video.Geom.BaseHeight))
+	video.renderScreenshot(width, height)
+	img := image.NewRGBA(image.Rect(0, 0, avi.Geometry.BaseWidth, avi.Geometry.BaseHeight))
+	_, fbh := video.Window.GetFramebufferSize()
 	gl.ReadPixels(
-		0, int32(fbh-video.Geom.BaseHeight),
-		int32(video.Geom.BaseWidth), int32(video.Geom.BaseHeight),
+		0, int32(fbh-avi.Geometry.BaseHeight),
+		int32(avi.Geometry.BaseWidth), int32(avi.Geometry.BaseHeight),
 		gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 	os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
 	path := filepath.Join(settings.Current.ScreenshotsDirectory, name+".png")
