@@ -199,7 +199,7 @@ func genericSegueNext(list *entry) {
 			yp = 0.5 - 0.3
 			labelAlpha = 0
 			iconAlpha = 0
-			tagAlpha = 1
+			tagAlpha = 0
 			scale = 1.5
 		} else if i < list.ptr {
 			yp = 0.4 - 0.3 + 0.08*float32(i-list.ptr)
