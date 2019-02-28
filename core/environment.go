@@ -30,15 +30,39 @@ func getTimeUsec() int64 {
 	return time.Now().UnixNano()
 }
 
+func environmentGetVariable(data unsafe.Pointer) bool {
+	variable := libretro.GetVariable(data)
+	for i, v := range Options.Vars {
+		if variable.Key() == v.Key() {
+			variable.SetValue(v.Choices()[Options.Choices[i]])
+			return true
+		}
+	}
+	return false
+}
+
+func environmentSetPixelFormat(data unsafe.Pointer) bool {
+	format := libretro.GetPixelFormat(data)
+	if format > libretro.PixelFormatRGB565 {
+		return false
+	}
+	return vid.SetPixelFormat(format)
+}
+
+func environmentGetUsername(data unsafe.Pointer) bool {
+	currentUser, err := user.Current()
+	if err != nil {
+		libretro.SetString(data, "")
+	} else {
+		libretro.SetString(data, currentUser.Username)
+	}
+	return true
+}
+
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
 	case libretro.EnvironmentGetUsername:
-		currentUser, err := user.Current()
-		if err != nil {
-			libretro.SetString(data, "")
-		} else {
-			libretro.SetString(data, currentUser.Username)
-		}
+		return environmentGetUsername(data)
 	case libretro.EnvironmentGetLogInterface:
 		state.Global.Core.BindLogCallback(data, logCallback)
 	case libretro.EnvironmentGetPerfInterface:
@@ -50,11 +74,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:
-		format := libretro.GetPixelFormat(data)
-		if format > libretro.PixelFormatRGB565 {
-			return false
-		}
-		return vid.SetPixelFormat(format)
+		return environmentSetPixelFormat(data)
 	case libretro.EnvironmentGetSystemDirectory:
 		os.MkdirAll(settings.Current.SystemDirectory, os.ModePerm)
 		libretro.SetString(data, settings.Current.SystemDirectory)
@@ -64,24 +84,14 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:
-		variable := libretro.GetVariable(data)
-		for i, v := range Options.Vars {
-			if variable.Key() == v.Key() {
-				variable.SetValue(v.Choices()[Options.Choices[i]])
-				return true
-			}
-		}
-		return false
+		return environmentGetVariable(data)
 	case libretro.EnvironmentSetVariables:
 		Options = options.New(libretro.GetVariables(data))
-		return true
 	case libretro.EnvironmentGetVariableUpdate:
 		libretro.SetBool(data, Options.Updated)
 		Options.Updated = false
-		return true
 	case libretro.EnvironmentSetGeometry:
 		vid.Geom = libretro.GetGeometry(data)
-		return true
 	default:
 		//log.Println("[Env]: Not implemented:", cmd)
 		return false
