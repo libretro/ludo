@@ -79,6 +79,9 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		libretro.SetBool(data, Options.Updated)
 		Options.Updated = false
 		return true
+	case libretro.EnvironmentSetGeometry:
+		vid.Geom = libretro.GetGeometry(data)
+		return true
 	default:
 		//log.Println("[Env]: Not implemented:", cmd)
 		return false

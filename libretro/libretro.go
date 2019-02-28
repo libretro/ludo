@@ -224,6 +224,7 @@ const (
 	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
 	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
 	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
+	EnvironmentSetGeometry          = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
 )
 
 // Debug levels
@@ -564,6 +565,17 @@ func GetVariables(data unsafe.Pointer) []Variable {
 	}
 
 	return vars
+}
+
+// GetGeometry is an environment callback helper that returns the game geometry
+// in EnvironmentSetGeometry.
+func GetGeometry(data unsafe.Pointer) GameGeometry {
+	geometry := (*C.struct_retro_game_geometry)(data)
+	return GameGeometry{
+		AspectRatio: float64(geometry.aspect_ratio),
+		BaseWidth:   int(geometry.base_width),
+		BaseHeight:  int(geometry.base_height),
+	}
 }
 
 // SetBool is an environment callback helper to set a boolean
