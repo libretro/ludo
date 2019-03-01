@@ -38,19 +38,21 @@ type Video struct {
 	Geom      libretro.GameGeometry
 	Font      *glfont.Font
 
-	program        uint32 // default program used for the game window
-	roundedProgram uint32 // program to draw rectangles with rounded corners
-	borderProgram  uint32 // program to draw rectangles borders
-	circleProgram  uint32 // program to draw textured circles
-	demulProgram   uint32 // program to draw premultiplied alpha images
-	vao            uint32
-	vbo            uint32
-	texID          uint32
-	white          uint32
-	pitch          int32
-	pixFmt         uint32
-	pixType        uint32
-	bpp            int32
+	program              uint32 // current program used for the game quad
+	defaultProgram       uint32 // default program used for the game quad
+	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
+	roundedProgram       uint32 // program to draw rectangles with rounded corners
+	borderProgram        uint32 // program to draw rectangles borders
+	circleProgram        uint32 // program to draw textured circles
+	demulProgram         uint32 // program to draw premultiplied alpha images
+	vao                  uint32
+	vbo                  uint32
+	texID                uint32
+	white                uint32
+	pitch                int32
+	pixFmt               uint32
+	pixType              uint32
+	bpp                  int32
 }
 
 // Init instanciates the video package
@@ -174,7 +176,12 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	// Configure the vertex and fragment shaders
-	video.program, err = newProgram(GLSLVersion, vertexShader, darkenFragmentShader)
+	video.defaultProgram, err = newProgram(GLSLVersion, vertexShader, defaultFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.sharpBilinearProgram, err = newProgram(GLSLVersion, vertexShader, sharpBilinearFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -199,9 +206,9 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
-	gl.UseProgram(video.program)
+	video.UpdateFilter(settings.Current.VideoFilter)
 
-	textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
+	textureUniform := gl.GetUniformLocation(video.program, gl.Str("Texture\x00"))
 	gl.Uniform1i(textureUniform, 0)
 
 	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
@@ -223,9 +230,11 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
 	// Some cores won't call SetPixelFormat, provide default values
-	video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-	video.pixType = gl.BGRA
-	video.bpp = 2
+	if video.pixFmt == 0 {
+		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+		video.pixType = gl.BGRA
+		video.bpp = 2
+	}
 
 	gl.GenTextures(1, &video.texID)
 
@@ -236,10 +245,32 @@ func (video *Video) Configure(fullscreen bool) {
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	video.UpdateFilter(settings.Current.VideoFilter)
 
 	video.white = newWhite()
+}
+
+// UpdateFilter configures the game texture filter and shader. We currently
+// support 3 modes: nearest, linear and sharp-bilinear.
+func (video *Video) UpdateFilter(filter string) {
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	switch filter {
+	case "linear":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.defaultProgram
+	case "sharp-bilinear":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.sharpBilinearProgram
+	case "nearest":
+		fallthrough
+	default:
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+		video.program = video.defaultProgram
+	}
+	gl.UseProgram(video.program)
 }
 
 // SetPixelFormat is a callback passed to the libretro implementation.
@@ -271,35 +302,28 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 	return true
 }
 
-func (video *Video) updateMaskUniform() {
-	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
-	if state.Global.MenuActive {
-		gl.Uniform1f(maskUniform, 1.0)
-	} else {
-		gl.Uniform1f(maskUniform, 0.0)
-	}
-}
-
 // CoreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
-func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
+func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
-	h := fbh
-	w := fbh * float32(video.Geom.AspectRatio)
+	h = fbh
+	w = fbh * float32(video.Geom.AspectRatio)
 	if w > fbw {
 		h = fbw / float32(video.Geom.AspectRatio)
 		w = fbw
 	}
 
 	// Place the content in the middle of the window.
-	x := (fbw - w) / 2
-	y := (fbh - h) / 2
+	x = (fbw - w) / 2
+	y = (fbh - h) / 2
 
 	va := video.vertexArray(x, y, w, h, 1.0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+
+	return
 }
 
 // ResizeViewport resizes the GL viewport to the framebuffer size
@@ -319,11 +343,10 @@ func (video *Video) Render() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	video.CoreRatioViewport(fbw, fbh)
+	_, _, w, h := video.CoreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
-	video.updateMaskUniform()
-	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), 1, 1, 1, 1)
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
 	gl.BindVertexArray(video.vao)
 
@@ -337,6 +360,10 @@ func (video *Video) Render() {
 func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+
+	gl.UseProgram(video.program)
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
 
 	video.pitch = pitch
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)

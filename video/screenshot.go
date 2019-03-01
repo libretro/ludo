@@ -22,8 +22,6 @@ func (video *Video) renderScreenshot() {
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
 	gl.UseProgram(video.program)
-	video.updateMaskUniform()
-	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), 1, 1, 1, 1)
 
 	gl.BindVertexArray(video.vao)
 

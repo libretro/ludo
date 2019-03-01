@@ -38,7 +38,7 @@ func buildSettings() Scene {
 				icon:  "folder",
 				value: f.Value,
 				stringValue: func() string {
-					return "<" + utils.FileName(f.Value().(string)) + ">"
+					return "[" + utils.FileName(f.Value().(string)) + "]"
 				},
 				widget: widgets[f.Tag("widget")],
 				callbackOK: func() {
@@ -156,6 +156,21 @@ var incrCallbacks = map[string]callbackIncrement{
 		f.Set(v)
 		vid.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
+		settings.Save()
+	},
+	"VideoFilter": func(f *structs.Field, direction int) {
+		filters := []string{"nearest", "linear", "sharp-bilinear"}
+		v := f.Value().(string)
+		i := utils.IndexOfString(v, filters)
+		i += direction
+		if i < 0 {
+			i = len(filters) - 1
+		}
+		if i > len(filters)-1 {
+			i = 0
+		}
+		f.Set(filters[i])
+		vid.UpdateFilter(filters[i])
 		settings.Save()
 	},
 	"AudioVolume": func(f *structs.Field, direction int) {
