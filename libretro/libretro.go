@@ -225,6 +225,7 @@ const (
 	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
 	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
 	EnvironmentSetGeometry          = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
+	EnvironmentSetSystemAVInfo      = uint32(C.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO)
 )
 
 // Debug levels
@@ -575,6 +576,23 @@ func GetGeometry(data unsafe.Pointer) GameGeometry {
 		AspectRatio: float64(geometry.aspect_ratio),
 		BaseWidth:   int(geometry.base_width),
 		BaseHeight:  int(geometry.base_height),
+	}
+}
+
+// GetSystemAVInfo is an environment callback helper that returns the game geometry
+// in EnvironmentSetGeometry.
+func GetSystemAVInfo(data unsafe.Pointer) SystemAVInfo {
+	avi := (*C.struct_retro_system_av_info)(data)
+	return SystemAVInfo{
+		Geometry: GameGeometry{
+			AspectRatio: float64(avi.geometry.aspect_ratio),
+			BaseWidth:   int(avi.geometry.base_width),
+			BaseHeight:  int(avi.geometry.base_height),
+		},
+		Timing: SystemTiming{
+			FPS:        float64(avi.timing.fps),
+			SampleRate: float64(avi.timing.sample_rate),
+		},
 	}
 }
 
