@@ -70,7 +70,7 @@ func explorerIcon(f os.FileInfo) string {
 
 func appendNode(list *sceneExplorer, path string, f os.FileInfo, exts []string, cb func(string), dirAction *entry) {
 	// Check whether or not we are to display hidden files.
-	if f.Name()[:1] == "." && settings.Current.ShowHiddenFiles {
+	if f.Name()[:1] == "." && !settings.Current.ShowHiddenFiles {
 		return
 	}
 

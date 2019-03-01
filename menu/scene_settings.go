@@ -161,6 +161,12 @@ var incrCallbacks = map[string]callbackIncrement{
 	"AudioVolume": func(f *structs.Field, direction int) {
 		v := f.Value().(float32)
 		v += 0.1 * float32(direction)
+		if v < 0 {
+			v = 0
+		}
+		if v > 1 {
+			v = 1
+		}
 		f.Set(v)
 		audio.SetVolume(v)
 		settings.Save()
