@@ -273,24 +273,26 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 
 // CoreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
-func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
+func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
-	h := fbh
-	w := fbh * float32(video.Geom.AspectRatio)
+	h = fbh
+	w = fbh * float32(video.Geom.AspectRatio)
 	if w > fbw {
 		h = fbw / float32(video.Geom.AspectRatio)
 		w = fbw
 	}
 
 	// Place the content in the middle of the window.
-	x := (fbw - w) / 2
-	y := (fbh - h) / 2
+	x = (fbw - w) / 2
+	y = (fbh - h) / 2
 
 	va := video.vertexArray(x, y, w, h, 1.0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+
+	return
 }
 
 // ResizeViewport resizes the GL viewport to the framebuffer size
@@ -310,19 +312,10 @@ func (video *Video) Render() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	video.CoreRatioViewport(fbw, fbh)
-
-	ffbw := float32(fbw)
-	ffbh := float32(fbh)
-	h := ffbh
-	w := ffbh * float32(video.Geom.AspectRatio)
-	if w > ffbw {
-		h = ffbw / float32(video.Geom.AspectRatio)
-		w = ffbw
-	}
+	_, _, w, h := video.CoreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), float32(w), float32(h))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight))
 
