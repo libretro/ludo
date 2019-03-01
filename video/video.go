@@ -38,19 +38,21 @@ type Video struct {
 	Geom      libretro.GameGeometry
 	Font      *glfont.Font
 
-	program        uint32 // default program used for the game window
-	roundedProgram uint32 // program to draw rectangles with rounded corners
-	borderProgram  uint32 // program to draw rectangles borders
-	circleProgram  uint32 // program to draw textured circles
-	demulProgram   uint32 // program to draw premultiplied alpha images
-	vao            uint32
-	vbo            uint32
-	texID          uint32
-	white          uint32
-	pitch          int32
-	pixFmt         uint32
-	pixType        uint32
-	bpp            int32
+	program              uint32 // current program used for the game quad
+	defaultProgram       uint32 // default program used for the game quad
+	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
+	roundedProgram       uint32 // program to draw rectangles with rounded corners
+	borderProgram        uint32 // program to draw rectangles borders
+	circleProgram        uint32 // program to draw textured circles
+	demulProgram         uint32 // program to draw premultiplied alpha images
+	vao                  uint32
+	vbo                  uint32
+	texID                uint32
+	white                uint32
+	pitch                int32
+	pixFmt               uint32
+	pixType              uint32
+	bpp                  int32
 }
 
 // Init instanciates the video package
@@ -174,7 +176,12 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	// Configure the vertex and fragment shaders
-	video.program, err = newProgram(GLSLVersion, vertexShader, gameFragmentShader)
+	video.defaultProgram, err = newProgram(GLSLVersion, vertexShader, defaultFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.sharpBilinearProgram, err = newProgram(GLSLVersion, vertexShader, sharpBilinearFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -199,7 +206,7 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
-	gl.UseProgram(video.program)
+	video.UpdateFilter(settings.Current.VideoFilter)
 
 	textureUniform := gl.GetUniformLocation(video.program, gl.Str("Texture\x00"))
 	gl.Uniform1i(textureUniform, 0)
@@ -223,9 +230,11 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
 	// Some cores won't call SetPixelFormat, provide default values
-	video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-	video.pixType = gl.BGRA
-	video.bpp = 2
+	if video.pixFmt == 0 {
+		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+		video.pixType = gl.BGRA
+		video.bpp = 2
+	}
 
 	gl.GenTextures(1, &video.texID)
 
@@ -236,10 +245,32 @@ func (video *Video) Configure(fullscreen bool) {
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	video.UpdateFilter(settings.Current.VideoFilter)
 
 	video.white = newWhite()
+}
+
+// UpdateFilter configures the game texture filter and shader. We currently
+// support 3 modes: nearest, linear and sharp-bilinear.
+func (video *Video) UpdateFilter(filter string) {
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	switch filter {
+	case "linear":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.defaultProgram
+	case "shart-bilinear":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.sharpBilinearProgram
+	case "nearest":
+		fallthrough
+	default:
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+		video.program = video.defaultProgram
+	}
+	gl.UseProgram(video.program)
 }
 
 // SetPixelFormat is a callback passed to the libretro implementation.

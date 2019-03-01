@@ -23,6 +23,17 @@ func StringInSlice(a string, list []string) bool {
 	return false
 }
 
+// IndexOfString returns the index of a string in a string slice or -1 if not
+// found.
+func IndexOfString(element string, data []string) int {
+	for k, v := range data {
+		if element == v {
+			return k
+		}
+	}
+	return -1
+}
+
 // FileName returns the name of a file, without the path and extension.
 func FileName(path string) string {
 	name := filepath.Base(path)

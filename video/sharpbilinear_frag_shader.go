@@ -1,6 +1,6 @@
 package video
 
-var gameFragmentShader = `
+var sharpBilinearFragmentShader = `
 #if __VERSION__ >= 130
 #define COMPAT_VARYING in
 #define COMPAT_ATTRIBUTE in
