@@ -316,8 +316,6 @@ func (video *Video) Render() {
 
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight))
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight))
 
 	gl.BindVertexArray(video.vao)
 
@@ -331,6 +329,10 @@ func (video *Video) Render() {
 func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+
+	gl.UseProgram(video.program)
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
 
 	video.pitch = pitch
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
