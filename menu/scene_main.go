@@ -87,7 +87,7 @@ func buildMainMenu() Scene {
 			label: "Reboot",
 			icon:  "subsetting",
 			callbackOK: func() {
-				cmd := exec.Command("shutdown -r now")
+				cmd := exec.Command("/usr/sbin/shutdown -r now")
 				core.UnloadGame()
 				cmd.Run()
 			},
@@ -97,7 +97,7 @@ func buildMainMenu() Scene {
 			label: "Shutdown",
 			icon:  "subsetting",
 			callbackOK: func() {
-				cmd := exec.Command("shutdown -P now")
+				cmd := exec.Command("/usr/sbin/shutdown -P now")
 				core.UnloadGame()
 				cmd.Run()
 			},
