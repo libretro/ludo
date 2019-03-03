@@ -87,9 +87,12 @@ func buildMainMenu() Scene {
 			label: "Reboot",
 			icon:  "subsetting",
 			callbackOK: func() {
-				cmd := exec.Command("/usr/sbin/shutdown -r now")
+				cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
 				core.UnloadGame()
-				cmd.Run()
+				err := cmd.Run()
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+				}
 			},
 		})
 
@@ -97,9 +100,12 @@ func buildMainMenu() Scene {
 			label: "Shutdown",
 			icon:  "subsetting",
 			callbackOK: func() {
-				cmd := exec.Command("/usr/sbin/shutdown -P now")
+				cmd := exec.Command("/usr/sbin/shutdown", "-P", "now")
 				core.UnloadGame()
-				cmd.Run()
+				err := cmd.Run()
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+				}
 			},
 		})
 	} else {
