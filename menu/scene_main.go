@@ -82,12 +82,13 @@ func buildMainMenu() Scene {
 		},
 	})
 
-	if state.Global.DesktopEnvironment {
+	if state.Global.DeskEnv {
 		list.children = append(list.children, entry{
 			label: "Reboot",
 			icon:  "subsetting",
 			callbackOK: func() {
 				cmd := exec.Command("shutdown -r now")
+				core.UnloadGame()
 				cmd.Run()
 			},
 		})
@@ -97,6 +98,7 @@ func buildMainMenu() Scene {
 			icon:  "subsetting",
 			callbackOK: func() {
 				cmd := exec.Command("shutdown -P now")
+				core.UnloadGame()
 				cmd.Run()
 			},
 		})
