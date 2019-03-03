@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"os/exec"
 	"os/user"
 	"path/filepath"
 
@@ -81,13 +82,33 @@ func buildMainMenu() Scene {
 		},
 	})
 
-	list.children = append(list.children, entry{
-		label: "Quit",
-		icon:  "subsetting",
-		callbackOK: func() {
-			vid.Window.SetShouldClose(true)
-		},
-	})
+	if state.Global.DesktopEnvironment {
+		list.children = append(list.children, entry{
+			label: "Reboot",
+			icon:  "subsetting",
+			callbackOK: func() {
+				cmd := exec.Command("shutdown -r now")
+				cmd.Run()
+			},
+		})
+
+		list.children = append(list.children, entry{
+			label: "Shutdown",
+			icon:  "subsetting",
+			callbackOK: func() {
+				cmd := exec.Command("shutdown -P now")
+				cmd.Run()
+			},
+		})
+	} else {
+		list.children = append(list.children, entry{
+			label: "Quit",
+			icon:  "subsetting",
+			callbackOK: func() {
+				vid.Window.SetShouldClose(true)
+			},
+		})
+	}
 
 	list.segueMount()
 
