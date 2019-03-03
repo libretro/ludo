@@ -67,6 +67,7 @@ func main() {
 	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
 	flag.StringVar(&GLVersion, "glver", settings.Defaults.GLVersion, "OpenGL version, possible values are 2.0, 2.1, 3.0, 3.1, 3.2, 4.1, 4.2")
+	flag.BoolVar(&state.Global.DeskEnv, "de", false, "Enable menu entries for the desktop environment mode")
 	flag.Parse()
 	args := flag.Args()
 
@@ -123,5 +124,5 @@ func main() {
 	runLoop(vid)
 
 	// Unload and deinit in the core.
-	core.Unload()
+	core.UnloadGame()
 }
