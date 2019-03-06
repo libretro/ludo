@@ -4,3 +4,5 @@ settings.json
 *.app
 *.dmg
 cores
+*.dll
+*.msi

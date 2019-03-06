@@ -75,6 +75,10 @@ matrix:
       os: windows
       before_install:
         - choco install make
+        - choco install nuget.commandline
+        - nuget install WiX
+        - export PATH="$PATH:/c/Users/travis/gopath/src/github.com/libretro/ludo/WiX.3.11.1/tools"
+        - go get github.com/mh-cbon/go-msi
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
@@ -89,10 +93,11 @@ matrix:
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v -ldflags '-H=windowsgui'
-        - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then cp *.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
+        - go-msi check-env
+        - OS="Windows" ARCH=x86_64 VERSION=0.3.3 make msi
+        - if [[ -n "$TRAVIS_TAG" ]]; then choco install go-msi; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then export PATH="$PATH;$WIX/bin"; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make msi; fi
 
 deploy:
   skip_cleanup: true
@@ -103,7 +108,7 @@ deploy:
     - Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz
     - Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz
     - Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
-    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip
+    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.msi
   on:
     repo: libretro/ludo
     tags: true

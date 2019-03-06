@@ -1,0 +1,37 @@
+{
+  "product": "Ludo",
+  "company": "libretro",
+  "license": "COPYING",
+  "upgrade-code": "37fcda1b-c004-4262-82dd-2498f146ba7f",
+  "files": {
+    "guid": "cd3804b7-fd8f-45b2-8119-a2b1c4c7d068",
+    "items": [
+      "ludo.exe",
+      "OpenAL32.dll",
+      "libwinpthread-1.dll"
+    ]
+  },
+  "directories": [
+    "assets",
+    "database",
+    "cores"
+  ],
+  "shortcuts": {
+    "guid": "5ab52dc2-c638-4662-8284-90d25bc7d3a7",
+    "items": [
+      {
+        "name": "Ludo",
+        "description": "A user friendly libretro frontend",
+        "target": "[INSTALLDIR]\\ludo.exe",
+        "wdir": "INSTALLDIR",
+        "arguments": ""
+      }
+    ]
+  },
+  "choco": {
+    "description": "Ludo",
+    "project-url": "https://github.com/libretro/ludo",
+    "tags": "libretro",
+    "license-url": "https://github.com/libretro/ludo/blob/master/COPYING"
+  }
+}
