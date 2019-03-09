@@ -22,6 +22,8 @@ type Game struct {
 	Developer    string
 	Publisher    string
 	Franchise    string
+	Origin       string
+	Rumble       bool
 	Serial       string
 	ROMName      string
 	ReleaseMonth uint
@@ -73,6 +75,10 @@ func (g *Game) SetField(key string, value string) {
 		g.Publisher = string(value[:])
 	case "franchise":
 		g.Franchise = string(value[:])
+	case "origin":
+		g.Franchise = string(value[:])
+	case "rumble":
+		g.Rumble = true
 	case "serial":
 		g.Serial = string(value[:])
 	case "rom_name":
