@@ -76,7 +76,7 @@ func (g *Game) SetField(key string, value string) {
 	case "franchise":
 		g.Franchise = string(value[:])
 	case "origin":
-		g.Franchise = string(value[:])
+		g.Origin = string(value[:])
 	case "rumble":
 		g.Rumble = true
 	case "serial":
