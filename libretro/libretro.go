@@ -34,7 +34,6 @@ void bridge_retro_run(void *f);
 void bridge_retro_reset(void *f);
 void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_t usec);
 void bridge_retro_hw_context_reset(retro_hw_context_reset_t f);
-uintptr_t bridge_retro_hw_get_current_framebuffer(retro_hw_get_current_framebuffer_t f);
 void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f);
 void bridge_retro_audio_callback(retro_audio_callback_t f);
 void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
@@ -646,9 +645,6 @@ func SetHWRenderCallback(data unsafe.Pointer) *HWRenderCallback {
 	hwrc.HWContextType = uint(c.context_type)
 	hwrc.ContextReset = func() {
 		C.bridge_retro_hw_context_reset(c.context_reset)
-	}
-	hwrc.GetCurrentFramebuffer = func() uintptr {
-		return uintptr(C.bridge_retro_hw_get_current_framebuffer(c.get_current_framebuffer))
 	}
 	hwrc.Depth = bool(c.depth)
 	hwrc.Stencil = bool(c.stencil)
