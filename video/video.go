@@ -128,6 +128,8 @@ func (video *Video) configureContext() uint {
 	return GLSLVersion
 }
 
+// InitFramebuffer initializes and configures the video frame buffer based on
+// informations from the HWRenderCallback of the libretro core.
 func (video *Video) InitFramebuffer(width, height int) {
 	gl.GenFramebuffers(1, &video.fboID)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
