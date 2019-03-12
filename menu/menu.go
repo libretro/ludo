@@ -85,8 +85,12 @@ func updateTweens(dt float32) {
 // Render takes care of rendering the menu
 func Render(dt float32) {
 	menu.t += float64(dt * 8)
-	w, _ := vid.Window.GetFramebufferSize()
+	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
+
+	if state.Global.CoreRunning {
+		vid.DrawRect(0, 0, float32(w), float32(h), 1, video.Color{R: 0, G: 0, B: 0, A: 0.85})
+	}
 
 	updateTweens(dt)
 
@@ -199,7 +203,7 @@ func genericSegueNext(list *entry) {
 			yp = 0.5 - 0.3
 			labelAlpha = 0
 			iconAlpha = 0
-			tagAlpha = 1
+			tagAlpha = 0
 			scale = 1.5
 		} else if i < list.ptr {
 			yp = 0.4 - 0.3 + 0.08*float32(i-list.ptr)

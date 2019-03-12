@@ -15,18 +15,22 @@ type RDB []Game
 
 // Game represents a game in the libretro database
 type Game struct {
-	Path        string
-	Name        string
-	Description string
-	Genre       string
-	Developer   string
-	Publisher   string
-	Franchise   string
-	Serial      string
-	ROMName     string
-	Size        uint64
-	CRC32       uint32
-	System      string
+	Path         string
+	Name         string
+	Description  string
+	Genre        string
+	Developer    string
+	Publisher    string
+	Franchise    string
+	Origin       string
+	Rumble       bool
+	Serial       string
+	ROMName      string
+	ReleaseMonth uint
+	ReleaseYear  uint
+	Size         uint64
+	CRC32        uint32
+	System       string
 }
 
 const (
@@ -71,17 +75,29 @@ func (g *Game) SetField(key string, value string) {
 		g.Publisher = string(value[:])
 	case "franchise":
 		g.Franchise = string(value[:])
+	case "origin":
+		g.Origin = string(value[:])
+	case "rumble":
+		g.Rumble = true
 	case "serial":
 		g.Serial = string(value[:])
 	case "rom_name":
 		g.ROMName = string(value[:])
 	case "size":
-		value2 := fmt.Sprintf("%x", string(value[:]))
-		u64, _ := strconv.ParseUint(value2, 16, 32)
+		v := fmt.Sprintf("%x", string(value[:]))
+		u64, _ := strconv.ParseUint(v, 16, 32)
 		g.Size = u64
+	case "releasemonth":
+		v := fmt.Sprintf("%x", string(value[:]))
+		u64, _ := strconv.ParseUint(v, 16, 32)
+		g.ReleaseMonth = uint(u64)
+	case "releaseyear":
+		v := fmt.Sprintf("%x", string(value[:]))
+		u64, _ := strconv.ParseUint(v, 16, 32)
+		g.ReleaseYear = uint(u64)
 	case "crc":
-		value2 := fmt.Sprintf("%x", string(value[:]))
-		u64, _ := strconv.ParseUint(value2, 16, 32)
+		v := fmt.Sprintf("%x", string(value[:]))
+		u64, _ := strconv.ParseUint(v, 16, 32)
 		g.CRC32 = uint32(u64)
 	}
 }

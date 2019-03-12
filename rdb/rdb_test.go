@@ -136,6 +136,6 @@ var sampleRDBParsed2 = RDB{
 	{Name: "Madou King Granzort (Japan)", Description: "Madou King Granzort (Japan)", ROMName: "Madou King Granzort (Japan).pce", Size: uint64(524288), CRC32: uint32(520360294)},
 	{Name: "Daimakaimura (Japan)", Description: "Daimakaimura (Japan)", ROMName: "Daimakaimura (Japan).pce", Size: uint64(1048576), CRC32: uint32(3028723949)},
 	{Name: "Battle Ace (Japan)", Description: "Battle Ace (Japan)", ROMName: "Battle Ace (Japan).pce", Size: uint64(524288), CRC32: uint32(991145825)},
-	{Name: "Aldynes - The Misson Code for Rage Crisis (Japan)", Description: "Aldynes - The Misson Code for Rage Crisis (Japan)", Genre: "Shooter", Developer: "Produce", Publisher: "Hudson Soft", ROMName: "Aldynes - The Misson Code for Rage Crisis (Japan).pce", Size: uint64(1048576), CRC32: uint32(1277241008)},
-	{Name: "1941 - Counter Attack (Japan)", Description: "1941 - Counter Attack (Japan)", Genre: "Shooter", Developer: "Capcom", Publisher: "Capcom", ROMName: "1941 - Counter Attack (Japan).pce", Size: uint64(1048576), CRC32: uint32(2353367266)},
+	{Name: "Aldynes - The Misson Code for Rage Crisis (Japan)", Description: "Aldynes - The Misson Code for Rage Crisis (Japan)", Genre: "Shooter", Developer: "Produce", Publisher: "Hudson Soft", ROMName: "Aldynes - The Misson Code for Rage Crisis (Japan).pce", ReleaseMonth: 2, ReleaseYear: 1991, Size: uint64(1048576), CRC32: uint32(1277241008)},
+	{Name: "1941 - Counter Attack (Japan)", Description: "1941 - Counter Attack (Japan)", Genre: "Shooter", Developer: "Capcom", Publisher: "Capcom", ROMName: "1941 - Counter Attack (Japan).pce", ReleaseMonth: 2, ReleaseYear: 1990, Size: uint64(1048576), CRC32: uint32(2353367266)},
 }
