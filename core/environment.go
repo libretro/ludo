@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/user"
@@ -76,7 +75,6 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		state.Global.Core.HWRenderCallback = libretro.SetHWRenderCallback(data)
 		state.Global.Core.HWRenderCallback.GetCurrentFramebuffer = vid.CurrentFramebuffer
 		state.Global.Core.HWRenderCallback.GetProcAddress = vid.ProcAddress
-		fmt.Println(state.Global.Core.HWRenderCallback)
 		return true
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)

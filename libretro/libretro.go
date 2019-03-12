@@ -128,7 +128,7 @@ type FrameTimeCallback struct {
 // HWRenderCallback sets an interface to let a libretro core render with
 // hardware acceleration.
 type HWRenderCallback struct {
-	HWContextType              uint
+	HWContextType              uint32
 	ContextReset               func()
 	GetCurrentFramebuffer      func() uintptr
 	GetProcAddress             func(string) uintptr
@@ -263,6 +263,18 @@ const (
 	MemoryRTC       = uint32(C.RETRO_MEMORY_RTC)
 	MemorySystemRAM = uint32(C.RETRO_MEMORY_SYSTEM_RAM)
 	MemoryVideoRAM  = uint32(C.RETRO_MEMORY_VIDEO_RAM)
+)
+
+// Hardware contexts
+const (
+	HWContextNone            = uint32(C.RETRO_HW_CONTEXT_NONE)
+	HWContextOpenGL          = uint32(C.RETRO_HW_CONTEXT_OPENGL)
+	HWContextOpenGLES2       = uint32(C.RETRO_HW_CONTEXT_OPENGLES2)
+	HWContextOpenGLCore      = uint32(C.RETRO_HW_CONTEXT_OPENGL_CORE)
+	HWContextOpenGLES3       = uint32(C.RETRO_HW_CONTEXT_OPENGLES3)
+	HWContextOpenGLESVersion = uint32(C.RETRO_HW_CONTEXT_OPENGLES_VERSION)
+	HWContextVulkan          = uint32(C.RETRO_HW_CONTEXT_VULKAN)
+	HWContextDummy           = uint32(C.RETRO_HW_CONTEXT_DUMMY)
 )
 
 type (
@@ -642,7 +654,7 @@ func (core *Core) SetFrameTimeCallback(data unsafe.Pointer) {
 func SetHWRenderCallback(data unsafe.Pointer) *HWRenderCallback {
 	c := *(*C.struct_retro_hw_render_callback)(data)
 	hwrc := HWRenderCallback{}
-	hwrc.HWContextType = uint(c.context_type)
+	hwrc.HWContextType = uint32(c.context_type)
 	hwrc.ContextReset = func() {
 		C.bridge_retro_hw_context_reset(c.context_reset)
 	}
