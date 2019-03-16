@@ -25,10 +25,10 @@ type Settings struct {
 	VideoMonitorIndex int    `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	VideoFilter       string `json:"video_filter" label:"Video Filter" fmt:"<%s>"`
 
-	GLVersion       string            `json:"video_gl_version"`
+	GLVersion       string            `hide:"always" json:"video_gl_version"`
 	AudioVolume     float32           `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
 	ShowHiddenFiles bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
-	CoreForPlaylist map[string]string `json:"core_for_playlist"`
+	CoreForPlaylist map[string]string `hide:"always" json:"core_for_playlist"`
 
 	CoresDirectory       string `hide:"de" json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
 	AssetsDirectory      string `hide:"de" json:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
@@ -40,9 +40,9 @@ type Settings struct {
 	PlaylistsDirectory   string `hide:"de" json:"playlists_dir" label:"Playlists Directory" fmt:"%s" widget:"dir"`
 	ThumbnailsDirectory  string `hide:"de" json:"thumbnail_dir" label:"Thumbnails Directory" fmt:"%s" widget:"dir"`
 
-	SSHService       bool `hide:"program" label:"SSH" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
-	SambaService     bool `hide:"program" label:"Samba" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
-	BluetoothService bool `hide:"program" label:"Bluetooth" widget:"switch" service:"bluetooth.service" path:"/storage/.cache/services/bluez.conf"`
+	SSHService       bool `hide:"app" label:"SSH" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
+	SambaService     bool `hide:"app" label:"Samba" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
+	BluetoothService bool `hide:"app" label:"Bluetooth" widget:"switch" service:"bluetooth.service" path:"/storage/.cache/services/bluez.conf"`
 }
 
 // Current stores the current settings at runtime
