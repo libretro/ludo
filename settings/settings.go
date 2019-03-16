@@ -76,8 +76,7 @@ func Load() error {
 
 	// Those are special fields, their value is not saved in settings.json but
 	// depends on the presence of some files
-	fields := structs.Fields(&Current)
-	deskenv.InitializeServiceSettingsValues(fields)
+	deskenv.InitializeServiceSettingsValues(structs.Fields(&Current))
 
 	return err
 }
