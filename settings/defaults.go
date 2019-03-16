@@ -15,6 +15,7 @@ func defaultSettings() Settings {
 	return Settings{
 		VideoFullscreen:   false,
 		VideoMonitorIndex: 0,
+		VideoFilter:       "sharp-bilinear",
 		AudioVolume:       0.5,
 		ShowHiddenFiles:   true,
 		GLVersion:         "3.2",

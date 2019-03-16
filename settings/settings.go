@@ -40,9 +40,9 @@ type Settings struct {
 	PlaylistsDirectory   string `hide:"de" json:"playlists_dir" label:"Playlists Directory" fmt:"%s" widget:"dir"`
 	ThumbnailsDirectory  string `hide:"de" json:"thumbnail_dir" label:"Thumbnails Directory" fmt:"%s" widget:"dir"`
 
-	SSHService       bool `hide:"app" label:"SSH" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
-	SambaService     bool `hide:"app" label:"Samba" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
-	BluetoothService bool `hide:"app" label:"Bluetooth" widget:"switch" service:"bluetooth.service" path:"/storage/.cache/services/bluez.conf"`
+	SSHService       bool `hide:"app" json:"ssh_service" label:"SSH" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
+	SambaService     bool `hide:"app" json:"samba_service" label:"Samba" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
+	BluetoothService bool `hide:"app" json:"bluetooth_service" label:"Bluetooth" widget:"switch" service:"bluetooth.service" path:"/storage/.cache/services/bluez.conf"`
 }
 
 // Current stores the current settings at runtime
