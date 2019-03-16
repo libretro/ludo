@@ -46,7 +46,7 @@ func SystemdServiceToggle(path string, serviceName string, enable bool) error {
 		}
 	}
 
-	cmd := exec.Command("/usr/sbin/systemctl", action, serviceName)
+	cmd := exec.Command("/usr/bin/systemctl", action, serviceName)
 	err := cmd.Run()
 	if err != nil {
 		return err
