@@ -2,6 +2,8 @@ package menu
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/fatih/structs"
@@ -195,17 +197,32 @@ var incrCallbacks = map[string]callbackIncrement{
 	"SSHService": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v
-		f.Set(v)
+		err := systemdServiceToggle(f.Tag("path"), f.Tag("service"), v)
+		if err != nil {
+			ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		} else {
+			f.Set(v)
+		}
 	},
 	"SambaService": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v
-		f.Set(v)
+		err := systemdServiceToggle(f.Tag("path"), f.Tag("service"), v)
+		if err != nil {
+			ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		} else {
+			f.Set(v)
+		}
 	},
 	"BluetoothService": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v
-		f.Set(v)
+		err := systemdServiceToggle(f.Tag("path"), f.Tag("service"), v)
+		if err != nil {
+			ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		} else {
+			f.Set(v)
+		}
 	},
 }
 
@@ -253,4 +270,29 @@ func (s *sceneSettings) drawHintBar() {
 	} else {
 		stackHint(&stack, "key-left-right", "SET", h)
 	}
+}
+
+func systemdServiceToggle(path string, serviceName string, enable bool) error {
+	action := "stop"
+	if enable {
+		action = "start"
+		var file, err = os.Create(path)
+		if err != nil {
+			return err
+		}
+		file.Close()
+	} else {
+		err := os.Remove(path)
+		if err != nil {
+			return err
+		}
+	}
+
+	cmd := exec.Command("/usr/sbin/systemctl", action, serviceName)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

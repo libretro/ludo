@@ -12,6 +12,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/fatih/structs"
 	"github.com/libretro/ludo/utils"
 )
 
@@ -25,9 +26,9 @@ type Settings struct {
 	GLVersion            string            `json:"video_gl_version"`
 	AudioVolume          float32           `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
 	ShowHiddenFiles      bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
-	SSHService           bool              `label:"SSH Service" widget:"switch"`
-	SambaService         bool              `label:"Samba Service" widget:"switch"`
-	BluetoothService     bool              `label:"Bluetooth Service" widget:"switch"`
+	SSHService           bool              `label:"SSH Service" widget:"switch" service:"sshd.service" path:"/Users/kivutar/sshd.conf"`
+	SambaService         bool              `label:"Samba Service" widget:"switch" service:"smbd.service" path:"/Users/kivutar/samba.conf"`
+	BluetoothService     bool              `label:"Bluetooth Service" widget:"switch" service:"bluetooth.service" path:"/Users/kivutar/bluez.conf"`
 	CoreForPlaylist      map[string]string `json:"core_for_playlist"`
 	CoresDirectory       string            `json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
 	AssetsDirectory      string            `json:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
@@ -68,6 +69,23 @@ func Load() error {
 		return err
 	}
 	err = json.Unmarshal(b, &Current)
+
+	// Those are special fields, their value is not saved in settings.json but
+	// depends on the presence of some files
+	fields := structs.Fields(&Current)
+	for _, f := range fields {
+		switch f.Name() {
+		case "SSHService":
+			var _, err = os.Stat(f.Tag("path"))
+			f.Set(!os.IsNotExist(err))
+		case "SambaService":
+			var _, err = os.Stat(f.Tag("path"))
+			f.Set(!os.IsNotExist(err))
+		case "BluetoothService":
+			var _, err = os.Stat(f.Tag("path"))
+			f.Set(!os.IsNotExist(err))
+		}
+	}
 
 	return err
 }
