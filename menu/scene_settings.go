@@ -28,7 +28,11 @@ func buildSettings() Scene {
 	for _, f := range fields {
 		f := f
 		// Don't expose settings without label
-		if f.Tag("label") == "" {
+		// If we're in Desktop Environment mode, hide settings flagged with hide:"de"
+		// If we're in program mode, hide settings flagged with hide:"program"
+		if f.Tag("label") == "" ||
+			(state.Global.DeskEnv && f.Tag("hide") == "de") ||
+			(!state.Global.DeskEnv && f.Tag("hide") == "program") {
 			continue
 		}
 
