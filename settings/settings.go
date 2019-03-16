@@ -27,9 +27,9 @@ type Settings struct {
 	GLVersion            string            `json:"video_gl_version"`
 	AudioVolume          float32           `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
 	ShowHiddenFiles      bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
-	SSHService           bool              `label:"SSH Service" widget:"switch" service:"sshd.service" path:"/Users/kivutar/sshd.conf"`
-	SambaService         bool              `label:"Samba Service" widget:"switch" service:"smbd.service" path:"/Users/kivutar/samba.conf"`
-	BluetoothService     bool              `label:"Bluetooth Service" widget:"switch" service:"bluetooth.service" path:"/Users/kivutar/bluez.conf"`
+	SSHService           bool              `label:"SSH Service" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
+	SambaService         bool              `label:"Samba Service" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
+	BluetoothService     bool              `label:"Bluetooth Service" widget:"switch" service:"bluetooth.service" path:"/storage/.cache/services/bluez.conf"`
 	CoreForPlaylist      map[string]string `json:"core_for_playlist"`
 	CoresDirectory       string            `json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
 	AssetsDirectory      string            `json:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`

@@ -12,7 +12,7 @@ import (
 )
 
 // SystemdServiceToggle can enable and start, or disable and stop a systemd
-// service.
+// service in LudOS.
 func SystemdServiceToggle(path string, serviceName string, enable bool) error {
 	action := "stop"
 	if enable {
@@ -38,7 +38,9 @@ func SystemdServiceToggle(path string, serviceName string, enable bool) error {
 	return nil
 }
 
-// ServiceSettingIncrCallback is executed when a service settings is toggled
+// ServiceSettingIncrCallback is executed when a service settings is toggled.
+// It enables or disables the daemon corresponding to the current setting
+// field.
 func ServiceSettingIncrCallback(f *structs.Field, direction int) {
 	v := f.Value().(bool)
 	v = !v
