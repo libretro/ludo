@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/structs"
+	"github.com/libretro/ludo/deskenv"
 	"github.com/libretro/ludo/utils"
 )
 
@@ -73,19 +74,7 @@ func Load() error {
 	// Those are special fields, their value is not saved in settings.json but
 	// depends on the presence of some files
 	fields := structs.Fields(&Current)
-	for _, f := range fields {
-		switch f.Name() {
-		case "SSHService":
-			var _, err = os.Stat(f.Tag("path"))
-			f.Set(!os.IsNotExist(err))
-		case "SambaService":
-			var _, err = os.Stat(f.Tag("path"))
-			f.Set(!os.IsNotExist(err))
-		case "BluetoothService":
-			var _, err = os.Stat(f.Tag("path"))
-			f.Set(!os.IsNotExist(err))
-		}
-	}
+	deskenv.InitializeServiceSettingsValues(fields)
 
 	return err
 }
