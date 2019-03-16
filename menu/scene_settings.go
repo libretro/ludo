@@ -192,6 +192,21 @@ var incrCallbacks = map[string]callbackIncrement{
 		f.Set(v)
 		settings.Save()
 	},
+	"SSHService": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+	},
+	"SambaService": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+	},
+	"BluetoothService": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+	},
 }
 
 // Generic stuff
