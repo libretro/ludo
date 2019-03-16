@@ -11,21 +11,38 @@ import (
 	ntf "github.com/libretro/ludo/notifications"
 )
 
+// exists naively checks if a file exists. We're not handling cases like, the
+// file is a directory.
+func exists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
 // SystemdServiceToggle can enable and start, or disable and stop a systemd
 // service in LudOS.
 func SystemdServiceToggle(path string, serviceName string, enable bool) error {
 	action := "stop"
 	if enable {
 		action = "start"
-		var file, err = os.Create(path)
-		if err != nil {
-			return err
+		if !exists(path) {
+			var file, err = os.Create(path)
+			if err != nil {
+				return err
+			}
+			file.Close()
 		}
-		file.Close()
 	} else {
-		err := os.Remove(path)
-		if err != nil {
-			return err
+		if exists(path) {
+			err := os.Remove(path)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -59,14 +76,11 @@ func InitializeServiceSettingsValues(fields []*structs.Field) {
 	for _, f := range fields {
 		switch f.Name() {
 		case "SSHService":
-			var _, err = os.Stat(f.Tag("path"))
-			f.Set(!os.IsNotExist(err))
+			f.Set(exists(f.Tag("path")))
 		case "SambaService":
-			var _, err = os.Stat(f.Tag("path"))
-			f.Set(!os.IsNotExist(err))
+			f.Set(exists(f.Tag("path")))
 		case "BluetoothService":
-			var _, err = os.Stat(f.Tag("path"))
-			f.Set(!os.IsNotExist(err))
+			f.Set(exists(f.Tag("path")))
 		}
 	}
 }
