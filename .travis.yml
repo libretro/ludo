@@ -74,7 +74,7 @@ matrix:
     - name: Windows
       os: windows
       before_install:
-        - choco install make
+        - choco install make listdlls
         - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
         - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
         - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
@@ -90,6 +90,7 @@ matrix:
         - golint -set_exit_status $(go list ./...)
         - go build -v -ldflags '-H=windowsgui'
         - ldd ludo
+        - listdlls -v ludo.exe
         - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then cp *.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe; fi
