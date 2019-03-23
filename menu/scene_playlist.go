@@ -122,6 +122,7 @@ func (s *scenePlaylist) render() {
 
 	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
+			freeThumbnail(list, i)
 			continue
 		}
 
