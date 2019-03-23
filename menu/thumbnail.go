@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-gl/gl/all-core/gl"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
 )
@@ -96,4 +97,13 @@ func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale f
 		x, y, w, h, scale,
 		color,
 	)
+}
+
+func freeThumbnail(list *entry, i int) {
+	if list.children[i].thumbnail != 0 &&
+		list.children[i].thumbnail != menu.icons["img-dl"] &&
+		list.children[i].thumbnail != menu.icons["img-broken"] {
+		gl.DeleteTextures(1, &list.children[i].thumbnail)
+		list.children[i].thumbnail = 0
+	}
 }
