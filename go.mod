@@ -5,8 +5,13 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/disintegration/imaging v1.6.0
 	github.com/fatih/structs v1.1.0
+<<<<<<< HEAD
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
 	github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1
+=======
+	github.com/go-gl/gl v0.0.0-20181026044259-55b76b7df9d2
+	github.com/go-gl/glfw v0.0.0-20181014061740-6e2aad9c205d
+>>>>>>> Update GLFW to 3.3. Closes #44
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/kivutar/glfont v0.0.0-20190119064645-3f4c07235fb3
 	github.com/lucasb-eyer/go-colorful v1.0.2

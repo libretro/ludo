@@ -5,6 +5,7 @@ import "github.com/libretro/ludo/libretro"
 var joyBinds = map[string]joybinds{
 	"Microsoft X-Box 360 pad":    xbox360JoyBinds,
 	"Xbox 360 Controller":        xboxOneJoyBinds,
+	"Xbox Controller":            xboxOneJoyBinds,
 	"Wireless Controller":        ds4JoyBinds,
 	"PLAYSTATION(R)3 Controller": ds3JoyBinds,
 }
