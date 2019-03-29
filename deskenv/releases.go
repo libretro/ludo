@@ -17,6 +17,8 @@ const releasesURL = "https://api.github.com/repos/libretro/LudOS/releases"
 
 var client = grab.NewClient()
 
+var downloading bool
+
 // GHAsset is an asset attached to a github release
 type GHAsset struct {
 	Name               string
@@ -56,7 +58,14 @@ func FilterAssets(slug string, assets []GHAsset) *GHAsset {
 
 // DownloadRelease will download a LudOS release from github
 func DownloadRelease(name, path, url string) {
+	if downloading {
+		ntf.DisplayAndLog(ntf.Error, "Menu", "A download is already in progress")
+		return
+	}
+
 	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "0/100 Downloading %s", name)
+	downloading = true
+	defer func() { downloading = false }()
 
 	req, err := grab.NewRequest(path, url)
 	if err != nil {
