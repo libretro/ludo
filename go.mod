@@ -1,6 +1,7 @@
 module github.com/libretro/ludo
 
 require (
+	github.com/cavaliercoder/grab v2.0.0+incompatible
 	github.com/disintegration/imaging v1.6.0
 	github.com/fatih/structs v1.1.0
 	github.com/go-gl/gl v0.0.0-20181026044259-55b76b7df9d2
