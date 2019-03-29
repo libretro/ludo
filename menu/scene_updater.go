@@ -26,15 +26,9 @@ func buildUpdater(releases []deskenv.GHRelease) Scene {
 					ntf.DisplayAndLog(ntf.Error, "Menu", "Couldn't find asset matching %s", slug)
 					return
 				}
-				nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Downloading %s", asset.Name)
 				go func() {
 					path := filepath.Join(deskenv.UpdatesDir, asset.Name)
-					err := deskenv.DownloadRelease(path, asset.BrowserDownloadURL)
-					if err != nil {
-						ntf.Update(nid, ntf.Error, err.Error())
-						return
-					}
-					ntf.Update(nid, ntf.Success, "Done downloading. You can now reboot your system.")
+					deskenv.DownloadRelease(asset.Name, path, asset.BrowserDownloadURL)
 				}()
 			},
 		})
