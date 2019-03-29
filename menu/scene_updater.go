@@ -20,10 +20,9 @@ func buildUpdater(releases []deskenv.GHRelease) Scene {
 			label: rel.Name,
 			icon:  "menu_saving",
 			callbackOK: func() {
-				slug := "Generic.x86_64"
-				asset := deskenv.FilterAssets(slug, rel.Assets)
+				asset := deskenv.FilterAssets(rel.Assets)
 				if asset == nil {
-					ntf.DisplayAndLog(ntf.Error, "Menu", "Couldn't find asset matching %s", slug)
+					ntf.DisplayAndLog(ntf.Error, "Menu", "No matching asset")
 					return
 				}
 				go func() {

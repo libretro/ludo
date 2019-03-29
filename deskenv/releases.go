@@ -3,6 +3,7 @@ package deskenv
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -16,8 +17,8 @@ const UpdatesDir = "/storage/.updates/"
 const releasesURL = "https://api.github.com/repos/libretro/LudOS/releases"
 
 var client = grab.NewClient()
-
 var downloading bool
+var libreELECArch = os.Getenv("LIBREELEC_ARCH")
 
 // GHAsset is an asset attached to a github release
 type GHAsset struct {
@@ -45,11 +46,10 @@ func GetReleases() (*[]GHRelease, error) {
 	return &releases, err
 }
 
-// FilterAssets finds and return the asset matching the slug, slug can be
-// Generic.x86_64 or RPi2.arm
-func FilterAssets(slug string, assets []GHAsset) *GHAsset {
+// FilterAssets finds and return the asset matching the LIBREELEC_ARCH
+func FilterAssets(assets []GHAsset) *GHAsset {
 	for _, asset := range assets {
-		if strings.Contains(asset.Name, slug) {
+		if strings.Contains(asset.Name, libreELECArch) {
 			return &asset
 		}
 	}
