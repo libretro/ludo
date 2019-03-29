@@ -5,6 +5,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/libretro/ludo/deskenv"
 	"github.com/libretro/ludo/settings"
 
 	"github.com/libretro/ludo/core"
@@ -65,24 +66,21 @@ func buildMainMenu() Scene {
 		},
 	})
 
-	list.children = append(list.children, entry{
-		label: "Settings",
-		icon:  "subsetting",
-		callbackOK: func() {
-			list.segueNext()
-			menu.stack = append(menu.stack, buildSettings())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label: "Help",
-		icon:  "subsetting",
-		callbackOK: func() {
-			ntf.DisplayAndLog(ntf.Warning, "Menu", "Not implemented yet.")
-		},
-	})
-
 	if state.Global.DeskEnv {
+		list.children = append(list.children, entry{
+			label: "Updater",
+			icon:  "subsetting",
+			callbackOK: func() {
+				rels, err := deskenv.GetReleases()
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+					return
+				}
+				list.segueNext()
+				menu.stack = append(menu.stack, buildUpdater(*rels))
+			},
+		})
+
 		list.children = append(list.children, entry{
 			label: "Reboot",
 			icon:  "subsetting",
