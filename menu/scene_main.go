@@ -5,7 +5,7 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/libretro/ludo/deskenv"
+	"github.com/libretro/ludo/ludos"
 	"github.com/libretro/ludo/settings"
 
 	"github.com/libretro/ludo/core"
@@ -66,12 +66,12 @@ func buildMainMenu() Scene {
 		},
 	})
 
-	if state.Global.DeskEnv {
+	if state.Global.LudOS {
 		list.children = append(list.children, entry{
 			label: "Updater",
 			icon:  "subsetting",
 			callbackOK: func() {
-				rels, err := deskenv.GetReleases()
+				rels, err := ludos.GetReleases()
 				if err != nil {
 					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 					return

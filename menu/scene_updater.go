@@ -3,7 +3,7 @@ package menu
 import (
 	"path/filepath"
 
-	"github.com/libretro/ludo/deskenv"
+	"github.com/libretro/ludo/ludos"
 	ntf "github.com/libretro/ludo/notifications"
 )
 
@@ -11,7 +11,7 @@ type sceneUpdater struct {
 	entry
 }
 
-func buildUpdater(releases []deskenv.GHRelease) Scene {
+func buildUpdater(releases []ludos.GHRelease) Scene {
 	var list sceneUpdater
 	list.label = "Updater Menu"
 
@@ -20,14 +20,14 @@ func buildUpdater(releases []deskenv.GHRelease) Scene {
 			label: rel.Name,
 			icon:  "menu_saving",
 			callbackOK: func() {
-				asset := deskenv.FilterAssets(rel.Assets)
+				asset := ludos.FilterAssets(rel.Assets)
 				if asset == nil {
 					ntf.DisplayAndLog(ntf.Error, "Menu", "No matching asset")
 					return
 				}
 				go func() {
-					path := filepath.Join(deskenv.UpdatesDir, asset.Name)
-					deskenv.DownloadRelease(asset.Name, path, asset.BrowserDownloadURL)
+					path := filepath.Join(ludos.UpdatesDir, asset.Name)
+					ludos.DownloadRelease(asset.Name, path, asset.BrowserDownloadURL)
 				}()
 			},
 		})

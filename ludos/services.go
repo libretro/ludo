@@ -1,7 +1,7 @@
-// Package deskenv encapsulates logic used in LudOS, the Operating System
+// Package ludos encapsulates logic used in LudOS, the Operating System
 // version of Ludo. Here Ludo is used as a Desktop Environment and can
 // perform actions like rebooting the system or enabling a daemon.
-package deskenv
+package ludos
 
 import (
 	"os"

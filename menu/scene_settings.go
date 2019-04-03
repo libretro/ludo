@@ -8,7 +8,7 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 
 	"github.com/libretro/ludo/audio"
-	"github.com/libretro/ludo/deskenv"
+	"github.com/libretro/ludo/ludos"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -25,8 +25,8 @@ type sceneSettings struct {
 // If we're in program mode, hide settings flagged with hide:"program"
 func isHidden(f *structs.Field) bool {
 	return f.Tag("hide") == "always" ||
-		(state.Global.DeskEnv && f.Tag("hide") == "de") ||
-		(!state.Global.DeskEnv && f.Tag("hide") == "app")
+		(state.Global.LudOS && f.Tag("hide") == "de") ||
+		(!state.Global.LudOS && f.Tag("hide") == "app")
 }
 
 func buildSettings() Scene {
@@ -202,9 +202,9 @@ var incrCallbacks = map[string]callbackIncrement{
 		f.Set(v)
 		settings.Save()
 	},
-	"SSHService":       deskenv.ServiceSettingIncrCallback,
-	"SambaService":     deskenv.ServiceSettingIncrCallback,
-	"BluetoothService": deskenv.ServiceSettingIncrCallback,
+	"SSHService":       ludos.ServiceSettingIncrCallback,
+	"SambaService":     ludos.ServiceSettingIncrCallback,
+	"BluetoothService": ludos.ServiceSettingIncrCallback,
 }
 
 // Generic stuff

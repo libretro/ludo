@@ -1,4 +1,4 @@
-package deskenv
+package ludos
 
 import (
 	"encoding/json"

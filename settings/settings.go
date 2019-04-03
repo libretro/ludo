@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/structs"
-	"github.com/libretro/ludo/deskenv"
+	"github.com/libretro/ludo/ludos"
 	"github.com/libretro/ludo/utils"
 )
 
@@ -76,7 +76,7 @@ func Load() error {
 
 	// Those are special fields, their value is not saved in settings.json but
 	// depends on the presence of some files
-	deskenv.InitializeServiceSettingsValues(structs.Fields(&Current))
+	ludos.InitializeServiceSettingsValues(structs.Fields(&Current))
 
 	return err
 }
