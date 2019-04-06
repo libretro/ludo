@@ -5,7 +5,6 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/libretro/ludo/ludos"
 	"github.com/libretro/ludo/settings"
 
 	"github.com/libretro/ludo/core"
@@ -71,13 +70,8 @@ func buildMainMenu() Scene {
 			label: "Updater",
 			icon:  "subsetting",
 			callbackOK: func() {
-				rels, err := ludos.GetReleases()
-				if err != nil {
-					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-					return
-				}
 				list.segueNext()
-				menu.stack = append(menu.stack, buildUpdater(*rels))
+				menu.stack = append(menu.stack, buildUpdater())
 			},
 		})
 

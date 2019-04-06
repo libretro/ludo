@@ -11,15 +11,29 @@ type sceneUpdater struct {
 	entry
 }
 
-func buildUpdater(releases []ludos.GHRelease) Scene {
+func buildUpdater() Scene {
 	var list sceneUpdater
 	list.label = "Updater Menu"
 
-	for _, rel := range releases {
-		list.children = append(list.children, entry{
-			label: rel.Name,
-			icon:  "menu_saving",
-			callbackOK: func() {
+	list.children = append(list.children, entry{
+		label: "Checking updates",
+		icon:  "reload",
+	})
+
+	list.segueMount()
+
+	go func() {
+		rels, err := ludos.GetReleases()
+		if err != nil {
+			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+			return
+		}
+
+		if len(*rels) > 0 {
+			rel := (*rels)[0]
+			list.children[0].label = "Upgrate to " + rel.Name
+			list.children[0].icon = "menu_saving"
+			list.children[0].callbackOK = func() {
 				asset := ludos.FilterAssets(rel.Assets)
 				if asset == nil {
 					ntf.DisplayAndLog(ntf.Error, "Menu", "No matching asset")
@@ -29,18 +43,12 @@ func buildUpdater(releases []ludos.GHRelease) Scene {
 					path := filepath.Join(ludos.UpdatesDir, asset.Name)
 					ludos.DownloadRelease(asset.Name, path, asset.BrowserDownloadURL)
 				}()
-			},
-		})
-	}
-
-	if len(list.children) == 0 {
-		list.children = append(list.children, entry{
-			label: "Empty",
-			icon:  "subsetting",
-		})
-	}
-
-	list.segueMount()
+			}
+		} else {
+			list.children[0].label = "No updates found"
+			list.children[0].icon = "menu_exit"
+		}
+	}()
 
 	return &list
 }
