@@ -18,6 +18,8 @@ const releasesURL = "https://api.github.com/repos/libretro/LudOS/releases"
 
 var client = grab.NewClient()
 var downloading bool
+var progress float64
+var done bool
 var libreELECArch = os.Getenv("LIBREELEC_ARCH")
 
 // GHAsset is an asset attached to a github release
@@ -57,13 +59,13 @@ func FilterAssets(assets []GHAsset) *GHAsset {
 }
 
 // DownloadRelease will download a LudOS release from github
-func DownloadRelease(name, path, url string) {
+func DownloadRelease(path, url string) {
 	if downloading {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "A download is already in progress")
 		return
 	}
 
-	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "0/100 Downloading %s", name)
+	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Downloading update 0%%")
 	downloading = true
 	defer func() { downloading = false }()
 
@@ -82,10 +84,13 @@ Loop:
 	for {
 		select {
 		case <-t.C:
-			ntf.Update(nid, ntf.Info, "%.0f/100 Downloading %s", 100*resp.Progress(), name)
+			ntf.Update(nid, ntf.Info, "Downloading update %.0f%%%% ", 100*resp.Progress())
+			progress = resp.Progress()
 
 		case <-resp.Done:
 			// download is complete
+			downloading = false
+			done = true
 			break Loop
 		}
 	}
@@ -96,4 +101,19 @@ Loop:
 	}
 
 	ntf.Update(nid, ntf.Success, "Done downloading. You can now reboot your system.")
+}
+
+// IsDownloading returns true if the updater is currently downloading a release
+func IsDownloading() bool {
+	return downloading
+}
+
+// IsDone returns true when the download is finished
+func IsDone() bool {
+	return done
+}
+
+// GetProgress returns the download progress
+func GetProgress() float64 {
+	return progress
 }
