@@ -97,6 +97,8 @@ Loop:
 
 	if err := resp.Err(); err != nil {
 		ntf.Update(nid, ntf.Error, err.Error())
+		downloading = false
+		done = false
 		return
 	}
 
