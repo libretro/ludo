@@ -9,6 +9,7 @@ import (
 type sceneKeyboard struct {
 	entry
 	index int
+	value string
 }
 
 var layout = []string{
@@ -21,13 +22,6 @@ var layout = []string{
 func buildKeyboard() Scene {
 	var list sceneKeyboard
 	list.label = "Keyboard"
-
-	list.children = append(list.children, entry{
-		label: "Placeholder",
-		icon:  "reload",
-	})
-
-	list.segueMount()
 
 	return &list
 }
@@ -80,11 +74,16 @@ func (s *sceneKeyboard) update(dt float32) {
 
 	// Down
 	if input.Released[0][libretro.DeviceIDJoypadDown] {
-		if s.index > len(layout)-11 {
+		if s.index >= len(layout)-11 {
 			s.index -= len(layout) - 11
 		} else {
 			s.index += 11
 		}
+	}
+
+	// OK
+	if input.Released[0][libretro.DeviceIDJoypadA] {
+		s.value += layout[s.index]
 	}
 
 	// Cancel
@@ -98,8 +97,27 @@ func (s *sceneKeyboard) update(dt float32) {
 func (s *sceneKeyboard) render() {
 	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
-	kbh := float32(h) * 0.65
 	lines := float32(4)
+	kbh := float32(h) * 0.65
+	ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
+	ksz := ksp * 0.9
+	ttw := 11 * ksp
+
+	// Background
+	vid.DrawRect(0, 0, float32(w), float32(h), 1,
+		video.Color{R: 1, G: 1, B: 1, A: 1})
+
+	// Value
+
+	vid.DrawRect(float32(w)/2-ttw/2, float32(h)*0.175-ksp/2, ttw, ksp, 1,
+		video.Color{R: 0.95, G: 0.95, B: 0.95, A: 1})
+	vid.Font.SetColor(0, 0, 0, 1)
+	vid.Font.Printf(
+		float32(w)/2-ttw/2+ksp/2,
+		float32(h)*0.175-ksp/2+ksp*0.6,
+		ksz/150, s.value)
+
+	// Keyboard
 
 	vid.DrawRect(0, float32(h)-kbh, float32(w), kbh, 1,
 		video.Color{R: 0, G: 0, B: 0, A: 1})
@@ -107,9 +125,6 @@ func (s *sceneKeyboard) render() {
 	vid.Font.SetColor(1, 1, 1, 1)
 
 	for i, key := range layout {
-		ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
-		ksz := ksp * 0.9
-		ttw := 11 * ksp
 		x := float32(i%11)*ksp - ttw/2 + float32(w)/2
 		y := float32(i/11)*ksp + ksp/2 + float32(h) - kbh
 		gw := vid.Font.Width(ksz/150, key)
