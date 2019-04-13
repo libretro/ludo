@@ -69,6 +69,7 @@ func buildMainMenu() Scene {
 		label: "Test Keyboard",
 		icon:  "subsetting",
 		callbackOK: func() {
+			list.segueNext()
 			menu.stack = append(menu.stack, buildKeyboard())
 		},
 	})
