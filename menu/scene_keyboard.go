@@ -46,38 +46,50 @@ func (s *sceneKeyboard) update(dt float32) {
 	}
 
 	// Right
-	if input.Released[0][libretro.DeviceIDJoypadRight] {
-		if (s.index+1)%11 == 0 {
-			s.index -= 10
-		} else {
-			s.index++
+	if input.NewState[0][libretro.DeviceIDJoypadRight] {
+		if menu.inputCooldown == 0 {
+			if (s.index+1)%11 == 0 {
+				s.index -= 10
+			} else {
+				s.index++
+			}
+			menu.inputCooldown = 0.1
 		}
 	}
 
 	// Left
-	if input.Released[0][libretro.DeviceIDJoypadLeft] {
-		if s.index%11 == 0 {
-			s.index += 10
-		} else {
-			s.index--
+	if input.NewState[0][libretro.DeviceIDJoypadLeft] {
+		if menu.inputCooldown == 0 {
+			if s.index%11 == 0 {
+				s.index += 10
+			} else {
+				s.index--
+			}
+			menu.inputCooldown = 0.1
 		}
 	}
 
 	// Up
-	if input.Released[0][libretro.DeviceIDJoypadUp] {
-		if s.index < 11 {
-			s.index += len(layout) - 11
-		} else {
-			s.index -= 11
+	if input.NewState[0][libretro.DeviceIDJoypadUp] {
+		if menu.inputCooldown == 0 {
+			if s.index < 11 {
+				s.index += len(layout) - 11
+			} else {
+				s.index -= 11
+			}
+			menu.inputCooldown = 0.1
 		}
 	}
 
 	// Down
-	if input.Released[0][libretro.DeviceIDJoypadDown] {
-		if s.index >= len(layout)-11 {
-			s.index -= len(layout) - 11
-		} else {
-			s.index += 11
+	if input.NewState[0][libretro.DeviceIDJoypadDown] {
+		if menu.inputCooldown == 0 {
+			if s.index >= len(layout)-11 {
+				s.index -= len(layout) - 11
+			} else {
+				s.index += 11
+			}
+			menu.inputCooldown = 0.1
 		}
 	}
 
@@ -115,7 +127,7 @@ func (s *sceneKeyboard) render() {
 	vid.Font.Printf(
 		float32(w)/2-ttw/2+ksp/2,
 		float32(h)*0.175-ksp/2+ksp*0.6,
-		ksz/150, s.value)
+		ksz/150, s.value+"|")
 
 	// Keyboard
 
