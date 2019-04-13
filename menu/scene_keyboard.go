@@ -1,9 +1,14 @@
 package menu
 
-import "github.com/libretro/ludo/video"
+import (
+	"github.com/libretro/ludo/input"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/video"
+)
 
 type sceneKeyboard struct {
 	entry
+	index int
 }
 
 var layout = []string{
@@ -32,19 +37,62 @@ func (s *sceneKeyboard) Entry() *entry {
 }
 
 func (s *sceneKeyboard) segueMount() {
-	genericSegueMount(&s.entry)
 }
 
 func (s *sceneKeyboard) segueNext() {
-	genericSegueNext(&s.entry)
 }
 
 func (s *sceneKeyboard) segueBack() {
-	genericAnimate(&s.entry)
 }
 
 func (s *sceneKeyboard) update(dt float32) {
-	genericInput(&s.entry, dt)
+	menu.inputCooldown -= dt
+	if menu.inputCooldown < 0 {
+		menu.inputCooldown = 0
+	}
+
+	// Right
+	if input.Released[0][libretro.DeviceIDJoypadRight] {
+		if (s.index+1)%11 == 0 {
+			s.index -= 10
+		} else {
+			s.index++
+		}
+	}
+
+	// Left
+	if input.Released[0][libretro.DeviceIDJoypadLeft] {
+		if s.index%11 == 0 {
+			s.index += 10
+		} else {
+			s.index--
+		}
+	}
+
+	// Up
+	if input.Released[0][libretro.DeviceIDJoypadUp] {
+		if s.index < 11 {
+			s.index += len(layout) - 11
+		} else {
+			s.index -= 11
+		}
+	}
+
+	// Down
+	if input.Released[0][libretro.DeviceIDJoypadDown] {
+		if s.index > len(layout)-11 {
+			s.index -= len(layout) - 11
+		} else {
+			s.index += 11
+		}
+	}
+
+	// Cancel
+	if input.Released[0][libretro.DeviceIDJoypadB] {
+		if len(menu.stack) > 1 {
+			menu.stack = menu.stack[:len(menu.stack)-1]
+		}
+	}
 }
 
 func (s *sceneKeyboard) render() {
@@ -66,11 +114,15 @@ func (s *sceneKeyboard) render() {
 		y := float32(i/11)*ksp + ksp/2 + float32(h) - kbh
 		gw := vid.Font.Width(ksz/150, key)
 
-		vid.DrawRoundedRect(x, y, ksz, ksz, 0.2,
-			video.Color{R: 0.15, G: 0.15, B: 0.15, A: 1})
+		c1 := video.Color{R: 0.15, G: 0.15, B: 0.15, A: 1}
+		c2 := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
+		if i == s.index {
+			c1 = video.Color{R: 0.35, G: 0.35, B: 0.35, A: 1}
+			c2 = video.Color{R: 0.45, G: 0.45, B: 0.45, A: 1}
+		}
 
-		vid.DrawRoundedRect(x, y, ksz, ksz*0.95, 0.2,
-			video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1})
+		vid.DrawRoundedRect(x, y, ksz, ksz, 0.2, c1)
+		vid.DrawRoundedRect(x, y, ksz, ksz*0.95, 0.2, c2)
 
 		vid.Font.Printf(
 			x+ksz/2-gw/2,
