@@ -70,7 +70,7 @@ func buildMainMenu() Scene {
 		icon:  "subsetting",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildKeyboard())
+			menu.stack = append(menu.stack, buildKeyboard("Wi-Fi password"))
 		},
 	})
 

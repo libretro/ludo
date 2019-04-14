@@ -38,9 +38,9 @@ var layouts = [][]string{
 	},
 }
 
-func buildKeyboard() Scene {
+func buildKeyboard(label string) Scene {
 	var list sceneKeyboard
-	list.label = "Keyboard"
+	list.label = label
 
 	list.segueMount()
 
@@ -154,14 +154,19 @@ func (s *sceneKeyboard) render() {
 	vid.DrawRect(0, 0, float32(w), float32(h), 1,
 		video.Color{R: 1, G: 1, B: 1, A: s.alpha})
 
-	// Value
-
-	vid.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.2-ksz/2, ttw, ksz, 1,
-		video.Color{R: 0.95, G: 0.95, B: 0.95, A: 1})
+	// Label
 	vid.Font.SetColor(0, 0, 0, 1)
 	vid.Font.Printf(
-		float32(w)/2-ttw/2+ksz/2,
-		s.y+float32(h)*0.2-ksz/2+ksz*0.6,
+		float32(w)/2-ttw/2,
+		s.y+float32(h)*0.15-ksz/2+ksz*0.6,
+		ksz/200, s.label)
+
+	// Value
+	vid.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.25-ksz/2, ttw, ksz, 1,
+		video.Color{R: 0.95, G: 0.95, B: 0.95, A: 1})
+	vid.Font.Printf(
+		float32(w)/2-ttw/2+ksz/4,
+		s.y+float32(h)*0.25-ksz/2+ksz*0.62,
 		ksz/150, s.value+"|")
 
 	// Keyboard
