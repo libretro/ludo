@@ -122,7 +122,7 @@ func (s *sceneKeyboard) render() {
 	w, h := vid.Window.GetFramebufferSize()
 	menu.ratio = float32(w) / 1920
 	lines := float32(4)
-	kbh := float32(h) * 0.65
+	kbh := float32(h) * 0.6
 	ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
 	ksz := ksp * 0.9
 	ttw := 10 * ksp
@@ -133,12 +133,12 @@ func (s *sceneKeyboard) render() {
 
 	// Value
 
-	vid.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.175-ksp/2, ttw, ksp, 1,
+	vid.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.2-ksz/2, ttw, ksz, 1,
 		video.Color{R: 0.95, G: 0.95, B: 0.95, A: 1})
 	vid.Font.SetColor(0, 0, 0, 1)
 	vid.Font.Printf(
-		float32(w)/2-ttw/2+ksp/2,
-		s.y+float32(h)*0.175-ksp/2+ksp*0.6,
+		float32(w)/2-ttw/2+ksz/2,
+		s.y+float32(h)*0.2-ksz/2+ksz*0.6,
 		ksz/150, s.value+"|")
 
 	// Keyboard
