@@ -17,10 +17,10 @@ type sceneKeyboard struct {
 }
 
 var layout = []string{
-	"1", "2", "3", "4", "5", "6", "7", "8", "9", "0", " ",
-	"q", "w", "e", "r", "t", "y", "u", "i", "o", "p", " ",
-	"a", "s", "d", "f", "g", "h", "j", "k", "l", "@", " ",
-	"z", "x", "c", "v", "b", "n", "m", " ", "-", ".", " ",
+	"1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+	"q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
+	"a", "s", "d", "f", "g", "h", "j", "k", "l", "@",
+	"z", "x", "c", "v", "b", "n", "m", " ", "-", ".",
 }
 
 func buildKeyboard() Scene {
@@ -59,8 +59,8 @@ func (s *sceneKeyboard) update(dt float32) {
 	// Right
 	if input.NewState[0][libretro.DeviceIDJoypadRight] {
 		if menu.inputCooldown == 0 {
-			if (s.index+1)%11 == 0 {
-				s.index -= 10
+			if (s.index+1)%10 == 0 {
+				s.index -= 9
 			} else {
 				s.index++
 			}
@@ -71,8 +71,8 @@ func (s *sceneKeyboard) update(dt float32) {
 	// Left
 	if input.NewState[0][libretro.DeviceIDJoypadLeft] {
 		if menu.inputCooldown == 0 {
-			if s.index%11 == 0 {
-				s.index += 10
+			if s.index%10 == 0 {
+				s.index += 9
 			} else {
 				s.index--
 			}
@@ -83,10 +83,10 @@ func (s *sceneKeyboard) update(dt float32) {
 	// Up
 	if input.NewState[0][libretro.DeviceIDJoypadUp] {
 		if menu.inputCooldown == 0 {
-			if s.index < 11 {
-				s.index += len(layout) - 11
+			if s.index < 10 {
+				s.index += len(layout) - 10
 			} else {
-				s.index -= 11
+				s.index -= 10
 			}
 			menu.inputCooldown = 0.1
 		}
@@ -95,10 +95,10 @@ func (s *sceneKeyboard) update(dt float32) {
 	// Down
 	if input.NewState[0][libretro.DeviceIDJoypadDown] {
 		if menu.inputCooldown == 0 {
-			if s.index >= len(layout)-11 {
-				s.index -= len(layout) - 11
+			if s.index >= len(layout)-10 {
+				s.index -= len(layout) - 10
 			} else {
-				s.index += 11
+				s.index += 10
 			}
 			menu.inputCooldown = 0.1
 		}
@@ -125,7 +125,7 @@ func (s *sceneKeyboard) render() {
 	kbh := float32(h) * 0.65
 	ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
 	ksz := ksp * 0.9
-	ttw := 11 * ksp
+	ttw := 10 * ksp
 
 	// Background
 	vid.DrawRect(0, 0, float32(w), float32(h), 1,
@@ -149,8 +149,8 @@ func (s *sceneKeyboard) render() {
 	vid.Font.SetColor(1, 1, 1, 1)
 
 	for i, key := range layout {
-		x := float32(i%11)*ksp - ttw/2 + float32(w)/2
-		y := s.y + float32(i/11)*ksp + ksp/2 + float32(h) - kbh
+		x := float32(i%10)*ksp - ttw/2 + float32(w)/2
+		y := s.y + float32(i/10)*ksp + ksp/2 + float32(h) - kbh
 		gw := vid.Font.Width(ksz/150, key)
 
 		c1 := video.Color{R: 0.15, G: 0.15, B: 0.15, A: 1}
