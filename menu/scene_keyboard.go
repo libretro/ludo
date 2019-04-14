@@ -79,7 +79,7 @@ func (s *sceneKeyboard) update(dt float32) {
 			} else {
 				s.index++
 			}
-			menu.inputCooldown = 0.1
+			menu.inputCooldown = 0.15
 		}
 	}
 
@@ -91,7 +91,7 @@ func (s *sceneKeyboard) update(dt float32) {
 			} else {
 				s.index--
 			}
-			menu.inputCooldown = 0.1
+			menu.inputCooldown = 0.15
 		}
 	}
 
@@ -103,7 +103,7 @@ func (s *sceneKeyboard) update(dt float32) {
 			} else {
 				s.index -= 10
 			}
-			menu.inputCooldown = 0.1
+			menu.inputCooldown = 0.15
 		}
 	}
 
@@ -115,7 +115,7 @@ func (s *sceneKeyboard) update(dt float32) {
 			} else {
 				s.index += 10
 			}
-			menu.inputCooldown = 0.1
+			menu.inputCooldown = 0.15
 		}
 	}
 
@@ -124,11 +124,18 @@ func (s *sceneKeyboard) update(dt float32) {
 		s.value += layouts[s.layout][s.index]
 	}
 
-	// X
+	// Switch layout
 	if input.Released[0][libretro.DeviceIDJoypadX] {
 		s.layout++
 		if s.layout >= len(layouts) {
 			s.layout = 0
+		}
+	}
+
+	// Delete character
+	if input.Released[0][libretro.DeviceIDJoypadY] {
+		if len(s.value) > 0 {
+			s.value = s.value[:len(s.value)-1]
 		}
 	}
 
