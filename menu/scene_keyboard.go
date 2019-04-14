@@ -10,17 +10,32 @@ import (
 
 type sceneKeyboard struct {
 	entry
-	index int
-	value string
-	y     float32
-	alpha float32
+	index  int
+	layout int
+	value  string
+	y      float32
+	alpha  float32
 }
 
-var layout = []string{
-	"1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
-	"q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
-	"a", "s", "d", "f", "g", "h", "j", "k", "l", "@",
-	"z", "x", "c", "v", "b", "n", "m", " ", "-", ".",
+var layouts = [][]string{
+	[]string{
+		"1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+		"q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
+		"a", "s", "d", "f", "g", "h", "j", "k", "l", "@",
+		"z", "x", "c", "v", "b", "n", "m", " ", "-", ".",
+	},
+	[]string{
+		"1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+		"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
+		"A", "S", "D", "F", "G", "H", "J", "K", "L", "+",
+		"Z", "X", "C", "V", "B", "N", "M", " ", "_", "/",
+	},
+	[]string{
+		"1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+		"!", "\"", "#", "$", "%%", "&", "'", "*", "(", ")",
+		"+", ",", "-", "~", "/", ":", ";", "=", "<", ">",
+		"?", "@", "[", "\\", "]", "^", "_", "|", "{", "}",
+	},
 }
 
 func buildKeyboard() Scene {
@@ -84,7 +99,7 @@ func (s *sceneKeyboard) update(dt float32) {
 	if input.NewState[0][libretro.DeviceIDJoypadUp] {
 		if menu.inputCooldown == 0 {
 			if s.index < 10 {
-				s.index += len(layout) - 10
+				s.index += len(layouts[s.layout]) - 10
 			} else {
 				s.index -= 10
 			}
@@ -95,8 +110,8 @@ func (s *sceneKeyboard) update(dt float32) {
 	// Down
 	if input.NewState[0][libretro.DeviceIDJoypadDown] {
 		if menu.inputCooldown == 0 {
-			if s.index >= len(layout)-10 {
-				s.index -= len(layout) - 10
+			if s.index >= len(layouts[s.layout])-10 {
+				s.index -= len(layouts[s.layout]) - 10
 			} else {
 				s.index += 10
 			}
@@ -106,7 +121,15 @@ func (s *sceneKeyboard) update(dt float32) {
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
-		s.value += layout[s.index]
+		s.value += layouts[s.layout][s.index]
+	}
+
+	// X
+	if input.Released[0][libretro.DeviceIDJoypadX] {
+		s.layout++
+		if s.layout >= len(layouts) {
+			s.layout = 0
+		}
 	}
 
 	// Cancel
@@ -148,7 +171,7 @@ func (s *sceneKeyboard) render() {
 
 	vid.Font.SetColor(1, 1, 1, 1)
 
-	for i, key := range layout {
+	for i, key := range layouts[s.layout] {
 		x := float32(i%10)*ksp - ttw/2 + float32(w)/2
 		y := s.y + float32(i/10)*ksp + ksp/2 + float32(h) - kbh
 		gw := vid.Font.Width(ksz/150, key)
