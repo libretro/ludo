@@ -2,12 +2,13 @@ package ludos
 
 import (
 	"time"
-
-	"github.com/libretro/ludo/state"
 )
 
-var currentNetwork string
-var connectingTo string
+// CurrentNetwork is the name of the Wi-Fi network we're connected to
+var CurrentNetwork string
+
+// ConnectingTo is the name of the Wi-Fi network we're connecting to
+var ConnectingTo string
 
 // ScanNetworks enables connman and returns the list of available SSIDs
 func ScanNetworks() []string {
@@ -26,10 +27,10 @@ func ScanNetworks() []string {
 
 // NetworkStatus returns the status of a network
 func NetworkStatus(network string) string {
-	if network == currentNetwork {
+	if network == CurrentNetwork {
 		return "Connected"
 	}
-	if network == connectingTo {
+	if network == ConnectingTo {
 		return "Connecting"
 	}
 	return ""
@@ -37,8 +38,7 @@ func NetworkStatus(network string) string {
 
 // ConnectNetwork attempt to establish a connection to the given network
 func ConnectNetwork(network string) {
-	connectingTo = network
+	ConnectingTo = network
 	time.Sleep(time.Second * 3)
-	currentNetwork = network
-	state.Global.Network = network
+	CurrentNetwork = network
 }

@@ -17,7 +17,6 @@ type State struct {
 	Verbose     bool           // When set to true, will output a lots of logs
 	CorePath    string         // Path of the current libretro core
 	GamePath    string         // Path of the current game
-	Network     string         // Name of the current Wi-Fi network
 	DB          rdb.DB         // The game database loaded on startup
 	LudOS       bool           // Run Ludo as a unix desktop environment
 
