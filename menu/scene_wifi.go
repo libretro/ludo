@@ -2,6 +2,7 @@ package menu
 
 import (
 	"github.com/libretro/ludo/ludos"
+	"github.com/libretro/ludo/video"
 )
 
 type sceneWiFi struct {
@@ -74,5 +75,14 @@ func (s *sceneWiFi) render() {
 }
 
 func (s *sceneWiFi) drawHintBar() {
-	genericDrawHintBar()
+	w, h := vid.Window.GetFramebufferSize()
+	menu.ratio = float32(w) / 1920
+	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+
+	var stack float32
+	stackHint(&stack, "key-up-down", "NAVIGATE", h)
+	stackHint(&stack, "key-z", "BACK", h)
+	if s.children[0].callbackOK != nil {
+		stackHint(&stack, "key-x", "CONNECT", h)
+	}
 }
