@@ -25,6 +25,20 @@ func scrollSpeed(pressedSeconds float32) float32 {
 	return delay
 }
 
+func decrCooldown(dt float32) {
+	menu.inputCooldown -= dt
+	if menu.inputCooldown < 0 {
+		menu.inputCooldown = 0
+	}
+}
+
+func withCooldown(dt float32, f func()) {
+	if menu.inputCooldown == 0 {
+		f()
+		menu.inputCooldown = 0.15
+	}
+}
+
 // This is the generic menu input handler. It encapsulate the logic to scroll
 // vertically in entry lists, and also respond to presses on OK and Cancel.
 func genericInput(list *entry, dt float32) {

@@ -65,20 +65,6 @@ func (s *sceneKeyboard) segueNext() {
 func (s *sceneKeyboard) segueBack() {
 }
 
-func decrCooldown(dt float32) {
-	menu.inputCooldown -= dt
-	if menu.inputCooldown < 0 {
-		menu.inputCooldown = 0
-	}
-}
-
-func withCooldown(dt float32, f func()) {
-	if menu.inputCooldown == 0 {
-		f()
-		menu.inputCooldown = 0.15
-	}
-}
-
 func updateIndex(s *sceneKeyboard) {
 	// Right
 	if input.NewState[0][libretro.DeviceIDJoypadRight] {

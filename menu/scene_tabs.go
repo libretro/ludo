@@ -221,30 +221,27 @@ func (tabs *sceneTags) segueNext() {
 }
 
 func (tabs *sceneTags) update(dt float32) {
-	menu.inputCooldown -= dt
-	if menu.inputCooldown < 0 {
-		menu.inputCooldown = 0
-	}
+	decrCooldown(dt)
 
-	// Right
-	if input.NewState[0][libretro.DeviceIDJoypadRight] && menu.inputCooldown == 0 {
-		tabs.ptr++
-		if tabs.ptr >= len(tabs.children) {
-			tabs.ptr = 0
+	withCooldown(dt, func() {
+		// Right
+		if input.NewState[0][libretro.DeviceIDJoypadRight] {
+			tabs.ptr++
+			if tabs.ptr >= len(tabs.children) {
+				tabs.ptr = 0
+			}
+			tabs.animate()
 		}
-		tabs.animate()
-		menu.inputCooldown = 0.15
-	}
 
-	// Left
-	if input.NewState[0][libretro.DeviceIDJoypadLeft] && menu.inputCooldown == 0 {
-		tabs.ptr--
-		if tabs.ptr < 0 {
-			tabs.ptr = len(tabs.children) - 1
+		// Left
+		if input.NewState[0][libretro.DeviceIDJoypadLeft] {
+			tabs.ptr--
+			if tabs.ptr < 0 {
+				tabs.ptr = len(tabs.children) - 1
+			}
+			tabs.animate()
 		}
-		tabs.animate()
-		menu.inputCooldown = 0.15
-	}
+	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
