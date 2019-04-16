@@ -134,7 +134,7 @@ func (s *sceneKeyboard) update(dt float32) {
 	}
 
 	// Done
-	if input.Released[0][libretro.DeviceIDJoypadStart] {
+	if input.Released[0][libretro.DeviceIDJoypadStart] && s.value != "" {
 		s.callbackDone()
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
