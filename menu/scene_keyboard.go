@@ -65,59 +65,59 @@ func (s *sceneKeyboard) segueNext() {
 func (s *sceneKeyboard) segueBack() {
 }
 
-func (s *sceneKeyboard) update(dt float32) {
+func decrCooldown(dt float32) {
 	menu.inputCooldown -= dt
 	if menu.inputCooldown < 0 {
 		menu.inputCooldown = 0
 	}
+}
 
+func withCooldown(dt float32, f func()) {
+	if menu.inputCooldown == 0 {
+		f()
+		menu.inputCooldown = 0.15
+	}
+}
+
+func updateIndex(s *sceneKeyboard) {
 	// Right
 	if input.NewState[0][libretro.DeviceIDJoypadRight] {
-		if menu.inputCooldown == 0 {
-			if (s.index+1)%10 == 0 {
-				s.index -= 9
-			} else {
-				s.index++
-			}
-			menu.inputCooldown = 0.15
+		if (s.index+1)%10 == 0 {
+			s.index -= 9
+		} else {
+			s.index++
 		}
 	}
-
 	// Left
 	if input.NewState[0][libretro.DeviceIDJoypadLeft] {
-		if menu.inputCooldown == 0 {
-			if s.index%10 == 0 {
-				s.index += 9
-			} else {
-				s.index--
-			}
-			menu.inputCooldown = 0.15
+		if s.index%10 == 0 {
+			s.index += 9
+		} else {
+			s.index--
 		}
 	}
-
 	// Up
 	if input.NewState[0][libretro.DeviceIDJoypadUp] {
-		if menu.inputCooldown == 0 {
-			if s.index < 10 {
-				s.index += len(layouts[s.layout]) - 10
-			} else {
-				s.index -= 10
-			}
-			menu.inputCooldown = 0.15
+		if s.index < 10 {
+			s.index += len(layouts[s.layout]) - 10
+		} else {
+			s.index -= 10
 		}
 	}
-
 	// Down
 	if input.NewState[0][libretro.DeviceIDJoypadDown] {
-		if menu.inputCooldown == 0 {
-			if s.index >= len(layouts[s.layout])-10 {
-				s.index -= len(layouts[s.layout]) - 10
-			} else {
-				s.index += 10
-			}
-			menu.inputCooldown = 0.15
+		if s.index >= len(layouts[s.layout])-10 {
+			s.index -= len(layouts[s.layout]) - 10
+		} else {
+			s.index += 10
 		}
 	}
+}
+
+func (s *sceneKeyboard) update(dt float32) {
+	decrCooldown(dt)
+
+	withCooldown(dt, func() { updateIndex(s) })
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
@@ -140,11 +140,9 @@ func (s *sceneKeyboard) update(dt float32) {
 	}
 
 	// Cancel
-	if input.Released[0][libretro.DeviceIDJoypadB] {
-		if len(menu.stack) > 1 {
-			menu.stack[len(menu.stack)-2].segueBack()
-			menu.stack = menu.stack[:len(menu.stack)-1]
-		}
+	if input.Released[0][libretro.DeviceIDJoypadB] && len(menu.stack) > 1 {
+		menu.stack[len(menu.stack)-2].segueBack()
+		menu.stack = menu.stack[:len(menu.stack)-1]
 	}
 }
 
