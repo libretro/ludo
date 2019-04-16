@@ -21,7 +21,7 @@ import (
 // Tags are used to set a human readable label and a format for the settings value.
 // Widget sets the graphical representation of the value.
 type Settings struct {
-	VideoFullscreen   bool   `hide:"de" json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
+	VideoFullscreen   bool   `hide:"ludos" json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
 	VideoMonitorIndex int    `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	VideoFilter       string `json:"video_filter" label:"Video Filter" fmt:"<%s>"`
 
@@ -30,15 +30,15 @@ type Settings struct {
 	ShowHiddenFiles bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
 	CoreForPlaylist map[string]string `hide:"always" json:"core_for_playlist"`
 
-	CoresDirectory       string `hide:"de" json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
-	AssetsDirectory      string `hide:"de" json:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
-	DatabaseDirectory    string `hide:"de" json:"database_dir" label:"Database Directory" fmt:"%s" widget:"dir"`
-	SavestatesDirectory  string `hide:"de" json:"savestates_dir" label:"Savestates Directory" fmt:"%s" widget:"dir"`
-	SavefilesDirectory   string `hide:"de" json:"savefiles_dir" label:"Savefiles Directory" fmt:"%s" widget:"dir"`
-	ScreenshotsDirectory string `hide:"de" json:"screenshots_dir" label:"Screenshots Directory" fmt:"%s" widget:"dir"`
-	SystemDirectory      string `hide:"de" json:"system_dir" label:"System Directory" fmt:"%s" widget:"dir"`
-	PlaylistsDirectory   string `hide:"de" json:"playlists_dir" label:"Playlists Directory" fmt:"%s" widget:"dir"`
-	ThumbnailsDirectory  string `hide:"de" json:"thumbnail_dir" label:"Thumbnails Directory" fmt:"%s" widget:"dir"`
+	CoresDirectory       string `hide:"ludos" json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
+	AssetsDirectory      string `hide:"ludos" json:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
+	DatabaseDirectory    string `hide:"ludos" json:"database_dir" label:"Database Directory" fmt:"%s" widget:"dir"`
+	SavestatesDirectory  string `hide:"ludos" json:"savestates_dir" label:"Savestates Directory" fmt:"%s" widget:"dir"`
+	SavefilesDirectory   string `hide:"ludos" json:"savefiles_dir" label:"Savefiles Directory" fmt:"%s" widget:"dir"`
+	ScreenshotsDirectory string `hide:"ludos" json:"screenshots_dir" label:"Screenshots Directory" fmt:"%s" widget:"dir"`
+	SystemDirectory      string `hide:"ludos" json:"system_dir" label:"System Directory" fmt:"%s" widget:"dir"`
+	PlaylistsDirectory   string `hide:"ludos" json:"playlists_dir" label:"Playlists Directory" fmt:"%s" widget:"dir"`
+	ThumbnailsDirectory  string `hide:"ludos" json:"thumbnail_dir" label:"Thumbnails Directory" fmt:"%s" widget:"dir"`
 
 	SSHService       bool `hide:"app" json:"ssh_service" label:"SSH" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
 	SambaService     bool `hide:"app" json:"samba_service" label:"Samba" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
