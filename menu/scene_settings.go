@@ -21,11 +21,11 @@ type sceneSettings struct {
 }
 
 // Don't display settings flagged with hide:"always"
-// If we're in Desktop Environment mode, hide settings flagged with hide:"de"
+// If we're in Desktop Environment mode, hide settings flagged with hide:"ludos"
 // If we're in program mode, hide settings flagged with hide:"program"
 func isHidden(f *structs.Field) bool {
 	return f.Tag("hide") == "always" ||
-		(state.Global.LudOS && f.Tag("hide") == "de") ||
+		(state.Global.LudOS && f.Tag("hide") == "ludos") ||
 		(!state.Global.LudOS && f.Tag("hide") == "app")
 }
 
