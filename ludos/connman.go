@@ -2,6 +2,8 @@ package ludos
 
 import (
 	"time"
+
+	"github.com/libretro/ludo/state"
 )
 
 var currentNetwork string
@@ -38,4 +40,5 @@ func ConnectNetwork(network string) {
 	connectingTo = network
 	time.Sleep(time.Second * 3)
 	currentNetwork = network
+	state.Global.Network = network
 }
