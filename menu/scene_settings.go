@@ -81,6 +81,17 @@ func buildSettings() Scene {
 		}
 	}
 
+	if state.Global.LudOS {
+		list.children = append(list.children, entry{
+			label: "Wi-Fi",
+			icon:  "subsetting",
+			callbackOK: func() {
+				list.segueNext()
+				menu.stack = append(menu.stack, buildWiFi())
+			},
+		})
+	}
+
 	list.segueMount()
 
 	return &list

@@ -10,11 +10,12 @@ import (
 
 type sceneKeyboard struct {
 	entry
-	index  int
-	layout int
-	value  string
-	y      float32
-	alpha  float32
+	index        int
+	layout       int
+	value        string
+	y            float32
+	alpha        float32
+	callbackDone func()
 }
 
 var layouts = [][]string{
@@ -38,9 +39,10 @@ var layouts = [][]string{
 	},
 }
 
-func buildKeyboard(label string) Scene {
+func buildKeyboard(label string, callbackDone func()) Scene {
 	var list sceneKeyboard
 	list.label = label
+	list.callbackDone = callbackDone
 
 	list.segueMount()
 
@@ -127,6 +129,13 @@ func (s *sceneKeyboard) update(dt float32) {
 
 	// Cancel
 	if input.Released[0][libretro.DeviceIDJoypadB] && len(menu.stack) > 1 {
+		menu.stack[len(menu.stack)-2].segueBack()
+		menu.stack = menu.stack[:len(menu.stack)-1]
+	}
+
+	// Done
+	if input.Released[0][libretro.DeviceIDJoypadStart] {
+		s.callbackDone()
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
 	}
