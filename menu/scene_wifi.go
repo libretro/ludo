@@ -2,6 +2,7 @@ package menu
 
 import (
 	"github.com/libretro/ludo/ludos"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
 )
 
@@ -33,9 +34,17 @@ func buildWiFi() Scene {
 					stringValue: func() string { return ludos.NetworkStatus(network.ID) },
 					callbackOK: func() {
 						list.segueNext()
-						menu.stack = append(menu.stack, buildKeyboard("Passpharse for "+network.SSID, func(pass string) {
-							go ludos.ConnectNetwork(network, pass)
-						}))
+						menu.stack = append(menu.stack, buildKeyboard(
+							"Passpharse for "+network.SSID,
+							func(pass string) {
+								go func() {
+									err := ludos.ConnectNetwork(network, pass)
+									if err != nil {
+										ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+									}
+								}()
+							},
+						))
 					},
 				})
 				list.segueMount()
@@ -43,7 +52,7 @@ func buildWiFi() Scene {
 			}
 		} else {
 			list.children[0].label = "No network found"
-			list.children[0].icon = "menu_close"
+			list.children[0].icon = "close"
 		}
 	}()
 

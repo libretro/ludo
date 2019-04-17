@@ -58,9 +58,8 @@ func NetworkStatus(network string) string {
 }
 
 // ConnectNetwork attempt to establish a connection to the given network
-func ConnectNetwork(network Network, pass string) {
-	var hexSSID []byte
-	hex.Encode(hexSSID, []byte(network.SSID))
+func ConnectNetwork(network Network, passphrase string) error {
+	hexSSID := hex.EncodeToString([]byte(network.SSID))
 
 	config := fmt.Sprintf(`[%s]
 Name=%s
@@ -68,16 +67,24 @@ SSID=%s
 Favorite=true
 AutoConnect=true
 Passphrase=%s
-IPv4.method=dhcp`, network.ID, network.SSID, hexSSID, pass)
+IPv4.method=dhcp`, network.ID, network.SSID, hexSSID, passphrase)
 
 	err := os.MkdirAll("/var/lib/connman/"+network.ID, os.ModePerm)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
-	fd, _ := os.Create("/var/lib/connman/" + network.ID + "/service")
+	fd, err := os.Create("/var/lib/connman/" + network.ID + "/service")
+	if err != nil {
+		return err
+	}
 	defer fd.Close()
-	fd.Write([]byte(config))
+	fd.WriteString(config)
 
-	exec.Command("/usr/bin/connmanctl", "connect", network.ID).Run()
+	err = exec.Command("/usr/bin/connmanctl", "connect", network.ID).Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
