@@ -2,6 +2,7 @@ package ludos
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"os/exec"
@@ -16,8 +17,7 @@ var ConnectingTo string
 
 // Network is a network as detected by connman
 type Network struct {
-	Code string
-	Name string
+	SSID string
 	ID   string
 }
 
@@ -37,8 +37,7 @@ func ScanNetworks() []Network {
 			continue
 		}
 		network := Network{
-			Code: line[0:4],
-			Name: strings.TrimSpace(line[4:24]),
+			SSID: strings.TrimSpace(line[4:24]),
 			ID:   line[25:len(line)],
 		}
 		networks = append(networks, network)
@@ -60,7 +59,8 @@ func NetworkStatus(network string) string {
 
 // ConnectNetwork attempt to establish a connection to the given network
 func ConnectNetwork(network Network, pass string) {
-	ssid := ""
+	var hexSSID []byte
+	hex.Encode(hexSSID, []byte(network.SSID))
 
 	config := fmt.Sprintf(`[%s]
 Name=%s
@@ -68,7 +68,7 @@ SSID=%s
 Favorite=true
 AutoConnect=true
 Passphrase=%s
-IPv4.method=dhcp`, network.ID, network.Name, ssid, pass)
+IPv4.method=dhcp`, network.ID, network.SSID, hexSSID, pass)
 
 	err := os.MkdirAll("/var/lib/connman/"+network.ID, os.ModePerm)
 	if err != nil {

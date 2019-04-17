@@ -28,12 +28,12 @@ func buildWiFi() Scene {
 			for _, network := range networks {
 				network := network
 				list.children = append(list.children, entry{
-					label:       network.Name,
+					label:       network.SSID,
 					icon:        "menu_network",
 					stringValue: func() string { return ludos.NetworkStatus(network.ID) },
 					callbackOK: func() {
 						list.segueNext()
-						menu.stack = append(menu.stack, buildKeyboard("Passpharse for "+network.Name, func(pass string) {
+						menu.stack = append(menu.stack, buildKeyboard("Passpharse for "+network.SSID, func(pass string) {
 							go ludos.ConnectNetwork(network, pass)
 						}))
 					},
