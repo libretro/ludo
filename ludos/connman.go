@@ -1,7 +1,11 @@
 package ludos
 
 import (
-	"time"
+	"bytes"
+	"fmt"
+	"os"
+	"os/exec"
+	"strings"
 )
 
 // CurrentNetwork is the name of the Wi-Fi network we're connected to
@@ -10,19 +14,37 @@ var CurrentNetwork string
 // ConnectingTo is the name of the Wi-Fi network we're connecting to
 var ConnectingTo string
 
-// ScanNetworks enables connman and returns the list of available SSIDs
-func ScanNetworks() []string {
-	time.Sleep(time.Second * 2)
+// Network is a network as detected by connman
+type Network struct {
+	Code string
+	Name string
+	ID   string
+}
 
-	return []string{
-		"Fake Network 1",
-		"Fake Network 2",
-		"Fake Network 3",
-		"Fake Network 4",
-		"Fake Network 5",
-		"Fake Network 6",
-		"Fake Network 7",
+// ScanNetworks enables connman and returns the list of available SSIDs
+func ScanNetworks() []Network {
+	exec.Command("/usr/bin/connmanctl", "enable", "wifi").Run()
+	exec.Command("/usr/bin/connmanctl", "scan", "wifi").Run()
+
+	var stdout bytes.Buffer
+	cmd := exec.Command("/usr/bin/connmanctl", "services")
+	cmd.Stdout = &stdout
+	cmd.Run()
+
+	networks := []Network{}
+	for _, line := range strings.Split(string(stdout.Bytes()), "\n") {
+		if len(line) == 0 {
+			continue
+		}
+		network := Network{
+			Code: line[0:4],
+			Name: strings.TrimSpace(line[4:24]),
+			ID:   line[25:len(line)],
+		}
+		networks = append(networks, network)
 	}
+
+	return networks
 }
 
 // NetworkStatus returns the status of a network
@@ -37,8 +59,25 @@ func NetworkStatus(network string) string {
 }
 
 // ConnectNetwork attempt to establish a connection to the given network
-func ConnectNetwork(network string) {
-	ConnectingTo = network
-	time.Sleep(time.Second * 3)
-	CurrentNetwork = network
+func ConnectNetwork(network Network, pass string) {
+	ssid := ""
+
+	config := fmt.Sprintf(`[%s]
+Name=%s
+SSID=%s
+Favorite=true
+AutoConnect=true
+Passphrase=%s
+IPv4.method=dhcp`, network.ID, network.Name, ssid, pass)
+
+	err := os.MkdirAll("/var/lib/connman/"+network.ID, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fd, _ := os.Create("/var/lib/connman/" + network.ID + "/service")
+	defer fd.Close()
+	fd.Write([]byte(config))
+
+	exec.Command("/usr/bin/connmanctl", "connect", network.ID).Run()
 }

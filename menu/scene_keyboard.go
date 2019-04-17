@@ -15,7 +15,7 @@ type sceneKeyboard struct {
 	value        string
 	y            float32
 	alpha        float32
-	callbackDone func()
+	callbackDone func(string)
 }
 
 var layouts = [][]string{
@@ -39,7 +39,7 @@ var layouts = [][]string{
 	},
 }
 
-func buildKeyboard(label string, callbackDone func()) Scene {
+func buildKeyboard(label string, callbackDone func(string)) Scene {
 	var list sceneKeyboard
 	list.label = label
 	list.callbackDone = callbackDone
@@ -135,7 +135,7 @@ func (s *sceneKeyboard) update(dt float32) {
 
 	// Done
 	if input.Released[0][libretro.DeviceIDJoypadStart] && s.value != "" {
-		s.callbackDone()
+		s.callbackDone(s.value)
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
 	}
