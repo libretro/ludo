@@ -65,45 +65,42 @@ func (s *sceneKeyboard) segueNext() {
 func (s *sceneKeyboard) segueBack() {
 }
 
-func updateIndex(s *sceneKeyboard) {
+func (s *sceneKeyboard) update(dt float32) {
 	// Right
-	if input.NewState[0][libretro.DeviceIDJoypadRight] {
+	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight], func() {
 		if (s.index+1)%10 == 0 {
 			s.index -= 9
 		} else {
 			s.index++
 		}
-	}
+	})
+
 	// Left
-	if input.NewState[0][libretro.DeviceIDJoypadLeft] {
+	repeatLeft(dt, input.NewState[0][libretro.DeviceIDJoypadLeft], func() {
 		if s.index%10 == 0 {
 			s.index += 9
 		} else {
 			s.index--
 		}
-	}
+	})
+
 	// Up
-	if input.NewState[0][libretro.DeviceIDJoypadUp] {
+	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp], func() {
 		if s.index < 10 {
 			s.index += len(layouts[s.layout]) - 10
 		} else {
 			s.index -= 10
 		}
-	}
+	})
+
 	// Down
-	if input.NewState[0][libretro.DeviceIDJoypadDown] {
+	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown], func() {
 		if s.index >= len(layouts[s.layout])-10 {
 			s.index -= len(layouts[s.layout]) - 10
 		} else {
 			s.index += 10
 		}
-	}
-}
-
-func (s *sceneKeyboard) update(dt float32) {
-	decrCooldown(dt)
-
-	withCooldown(dt, func() { updateIndex(s) })
+	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
@@ -119,11 +116,11 @@ func (s *sceneKeyboard) update(dt float32) {
 	}
 
 	// Delete character
-	if input.Released[0][libretro.DeviceIDJoypadY] {
+	repeatY(dt, input.NewState[0][libretro.DeviceIDJoypadY], func() {
 		if len(s.value) > 0 {
 			s.value = s.value[:len(s.value)-1]
 		}
-	}
+	})
 
 	// Cancel
 	if input.Released[0][libretro.DeviceIDJoypadB] && len(menu.stack) > 1 {
