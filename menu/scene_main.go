@@ -65,15 +65,6 @@ func buildMainMenu() Scene {
 		},
 	})
 
-	list.children = append(list.children, entry{
-		label: "Test Keyboard",
-		icon:  "subsetting",
-		callbackOK: func() {
-			list.segueNext()
-			menu.stack = append(menu.stack, buildKeyboard("Wi-Fi password"))
-		},
-	})
-
 	if state.Global.LudOS {
 		list.children = append(list.children, entry{
 			label: "Updater",
