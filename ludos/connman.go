@@ -8,11 +8,9 @@ import (
 	"strings"
 )
 
-// CurrentNetwork is the name of the Wi-Fi network we're connected to
-var CurrentNetwork string
-
-// ConnectingTo is the name of the Wi-Fi network we're connecting to
-var ConnectingTo string
+// CurrentNetwork is the network we're connected to
+var CurrentNetwork Network
+var counter int
 
 // Network is a network as detected by connman
 type Network struct {
@@ -20,8 +18,12 @@ type Network struct {
 	Path string
 }
 
+var cache map[string]string
+
 // ScanNetworks enables connman and returns the list of available SSIDs
 func ScanNetworks() []Network {
+	cache = map[string]string{}
+
 	exec.Command("/usr/bin/connmanctl", "enable", "wifi").Run()
 	exec.Command("/usr/bin/connmanctl", "scan", "wifi").Run()
 	out, _ := exec.Command("/usr/bin/connmanctl", "services").Output()
@@ -42,14 +44,23 @@ func ScanNetworks() []Network {
 }
 
 // NetworkStatus returns the status of a network
-func NetworkStatus(network string) string {
-	if network == CurrentNetwork {
-		return "Connected"
+func NetworkStatus(network Network) string {
+	_, ok := cache[network.Path]
+	if !ok && counter%120 == 0 {
+		out, _ := exec.Command(
+			"/usr/bin/bash",
+			"-c",
+			"connmanctl services "+network.Path+" | grep State",
+		).Output()
+		if strings.Contains(string(out), "online") {
+			cache[network.Path] = "Online"
+			CurrentNetwork = network
+		} else {
+			cache[network.Path] = ""
+		}
 	}
-	if network == ConnectingTo {
-		return "Connecting"
-	}
-	return ""
+	counter++
+	return cache[network.Path]
 }
 
 // ConnectNetwork attempt to establish a connection to the given network
@@ -80,6 +91,8 @@ IPv4.method=dhcp`, network.Path, network.SSID, hexSSID, passphrase)
 	if err != nil {
 		return err
 	}
+
+	cache = map[string]string{}
 
 	return nil
 }

@@ -31,7 +31,7 @@ func buildWiFi() Scene {
 				list.children = append(list.children, entry{
 					label:       network.SSID,
 					icon:        "menu_network",
-					stringValue: func() string { return ludos.NetworkStatus(network.Path) },
+					stringValue: func() string { return ludos.NetworkStatus(network) },
 					callbackOK: func() {
 						list.segueNext()
 						menu.stack = append(menu.stack, buildKeyboard(
