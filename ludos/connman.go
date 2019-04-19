@@ -17,7 +17,7 @@ var ConnectingTo string
 // Network is a network as detected by connman
 type Network struct {
 	SSID string
-	ID   string
+	Path string
 }
 
 // ScanNetworks enables connman and returns the list of available SSIDs
@@ -33,7 +33,7 @@ func ScanNetworks() []Network {
 		}
 		network := Network{
 			SSID: strings.TrimSpace(line[4:24]),
-			ID:   line[25:len(line)],
+			Path: line[25:len(line)],
 		}
 		networks = append(networks, network)
 	}
@@ -62,21 +62,21 @@ SSID=%s
 Favorite=true
 AutoConnect=true
 Passphrase=%s
-IPv4.method=dhcp`, network.ID, network.SSID, hexSSID, passphrase)
+IPv4.method=dhcp`, network.Path, network.SSID, hexSSID, passphrase)
 
-	err := os.MkdirAll("/var/lib/connman/"+network.ID, os.ModePerm)
+	err := os.MkdirAll("/var/lib/connman/"+network.Path, os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	fd, err := os.Create("/var/lib/connman/" + network.ID + "/service")
+	fd, err := os.Create("/var/lib/connman/" + network.Path + "/service")
 	if err != nil {
 		return err
 	}
 	defer fd.Close()
 	fd.WriteString(config)
 
-	err = exec.Command("/usr/bin/connmanctl", "connect", network.ID).Run()
+	err = exec.Command("/usr/bin/connmanctl", "connect", network.Path).Run()
 	if err != nil {
 		return err
 	}
