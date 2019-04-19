@@ -35,7 +35,7 @@ func ScanNetworks() []Network {
 		}
 		network := Network{
 			SSID: strings.TrimSpace(line[4:24]),
-			Path: line[25:len(line)],
+			Path: line[25:],
 		}
 		networks = append(networks, network)
 	}
