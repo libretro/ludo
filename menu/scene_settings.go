@@ -33,6 +33,18 @@ func buildSettings() Scene {
 	var list sceneSettings
 	list.label = "Settings"
 
+	if state.Global.LudOS {
+		list.children = append(list.children, entry{
+			label:       "Wi-Fi",
+			icon:        "subsetting",
+			stringValue: func() string { return ludos.CurrentNetwork.SSID },
+			callbackOK: func() {
+				list.segueNext()
+				menu.stack = append(menu.stack, buildWiFi())
+			},
+		})
+	}
+
 	fields := structs.Fields(&settings.Current)
 	for _, f := range fields {
 		f := f
