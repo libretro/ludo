@@ -1,7 +1,6 @@
 package ludos
 
 import (
-	"bytes"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -25,14 +24,10 @@ type Network struct {
 func ScanNetworks() []Network {
 	exec.Command("/usr/bin/connmanctl", "enable", "wifi").Run()
 	exec.Command("/usr/bin/connmanctl", "scan", "wifi").Run()
-
-	var stdout bytes.Buffer
-	cmd := exec.Command("/usr/bin/connmanctl", "services")
-	cmd.Stdout = &stdout
-	cmd.Run()
+	out, _ := exec.Command("/usr/bin/connmanctl", "services").Output()
 
 	networks := []Network{}
-	for _, line := range strings.Split(string(stdout.Bytes()), "\n") {
+	for _, line := range strings.Split(string(out), "\n") {
 		if len(line) == 0 {
 			continue
 		}
