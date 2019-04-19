@@ -5,6 +5,14 @@ import (
 	"github.com/libretro/ludo/libretro"
 )
 
+var (
+	repeatRight = withRepeat()
+	repeatLeft  = withRepeat()
+	repeatUp    = withRepeat()
+	repeatDown  = withRepeat()
+	repeatY     = withRepeat()
+)
+
 // Update takes care of calling the update method of the current scene.
 // Each scene has it's own input logic to allow a variety of navigation systems.
 func Update(dt float32) {
@@ -12,58 +20,56 @@ func Update(dt float32) {
 	currentScene.update(dt)
 }
 
-// Used to mesure how long the direction keys have been pressed.
-var downPressed, upPressed, downDelay, upDelay float32
-
-// Used to speed up the scrolling when up or down are hold by reducing the
-// input cooldown delay accordingly
-func scrollSpeed(pressedSeconds float32) float32 {
-	delay := 0.15 - pressedSeconds/50
-	if delay < 0.001 {
-		return 0.01
+// Used to increase scroll speed during long presses
+func scrollSpeed(lenght float32) float32 {
+	if lenght > 0.1 {
+		return 0.08
 	}
-	return delay
+	return 0.15
+}
+
+// withRepeat wraps the logic that to allows firing repeated events when a key
+// or button is hold. It is used mainly for scrolling, where the scroll speed
+// increases with time. It's better to use 1 withRepeat per key, to achieve
+// isolation.
+func withRepeat() func(dt float32, pressed bool, f func()) {
+	// A closure to store the values of these 3 vars accross repeated calls
+	var cooldown, length, delay float32
+	return func(dt float32, pressed bool, f func()) {
+		cooldown -= dt
+		if pressed {
+			if cooldown <= 0 {
+				f()
+				cooldown = delay
+			}
+			length += dt
+		} else {
+			length = 0
+		}
+		delay = scrollSpeed(length)
+	}
 }
 
 // This is the generic menu input handler. It encapsulate the logic to scroll
 // vertically in entry lists, and also respond to presses on OK and Cancel.
 func genericInput(list *entry, dt float32) {
-	menu.inputCooldown -= dt
-	if menu.inputCooldown < 0 {
-		menu.inputCooldown = 0
-	}
-
 	// Down
-	if input.NewState[0][libretro.DeviceIDJoypadDown] {
-		if menu.inputCooldown == 0 {
-			list.ptr++
-			if list.ptr >= len(list.children) {
-				list.ptr = 0
-			}
-			genericAnimate(list)
-			menu.inputCooldown = downDelay
+	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown], func() {
+		list.ptr++
+		if list.ptr >= len(list.children) {
+			list.ptr = 0
 		}
-		downPressed += dt
-	} else {
-		downPressed = 0
-	}
-	downDelay = scrollSpeed(downPressed)
+		genericAnimate(list)
+	})
 
 	// Up
-	if input.NewState[0][libretro.DeviceIDJoypadUp] {
-		if menu.inputCooldown == 0 {
-			list.ptr--
-			if list.ptr < 0 {
-				list.ptr = len(list.children) - 1
-			}
-			genericAnimate(list)
-			menu.inputCooldown = upDelay
+	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp], func() {
+		list.ptr--
+		if list.ptr < 0 {
+			list.ptr = len(list.children) - 1
 		}
-		upPressed += dt
-	} else {
-		upPressed = 0
-	}
-	upDelay = scrollSpeed(upPressed)
+		genericAnimate(list)
+	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {

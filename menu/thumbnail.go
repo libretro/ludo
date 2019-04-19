@@ -1,7 +1,6 @@
 package menu
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -17,7 +16,6 @@ import (
 func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
@@ -30,14 +28,12 @@ func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 
 	err = os.MkdirAll(folderPath, os.ModePerm)
 	if err != nil {
-		fmt.Println(err)
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
 
 	out, err := os.Create(path)
 	if err != nil {
-		fmt.Println(err)
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
