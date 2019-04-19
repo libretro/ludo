@@ -60,13 +60,12 @@ type Scene interface {
 
 // Menu is a type holding the menu state, the stack of scenes, tweens, etc
 type Menu struct {
-	stack         []Scene
-	icons         map[string]uint32
-	inputCooldown float32
-	tweens        map[*float32]*gween.Tween
-	scroll        float32
-	ratio         float32
-	t             float64
+	stack  []Scene
+	icons  map[string]uint32
+	tweens map[*float32]*gween.Tween
+	scroll float32
+	ratio  float32
+	t      float64
 }
 
 var menu *Menu
