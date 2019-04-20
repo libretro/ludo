@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
 // CurrentNetwork is the network we're connected to
 var CurrentNetwork Network
 var counter int
+
+const connmanPath = "/storage/.cache/connman/"
 
 // Network is a network as detected by connman
 type Network struct {
@@ -75,12 +78,12 @@ AutoConnect=true
 Passphrase=%s
 IPv4.method=dhcp`, network.Path, network.SSID, hexSSID, passphrase)
 
-	err := os.MkdirAll("/var/lib/connman/"+network.Path, os.ModePerm)
+	err := os.MkdirAll(filepath.Join(connmanPath, network.Path), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	fd, err := os.Create("/var/lib/connman/" + network.Path + "/service")
+	fd, err := os.Create(filepath.Join(connmanPath, network.Path, "service"))
 	if err != nil {
 		return err
 	}
