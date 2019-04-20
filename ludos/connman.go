@@ -77,14 +77,15 @@ SSID=%s
 Favorite=true
 AutoConnect=true
 Passphrase=%s
-IPv4.method=dhcp`, network.Path, network.SSID, hexSSID, passphrase)
+IPv4.method=dhcp
+`, network.Path, network.SSID, hexSSID, passphrase)
 
 	err := os.MkdirAll(filepath.Join(connmanPath, network.Path), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	fd, err := os.Create(filepath.Join(connmanPath, network.Path, "service"))
+	fd, err := os.Create(filepath.Join(connmanPath, network.Path, "settings"))
 	if err != nil {
 		return err
 	}
