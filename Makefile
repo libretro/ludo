@@ -48,6 +48,8 @@ $(APP).app: ludo $(DYLIBS)
 	cp -r database $(APP).app/Contents/Resources
 	cp -r assets $(APP).app/Contents/Resources
 	cp -r cores $(APP).app/Contents/Resources
+	rm -rf $(APP).app/Contents/Resources/database/.git
+	rm -rf $(APP).app/Contents/Resources/assets/.git
 	sips -z 16 16     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16.png
 	sips -z 32 32     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16@2x.png
 	sips -z 32 32     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_32x32.png
