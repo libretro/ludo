@@ -55,7 +55,8 @@ func NetworkStatus(network Network) string {
 			"-c",
 			"connmanctl services "+network.Path+" | grep State",
 		).Output()
-		if strings.Contains(string(out), "online") {
+		if strings.Contains(string(out), "online") ||
+			strings.Contains(string(out), "ready") {
 			cache[network.Path] = "Online"
 			CurrentNetwork = network
 		} else {
