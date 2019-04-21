@@ -22,7 +22,7 @@ var vid *video.Video
 // The menu data is a tree of entries.
 type entry struct {
 	yp, scale       float32
-	width           float32
+	width, margin   float32
 	label, subLabel string
 	path            string // full path of the rom linked to the entry
 	labelAlpha      float32
