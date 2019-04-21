@@ -6,6 +6,7 @@ package menu
 import (
 	"math"
 	"path/filepath"
+	"time"
 
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -50,6 +51,7 @@ type entry struct {
 // A segue is a smooth transition between two scenes.
 type Scene interface {
 	segueMount()
+	segueUnmount()
 	segueNext()
 	segueBack()
 	update(dt float32)
@@ -150,6 +152,48 @@ func genericSegueMount(list *entry) {
 	genericAnimate(list)
 }
 
+// genericSegueUnmount is the smooth transition when a scene is poped from the
+// menu stack, for example after pressing the back button
+func genericSegueUnmount(list *entry) {
+	for i := range list.children {
+		e := &list.children[i]
+
+		var yp, labelAlpha, iconAlpha, tagAlpha, scale float32
+		if i == list.ptr {
+			yp = 0.5 + 0.3
+			labelAlpha = 0
+			iconAlpha = 0
+			tagAlpha = 0
+			scale = 1.5
+		} else if i < list.ptr {
+			yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
+			labelAlpha = 0
+			iconAlpha = 0
+			tagAlpha = 0
+			scale = 0.5
+		} else if i > list.ptr {
+			yp = 0.6 + 0.3 + 0.08*float32(i-list.ptr)
+			labelAlpha = 0
+			iconAlpha = 0
+			tagAlpha = 0
+			scale = 0.5
+		}
+
+		menu.tweens[&e.yp] = gween.New(e.yp, yp, 1.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 1.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 1.15, ease.OutSine)
+		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 1.15, ease.OutSine)
+		menu.tweens[&e.scale] = gween.New(e.scale, scale, 1.15, ease.OutSine)
+	}
+	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 1.15, ease.OutSine)
+	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5+0.3, 1.15, ease.OutSine)
+
+	go func() {
+		time.Sleep(1150 * time.Millisecond)
+		menu.stack = menu.stack[:len(menu.stack)-1]
+	}()
+}
+
 // genericAnimate is the generic animation of entries when the user scrolls up or down
 func genericAnimate(list *entry) {
 	for i := range list.children {
@@ -181,14 +225,14 @@ func genericAnimate(list *entry) {
 			scale = 0.5
 		}
 
-		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
+		menu.tweens[&e.yp] = gween.New(e.yp, yp, 1.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 1.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 1.15, ease.OutSine)
+		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 1.15, ease.OutSine)
+		menu.tweens[&e.scale] = gween.New(e.scale, scale, 1.15, ease.OutSine)
 	}
-	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0.1, 0.15, ease.OutSine)
-	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5, 0.15, ease.OutSine)
+	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0.1, 1.15, ease.OutSine)
+	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5, 1.15, ease.OutSine)
 }
 
 // genericSegueNext is a smooth transition that fades out the current list
@@ -218,14 +262,14 @@ func genericSegueNext(list *entry) {
 			scale = 0.5
 		}
 
-		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
+		menu.tweens[&e.yp] = gween.New(e.yp, yp, 1.15, ease.OutSine)
+		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 1.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 1.15, ease.OutSine)
+		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 1.15, ease.OutSine)
+		menu.tweens[&e.scale] = gween.New(e.scale, scale, 1.15, ease.OutSine)
 	}
-	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 0.15, ease.OutSine)
-	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5-0.3, 0.15, ease.OutSine)
+	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 1.15, ease.OutSine)
+	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5-0.3, 1.15, ease.OutSine)
 }
 
 // drawCursor draws the blinking rectangular background of the active menu entry

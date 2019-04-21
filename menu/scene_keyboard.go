@@ -61,6 +61,10 @@ func (s *sceneKeyboard) segueMount() {
 	menu.tweens[&s.alpha] = gween.New(s.alpha, 1, 0.15, ease.OutSine)
 }
 
+func (s *sceneKeyboard) segueUnmount() {
+	// TODO
+}
+
 func (s *sceneKeyboard) segueNext() {
 }
 

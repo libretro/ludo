@@ -102,6 +102,10 @@ func (s *scenePlaylist) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
+func (s *scenePlaylist) segueUnmount() {
+	genericSegueUnmount(&s.entry)
+}
+
 func (s *scenePlaylist) segueNext() {
 	genericSegueNext(&s.entry)
 }

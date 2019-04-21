@@ -52,6 +52,10 @@ func (s *sceneCoreOptions) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
+func (s *sceneCoreOptions) segueUnmount() {
+	genericSegueUnmount(&s.entry)
+}
+
 func (s *sceneCoreOptions) segueNext() {
 	genericSegueNext(&s.entry)
 }

@@ -67,6 +67,10 @@ func (s *sceneWiFi) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
+func (s *sceneWiFi) segueUnmount() {
+	genericSegueUnmount(&s.entry)
+}
+
 func (s *sceneWiFi) segueNext() {
 	genericSegueNext(&s.entry)
 }

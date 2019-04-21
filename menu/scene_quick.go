@@ -72,6 +72,10 @@ func (s *sceneQuick) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
+func (s *sceneQuick) segueUnmount() {
+	genericSegueUnmount(&s.entry)
+}
+
 func (s *sceneQuick) segueNext() {
 	genericSegueNext(&s.entry)
 }

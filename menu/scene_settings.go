@@ -229,6 +229,10 @@ func (s *sceneSettings) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
+func (s *sceneSettings) segueUnmount() {
+	genericSegueUnmount(&s.entry)
+}
+
 func (s *sceneSettings) segueNext() {
 	genericSegueNext(&s.entry)
 }

@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 	"runtime"
-	"time"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/libretro/ludo/core"
@@ -24,10 +23,10 @@ func init() {
 }
 
 func runLoop(vid *video.Video) {
-	var currTime, prevTime time.Time
+	//var currTime, prevTime time.Time
 	for !vid.Window.ShouldClose() {
-		currTime = time.Now()
-		dt := float32(currTime.Sub(prevTime)) / 1000000000
+		//currTime = time.Now()
+		dt := float32(0.02) //float32(currTime.Sub(prevTime)) / 1000000000
 		glfw.PollEvents()
 		ntf.Process(dt)
 		vid.ResizeViewport()
@@ -52,7 +51,7 @@ func runLoop(vid *video.Video) {
 		menu.RenderNotifications()
 		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
-		prevTime = currTime
+		//prevTime = currTime
 	}
 }
 

@@ -144,6 +144,10 @@ func (main *sceneMain) segueMount() {
 	genericSegueMount(&main.entry)
 }
 
+func (main *sceneMain) segueUnmount() {
+	genericSegueUnmount(&main.entry)
+}
+
 func (main *sceneMain) segueBack() {
 	genericAnimate(&main.entry)
 }

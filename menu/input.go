@@ -96,7 +96,8 @@ func genericInput(list *entry, dt float32) {
 	if input.Released[0][libretro.DeviceIDJoypadB] {
 		if len(menu.stack) > 1 {
 			menu.stack[len(menu.stack)-2].segueBack()
-			menu.stack = menu.stack[:len(menu.stack)-1]
+			menu.stack[len(menu.stack)-1].segueUnmount()
+			//menu.stack = menu.stack[:len(menu.stack)-1]
 		}
 	}
 }

@@ -176,6 +176,9 @@ func (tabs *sceneTags) segueMount() {
 	tabs.animate()
 }
 
+func (tabs *sceneTags) segueUnmount() {
+}
+
 func (tabs *sceneTags) segueBack() {
 	tabs.animate()
 }

@@ -156,6 +156,10 @@ func (explorer *sceneExplorer) segueMount() {
 	genericSegueMount(&explorer.entry)
 }
 
+func (explorer *sceneExplorer) segueUnmount() {
+	genericSegueUnmount(&explorer.entry)
+}
+
 func (explorer *sceneExplorer) segueNext() {
 	genericSegueNext(&explorer.entry)
 }
