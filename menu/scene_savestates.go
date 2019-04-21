@@ -32,7 +32,7 @@ func buildSavestates() Scene {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			} else {
 				menu.stack[len(menu.stack)-1] = buildSavestates()
-				fastForwardTweens()
+				menu.tweens.FastForward()
 				ntf.DisplayAndLog(ntf.Success, "Menu", "State saved.")
 			}
 		},

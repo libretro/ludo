@@ -10,8 +10,6 @@ import (
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
-
-	"github.com/tanema/gween"
 )
 
 var vid *video.Video
@@ -21,7 +19,7 @@ var menu *Menu
 type Menu struct {
 	stack  []Scene
 	icons  map[string]uint32
-	tweens map[*float32]*gween.Tween
+	tweens Tweens
 	scroll float32
 	ratio  float32
 	t      float64
@@ -37,7 +35,7 @@ func Init(v *video.Video) *Menu {
 
 	menu = &Menu{}
 	menu.stack = []Scene{}
-	menu.tweens = make(tweens)
+	menu.tweens = make(Tweens)
 	menu.ratio = float32(w) / 1920
 	menu.icons = map[string]uint32{}
 
@@ -62,7 +60,7 @@ func (m *Menu) Render(dt float32) {
 		vid.DrawRect(0, 0, float32(w), float32(h), 1, video.Color{R: 0, G: 0, B: 0, A: 0.85})
 	}
 
-	updateTweens(dt)
+	m.tweens.Update(dt)
 
 	currentScreenIndex := len(m.stack) - 1
 	for i := 0; i <= currentScreenIndex+1; i++ {
@@ -111,5 +109,5 @@ func (m *Menu) WarpToQuickMenu() {
 	m.Push(buildMainMenu())
 	m.stack[1].segueNext()
 	m.Push(buildQuickMenu())
-	fastForwardTweens()
+	m.tweens.FastForward()
 }

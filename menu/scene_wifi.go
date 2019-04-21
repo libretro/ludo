@@ -48,7 +48,7 @@ func buildWiFi() Scene {
 					},
 				})
 				list.segueMount()
-				fastForwardTweens()
+				menu.tweens.FastForward()
 			}
 		} else {
 			list.children[0].label = "No network found"

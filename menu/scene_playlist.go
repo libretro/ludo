@@ -85,7 +85,7 @@ func loadEntry(list *scenePlaylist, playlist, gamePath string) {
 		}
 		list.segueNext()
 		menu.Push(buildQuickMenu())
-		fastForwardTweens() // position the elements without animating
+		menu.tweens.FastForward() // position the elements without animating
 		state.Global.MenuActive = false
 	} else {
 		list.segueNext()

@@ -85,7 +85,7 @@ func Test_fastForwardTweens(t *testing.T) {
 	bar := float32(-10)
 	menu.tweens[&bar] = gween.New(bar, 0, 0.9, ease.OutSine)
 
-	fastForwardTweens()
+	menu.tweens.FastForward()
 
 	t.Run("No tweens are left", func(t *testing.T) {
 		got := len(menu.tweens)
