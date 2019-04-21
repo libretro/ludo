@@ -70,17 +70,6 @@ type Menu struct {
 
 var menu *Menu
 
-// updateTweens loops over the animation queue and updade them so we can see progress
-func updateTweens(dt float32) {
-	for e, t := range menu.tweens {
-		var finished bool
-		*e, finished = t.Update(dt)
-		if finished {
-			delete(menu.tweens, e)
-		}
-	}
-}
-
 // Render takes care of rendering the menu
 func Render(dt float32) {
 	menu.t += float64(dt * 8)
@@ -99,8 +88,7 @@ func Render(dt float32) {
 			continue
 		}
 
-		menu := menu.stack[i]
-		menu.render()
+		menu.stack[i].render()
 	}
 	menu.stack[currentScreenIndex].drawHintBar()
 }
@@ -316,11 +304,6 @@ func (menu *Menu) ContextReset() {
 	}
 }
 
-// fastForwardTweens finishes all the current animations in the queue.
-func fastForwardTweens() {
-	updateTweens(10)
-}
-
 // WarpToQuickMenu loads the contextual menu for games that are launched from
 // the command line interface or from 'Load Game'.
 func (menu *Menu) WarpToQuickMenu() {
@@ -343,7 +326,7 @@ func Init(v *video.Video) *Menu {
 	w, _ := v.Window.GetFramebufferSize()
 	menu = &Menu{}
 	menu.stack = []Scene{}
-	menu.tweens = make(map[*float32]*gween.Tween)
+	menu.tweens = make(tweens)
 	menu.ratio = float32(w) / 1920
 	menu.icons = map[string]uint32{}
 
