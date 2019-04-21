@@ -68,6 +68,12 @@ type Menu struct {
 	t      float64
 }
 
+// Push will navigate to a new scene. It usually happen when the user presses
+// OK on a menu entry.
+func (m *Menu) Push(s Scene) {
+	m.stack = append(m.stack, s)
+}
+
 var menu *Menu
 
 // Render takes care of rendering the menu
@@ -280,25 +286,25 @@ func genericRender(list *entry) {
 
 // ContextReset uploads the UI images to the GPU.
 // It should be called after each time the window is recreated.
-func (menu *Menu) ContextReset() {
+func (m *Menu) ContextReset() {
 	assets := settings.Current.AssetsDirectory
 
 	paths, _ := filepath.Glob(assets + "/*.png")
 	for _, path := range paths {
 		path := path
 		filename := utils.FileName(path)
-		menu.icons[filename] = video.NewImage(assets + "/" + filename + ".png")
+		m.icons[filename] = video.NewImage(assets + "/" + filename + ".png")
 	}
 
 	paths, _ = filepath.Glob(assets + "/flags/*.png")
 	for _, path := range paths {
 		path := path
 		filename := utils.FileName(path)
-		menu.icons[filename] = video.NewImage(assets + "/flags/" + filename + ".png")
+		m.icons[filename] = video.NewImage(assets + "/flags/" + filename + ".png")
 	}
 
-	currentScreenIndex := len(menu.stack) - 1
-	curList := menu.stack[currentScreenIndex].Entry()
+	currentScreenIndex := len(m.stack) - 1
+	curList := m.stack[currentScreenIndex].Entry()
 	for i := range curList.children {
 		curList.children[i].thumbnail = 0
 	}
@@ -306,14 +312,14 @@ func (menu *Menu) ContextReset() {
 
 // WarpToQuickMenu loads the contextual menu for games that are launched from
 // the command line interface or from 'Load Game'.
-func (menu *Menu) WarpToQuickMenu() {
-	menu.scroll = 0
-	menu.stack = []Scene{}
-	menu.stack = append(menu.stack, buildTabs())
-	menu.stack[0].segueNext()
-	menu.stack = append(menu.stack, buildMainMenu())
-	menu.stack[1].segueNext()
-	menu.stack = append(menu.stack, buildQuickMenu())
+func (m *Menu) WarpToQuickMenu() {
+	m.scroll = 0
+	m.stack = []Scene{}
+	m.Push(buildTabs())
+	m.stack[0].segueNext()
+	m.Push(buildMainMenu())
+	m.stack[1].segueNext()
+	m.Push(buildQuickMenu())
 	fastForwardTweens()
 }
 
@@ -330,7 +336,7 @@ func Init(v *video.Video) *Menu {
 	menu.ratio = float32(w) / 1920
 	menu.icons = map[string]uint32{}
 
-	menu.stack = append(menu.stack, buildTabs())
+	menu.Push(buildTabs())
 
 	return menu
 }

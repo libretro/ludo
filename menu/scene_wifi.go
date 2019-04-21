@@ -34,7 +34,7 @@ func buildWiFi() Scene {
 					stringValue: func() string { return ludos.NetworkStatus(network) },
 					callbackOK: func() {
 						list.segueNext()
-						menu.stack = append(menu.stack, buildKeyboard(
+						menu.Push(buildKeyboard(
 							"Passpharse for "+network.SSID,
 							func(pass string) {
 								go func() {

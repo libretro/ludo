@@ -31,7 +31,7 @@ func buildTabs() Scene {
 		subLabel: "Load cores and games manually",
 		icon:     "main",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildMainMenu())
+			menu.Push(buildMainMenu())
 		},
 	})
 
@@ -40,7 +40,7 @@ func buildTabs() Scene {
 		subLabel: "Configure Ludo",
 		icon:     "setting",
 		callbackOK: func() {
-			menu.stack = append(menu.stack, buildSettings())
+			menu.Push(buildSettings())
 		},
 	})
 
@@ -52,7 +52,7 @@ func buildTabs() Scene {
 		icon:     "add",
 		callbackOK: func() {
 			usr, _ := user.Current()
-			menu.stack = append(menu.stack, buildExplorer(usr.HomeDir, nil,
+			menu.Push(buildExplorer(usr.HomeDir, nil,
 				func(path string) {
 					scanner.ScanDir(path, refreshTabs)
 				},
@@ -137,7 +137,7 @@ func getPlaylists() []entry {
 			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
 			icon:     filename,
 			callbackOK: func() {
-				menu.stack = append(menu.stack, buildPlaylist(path))
+				menu.Push(buildPlaylist(path))
 			},
 		})
 	}

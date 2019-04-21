@@ -40,7 +40,7 @@ func buildSettings() Scene {
 			stringValue: func() string { return ludos.CurrentNetwork.SSID },
 			callbackOK: func() {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildWiFi())
+				menu.Push(buildWiFi())
 			},
 		})
 	}
@@ -65,7 +65,7 @@ func buildSettings() Scene {
 				widget: widgets[f.Tag("widget")],
 				callbackOK: func() {
 					list.segueNext()
-					menu.stack = append(menu.stack, buildExplorer(
+					menu.Push(buildExplorer(
 						f.Value().(string),
 						nil,
 						func(path string) { dirExplorerCb(path, f) },

@@ -141,7 +141,7 @@ func Test_buildExplorer(t *testing.T) {
 	os.Mkdir(tmp+"Folder 1", 0777)
 
 	scene := buildExplorer(os.TempDir()+"/Test_buildExplorer/", []string{".img"}, cbMock, dirActionMock)
-	menu.stack = append(menu.stack, scene)
+	menu.Push(scene)
 
 	children := scene.Entry().children
 
