@@ -15,8 +15,8 @@ var (
 
 // Update takes care of calling the update method of the current scene.
 // Each scene has it's own input logic to allow a variety of navigation systems.
-func Update(dt float32) {
-	currentScene := menu.stack[len(menu.stack)-1]
+func (m *Menu) Update(dt float32) {
+	currentScene := m.stack[len(m.stack)-1]
 	currentScene.update(dt)
 }
 

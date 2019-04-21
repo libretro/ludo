@@ -23,7 +23,7 @@ func init() {
 	runtime.LockOSThread()
 }
 
-func runLoop(vid *video.Video) {
+func runLoop(vid *video.Video, m *menu.Menu) {
 	var currTime, prevTime time.Time
 	for !vid.Window.ShouldClose() {
 		currTime = time.Now()
@@ -44,12 +44,12 @@ func runLoop(vid *video.Video) {
 			vid.Render()
 		} else {
 			input.Poll()
-			menu.Update(dt)
+			m.Update(dt)
 			vid.Render()
-			menu.Render(dt)
+			m.Render(dt)
 		}
 		input.ProcessActions()
-		menu.RenderNotifications()
+		m.RenderNotifications()
 		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
 		prevTime = currTime
@@ -121,7 +121,7 @@ func main() {
 	// No game running? display the menu
 	state.Global.MenuActive = !state.Global.CoreRunning
 
-	runLoop(vid)
+	runLoop(vid, m)
 
 	// Unload and deinit in the core.
 	core.UnloadGame()

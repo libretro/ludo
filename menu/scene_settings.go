@@ -40,7 +40,7 @@ func buildSettings() Scene {
 			stringValue: func() string { return ludos.CurrentNetwork.SSID },
 			callbackOK: func() {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildWiFi())
+				menu.Push(buildWiFi())
 			},
 		})
 	}
@@ -65,7 +65,7 @@ func buildSettings() Scene {
 				widget: widgets[f.Tag("widget")],
 				callbackOK: func() {
 					list.segueNext()
-					menu.stack = append(menu.stack, buildExplorer(
+					menu.Push(buildExplorer(
 						f.Value().(string),
 						nil,
 						func(path string) { dirExplorerCb(path, f) },
@@ -247,7 +247,6 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	menu.ratio = float32(w) / 1920
 	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
 
 	var stack float32

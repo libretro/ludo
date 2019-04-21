@@ -28,7 +28,7 @@ func buildMainMenu() Scene {
 			icon:  "subsetting",
 			callbackOK: func() {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildQuickMenu())
+				menu.Push(buildQuickMenu())
 			},
 		})
 	}
@@ -38,7 +38,7 @@ func buildMainMenu() Scene {
 		icon:  "subsetting",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildExplorer(
+			menu.Push(buildExplorer(
 				settings.Current.CoresDirectory,
 				[]string{".dll", ".dylib", ".so"},
 				coreExplorerCb,
@@ -53,7 +53,7 @@ func buildMainMenu() Scene {
 		callbackOK: func() {
 			if state.Global.Core != nil {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildExplorer(
+				menu.Push(buildExplorer(
 					usr.HomeDir,
 					nil,
 					gameExplorerCb,
@@ -71,7 +71,7 @@ func buildMainMenu() Scene {
 			icon:  "subsetting",
 			callbackOK: func() {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildUpdater())
+				menu.Push(buildUpdater())
 			},
 		})
 
