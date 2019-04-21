@@ -140,7 +140,6 @@ func (s *sceneKeyboard) update(dt float32) {
 
 func (s *sceneKeyboard) render() {
 	w, h := vid.Window.GetFramebufferSize()
-	menu.ratio = float32(w) / 1920
 	lines := float32(4)
 	kbh := float32(h) * 0.6
 	ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
