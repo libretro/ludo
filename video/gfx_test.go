@@ -102,7 +102,6 @@ func TestVideo_vertexArray(t *testing.T) {
 		vao            uint32
 		vbo            uint32
 		texID          uint32
-		white          uint32
 		pitch          int32
 		pixFmt         uint32
 		pixType        uint32
@@ -154,7 +153,6 @@ func TestVideo_vertexArray(t *testing.T) {
 				vao:            tt.fields.vao,
 				vbo:            tt.fields.vbo,
 				texID:          tt.fields.texID,
-				white:          tt.fields.white,
 				pitch:          tt.fields.pitch,
 				pixFmt:         tt.fields.pixFmt,
 				pixType:        tt.fields.pixType,

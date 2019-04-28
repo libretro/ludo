@@ -36,7 +36,7 @@ func (m *Menu) RenderNotifications() {
 		lw := vid.Font.Width(0.5*m.ratio, n.Message)
 		fg := severityFgColor[n.Severity]
 		bg := severityBgColor[n.Severity]
-		vid.DrawRoundedRect(
+		vid.DrawRect(
 			25*m.ratio,
 			(stack+offset-46)*m.ratio,
 			lw+40*m.ratio,

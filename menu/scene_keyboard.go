@@ -147,7 +147,7 @@ func (s *sceneKeyboard) render() {
 	ttw := 10 * ksp
 
 	// Background
-	vid.DrawRect(0, 0, float32(w), float32(h), 1,
+	vid.DrawRect(0, 0, float32(w), float32(h), 0,
 		video.Color{R: 1, G: 1, B: 1, A: s.alpha})
 
 	// Label
@@ -158,7 +158,7 @@ func (s *sceneKeyboard) render() {
 		ksz/200, s.label)
 
 	// Value
-	vid.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.25-ksz/2, ttw, ksz, 1,
+	vid.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.25-ksz/2, ttw, ksz, 0,
 		video.Color{R: 0.95, G: 0.95, B: 0.95, A: 1})
 	vid.Font.Printf(
 		float32(w)/2-ttw/2+ksz/4,
@@ -167,7 +167,7 @@ func (s *sceneKeyboard) render() {
 
 	// Keyboard
 
-	vid.DrawRect(0, s.y+float32(h)-kbh, float32(w), kbh, 1,
+	vid.DrawRect(0, s.y+float32(h)-kbh, float32(w), kbh, 0,
 		video.Color{R: 0, G: 0, B: 0, A: 1})
 
 	vid.Font.SetColor(1, 1, 1, 1)
@@ -184,8 +184,8 @@ func (s *sceneKeyboard) render() {
 			c2 = video.Color{R: 0.45, G: 0.45, B: 0.45, A: 1}
 		}
 
-		vid.DrawRoundedRect(x, y, ksz, ksz, 0.2, c1)
-		vid.DrawRoundedRect(x, y, ksz, ksz*0.95, 0.2, c2)
+		vid.DrawRect(x, y, ksz, ksz, 0.2, c1)
+		vid.DrawRect(x, y, ksz, ksz*0.95, 0.2, c2)
 
 		vid.Font.Printf(
 			x+ksz/2-gw/2,

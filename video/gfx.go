@@ -28,12 +28,25 @@ func XYWHTo4points(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 floa
 
 // DrawImage draws an image with x, y, w, h
 func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c Color) {
-	video.drawTexturedQuad(image, x, y, w, h, scale, c)
-}
 
-// DrawRect draws a colored rectangle
-func (video *Video) DrawRect(x, y, w, h float32, scale float32, c Color) {
-	video.drawTexturedQuad(video.white, x, y, w, h, scale, c)
+	va := video.vertexArray(x, y, w, h, scale)
+
+	gl.UseProgram(video.demulProgram)
+	maskUniform := gl.GetUniformLocation(video.demulProgram, gl.Str("mask\x00"))
+	gl.Uniform1f(maskUniform, 0)
+	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("texColor\x00")), c.R, c.G, c.B, c.A)
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BindVertexArray(video.vao)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, image)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	gl.BindVertexArray(0)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+	gl.UseProgram(0)
+	gl.Disable(gl.BLEND)
 }
 
 func (video *Video) vertexArray(x, y, w, h, scale float32) []float32 {
@@ -75,31 +88,8 @@ func (video *Video) DrawBorder(x, y, w, h, borderWidth float32, c Color) {
 	gl.Disable(gl.BLEND)
 }
 
-// Draw a texture on a polygon
-func (video *Video) drawTexturedQuad(image uint32, x, y, w, h, scale float32, c Color) {
-
-	va := video.vertexArray(x, y, w, h, scale)
-
-	gl.UseProgram(video.demulProgram)
-	maskUniform := gl.GetUniformLocation(video.demulProgram, gl.Str("mask\x00"))
-	gl.Uniform1f(maskUniform, 0)
-	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("texColor\x00")), c.R, c.G, c.B, c.A)
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.BindVertexArray(video.vao)
-	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, image)
-	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
-	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-	gl.BindVertexArray(0)
-	gl.BindTexture(gl.TEXTURE_2D, 0)
-	gl.UseProgram(0)
-	gl.Disable(gl.BLEND)
-}
-
-// DrawRoundedRect draws a rectangle with rounded corners
-func (video *Video) DrawRoundedRect(x, y, w, h, r float32, c Color) {
+// DrawRect draws a rectangle and supports rounded corners
+func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
 
 	va := video.vertexArray(x, y, w, h, 1.0)
 
@@ -179,11 +169,5 @@ func NewImage(file string) uint32 {
 	}
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
-	return textureLoad(rgba)
-}
-
-func newWhite() uint32 {
-	rgba := image.NewRGBA(image.Rect(0, 0, 8, 8))
-	draw.Draw(rgba, rgba.Bounds(), image.White, image.Point{0, 0}, draw.Src)
 	return textureLoad(rgba)
 }

@@ -48,7 +48,6 @@ type Video struct {
 	vao                  uint32
 	vbo                  uint32
 	texID                uint32
-	white                uint32
 	pitch                int32
 	pixFmt               uint32
 	pixType              uint32
@@ -246,8 +245,6 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
 	video.UpdateFilter(settings.Current.VideoFilter)
-
-	video.white = newWhite()
 }
 
 // UpdateFilter configures the game texture filter and shader. We currently
