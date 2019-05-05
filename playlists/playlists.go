@@ -93,9 +93,13 @@ func ShortName(in string) string {
 	if len(in) < 20 {
 		return in
 	}
-	r, _ := regexp.Compile(`(.*?) - (.*)`)
-	out := r.ReplaceAllString(in, "$2")
-	out = strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
+	out := strings.Replace(in, "Nintendo Entertainment System", "NES", -1)
 	out = strings.Replace(out, "PC Engine", "PCE", -1)
 	return out
+}
+
+// RemoveVendor removes the vendor prefix from a game system name
+func RemoveVendor(in string) string {
+	r, _ := regexp.Compile(`(.*?) - (.*)`)
+	return r.ReplaceAllString(in, "$2")
 }

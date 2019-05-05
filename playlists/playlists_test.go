@@ -99,28 +99,28 @@ func TestShortName(t *testing.T) {
 		{
 			name: "Should change nothing",
 			args: args{
-				in: "Sega - 32X",
+				in: "32X",
 			},
-			want: "Sega - 32X",
+			want: "32X",
 		},
 		{
-			name: "Should skip the vendor",
+			name: "Should change nothing",
 			args: args{
-				in: "FB Alpha - Arcade Games",
+				in: "Arcade Games",
 			},
 			want: "Arcade Games",
 		},
 		{
 			name: "Should replace with acronym",
 			args: args{
-				in: "NEC - PC Engine - TurboGrafx 16",
+				in: "PC Engine - TurboGrafx 16",
 			},
 			want: "PCE - TurboGrafx 16",
 		},
 		{
 			name: "Should replace with acronym",
 			args: args{
-				in: "Nintendo - Super Nintendo Entertainment System",
+				in: "Super Nintendo Entertainment System",
 			},
 			want: "Super NES",
 		},
@@ -129,6 +129,53 @@ func TestShortName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ShortName(tt.args.in); got != tt.want {
 				t.Errorf("ShortName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRemoveVendor(t *testing.T) {
+	type args struct {
+		in string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Should remove vendor prefix",
+			args: args{
+				in: "Sega - 32X",
+			},
+			want: "32X",
+		},
+		{
+			name: "Should remove vendor prefix",
+			args: args{
+				in: "FB Alpha - Arcade Games",
+			},
+			want: "Arcade Games",
+		},
+		{
+			name: "Should remove vendor prefix",
+			args: args{
+				in: "NEC - PC Engine - TurboGrafx 16",
+			},
+			want: "PC Engine - TurboGrafx 16",
+		},
+		{
+			name: "Should remove vendor prefix",
+			args: args{
+				in: "Nintendo - Super Nintendo Entertainment System",
+			},
+			want: "Super Nintendo Entertainment System",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := RemoveVendor(tt.args.in); got != tt.want {
+				t.Errorf("RemoveVendor() = %v, want %v", got, tt.want)
 			}
 		})
 	}
