@@ -22,7 +22,10 @@ func buildWiFi() Scene {
 	list.segueMount()
 
 	go func() {
-		networks := ludos.ScanNetworks()
+		networks, err := ludos.ScanNetworks()
+		if err != nil {
+			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+		}
 
 		if len(networks) > 0 {
 			list.children = []entry{}

@@ -24,14 +24,17 @@ type Network struct {
 var cache map[string]string
 
 // ScanNetworks enables connman and returns the list of available SSIDs
-func ScanNetworks() []Network {
+func ScanNetworks() ([]Network, error) {
 	cache = map[string]string{}
+	networks := []Network{}
 
 	exec.Command("/usr/bin/connmanctl", "enable", "wifi").Run()
 	exec.Command("/usr/bin/connmanctl", "scan", "wifi").Run()
-	out, _ := exec.Command("/usr/bin/connmanctl", "services").Output()
+	out, err := exec.Command("/usr/bin/connmanctl", "services").Output()
+	if err != nil {
+		return networks, err
+	}
 
-	networks := []Network{}
 	for _, line := range strings.Split(string(out), "\n") {
 		if len(line) == 0 {
 			continue
@@ -43,7 +46,7 @@ func ScanNetworks() []Network {
 		networks = append(networks, network)
 	}
 
-	return networks
+	return networks, nil
 }
 
 // NetworkStatus returns the status of a network
@@ -94,7 +97,10 @@ IPv4.method=dhcp
 		return err
 	}
 	defer fd.Close()
-	fd.WriteString(config)
+	_, err = fd.WriteString(config)
+	if err != nil {
+		return err
+	}
 
 	err = exec.Command("/usr/bin/connmanctl", "connect", network.Path).Run()
 	if err != nil {

@@ -82,7 +82,7 @@ func main() {
 	}
 
 	if err := glfw.Init(); err != nil {
-		log.Fatalln("failed to initialize glfw:", err)
+		log.Fatalln("Failed to initialize glfw:", err)
 	}
 	defer glfw.Terminate()
 
