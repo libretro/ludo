@@ -33,13 +33,21 @@ var Playlists = map[string]Playlist{}
 // Load loops over lpl files in the playlists directory and loads them into
 // memory.
 func Load() {
-	paths, _ := filepath.Glob(settings.Current.PlaylistsDirectory + "/*.csv")
+	paths, err := filepath.Glob(settings.Current.PlaylistsDirectory + "/*.csv")
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	Playlists = map[string]Playlist{}
 	for _, path := range paths {
 		path := path
 
-		file, _ := os.Open(path)
+		file, err := os.Open(path)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
 		defer file.Close()
 		reader := csv.NewReader(bufio.NewReader(file))
 		reader.Comma = '\t'

@@ -32,7 +32,7 @@ func ProcessActions() {
 		settings.Save()
 	}
 
-	// Close on escape
+	// Close if ActionShouldClose is pressed
 	if Pressed[0][ActionShouldClose] {
 		vid.Window.SetShouldClose(true)
 	}
