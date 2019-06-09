@@ -47,7 +47,10 @@ func (o *Options) Save() error {
 	o.Lock()
 	defer o.Unlock()
 
-	usr, _ := user.Current()
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 
 	m := make(map[string]string)
 	for i, v := range o.Vars {
@@ -73,7 +76,10 @@ func (o *Options) load() error {
 	o.Lock()
 	defer o.Unlock()
 
-	usr, _ := user.Current()
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 
 	name := utils.FileName(state.Global.CorePath)
 	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".json"))

@@ -1,3 +1,5 @@
+// Package rdb is a parser for rdb files, a binary database of games with
+// metadata also used by RetroArch.
 package rdb
 
 import (
