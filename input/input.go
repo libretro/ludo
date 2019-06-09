@@ -35,6 +35,18 @@ var (
 	Pressed  inputstate // keys just pressed during this frame
 )
 
+// Hot keys
+const (
+	// ActionMenuToggle toggles the menu UI
+	ActionMenuToggle uint32 = libretro.DeviceIDJoypadR3 + 1
+	// ActionFullscreenToggle switches between fullscreen and windowed mode
+	ActionFullscreenToggle uint32 = libretro.DeviceIDJoypadR3 + 2
+	// ActionShouldClose will cause the program to shutdown
+	ActionShouldClose uint32 = libretro.DeviceIDJoypadR3 + 3
+	// ActionLast is used for iterating
+	ActionLast uint32 = libretro.DeviceIDJoypadR3 + 4
+)
+
 // joystickCallback is triggered when a joypad is plugged.
 func joystickCallback(joy int, event int) {
 	switch glfw.MonitorEvent(event) {
