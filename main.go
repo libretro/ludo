@@ -73,7 +73,9 @@ func main() {
 
 	if GLVersion != settings.Defaults.GLVersion {
 		settings.Current.GLVersion = GLVersion
-		settings.Save()
+		if err := settings.Save(); err != nil {
+			log.Fatalln("Failed to save settings:", err)
+		}
 	}
 
 	var gamePath string
