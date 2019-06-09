@@ -57,7 +57,10 @@ var Defaults = defaultSettings()
 func Load() error {
 	defer Save()
 
-	usr, _ := user.Current()
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 
 	// Set default values for settings
 	Current = Defaults
@@ -73,26 +76,40 @@ func Load() error {
 		return err
 	}
 	err = json.Unmarshal(b, &Current)
+	if err != nil {
+		return err
+	}
 
 	// Those are special fields, their value is not saved in settings.json but
 	// depends on the presence of some files
 	ludos.InitializeServiceSettingsValues(structs.Fields(&Current))
 
-	return err
+	return nil
 }
 
 // Save saves the current configuration to the home directory
 func Save() error {
-	usr, _ := user.Current()
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 
-	os.MkdirAll(filepath.Join(usr.HomeDir, ".ludo"), os.ModePerm)
+	err = os.MkdirAll(filepath.Join(usr.HomeDir, ".ludo"), os.ModePerm)
+	if err != nil {
+		return err
+	}
 
-	b, _ := json.MarshalIndent(Current, "", "  ")
+	b, err := json.MarshalIndent(Current, "", "  ")
+	if err != nil {
+		return err
+	}
+
 	f, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+
 	_, err = io.Copy(f, bytes.NewReader(b))
 	return err
 }
