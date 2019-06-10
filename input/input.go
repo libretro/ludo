@@ -59,19 +59,11 @@ func joystickCallback(joy int, event int) {
 	}
 }
 
-// ContextReseter is an interface to to allow reloading icons after the
-// window is recreated when switching fullscreen
-type ContextReseter interface {
-	ContextReset()
-}
-
 var vid *video.Video
-var menu ContextReseter
 
 // Init initializes the input package
-func Init(v *video.Video, m ContextReseter) {
+func Init(v *video.Video) {
 	vid = v
-	menu = m
 	glfw.SetJoystickCallback(joystickCallback)
 }
 

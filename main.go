@@ -102,7 +102,7 @@ func main() {
 
 	core.Init(vid, m)
 
-	input.Init(vid, m)
+	input.Init(vid)
 
 	if len(state.Global.CorePath) > 0 {
 		err := core.Load(state.Global.CorePath)

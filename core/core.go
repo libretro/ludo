@@ -163,7 +163,7 @@ func LoadGame(gamePath string) error {
 		vid.Window.SetTitle("Ludo - " + si.LibraryName)
 	}
 
-	input.Init(vid, menu)
+	input.Init(vid)
 	audio.Init(int32(avi.Timing.SampleRate))
 	if state.Global.Core.AudioCallback != nil {
 		state.Global.Core.AudioCallback.SetState(true)
