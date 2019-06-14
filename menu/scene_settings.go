@@ -246,20 +246,13 @@ func (s *sceneSettings) render() {
 }
 
 func (s *sceneSettings) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
-
-	var stack float32
-	if state.Global.CoreRunning {
-		stackHint(&stack, "key-p", "RESUME", h)
-	}
-	stackHint(&stack, "key-up-down", "NAVIGATE", h)
-	stackHint(&stack, "key-z", "BACK", h)
-
 	list := menu.stack[len(menu.stack)-1].Entry()
-	if list.children[list.ptr].callbackOK != nil {
-		stackHint(&stack, "key-x", "SET", h)
-	} else {
-		stackHint(&stack, "key-left-right", "SET", h)
-	}
+	cb := list.children[list.ptr].callbackOK
+	HintBar(&Props{},
+		Hint(&Props{Hidden: !state.Global.CoreRunning}, "key-p", "RESUME"),
+		Hint(&Props{}, "key-up-down", "NAVIGATE"),
+		Hint(&Props{}, "key-z", "BACK"),
+		Hint(&Props{Hidden: cb == nil}, "key-x", "SET"),
+		Hint(&Props{Hidden: cb != nil}, "key-left-right", "SET"),
+	)()
 }
