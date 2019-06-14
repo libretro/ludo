@@ -12,3 +12,34 @@ func stackHint(stack *float32, icon, label string, h int) {
 	vid.Font.Printf(*stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, label)
 	*stack += vid.Font.Width(0.5*menu.ratio, label)
 }
+
+func HintBar(_ *Props, children ...func()) func() {
+	w, h := vid.Window.GetFramebufferSize()
+	return HBox(&Props{
+		Y:      float32(h) - 70*menu.ratio,
+		Width:  float32(w),
+		Height: 70 * menu.ratio,
+		Color:  video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1},
+	},
+		children...,
+	)
+}
+
+func Hint(props *Props, icon string, title string) func() {
+	darkGrey := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
+	return HBox(props,
+		Box(&Props{Width: 15}),
+		Image(&Props{
+			Width:  70 * menu.ratio,
+			Height: 70 * menu.ratio,
+			Scale:  1,
+			Color:  darkGrey,
+		}, menu.icons[icon]),
+		Label(&Props{
+			Height: 70 * menu.ratio,
+			Scale:  0.5 * menu.ratio,
+			Color:  darkGrey,
+		}, title),
+		Box(&Props{Width: 15}),
+	)
+}

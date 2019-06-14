@@ -30,7 +30,6 @@ type MenuInterface interface {
 }
 
 var vid *video.Video
-var menu MenuInterface
 
 // Options holds the settings for the current core
 var Options *options.Options
@@ -39,7 +38,6 @@ var Options *options.Options
 // Call Init before calling other functions of this package.
 func Init(v *video.Video, m MenuInterface) {
 	vid = v
-	menu = m
 	ticker := time.NewTicker(time.Second)
 	go func() {
 		for range ticker.C {

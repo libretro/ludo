@@ -47,58 +47,54 @@ func (s *sceneDialog) render() {
 	w, h := vid.Window.GetFramebufferSize()
 	fw := float32(w)
 	fh := float32(h)
-	vid.DrawRect(0, 0, fw, fh, 0, video.Color{R: 0, G: 0, B: 0, A: 0.85})
 
-	var width float32 = 1000
-	var height float32 = 400
+	width := 1000 * menu.ratio
+	height := 400 * menu.ratio
 
-	vid.DrawRect(
-		fw/2-width/2*menu.ratio,
-		fh/2-height/2*menu.ratio,
-		width*menu.ratio,
-		height*menu.ratio,
-		0.05,
-		video.Color{R: 1, G: 1, B: 1, A: 1},
-	)
+	white := video.Color{R: 1, G: 1, B: 1, A: 1}
+	black := video.Color{R: 0, G: 0, B: 0, A: 1}
+	warningTitle := video.Color{R: 0.8, G: 0.4, B: 0.1, A: 1}
 
-	vid.Font.SetColor(0.8, 0.4, 0.1, 1)
-	msg1 := "A game is currently running."
-	lw1 := vid.Font.Width(0.7*menu.ratio, msg1)
-	vid.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 0.7*menu.ratio, msg1)
-	vid.Font.SetColor(0, 0, 0, 1)
-	msg2 := "If you have not saved yet, your progress will be lost."
-	lw2 := vid.Font.Width(0.5*menu.ratio, msg2)
-	vid.Font.Printf(fw/2-lw2/2, fh/2-30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg2)
-	msg3 := "Do you want to exit Ludo anyway?"
-	lw3 := vid.Font.Width(0.5*menu.ratio, msg3)
-	vid.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg3)
-
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
-	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
-
-	var margin float32 = 15
-
-	vid.DrawImage(
-		menu.icons["key-z"],
-		fw/2-width/2*menu.ratio+margin*menu.ratio,
-		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, c)
-	vid.Font.Printf(
-		fw/2-width/2*menu.ratio+margin*menu.ratio+70*menu.ratio,
-		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
-		0.5*menu.ratio,
-		"NO")
-
-	vid.DrawImage(
-		menu.icons["key-x"],
-		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio,
-		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, c)
-	vid.Font.Printf(
-		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio+70*menu.ratio,
-		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
-		0.5*menu.ratio,
-		"YES")
+	// Background
+	Box(&Props{Width: fw, Height: fh, Color: video.Color{R: 0, G: 0, B: 0, A: 0.85}},
+		// Dialog
+		VBox(&Props{
+			X:            fw/2 - width/2,
+			Y:            fh/2 - height/2,
+			Width:        width,
+			Height:       height,
+			BorderRadius: 0.05,
+			Color:        white,
+		},
+			// Title
+			Label(&Props{
+				TextAlign: "center",
+				Scale:     0.7 * menu.ratio,
+				Color:     warningTitle,
+				Height:    150 * menu.ratio,
+			}, "A game is currently running"),
+			// Messages
+			Label(&Props{
+				TextAlign: "center",
+				Scale:     0.5 * menu.ratio,
+				Color:     black,
+				Height:    60 * menu.ratio,
+			}, "If you have not saved yet, your progress will be lost."),
+			Label(&Props{
+				TextAlign: "center",
+				Scale:     0.5 * menu.ratio,
+				Color:     black,
+				Height:    60 * menu.ratio,
+			}, "Do you want to exit Ludo anyway?"),
+			Box(&Props{Height: 40 * menu.ratio}),
+			Box(&Props{},
+				// The NO Hint
+				Hint(&Props{}, "key-z", "NO"),
+				// The YES Hint
+				Hint(&Props{X: width - 175*menu.ratio}, "key-x", "YES"),
+			),
+		),
+	)()
 }
 
 func (s *sceneDialog) drawHintBar() {
