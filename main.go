@@ -100,7 +100,7 @@ func main() {
 	m := menu.Init(vid)
 	m.ContextReset()
 
-	core.Init(vid, m)
+	core.Init(vid)
 
 	input.Init(vid)
 
