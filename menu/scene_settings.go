@@ -246,8 +246,7 @@ func (s *sceneSettings) render() {
 }
 
 func (s *sceneSettings) drawHintBar() {
-	list := menu.stack[len(menu.stack)-1].Entry()
-	cb := list.children[list.ptr].callbackOK
+	cb := s.children[s.ptr].callbackOK
 	HintBar(&Props{},
 		Hint(&Props{Hidden: !state.Global.CoreRunning}, "key-p", "RESUME"),
 		Hint(&Props{}, "key-up-down", "NAVIGATE"),
