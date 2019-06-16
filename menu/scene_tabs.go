@@ -283,37 +283,6 @@ func (tabs sceneTags) render() {
 			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,
 			256*menu.ratio, 256*menu.ratio, e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 	}
-
-	red := video.Color{R: 1, G: 0, B: 0, A: 1}
-	green := video.Color{R: 0, G: 1, B: 0, A: 1}
-	blue := video.Color{R: 0, G: 0, B: 1, A: 1}
-	black := video.Color{R: 0, G: 0, B: 0, A: 1}
-	white := video.Color{R: 1, G: 1, B: 1, A: 1}
-
-	Box(&Props{X: 20, Y: 20, Width: 600, Height: 600, Color: red},
-		VBox(&Props{X: 50, Y: 50, Width: 500, Height: 500, Color: green},
-			VBox(&Props{Width: 50, Height: 50, Color: blue},
-				VBox(&Props{Width: 10, Height: 10, Color: white}),
-				VBox(&Props{Width: 10, Height: 10, Color: green}),
-			),
-			HBox(&Props{Width: 100, Height: 100, Color: black},
-				VBox(&Props{Width: 25, Height: 25, Color: black}),
-				Box(&Props{Width: 25, Height: 25, Color: red}),
-				Box(&Props{Width: 25, Height: 25, Color: black}),
-				VBox(&Props{Width: 25, Height: 25, Color: red},
-					Image(&Props{Width: 25, Height: 25, Scale: 1, Color: white}, menu.icons["key-x"]),
-					Image(&Props{Width: 25, Height: 25, Scale: 1, Color: white}, menu.icons["key-x"]),
-				),
-			),
-			HBox(&Props{Width: 50, Height: 50, Color: blue},
-				Label(&Props{Scale: 0.5, Height: 50, Color: white}, "hi"),
-				Image(&Props{Width: 50, Height: 50, Scale: 1, Color: white}, menu.icons["key-x"]),
-				Label(&Props{Scale: 0.5, Height: 50, Color: white}, "hi"),
-				Image(&Props{Width: 50, Height: 50, Scale: 1, Color: white}, menu.icons["key-x"]),
-				Label(&Props{Scale: 0.5, Height: 50, Color: white}, "hi"),
-			),
-		),
-	)()
 }
 
 func (tabs sceneTags) drawHintBar() {
