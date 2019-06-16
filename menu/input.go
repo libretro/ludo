@@ -3,6 +3,8 @@ package menu
 import (
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/state"
 )
 
 var (
@@ -98,5 +100,35 @@ func genericInput(list *entry, dt float32) {
 			menu.stack[len(menu.stack)-2].segueBack()
 			menu.stack = menu.stack[:len(menu.stack)-1]
 		}
+	}
+}
+
+// ProcessHotkeys checks if certain keys are pressed and perform corresponding actions
+func (m *Menu) ProcessHotkeys() {
+	// Disable all hot keys on the exit dialog
+	currentScene := m.stack[len(m.stack)-1]
+	if currentScene.Entry().label == "Exit Dialog" {
+		return
+	}
+
+	// Toggle the menu if ActionMenuToggle is pressed
+	if input.Released[0][input.ActionMenuToggle] && state.Global.CoreRunning {
+		state.Global.MenuActive = !state.Global.MenuActive
+	}
+
+	// Toggle fullscreen if ActionFullscreenToggle is pressed
+	if input.Released[0][input.ActionFullscreenToggle] {
+		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
+		vid.Reconfigure(settings.Current.VideoFullscreen)
+		m.ContextReset()
+		settings.Save()
+	}
+
+	// Close if ActionShouldClose is pressed, but display a confirmation dialog
+	// in case a game is running
+	if input.Pressed[0][input.ActionShouldClose] {
+		askConfirmation(func() {
+			vid.Window.SetShouldClose(true)
+		})
 	}
 }

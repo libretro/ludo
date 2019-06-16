@@ -23,23 +23,15 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-// MenuInterface allows passing a *menu.Menu to the core package while avoiding
-// cyclic dependencies.
-type MenuInterface interface {
-	ContextReset()
-}
-
 var vid *video.Video
-var menu MenuInterface
 
 // Options holds the settings for the current core
 var Options *options.Options
 
 // Init is there mainly for dependency injection.
 // Call Init before calling other functions of this package.
-func Init(v *video.Video, m MenuInterface) {
+func Init(v *video.Video) {
 	vid = v
-	menu = m
 	ticker := time.NewTicker(time.Second)
 	go func() {
 		for range ticker.C {
@@ -163,7 +155,7 @@ func LoadGame(gamePath string) error {
 		vid.Window.SetTitle("Ludo - " + si.LibraryName)
 	}
 
-	input.Init(vid, menu)
+	input.Init(vid)
 	audio.Init(int32(avi.Timing.SampleRate))
 	if state.Global.Core.AudioCallback != nil {
 		state.Global.Core.AudioCallback.SetState(true)

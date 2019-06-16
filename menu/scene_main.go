@@ -16,6 +16,37 @@ type sceneMain struct {
 	entry
 }
 
+func cleanShutdown() {
+	cmd := exec.Command("/usr/sbin/shutdown", "-P", "now")
+	core.UnloadGame()
+	err := cmd.Run()
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+	}
+}
+
+func cleanReboot() {
+	cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
+	core.UnloadGame()
+	err := cmd.Run()
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+	}
+}
+
+func askConfirmation(cb func()) {
+	if state.Global.CoreRunning {
+		if !state.Global.MenuActive {
+			state.Global.MenuActive = true
+		}
+		menu.Push(buildDialog(func() {
+			cb()
+		}))
+	} else {
+		cb()
+	}
+}
+
 func buildMainMenu() Scene {
 	var list sceneMain
 	list.label = "Main Menu"
@@ -79,12 +110,9 @@ func buildMainMenu() Scene {
 			label: "Reboot",
 			icon:  "subsetting",
 			callbackOK: func() {
-				cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
-				core.UnloadGame()
-				err := cmd.Run()
-				if err != nil {
-					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-				}
+				askConfirmation(func() {
+					cleanReboot()
+				})
 			},
 		})
 
@@ -92,12 +120,9 @@ func buildMainMenu() Scene {
 			label: "Shutdown",
 			icon:  "subsetting",
 			callbackOK: func() {
-				cmd := exec.Command("/usr/sbin/shutdown", "-P", "now")
-				core.UnloadGame()
-				err := cmd.Run()
-				if err != nil {
-					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-				}
+				askConfirmation(func() {
+					cleanShutdown()
+				})
 			},
 		})
 	} else {
@@ -105,7 +130,9 @@ func buildMainMenu() Scene {
 			label: "Quit",
 			icon:  "subsetting",
 			callbackOK: func() {
-				vid.Window.SetShouldClose(true)
+				askConfirmation(func() {
+					vid.Window.SetShouldClose(true)
+				})
 			},
 		})
 	}

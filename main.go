@@ -29,6 +29,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		currTime = time.Now()
 		dt := float32(currTime.Sub(prevTime)) / 1000000000
 		glfw.PollEvents()
+		m.ProcessHotkeys()
 		ntf.Process(dt)
 		vid.ResizeViewport()
 		if !state.Global.MenuActive {
@@ -48,7 +49,6 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			vid.Render()
 			m.Render(dt)
 		}
-		input.ProcessActions()
 		m.RenderNotifications()
 		glfw.SwapInterval(1)
 		vid.Window.SwapBuffers()
@@ -100,9 +100,9 @@ func main() {
 	m := menu.Init(vid)
 	m.ContextReset()
 
-	core.Init(vid, m)
+	core.Init(vid)
 
-	input.Init(vid, m)
+	input.Init(vid)
 
 	if len(state.Global.CorePath) > 0 {
 		err := core.Load(state.Global.CorePath)
