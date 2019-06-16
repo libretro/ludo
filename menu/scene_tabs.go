@@ -18,12 +18,12 @@ import (
 	"github.com/tanema/gween/ease"
 )
 
-type sceneTags struct {
+type sceneTabs struct {
 	entry
 }
 
 func buildTabs() Scene {
-	var list sceneTags
+	var list sceneTabs
 	list.label = "Ludo"
 
 	list.children = append(list.children, entry{
@@ -88,17 +88,14 @@ func refreshTabs() {
 	// Ensure new icons are styled properly
 	for i := range e.children {
 		if i == e.ptr {
-			e.children[i].yp = 0.5
 			e.children[i].iconAlpha = 1
 			e.children[i].scale = 0.75
 			e.children[i].width = 500
 		} else if i < e.ptr {
-			e.children[i].yp = 0.5
 			e.children[i].iconAlpha = 1
 			e.children[i].scale = 0.25
 			e.children[i].width = 128
 		} else if i > e.ptr {
-			e.children[i].yp = 0.5
 			e.children[i].iconAlpha = 1
 			e.children[i].scale = 0.25
 			e.children[i].width = 128
@@ -144,28 +141,25 @@ func getPlaylists() []entry {
 	return pls
 }
 
-func (tabs *sceneTags) Entry() *entry {
+func (tabs *sceneTabs) Entry() *entry {
 	return &tabs.entry
 }
 
-func (tabs *sceneTags) segueMount() {
+func (tabs *sceneTabs) segueMount() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
 		if i == tabs.ptr {
-			e.yp = 0.5
 			e.labelAlpha = 1
 			e.iconAlpha = 1
 			e.scale = 0.75
 			e.width = 500
 		} else if i < tabs.ptr {
-			e.yp = 0.5
 			e.labelAlpha = 0
 			e.iconAlpha = 1
 			e.scale = 0.25
 			e.width = 128
 		} else if i > tabs.ptr {
-			e.yp = 0.5
 			e.labelAlpha = 0
 			e.iconAlpha = 1
 			e.scale = 0.25
@@ -176,36 +170,32 @@ func (tabs *sceneTags) segueMount() {
 	tabs.animate()
 }
 
-func (tabs *sceneTags) segueBack() {
+func (tabs *sceneTabs) segueBack() {
 	tabs.animate()
 }
 
-func (tabs *sceneTags) animate() {
+func (tabs *sceneTabs) animate() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
-		var yp, labelAlpha, iconAlpha, scale, width float32
+		var labelAlpha, iconAlpha, scale, width float32
 		if i == tabs.ptr {
-			yp = 0.5
 			labelAlpha = 1
 			iconAlpha = 1
 			scale = 0.75
 			width = 500
 		} else if i < tabs.ptr {
-			yp = 0.5
 			labelAlpha = 0
 			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		} else if i > tabs.ptr {
-			yp = 0.5
 			labelAlpha = 0
 			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		}
 
-		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
@@ -215,7 +205,7 @@ func (tabs *sceneTags) animate() {
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.15, ease.OutSine)
 }
 
-func (tabs *sceneTags) segueNext() {
+func (tabs *sceneTabs) segueNext() {
 	cur := &tabs.children[tabs.ptr]
 	menu.tweens[&cur.margin] = gween.New(cur.margin, 1360, 0.15, ease.OutSine)
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+680, 0.15, ease.OutSine)
@@ -227,7 +217,7 @@ func (tabs *sceneTags) segueNext() {
 	}
 }
 
-func (tabs *sceneTags) update(dt float32) {
+func (tabs *sceneTabs) update(dt float32) {
 	// Right
 	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight], func() {
 		tabs.ptr++
@@ -255,37 +245,60 @@ func (tabs *sceneTags) update(dt float32) {
 	}
 }
 
-func (tabs sceneTags) render() {
-	_, h := vid.Window.GetFramebufferSize()
-
-	stackWidth := 710 * menu.ratio
-	for i, e := range tabs.children {
-
-		c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
-
-		x := -menu.scroll*menu.ratio + stackWidth + e.width/2*menu.ratio
-
-		stackWidth += e.width*menu.ratio + e.margin*menu.ratio
-
-		if e.labelAlpha > 0 {
-			vid.Font.SetColor(float32(c.R), float32(c.B), float32(c.G), e.labelAlpha)
-			lw := vid.Font.Width(0.6*menu.ratio, e.label)
-			vid.Font.Printf(x-lw/2, float32(h)*e.yp+250*menu.ratio, 0.6*menu.ratio, e.label)
-			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
-			vid.Font.Printf(x-lw/2, float32(h)*e.yp+330*menu.ratio, 0.4*menu.ratio, e.subLabel)
-		}
-
-		vid.DrawImage(menu.icons["hexagon"],
-			x-220*e.scale*menu.ratio, float32(h)*e.yp-220*e.scale*menu.ratio,
-			440*menu.ratio, 440*menu.ratio, e.scale, video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.iconAlpha})
-
-		vid.DrawImage(menu.icons[e.icon],
-			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
-	}
+// Tab is a widget that draws the homepage hexagon plus title
+func Tab(props *Props, i int, e entry) func() {
+	c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
+	return Box(props,
+		Box(&Props{Width: e.width * menu.ratio},
+			Image(&Props{
+				X:      e.width/2*menu.ratio - 220*e.scale*menu.ratio,
+				Y:      -220 * e.scale * menu.ratio,
+				Width:  440 * menu.ratio,
+				Height: 440 * menu.ratio,
+				Scale:  e.scale,
+				Color:  video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.iconAlpha},
+			}, menu.icons["hexagon"]),
+			Image(&Props{
+				X:      e.width/2*menu.ratio - 128*e.scale*menu.ratio,
+				Y:      -128 * e.scale * menu.ratio,
+				Width:  256 * menu.ratio,
+				Height: 256 * menu.ratio,
+				Scale:  e.scale,
+				Color:  video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
+			}, menu.icons[e.icon]),
+			Label(&Props{
+				Y:         250 * menu.ratio,
+				TextAlign: "center",
+				Scale:     0.6 * menu.ratio,
+				Color:     video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.labelAlpha},
+			}, e.label),
+			Label(&Props{
+				Y:         330 * menu.ratio,
+				TextAlign: "center",
+				Scale:     0.4 * menu.ratio,
+				Color:     video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.labelAlpha},
+			}, e.subLabel),
+		),
+	)
 }
 
-func (tabs sceneTags) drawHintBar() {
+func (tabs sceneTabs) render() {
+	_, h := vid.Window.GetFramebufferSize()
+
+	var children []func()
+	for i, e := range tabs.children {
+		children = append(children, Tab(&Props{
+			Y:     float32(h) / 2,
+			Width: e.width*menu.ratio + e.margin*menu.ratio,
+		}, i, e))
+	}
+
+	HBox(&Props{
+		X: 710*menu.ratio - menu.scroll*menu.ratio,
+	}, children...)()
+}
+
+func (tabs sceneTabs) drawHintBar() {
 	HintBar(&Props{},
 		Hint(&Props{Hidden: !state.Global.CoreRunning}, "key-p", "RESUME"),
 		Hint(&Props{}, "key-left-right", "NAVIGATE"),

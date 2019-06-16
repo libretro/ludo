@@ -125,7 +125,7 @@ func VBox(props *Props, children ...func()) func() {
 // Label a widget is used to draw some text
 func Label(props *Props, msg string) func() {
 	return func() {
-		if props.Hidden {
+		if props.Hidden || props.Color.A == 0 {
 			return
 		}
 		parent := wStack.Last()
