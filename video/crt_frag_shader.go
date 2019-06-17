@@ -51,6 +51,6 @@ void main() {
   float scanLineWeight = (BRIGHTBOOST - LOWLUMSCAN*(Y - 2.05*YY));
   float scanLineWeightB = 1.0 - HILUMSCAN*(YY-2.8*YY*Y);
 
-  COMPAT_FRAGCOLOR.rgb = colour.rgb*mix(scanLineWeight*mask, scanLineWeightB, dot(colour.rgb,vec3(maskFade)));
+  COMPAT_FRAGCOLOR = vec4(colour.rgb*mix(scanLineWeight*mask, scanLineWeightB, dot(colour.rgb,vec3(maskFade))), 1.0);
 }
 ` + "\x00"
