@@ -31,26 +31,26 @@ COMPAT_VARYING vec2 fragTexCoord;
 #define vTexCoord fragTexCoord.xy
 
 void main() {
-	float maskFade = 0.3333*MASK_FADE;
-	vec2 invDims = 1.0/TextureSize.xy;
+  float maskFade = 0.3333*MASK_FADE;
+  vec2 invDims = 1.0/TextureSize.xy;
 
-	vec2 p = vTexCoord * TextureSize;
-	vec2 i = floor(p) + 0.50;
-	vec2 f = p - i;
+  vec2 p = vTexCoord * TextureSize;
+  vec2 i = floor(p) + 0.50;
+  vec2 f = p - i;
 
-	p = (i + 4.0*f*f*f)*invDims;
-	p.x = mix( p.x , vTexCoord.x, BLURSCALEX);
-	float Y = f.y*f.y;
-	float YY = Y*Y;
+  p = (i + 4.0*f*f*f)*invDims;
+  p.x = mix( p.x , vTexCoord.x, BLURSCALEX);
+  float Y = f.y*f.y;
+  float YY = Y*Y;
 
-	float whichmask = fract( gl_FragCoord.x*-0.4999);
-	float mask = 1.0 + float(whichmask < 0.5) * -MASK_DARK;
+  float whichmask = fract( gl_FragCoord.x*-0.4999);
+  float mask = 1.0 + float(whichmask < 0.5) * -MASK_DARK;
 
-	vec3 colour = COMPAT_TEXTURE(Source, p).rgb;
+  vec3 colour = COMPAT_TEXTURE(Source, p).rgb;
 
-	float scanLineWeight = (BRIGHTBOOST - LOWLUMSCAN*(Y - 2.05*YY));
-	float scanLineWeightB = 1.0 - HILUMSCAN*(YY-2.8*YY*Y);
+  float scanLineWeight = (BRIGHTBOOST - LOWLUMSCAN*(Y - 2.05*YY));
+  float scanLineWeightB = 1.0 - HILUMSCAN*(YY-2.8*YY*Y);
 
-	COMPAT_FRAGCOLOR.rgb = colour.rgb*mix(scanLineWeight*mask, scanLineWeightB, dot(colour.rgb,vec3(maskFade)));
+  COMPAT_FRAGCOLOR.rgb = colour.rgb*mix(scanLineWeight*mask, scanLineWeightB, dot(colour.rgb,vec3(maskFade)));
 }
 ` + "\x00"
