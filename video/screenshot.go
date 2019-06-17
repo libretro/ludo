@@ -32,19 +32,33 @@ func (video *Video) renderScreenshot() {
 }
 
 // TakeScreenshot captures the ouput of video.Render and writes it to a file
-func (video *Video) TakeScreenshot(name string) {
+func (video *Video) TakeScreenshot(name string) error {
 	state.Global.MenuActive = false
+	defer func() { state.Global.MenuActive = true }()
+
 	video.renderScreenshot()
+
 	img := image.NewRGBA(image.Rect(0, 0, video.Geom.BaseWidth, video.Geom.BaseHeight))
+
 	_, fbh := video.Window.GetFramebufferSize()
+
 	gl.ReadPixels(
 		0, int32(fbh-video.Geom.BaseHeight),
 		int32(video.Geom.BaseWidth), int32(video.Geom.BaseHeight),
 		gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
-	os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
+
+	err := os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	path := filepath.Join(settings.Current.ScreenshotsDirectory, name+".png")
-	fd, _ := os.Create(path)
+	fd, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
 	flipped := imaging.FlipV(img)
-	png.Encode(fd, flipped)
-	state.Global.MenuActive = true
+
+	return png.Encode(fd, flipped)
 }
