@@ -126,5 +126,5 @@ func main() {
 	runLoop(vid, m)
 
 	// Unload and deinit in the core.
-	core.UnloadGame()
+	core.Unload()
 }

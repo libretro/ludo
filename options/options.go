@@ -62,13 +62,18 @@ func (o *Options) Save() error {
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	f, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
+	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	_, err = io.Copy(f, bytes.NewReader(b))
-	return err
+	defer fd.Close()
+
+	_, err = io.Copy(fd, bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+
+	return fd.Sync()
 }
 
 // Load core options from a file
@@ -89,6 +94,9 @@ func (o *Options) load() error {
 
 	var opts map[string]string
 	err = json.Unmarshal(b, &opts)
+	if err != nil {
+		return err
+	}
 
 	for optk, optv := range opts {
 		for i, variable := range o.Vars {
@@ -102,5 +110,5 @@ func (o *Options) load() error {
 		}
 	}
 
-	return err
+	return nil
 }
