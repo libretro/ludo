@@ -104,14 +104,18 @@ func Save() error {
 		return err
 	}
 
-	f, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
+	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer fd.Close()
 
-	_, err = io.Copy(f, bytes.NewReader(b))
-	return err
+	_, err = io.Copy(fd, bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+
+	return fd.Sync()
 }
 
 // CoreForPlaylist returns the absolute path of the default libretro core for

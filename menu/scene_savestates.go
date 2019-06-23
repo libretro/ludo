@@ -26,8 +26,11 @@ func buildSavestates() Scene {
 		icon:  "savestate",
 		callbackOK: func() {
 			name := utils.DatedName(state.Global.GamePath)
-			vid.TakeScreenshot(name)
-			err := savestates.Save(name)
+			err := vid.TakeScreenshot(name)
+			if err != nil {
+				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+			}
+			err = savestates.Save(name)
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			} else {

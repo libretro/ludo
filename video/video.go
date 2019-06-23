@@ -41,6 +41,7 @@ type Video struct {
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
 	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
+	zfastCRTProgram      uint32 // fast CRT program used for the game quad
 	roundedProgram       uint32 // program to draw rectangles with rounded corners
 	borderProgram        uint32 // program to draw rectangles borders
 	circleProgram        uint32 // program to draw textured circles
@@ -185,6 +186,11 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
+	video.zfastCRTProgram, err = newProgram(GLSLVersion, vertexShader, zfastCRTFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
 	video.roundedProgram, err = newProgram(GLSLVersion, vertexShader, roundedFragmentShader)
 	if err != nil {
 		panic(err)
@@ -260,6 +266,10 @@ func (video *Video) UpdateFilter(filter string) {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.sharpBilinearProgram
+	case "zfast-crt":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.zfastCRTProgram
 	case "nearest":
 		fallthrough
 	default:

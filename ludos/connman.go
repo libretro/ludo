@@ -97,7 +97,14 @@ IPv4.method=dhcp
 		return err
 	}
 	defer fd.Close()
+
 	_, err = fd.WriteString(config)
+	if err != nil {
+		return err
+	}
+
+	// We want the sync to happen before connmanctl connect, don't defer
+	err = fd.Sync()
 	if err != nil {
 		return err
 	}

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/libretro/ludo/core"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
 )
 
@@ -33,7 +34,10 @@ func buildCoreOptions() Scene {
 					core.Options.Choices[i] = 0
 				}
 				core.Options.Updated = true
-				core.Options.Save()
+				err := core.Options.Save()
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Core", "Error saving core options: %v", err.Error())
+				}
 			},
 		})
 	}

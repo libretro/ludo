@@ -55,10 +55,19 @@ func SaveSRAM() error {
 	if err != nil {
 		return err
 	}
-	defer fd.Close()
-	fd.Write(bytes)
 
-	return nil
+	_, err = fd.Write(bytes)
+	if err != nil {
+		fd.Close()
+		return err
+	}
+
+	err = fd.Close()
+	if err != nil {
+		return err
+	}
+
+	return fd.Sync()
 }
 
 // LoadSRAM saves the game SRAM to the filesystem
