@@ -4,10 +4,13 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
+// Direction of the children widgets in a container
 type Direction uint8
 
 const (
+	// Vertical means that the children will stack on top of each others
 	Vertical Direction = iota
+	// Horizontal means that the children will stack from left to right
 	Horizontal
 )
 
