@@ -3,7 +3,6 @@ package menu
 import (
 	"github.com/libretro/ludo/ludos"
 	ntf "github.com/libretro/ludo/notifications"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneWiFi struct {
@@ -87,13 +86,9 @@ func (s *sceneWiFi) render() {
 }
 
 func (s *sceneWiFi) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
-
-	var stack float32
-	stackHint(&stack, "key-up-down", "NAVIGATE", h)
-	stackHint(&stack, "key-z", "BACK", h)
-	if s.children[0].callbackOK != nil {
-		stackHint(&stack, "key-x", "CONNECT", h)
-	}
+	HintBar(&Props{},
+		Hint(&Props{}, "key-up-down", "NAVIGATE"),
+		Hint(&Props{}, "key-x", "BACK"),
+		Hint(&Props{Hidden: s.children[0].callbackOK == nil}, "key-x", "CONNECT"),
+	)()
 }
