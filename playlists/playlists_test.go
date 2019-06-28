@@ -97,85 +97,38 @@ func TestShortName(t *testing.T) {
 		want string
 	}{
 		{
-			name: "Should change nothing",
-			args: args{
-				in: "32X",
-			},
-			want: "32X",
-		},
-		{
-			name: "Should change nothing",
-			args: args{
-				in: "Arcade Games",
-			},
-			want: "Arcade Games",
-		},
-		{
-			name: "Should replace with acronym",
-			args: args{
-				in: "PC Engine - TurboGrafx 16",
-			},
-			want: "PCE - TurboGrafx 16",
-		},
-		{
-			name: "Should replace with acronym",
-			args: args{
-				in: "Super Nintendo Entertainment System",
-			},
-			want: "Super NES",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := ShortName(tt.args.in); got != tt.want {
-				t.Errorf("ShortName() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestRemoveVendor(t *testing.T) {
-	type args struct {
-		in string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Should remove vendor prefix",
+			name: "Should remove vendor",
 			args: args{
 				in: "Sega - 32X",
 			},
 			want: "32X",
 		},
 		{
-			name: "Should remove vendor prefix",
+			name: "Should specify vendor as additional information",
 			args: args{
 				in: "FB Alpha - Arcade Games",
 			},
-			want: "Arcade Games",
+			want: "Arcade (FB Alpha)",
 		},
 		{
-			name: "Should remove vendor prefix",
+			name: "Should remove vendor and alternative name",
 			args: args{
 				in: "NEC - PC Engine - TurboGrafx 16",
 			},
-			want: "PC Engine - TurboGrafx 16",
+			want: "TurboGrafx-16",
 		},
 		{
-			name: "Should remove vendor prefix",
+			name: "Should replace with acronym",
 			args: args{
 				in: "Nintendo - Super Nintendo Entertainment System",
 			},
-			want: "Super Nintendo Entertainment System",
+			want: "SNES",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := RemoveVendor(tt.args.in); got != tt.want {
-				t.Errorf("RemoveVendor() = %v, want %v", got, tt.want)
+			if got := ShortName(tt.args.in); got != tt.want {
+				t.Errorf("ShortName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
