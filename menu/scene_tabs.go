@@ -320,11 +320,9 @@ func (tabs sceneTabs) drawHintBar() {
 			Height: 50,
 			Color:  video.Color{0.2, 0.2, 0, 1},
 		}, "This is a longer piece of text"),
-		&hBox{
-			Children: []Widget{
-				mkButton("key-z", "Fuufuu", video.Color{0, 0.5, 0, 1}),
-				mkButton("key-x", "Lehleh", video.Color{0.5, 0, 0.5, 1}),
-			},
-		},
+		mkVBox(wProps{},
+			mkButton("key-z", "Fuufuu", video.Color{0, 0.5, 0, 1}),
+			mkButton("key-x", "Lehleh", video.Color{0.5, 0, 0.5, 1}),
+		),
 	).Draw(0, 0)
 }

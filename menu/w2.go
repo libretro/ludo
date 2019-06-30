@@ -19,86 +19,69 @@ type wProps struct {
 	Hidden        bool
 }
 
-// HBox
+// Box
 
-func mkHBox(props wProps, children ...Widget) Widget {
-	return &hBox{
-		Children: children,
-		wProps:   props,
-	}
-}
-
-type hBox struct {
-	Children []Widget
+type box struct {
+	Children  []Widget
+	Direction Direction
 	wProps
 }
 
-func (hb *hBox) Draw(x, y float32) {
+func mkHBox(props wProps, children ...Widget) Widget {
+	return &box{
+		Children:  children,
+		Direction: Horizontal,
+		wProps:    props,
+	}
+}
+
+func mkVBox(props wProps, children ...Widget) Widget {
+	return &box{
+		Children:  children,
+		Direction: Vertical,
+		wProps:    props,
+	}
+}
+
+func (hb *box) Draw(x, y float32) {
 	hb.Layout()
 	vid.DrawRect(x, y, hb.Width+hb.Padding*2, hb.Height+hb.Padding*2, hb.BorderRadius, hb.Color)
 	var advance float32
 	for _, child := range hb.Children {
-		w, _ := child.Size()
-		child.Draw(x+advance+hb.Padding, y+hb.Padding)
-		advance += w
+		w, h := child.Size()
+		switch hb.Direction {
+		case Horizontal:
+			child.Draw(x+advance+hb.Padding, y+hb.Padding)
+			advance += w
+		case Vertical:
+			child.Draw(x+hb.Padding, y+advance+hb.Padding)
+			advance += h
+		}
 	}
 }
 
-func (hb *hBox) Layout() (float32, float32) {
+func (hb *box) Layout() (float32, float32) {
 	hb.Width = 0
 	for _, child := range hb.Children {
 		w, h := child.Layout()
-		hb.Width += w
-		if h > hb.Height {
-			hb.Height = h
+		switch hb.Direction {
+		case Horizontal:
+			hb.Width += w
+			if h > hb.Height {
+				hb.Height = h
+			}
+		case Vertical:
+			hb.Height += h
+			if w > hb.Width {
+				hb.Width = w
+			}
 		}
 	}
 	return hb.Width + hb.Padding*2, hb.Height + hb.Padding*2
 }
 
-func (hb *hBox) Size() (float32, float32) {
+func (hb *box) Size() (float32, float32) {
 	return hb.Width + hb.Padding*2, hb.Height + hb.Padding*2
-}
-
-// VBox
-
-func mkVBox(props wProps, children ...Widget) Widget {
-	return &vBox{
-		Children: children,
-		wProps:   props,
-	}
-}
-
-type vBox struct {
-	Children []Widget
-	wProps
-}
-
-func (vb *vBox) Draw(x, y float32) {
-	vb.Layout()
-	vid.DrawRect(x, y, vb.Width+vb.Padding*2, vb.Height+vb.Padding*2, vb.BorderRadius, vb.Color)
-	var advance float32
-	for _, child := range vb.Children {
-		_, h := child.Size()
-		child.Draw(x+vb.Padding, y+advance+vb.Padding)
-		advance += h
-	}
-}
-
-func (vb *vBox) Layout() (float32, float32) {
-	vb.Width = 0
-	for _, child := range vb.Children {
-		w, h := child.Layout()
-		vb.Height += h
-		if w > vb.Width {
-			vb.Width = w
-		}
-	}
-	return vb.Width + vb.Padding*2, vb.Height + vb.Padding*2
-}
-
-func (vb *vBox) Size() (float32, float32) {
-	return vb.Width + vb.Padding*2, vb.Height + vb.Padding*2
 }
 
 // Label
