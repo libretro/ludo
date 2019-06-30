@@ -305,29 +305,26 @@ func (tabs sceneTabs) drawHintBar() {
 		Hint(&Props{}, "key-x", "OPEN"),
 	)()
 
-	(&vBox{
+	mkVBox(wProps{
 		Color:        video.Color{0, 0, 0, 0.2},
 		BorderRadius: 0.1,
 		Padding:      20,
-		Children: []Widget{
-			&label{
-				Text:   "Bonjour",
-				Scale:  0.8 * menu.ratio,
-				Height: 50,
-				Color:  video.Color{0.2, 0.2, 0, 1},
-			},
-			&label{
-				Text:   "This is a longer piece of text",
-				Scale:  0.6 * menu.ratio,
-				Height: 50,
-				Color:  video.Color{0, 0, 0, 1},
-			},
-			&hBox{
-				Children: []Widget{
-					mkButton("key-z", "Fuufuu", video.Color{0, 0.5, 0, 1}),
-					mkButton("key-x", "Lehleh", video.Color{0.5, 0, 0.5, 1}),
-				},
+	},
+		mkLabel(wProps{
+			Scale:  0.8 * menu.ratio,
+			Height: 50,
+			Color:  video.Color{0.2, 0.2, 0, 1},
+		}, "Bonjour"),
+		mkLabel(wProps{
+			Scale:  0.6 * menu.ratio,
+			Height: 50,
+			Color:  video.Color{0.2, 0.2, 0, 1},
+		}, "This is a longer piece of text"),
+		&hBox{
+			Children: []Widget{
+				mkButton("key-z", "Fuufuu", video.Color{0, 0.5, 0, 1}),
+				mkButton("key-x", "Lehleh", video.Color{0.5, 0, 0.5, 1}),
 			},
 		},
-	}).Draw(0, 0)
+	).Draw(0, 0)
 }

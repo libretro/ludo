@@ -10,15 +10,27 @@ type Widget interface {
 	Size() (w float32, h float32)
 }
 
-// HBox
-
-type hBox struct {
-	Width, Height float32
+type wProps struct {
 	Padding       float32
 	BorderRadius  float32
+	Width, Height float32
+	Scale         float32
 	Color         video.Color
 	Hidden        bool
-	Children      []Widget
+}
+
+// HBox
+
+func mkHBox(props wProps, children ...Widget) Widget {
+	return &hBox{
+		Children: children,
+		wProps:   props,
+	}
+}
+
+type hBox struct {
+	Children []Widget
+	wProps
 }
 
 func (hb *hBox) Draw(x, y float32) {
@@ -50,13 +62,16 @@ func (hb *hBox) Size() (float32, float32) {
 
 // VBox
 
+func mkVBox(props wProps, children ...Widget) Widget {
+	return &vBox{
+		Children: children,
+		wProps:   props,
+	}
+}
+
 type vBox struct {
-	Width, Height float32
-	Padding       float32
-	BorderRadius  float32
-	Color         video.Color
-	Hidden        bool
-	Children      []Widget
+	Children []Widget
+	wProps
 }
 
 func (vb *vBox) Draw(x, y float32) {
@@ -89,11 +104,15 @@ func (vb *vBox) Size() (float32, float32) {
 // Label
 
 type label struct {
-	Width, Height float32
-	Scale         float32
-	Color         video.Color
-	Hidden        bool
-	Text          string
+	Text string
+	wProps
+}
+
+func mkLabel(props wProps, text string) Widget {
+	return &label{
+		Text:   text,
+		wProps: props,
+	}
 }
 
 func (lb *label) Draw(x, y float32) {
@@ -114,15 +133,19 @@ func (lb *label) Size() (float32, float32) {
 // Image
 
 type image struct {
-	Width, Height float32
-	Scale         float32
-	Color         video.Color
-	Hidden        bool
-	Image         uint32
+	Texture uint32
+	wProps
+}
+
+func mkImage(props wProps, texture uint32) Widget {
+	return &image{
+		Texture: texture,
+		wProps:  props,
+	}
 }
 
 func (img *image) Draw(x, y float32) {
-	vid.DrawImage(img.Image, x, y, img.Width, img.Height, img.Scale, img.Color)
+	vid.DrawImage(img.Texture, x, y, img.Width, img.Height, img.Scale, img.Color)
 }
 
 func (img *image) Layout() (float32, float32) {
@@ -134,23 +157,20 @@ func (img *image) Size() (float32, float32) {
 }
 
 func mkButton(icon, txt string, c video.Color) Widget {
-	return &hBox{
+	return mkHBox(wProps{
 		Color:        c,
 		BorderRadius: 0.2,
-		Children: []Widget{
-			&image{
-				Width:  70,
-				Height: 70,
-				Color:  video.Color{1, 1, 1, 1},
-				Scale:  1,
-				Image:  menu.icons[icon],
-			},
-			&label{
-				Height: 70,
-				Color:  video.Color{1, 1, 1, 1},
-				Scale:  0.6 * menu.ratio,
-				Text:   txt,
-			},
-		},
-	}
+	},
+		mkImage(wProps{
+			Width:  70,
+			Height: 70,
+			Color:  video.Color{1, 1, 1, 1},
+			Scale:  1,
+		}, menu.icons[icon]),
+		mkLabel(wProps{
+			Height: 70,
+			Color:  video.Color{1, 1, 1, 1},
+			Scale:  0.6 * menu.ratio,
+		}, txt),
+	)
 }
