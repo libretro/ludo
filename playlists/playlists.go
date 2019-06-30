@@ -134,6 +134,10 @@ func ShortName(in string) string {
 		"The 3DO Company - 3DO":                          "3DO",
 		"Uzebox":                                         "Uzebox",
 	}
-	
-	return shortNames[in]
+
+	out, ok := shortNames[in]
+	if !ok {
+		return in
+	}
+	return out
 }
