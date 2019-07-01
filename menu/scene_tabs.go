@@ -132,8 +132,9 @@ func getPlaylists() []entry {
 		path := path
 		filename := utils.FileName(path)
 		count := playlists.Count(path)
+		label := playlists.ShortName(filename)
 		pls = append(pls, entry{
-			label:    playlists.ShortName(filename),
+			label:    label,
 			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
 			icon:     filename,
 			callbackOK: func() {
