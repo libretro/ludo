@@ -43,45 +43,45 @@ func mkVBox(props wProps, children ...Widget) Widget {
 	}
 }
 
-func (hb *box) Draw(x, y float32) {
-	hb.Layout()
-	vid.DrawRect(x, y, hb.Width+hb.Padding*2, hb.Height+hb.Padding*2, hb.BorderRadius, hb.Color)
+func (b *box) Draw(x, y float32) {
+	b.Layout()
+	vid.DrawRect(x, y, b.Width+b.Padding*2, b.Height+b.Padding*2, b.BorderRadius, b.Color)
 	var advance float32
-	for _, child := range hb.Children {
+	for _, child := range b.Children {
 		w, h := child.Size()
-		switch hb.Direction {
+		switch b.Direction {
 		case Horizontal:
-			child.Draw(x+advance+hb.Padding, y+hb.Padding)
+			child.Draw(x+advance+b.Padding, y+b.Padding)
 			advance += w
 		case Vertical:
-			child.Draw(x+hb.Padding, y+advance+hb.Padding)
+			child.Draw(x+b.Padding, y+advance+b.Padding)
 			advance += h
 		}
 	}
 }
 
-func (hb *box) Layout() (float32, float32) {
-	hb.Width = 0
-	for _, child := range hb.Children {
+func (b *box) Layout() (float32, float32) {
+	b.Width = 0
+	for _, child := range b.Children {
 		w, h := child.Layout()
-		switch hb.Direction {
+		switch b.Direction {
 		case Horizontal:
-			hb.Width += w
-			if h > hb.Height {
-				hb.Height = h
+			b.Width += w
+			if h > b.Height {
+				b.Height = h
 			}
 		case Vertical:
-			hb.Height += h
-			if w > hb.Width {
-				hb.Width = w
+			b.Height += h
+			if w > b.Width {
+				b.Width = w
 			}
 		}
 	}
-	return hb.Width + hb.Padding*2, hb.Height + hb.Padding*2
+	return b.Width + b.Padding*2, b.Height + b.Padding*2
 }
 
-func (hb *box) Size() (float32, float32) {
-	return hb.Width + hb.Padding*2, hb.Height + hb.Padding*2
+func (b *box) Size() (float32, float32) {
+	return b.Width + b.Padding*2, b.Height + b.Padding*2
 }
 
 // Label
