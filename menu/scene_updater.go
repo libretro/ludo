@@ -34,7 +34,7 @@ func buildUpdater() Scene {
 
 		if len(*rels) > 0 {
 			rel := (*rels)[0]
-			list.children[0].label = "Upgrate to " + rel.Name
+			list.children[0].label = "Upgrade to " + rel.Name
 			list.children[0].icon = "menu_saving"
 			list.children[0].callbackOK = func() {
 				asset := ludos.FilterAssets(rel.Assets)
