@@ -13,7 +13,7 @@ import (
 )
 
 // UpdatesDir is where releases should be saved to
-const UpdatesDir = "/storage/.updates/"
+const UpdatesDir = "/storage/.update/"
 const releasesURL = "https://api.github.com/repos/libretro/LudOS/releases"
 
 var client = grab.NewClient()
