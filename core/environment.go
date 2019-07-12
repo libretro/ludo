@@ -32,9 +32,9 @@ func getTimeUsec() int64 {
 
 func environmentGetVariable(data unsafe.Pointer) bool {
 	variable := libretro.GetVariable(data)
-	for i, v := range Options.Vars {
-		if variable.Key() == v.Key() {
-			variable.SetValue(v.Choices()[Options.Choices[i]])
+	for _, v := range Options.Vars {
+		if variable.Key() == v.Key {
+			variable.SetValue(v.Choices[v.Choice])
 			return true
 		}
 	}
