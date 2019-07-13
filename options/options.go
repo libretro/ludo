@@ -18,26 +18,30 @@ import (
 	"github.com/libretro/ludo/utils"
 )
 
+// Variable represents one core option. A variable can take a limited number of
+// values. The possibilities are stored in v.Choices. The current value
+// can be accessed with v.Choices[v.Choice]
 type Variable struct {
-	Key     string
-	Desc    string
-	Choices []string
-	Choice  int
+	Key     string   // unique id of the variable
+	Desc    string   // human readable name of the variable
+	Choices []string // available values
+	Choice  int      // index of the current value
 }
 
 // Options is a container type for core options internals
 type Options struct {
-	Vars    []Variable // the variables exposed by the core
-	Updated bool       // notify the core that values have been updated
+	Vars    []*Variable // the variables exposed by the core
+	Updated bool        // notify the core that values have been updated
 
 	sync.Mutex
 }
 
-// New instanciate a core options manager
+// New instantiate a core options manager
 func New(vars []libretro.Variable) *Options {
 	o := &Options{}
+	// Cache core options
 	for _, v := range vars {
-		o.Vars = append(o.Vars, Variable{
+		o.Vars = append(o.Vars, &Variable{
 			Key:     v.Key(),
 			Desc:    v.Desc(),
 			Choices: v.Choices(),
