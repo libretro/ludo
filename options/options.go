@@ -18,28 +18,38 @@ import (
 	"github.com/libretro/ludo/utils"
 )
 
+// Variable represents one core option. A variable can take a limited number of
+// values. The possibilities are stored in v.Choices. The current value
+// can be accessed with v.Choices[v.Choice]
+type Variable struct {
+	Key     string   // unique id of the variable
+	Desc    string   // human readable name of the variable
+	Choices []string // available values
+	Choice  int      // index of the current value
+}
+
 // Options is a container type for core options internals
 type Options struct {
-	Vars    []libretro.Variable // the variables exposed by the core
-	Choices []int               // the number of choices each variable can take
-	Updated bool                // notify the core that values have been updated
+	Vars    []*Variable // the variables exposed by the core
+	Updated bool        // notify the core that values have been updated
 
 	sync.Mutex
 }
 
-// New instanciate a core options manager
+// New instantiate a core options manager
 func New(vars []libretro.Variable) *Options {
 	o := &Options{}
-	o.Vars = vars
-	o.Choices = make([]int, len(o.Vars))
+	// Cache core options
+	for _, v := range vars {
+		o.Vars = append(o.Vars, &Variable{
+			Key:     v.Key(),
+			Desc:    v.Desc(),
+			Choices: v.Choices(),
+		})
+	}
 	o.Updated = true
 	o.load()
 	return o
-}
-
-// NumChoices returns the number of choices for a given variable
-func (o *Options) NumChoices(choiceIndex int) int {
-	return len(o.Vars[choiceIndex].Choices())
 }
 
 // Save core options to a file
@@ -53,8 +63,8 @@ func (o *Options) Save() error {
 	}
 
 	m := make(map[string]string)
-	for i, v := range o.Vars {
-		m[v.Key()] = v.Choices()[o.Choices[i]]
+	for _, v := range o.Vars {
+		m[v.Key] = v.Choices[v.Choice]
 	}
 	b, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
@@ -99,11 +109,11 @@ func (o *Options) load() error {
 	}
 
 	for optk, optv := range opts {
-		for i, variable := range o.Vars {
-			if variable.Key() == optk {
-				for j, c := range variable.Choices() {
+		for _, variable := range o.Vars {
+			if variable.Key == optk {
+				for j, c := range variable.Choices {
 					if c == optv {
-						o.Choices[i] = j
+						variable.Choice = j
 					}
 				}
 			}
