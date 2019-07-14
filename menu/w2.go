@@ -7,11 +7,20 @@ import (
 type Widget interface {
 	Draw(x, y float32)
 	Layout() (w float32, h float32)
-	Size() (w float32, h float32)
 }
 
+const (
+	top int = iota
+	bottom
+	left
+	right
+)
+
+type dirs [4]float32
+
 type wProps struct {
-	Padding       float32
+	Margin        dirs
+	Padding       dirs
 	BorderRadius  float32
 	Width, Height float32
 	Scale         float32
@@ -45,16 +54,23 @@ func mkVBox(props wProps, children ...Widget) Widget {
 
 func (b *box) Draw(x, y float32) {
 	b.Layout()
-	vid.DrawRect(x, y, b.Width+b.Padding*2, b.Height+b.Padding*2, b.BorderRadius, b.Color)
+	vid.DrawRect(
+		x+b.Margin[left],
+		y+b.Margin[top],
+		b.Width+b.Padding[left]+b.Padding[right],
+		b.Height+b.Padding[top]+b.Padding[bottom],
+		b.BorderRadius,
+		b.Color,
+	)
 	var advance float32
 	for _, child := range b.Children {
-		w, h := child.Size()
+		w, h := child.Layout()
 		switch b.Direction {
 		case Horizontal:
-			child.Draw(x+advance+b.Padding, y+b.Padding)
+			child.Draw(x+advance+b.Padding[left]+b.Margin[left], y+b.Padding[top]+b.Margin[top])
 			advance += w
 		case Vertical:
-			child.Draw(x+b.Padding, y+advance+b.Padding)
+			child.Draw(x+b.Padding[left]+b.Margin[left], y+advance+b.Padding[top]+b.Margin[top])
 			advance += h
 		}
 	}
@@ -77,11 +93,8 @@ func (b *box) Layout() (float32, float32) {
 			}
 		}
 	}
-	return b.Width + b.Padding*2, b.Height + b.Padding*2
-}
-
-func (b *box) Size() (float32, float32) {
-	return b.Width + b.Padding*2, b.Height + b.Padding*2
+	return b.Width + b.Padding[left] + b.Padding[right] + b.Margin[left] + b.Margin[right],
+		b.Height + b.Padding[top] + b.Padding[bottom] + b.Margin[top] + b.Margin[bottom]
 }
 
 // Label
@@ -101,16 +114,18 @@ func mkLabel(props wProps, text string) Widget {
 func (lb *label) Draw(x, y float32) {
 	lb.Layout()
 	vid.Font.SetColor(lb.Color.R, lb.Color.G, lb.Color.B, lb.Color.A)
-	vid.Font.Printf(x, y+lb.Height*0.67, lb.Scale, lb.Text)
+	vid.Font.Printf(
+		x+lb.Padding[left]+lb.Margin[left],
+		y+lb.Padding[top]+lb.Margin[top]+lb.Height*0.67,
+		lb.Scale,
+		lb.Text,
+	)
 }
 
 func (lb *label) Layout() (float32, float32) {
 	lb.Width = vid.Font.Width(lb.Scale, lb.Text)
-	return lb.Width, lb.Height
-}
-
-func (lb *label) Size() (float32, float32) {
-	return lb.Width, lb.Height
+	return lb.Width + lb.Padding[left] + lb.Padding[right] + lb.Margin[left] + lb.Margin[right],
+		lb.Height + lb.Padding[top] + lb.Padding[bottom] + lb.Margin[top] + lb.Margin[bottom]
 }
 
 // Image
@@ -128,22 +143,24 @@ func mkImage(props wProps, texture uint32) Widget {
 }
 
 func (img *image) Draw(x, y float32) {
-	vid.DrawImage(img.Texture, x, y, img.Width, img.Height, img.Scale, img.Color)
+	vid.DrawImage(
+		img.Texture,
+		x+img.Padding[left]+img.Margin[left],
+		y+img.Padding[left]+img.Margin[left],
+		img.Width,
+		img.Height,
+		img.Scale,
+		img.Color,
+	)
 }
 
 func (img *image) Layout() (float32, float32) {
-	return img.Width, img.Height
+	return img.Width + img.Padding[left] + img.Padding[right] + img.Margin[left] + img.Margin[right],
+		img.Height + img.Padding[top] + img.Padding[bottom] + img.Margin[top] + img.Margin[bottom]
 }
 
-func (img *image) Size() (float32, float32) {
-	return img.Width, img.Height
-}
-
-func mkButton(icon, txt string, c video.Color) Widget {
-	return mkHBox(wProps{
-		Color:        c,
-		BorderRadius: 0.2,
-	},
+func mkButton(props wProps, icon, txt string) Widget {
+	return mkHBox(props,
 		mkImage(wProps{
 			Width:  70,
 			Height: 70,
