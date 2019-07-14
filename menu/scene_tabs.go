@@ -308,8 +308,8 @@ func (tabs sceneTabs) drawHintBar() {
 	mkVBox(wProps{
 		Color:        video.Color{0, 0, 0, 0.9},
 		BorderRadius: 0.1,
-		Padding:      dirs{40, 40, 40, 40},
-		Margin:       dirs{80, 80, 80, 80},
+		Padding:      Dirs(40),
+		Margin:       Dirs(40),
 	},
 		mkLabel(wProps{
 			Scale:   0.8 * menu.ratio,
@@ -322,20 +322,27 @@ func (tabs sceneTabs) drawHintBar() {
 			Height:  50,
 			Padding: Dirs(20, 0),
 			Color:   video.Color{1, 1, 1, 0.75},
-		}, "This is a longer piece of text here"),
+		}, "Here is a nice screenshot:"),
+		mkImage(wProps{
+			Width:   640,
+			Height:  480,
+			Color:   video.Color{1, 1, 1, 1},
+			Scale:   1,
+			Padding: Dirs(20, 0),
+		}, menu.icons["img-dl"]),
 		mkHBox(wProps{},
+			mkButton(wProps{
+				Color:        video.Color{1, 1, 1, 0.25},
+				BorderRadius: 1,
+				Margin:       Dirs(20, 0, 0, 20),
+				Padding:      Dirs(0, 0, 20, 40),
+			}, "key-z", "Cancel"),
 			mkButton(wProps{
 				Color:        video.Color{0, 0.5, 0, 1},
 				BorderRadius: 1,
 				Margin:       Dirs(20, 0, 0, 20),
 				Padding:      Dirs(0, 0, 20, 40),
-			}, "key-z", "Fuufuu"),
-			mkButton(wProps{
-				Color:        video.Color{0.5, 0.5, 0, 1},
-				BorderRadius: 1,
-				Margin:       Dirs(20, 0, 0, 20),
-				Padding:      Dirs(0, 0, 20, 40),
-			}, "key-x", "Lehleh"),
+			}, "key-x", "Ok do this"),
 		),
 	).Draw(0, 0)
 }

@@ -158,7 +158,7 @@ func (img *image) Draw(x, y float32) {
 	vid.DrawImage(
 		img.Texture,
 		x+img.Padding[left]+img.Margin[left],
-		y+img.Padding[left]+img.Margin[left],
+		y+img.Padding[top]+img.Margin[top],
 		img.Width,
 		img.Height,
 		img.Scale,
