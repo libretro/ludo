@@ -306,7 +306,7 @@ func (tabs sceneTabs) drawHintBar() {
 	)()
 
 	mkVBox(wProps{
-		Color:        video.Color{0, 0, 0, 0.2},
+		Color:        video.Color{0, 0, 0, 0.9},
 		BorderRadius: 0.1,
 		Padding:      dirs{40, 40, 40, 40},
 		Margin:       dirs{80, 80, 80, 80},
@@ -314,27 +314,27 @@ func (tabs sceneTabs) drawHintBar() {
 		mkLabel(wProps{
 			Scale:   0.8 * menu.ratio,
 			Height:  50,
-			Padding: dirs{20, 20, 0, 0},
-			Color:   video.Color{0.2, 0.2, 0, 1},
-		}, "Bonjour"),
+			Padding: Dirs(20, 0),
+			Color:   video.Color{1, 1, 1, 1},
+		}, "Hello world"),
 		mkLabel(wProps{
 			Scale:   0.6 * menu.ratio,
 			Height:  50,
-			Padding: dirs{20, 20, 0, 0},
-			Color:   video.Color{0.2, 0.2, 0, 1},
-		}, "This is a longer piece of text"),
+			Padding: Dirs(20, 0),
+			Color:   video.Color{1, 1, 1, 0.75},
+		}, "This is a longer piece of text here"),
 		mkHBox(wProps{},
 			mkButton(wProps{
 				Color:        video.Color{0, 0.5, 0, 1},
 				BorderRadius: 1,
-				Margin:       dirs{20, 0, 0, 20},
-				Padding:      dirs{0, 0, 20, 40},
+				Margin:       Dirs(20, 0, 0, 20),
+				Padding:      Dirs(0, 0, 20, 40),
 			}, "key-z", "Fuufuu"),
 			mkButton(wProps{
 				Color:        video.Color{0.5, 0.5, 0, 1},
 				BorderRadius: 1,
-				Margin:       dirs{20, 0, 0, 20},
-				Padding:      dirs{0, 0, 20, 40},
+				Margin:       Dirs(20, 0, 0, 20),
+				Padding:      Dirs(0, 0, 20, 40),
 			}, "key-x", "Lehleh"),
 		),
 	).Draw(0, 0)

@@ -28,6 +28,18 @@ type wProps struct {
 	Hidden        bool
 }
 
+// Dirs returns a padding or margin array, allowing specifying the 4 directions
+// as {top, bottom, left, right}, but also taking shortcuts like
+// {vertical, horizontal} and {allfour}
+func Dirs(ds ...float32) dirs {
+	if len(ds) >= 4 {
+		return dirs{ds[0], ds[1], ds[2], ds[3]}
+	} else if len(ds) >= 2 {
+		return dirs{ds[0], ds[0], ds[1], ds[1]}
+	}
+	return dirs{ds[0], ds[0], ds[0], ds[0]}
+}
+
 // Box
 
 type box struct {
