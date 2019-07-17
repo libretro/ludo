@@ -59,6 +59,36 @@ func environmentGetUsername(data unsafe.Pointer) bool {
 	return true
 }
 
+func environmentGetSystemDirectory(data unsafe.Pointer) bool {
+	err := os.MkdirAll(settings.Current.SystemDirectory, os.ModePerm)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	libretro.SetString(data, settings.Current.SystemDirectory)
+	return true
+}
+
+func environmentGetSaveDirectory(data unsafe.Pointer) bool {
+	err := os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	libretro.SetString(data, settings.Current.SavefilesDirectory)
+	return true
+}
+
+func environmentSetVariable(data unsafe.Pointer) bool {
+	var err error
+	Options, err = options.New(libretro.GetVariables(data))
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
+
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
 	case libretro.EnvironmentGetUsername:
@@ -76,27 +106,15 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentSetPixelFormat:
 		return environmentSetPixelFormat(data)
 	case libretro.EnvironmentGetSystemDirectory:
-		err := os.MkdirAll(settings.Current.SystemDirectory, os.ModePerm)
-		if err != nil {
-			log.Println(err)
-		}
-		libretro.SetString(data, settings.Current.SystemDirectory)
+		return environmentGetSystemDirectory(data)
 	case libretro.EnvironmentGetSaveDirectory:
-		err := os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
-		if err != nil {
-			log.Println(err)
-		}
-		libretro.SetString(data, settings.Current.SavefilesDirectory)
+		return environmentGetSaveDirectory(data)
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:
 		return environmentGetVariable(data)
 	case libretro.EnvironmentSetVariables:
-		var err error
-		Options, err = options.New(libretro.GetVariables(data))
-		if err != nil {
-			log.Println(err)
-		}
+		return environmentSetVariable(data)
 	case libretro.EnvironmentGetVariableUpdate:
 		libretro.SetBool(data, Options.Updated)
 		Options.Updated = false
