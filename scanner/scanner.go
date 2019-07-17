@@ -43,7 +43,11 @@ func LoadDB(dir string) (rdb.DB, error) {
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
 	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
-	roms := utils.AllFilesIn(dir)
+	roms, err := utils.AllFilesIn(dir)
+	if err != nil {
+		ntf.Update(nid, ntf.Error, err.Error())
+		return
+	}
 	games := make(chan (rdb.Game))
 	go Scan(dir, roms, games, nid)
 	go func() {

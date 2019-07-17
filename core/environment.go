@@ -76,17 +76,27 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentSetPixelFormat:
 		return environmentSetPixelFormat(data)
 	case libretro.EnvironmentGetSystemDirectory:
-		os.MkdirAll(settings.Current.SystemDirectory, os.ModePerm)
+		err := os.MkdirAll(settings.Current.SystemDirectory, os.ModePerm)
+		if err != nil {
+			log.Println(err)
+		}
 		libretro.SetString(data, settings.Current.SystemDirectory)
 	case libretro.EnvironmentGetSaveDirectory:
-		os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
+		err := os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
+		if err != nil {
+			log.Println(err)
+		}
 		libretro.SetString(data, settings.Current.SavefilesDirectory)
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:
 		return environmentGetVariable(data)
 	case libretro.EnvironmentSetVariables:
-		Options = options.New(libretro.GetVariables(data))
+		var err error
+		Options, err = options.New(libretro.GetVariables(data))
+		if err != nil {
+			log.Println(err)
+		}
 	case libretro.EnvironmentGetVariableUpdate:
 		libretro.SetBool(data, Options.Updated)
 		Options.Updated = false

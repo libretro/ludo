@@ -37,7 +37,7 @@ type Options struct {
 }
 
 // New instantiate a core options manager
-func New(vars []libretro.Variable) *Options {
+func New(vars []libretro.Variable) (*Options, error) {
 	o := &Options{}
 	// Cache core options
 	for _, v := range vars {
@@ -48,8 +48,8 @@ func New(vars []libretro.Variable) *Options {
 		})
 	}
 	o.Updated = true
-	o.load()
-	return o
+	err := o.load()
+	return o, err
 }
 
 // Save core options to a file
