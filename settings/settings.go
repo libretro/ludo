@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -55,7 +56,12 @@ var Defaults = defaultSettings()
 // If the settings file doesn't exists, it will return an error and
 // set all the settings to their default value.
 func Load() error {
-	defer Save()
+	defer func() {
+		err := Save()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	usr, err := user.Current()
 	if err != nil {
@@ -68,7 +74,10 @@ func Load() error {
 	// If /etc/ludo.json exists, override the defaults
 	if _, err := os.Stat("/etc/ludo.json"); !os.IsNotExist(err) {
 		b, _ := ioutil.ReadFile("/etc/ludo.json")
-		json.Unmarshal(b, &Current)
+		err = json.Unmarshal(b, &Current)
+		if err != nil {
+			return err
+		}
 	}
 
 	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
@@ -108,7 +117,12 @@ func Save() error {
 	if err != nil {
 		return err
 	}
-	defer fd.Close()
+	defer func() {
+		err := fd.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	_, err = io.Copy(fd, bytes.NewReader(b))
 	if err != nil {
