@@ -57,7 +57,7 @@ func (writer logWriter) Write(bytes []byte) (int, error) {
 	return fmt.Print(string(bytes))
 }
 
-// CaptureOutput executes a function and capture all the text outputed to logs.
+// CaptureOutput executes a function and capture all the text outputted to logs.
 // Used in unit tests.
 func CaptureOutput(f func()) string {
 	var buf bytes.Buffer

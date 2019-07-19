@@ -37,12 +37,10 @@ func SystemdServiceToggle(path string, serviceName string, enable bool) error {
 			}
 			file.Close()
 		}
-	} else {
-		if exists(path) {
-			err := os.Remove(path)
-			if err != nil {
-				return err
-			}
+	} else if exists(path) {
+		err := os.Remove(path)
+		if err != nil {
+			return err
 		}
 	}
 

@@ -115,7 +115,7 @@ func write(buf []byte, size int32) int32 {
 
 		buffer := alGetBuffer()
 
-		buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], int32(audio.rate))
+		buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], audio.rate)
 		audio.tmpBufPtr = 0
 		audio.source.QueueBuffers(buffer)
 

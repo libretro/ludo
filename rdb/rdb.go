@@ -66,39 +66,39 @@ const (
 func (g *Game) SetField(key string, value string) {
 	switch key {
 	case "name":
-		g.Name = string(value[:])
+		g.Name = string(value)
 	case "description":
-		g.Description = string(value[:])
+		g.Description = string(value)
 	case "genre":
-		g.Genre = string(value[:])
+		g.Genre = string(value)
 	case "developer":
-		g.Developer = string(value[:])
+		g.Developer = string(value)
 	case "publisher":
-		g.Publisher = string(value[:])
+		g.Publisher = string(value)
 	case "franchise":
-		g.Franchise = string(value[:])
+		g.Franchise = string(value)
 	case "origin":
-		g.Origin = string(value[:])
+		g.Origin = string(value)
 	case "rumble":
 		g.Rumble = true
 	case "serial":
-		g.Serial = string(value[:])
+		g.Serial = string(value)
 	case "rom_name":
-		g.ROMName = string(value[:])
+		g.ROMName = string(value)
 	case "size":
-		v := fmt.Sprintf("%x", string(value[:]))
+		v := fmt.Sprintf("%x", string(value))
 		u64, _ := strconv.ParseUint(v, 16, 32)
 		g.Size = u64
 	case "releasemonth":
-		v := fmt.Sprintf("%x", string(value[:]))
+		v := fmt.Sprintf("%x", string(value))
 		u64, _ := strconv.ParseUint(v, 16, 32)
 		g.ReleaseMonth = uint(u64)
 	case "releaseyear":
-		v := fmt.Sprintf("%x", string(value[:]))
+		v := fmt.Sprintf("%x", string(value))
 		u64, _ := strconv.ParseUint(v, 16, 32)
 		g.ReleaseYear = uint(u64)
 	case "crc":
-		v := fmt.Sprintf("%x", string(value[:]))
+		v := fmt.Sprintf("%x", string(value))
 		u64, _ := strconv.ParseUint(v, 16, 32)
 		g.CRC32 = uint32(u64)
 	}
@@ -166,9 +166,9 @@ func Parse(rdb []byte) RDB {
 			iskey = true
 		}
 		if iskey {
-			key = string(value[:])
+			key = string(value)
 		} else {
-			g.SetField(key, string(value[:]))
+			g.SetField(key, string(value))
 		}
 		iskey = !iskey
 	}

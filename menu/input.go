@@ -23,8 +23,8 @@ func (m *Menu) Update(dt float32) {
 }
 
 // Used to increase scroll speed during long presses
-func scrollSpeed(lenght float32) float32 {
-	if lenght > 0.1 {
+func scrollSpeed(length float32) float32 {
+	if length > 0.1 {
 		return 0.08
 	}
 	return 0.15
@@ -35,7 +35,7 @@ func scrollSpeed(lenght float32) float32 {
 // increases with time. It's better to use 1 withRepeat per key, to achieve
 // isolation.
 func withRepeat() func(dt float32, pressed bool, f func()) {
-	// A closure to store the values of these 3 vars accross repeated calls
+	// A closure to store the values of these 3 vars across repeated calls
 	var cooldown, length, delay float32
 	return func(dt float32, pressed bool, f func()) {
 		cooldown -= dt
