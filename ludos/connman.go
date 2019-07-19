@@ -28,8 +28,14 @@ func ScanNetworks() ([]Network, error) {
 	cache = map[string]string{}
 	networks := []Network{}
 
-	exec.Command("/usr/bin/connmanctl", "enable", "wifi").Run()
-	exec.Command("/usr/bin/connmanctl", "scan", "wifi").Run()
+	err := exec.Command("/usr/bin/connmanctl", "enable", "wifi").Run()
+	if err != nil {
+		return networks, err
+	}
+	err = exec.Command("/usr/bin/connmanctl", "scan", "wifi").Run()
+	if err != nil {
+		return networks, err
+	}
 	out, err := exec.Command("/usr/bin/connmanctl", "services").Output()
 	if err != nil {
 		return networks, err

@@ -3,6 +3,7 @@ package menu
 import (
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 )
@@ -121,7 +122,10 @@ func (m *Menu) ProcessHotkeys() {
 		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
 		vid.Reconfigure(settings.Current.VideoFullscreen)
 		m.ContextReset()
-		settings.Save()
+		err := settings.Save()
+		if err != nil {
+			ntf.DisplayAndLog(ntf.Error, "Menu", "Error saving settings: %s", err)
+		}
 	}
 
 	// Close if ActionShouldClose is pressed, but display a confirmation dialog
