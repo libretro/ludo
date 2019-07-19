@@ -113,7 +113,7 @@ func (v *Variable) Choices() []string {
 
 // SetValue sets the value of a Variable
 func (v *Variable) SetValue(val string) {
-	s := (**C.char)(&v.value)
+	s := &v.value
 	*s = C.CString(val)
 }
 
@@ -536,7 +536,7 @@ func coreLog(level C.enum_retro_log_level, msg *C.char) {
 	if log == nil {
 		return
 	}
-	log(uint32(level), C.GoString(msg))
+	log(level, C.GoString(msg))
 }
 
 //export coreGetTimeUsec
