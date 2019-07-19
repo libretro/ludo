@@ -50,7 +50,7 @@ func Test_coreLoad(t *testing.T) {
 [Core]: Need fullpath: false
 [Core]: Block extract: false
 `
-		if got != want {
+		if !strings.Contains(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
 		}
 	})
