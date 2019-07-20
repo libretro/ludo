@@ -52,6 +52,12 @@ func (m *Menu) Push(s Scene) {
 
 // Render takes care of rendering the menu
 func (m *Menu) Render(dt float32) {
+	// Early return to not render the menu, in case MenuActive is set to false
+	// during the same mainloop iteration
+	if !state.Global.MenuActive {
+		return
+	}
+
 	m.t += float64(dt * 8)
 	w, h := vid.Window.GetFramebufferSize()
 	m.ratio = float32(w) / 1920

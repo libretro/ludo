@@ -161,7 +161,7 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	video.CoreRatioViewport(fbw, fbh)
+	video.coreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
@@ -304,14 +304,21 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 		log.Fatalf("Unknown pixel type %v", format)
 	}
 
+	// PixelStorei also needs to be updated whenever bpp changes
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	return true
 }
 
-// CoreRatioViewport configures the vertex array to display the game at the center of the window
+// ResetPitch should be called when unloading a game so that the next game won't
+// be rendered with the wrong pitch
+func (video *Video) ResetPitch() {
+	video.pitch = 0
+}
+
+// coreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
-func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
+func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
@@ -349,8 +356,14 @@ func (video *Video) Render() {
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
+	// Early return to not render the first frame of a newly loaded game with the
+	// previous game pitch. A sane pitch must be set by video.Refresh first.
+	if video.pitch == 0 {
+		return
+	}
+
 	fbw, fbh := video.Window.GetFramebufferSize()
-	_, _, w, h := video.CoreRatioViewport(fbw, fbh)
+	_, _, w, h := video.coreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
