@@ -32,14 +32,17 @@ func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 		return
 	}
 
-	out, err := os.Create(path)
+	imgFile, err := os.Create(path)
 	if err != nil {
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
-	defer out.Close()
+	defer imgFile.Close()
 
-	io.Copy(out, resp.Body)
+	_, err = io.Copy(imgFile, resp.Body)
+	if err != nil {
+		list.children[i].thumbnail = menu.icons["img-broken"]
+	}
 }
 
 // Scrub characters that are not cross-platform and/or violate the
