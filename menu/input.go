@@ -25,7 +25,15 @@ func (m *Menu) Update(dt float32) {
 
 // Used to increase scroll speed during long presses
 func scrollSpeed(length float32) float32 {
-	if length > 0.1 {
+	if length > 4 {
+		return 0.005
+	} else if length > 3 {
+		return 0.01
+	} else if length > 2 {
+		return 0.02
+	} else if length > 1 {
+		return 0.04
+	} else if length > 0.1 {
 		return 0.08
 	}
 	return 0.15
