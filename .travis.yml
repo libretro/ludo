@@ -22,6 +22,7 @@ matrix:
   include:
     - name: Linux x86_64
       os: linux
+      dist: trusty
       services: xvfb
       before_install:
         - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
@@ -37,6 +38,7 @@ matrix:
         - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz.sha256; fi
     - name: Linux arm
       os: linux
+      dist: trusty
       before_install:
         - sudo apt-get install binutils-multiarch
         - sudo dpkg --add-architecture armhf
