@@ -79,12 +79,6 @@ func LoadSRAM() error {
 		return errors.New("core not running")
 	}
 
-	fd, err := os.Open(path())
-	if err != nil {
-		return err
-	}
-	defer fd.Close()
-
 	len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
 	ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
 	if ptr == nil || len == 0 {
@@ -94,7 +88,7 @@ func LoadSRAM() error {
 	// this *[1 << 30]byte points to the same memory as ptr, allowing to
 	// overwrite this memory
 	destination := (*[1 << 30]byte)(unsafe.Pointer(ptr))[:len:len]
-	source, err := ioutil.ReadAll(fd)
+	source, err := ioutil.ReadFile(path())
 	if err != nil {
 		return err
 	}
