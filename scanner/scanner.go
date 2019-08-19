@@ -78,7 +78,11 @@ func Scan(dir string, roms []string, games chan (rdb.Game), nid xid.ID) {
 		switch ext {
 		case ".zip":
 			// Open the ZIP archive
-			z, _ := zip.OpenReader(f)
+			z, err := zip.OpenReader(f)
+			if err != nil {
+				ntf.Update(nid, ntf.Error, err.Error())
+				continue
+			}
 			for _, rom := range z.File {
 				if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
@@ -92,8 +96,16 @@ func Scan(dir string, roms []string, games chan (rdb.Game), nid xid.ID) {
 			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
 			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		case ".32x", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc":
-			fd, _ := os.Open(f)
-			bytes, _ := ioutil.ReadAll(fd)
+			fd, err := os.Open(f)
+			if err != nil {
+				ntf.Update(nid, ntf.Error, err.Error())
+				continue
+			}
+			bytes, err := ioutil.ReadAll(fd)
+			if err != nil {
+				ntf.Update(nid, ntf.Error, err.Error())
+				continue
+			}
 			CRC32 := crc32.ChecksumIEEE(bytes)
 			state.Global.DB.FindByCRC(f, utils.FileName(f), CRC32, games)
 			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
