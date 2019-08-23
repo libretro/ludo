@@ -5,7 +5,6 @@ package video
 
 import (
 	"log"
-
 	"unsafe"
 
 	"github.com/go-gl/gl/all-core/gl"
@@ -287,27 +286,30 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 		log.Printf("[Video]: Set Pixel Format: %v\n", format)
 	}
 
+	// PixelStorei also needs to be updated whenever bpp changes
+	defer gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
+
 	switch format {
 	case libretro.PixelFormat0RGB1555:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 		video.pixType = gl.BGRA
 		video.bpp = 2
+		return true
 	case libretro.PixelFormatXRGB8888:
 		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
 		video.pixType = gl.BGRA
 		video.bpp = 4
+		return true
 	case libretro.PixelFormatRGB565:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_6_5
 		video.pixType = gl.RGB
 		video.bpp = 2
+		return true
 	default:
-		log.Fatalf("Unknown pixel type %v", format)
+		log.Printf("Unknown pixel type %v", format)
 	}
 
-	// PixelStorei also needs to be updated whenever bpp changes
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
-
-	return true
+	return false
 }
 
 // ResetPitch should be called when unloading a game so that the next game won't
@@ -322,10 +324,17 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
+
+	// NXEngine workaround
+	aspectRatio := float32(video.Geom.AspectRatio)
+	if aspectRatio == 0 {
+		aspectRatio = float32(video.Geom.BaseWidth) / float32(video.Geom.BaseHeight)
+	}
+
 	h = fbh
-	w = fbh * float32(video.Geom.AspectRatio)
+	w = fbh * aspectRatio
 	if w > fbw {
-		h = fbw / float32(video.Geom.AspectRatio)
+		h = fbw / aspectRatio
 		w = fbw
 	}
 
@@ -388,9 +397,10 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	video.pitch = pitch
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
-	if data != nil {
-		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+	if data == nil {
+		return
 	}
+	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
 }
 
 var vertices = []float32{

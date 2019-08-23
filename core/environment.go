@@ -43,9 +43,6 @@ func environmentGetVariable(data unsafe.Pointer) bool {
 
 func environmentSetPixelFormat(data unsafe.Pointer) bool {
 	format := libretro.GetPixelFormat(data)
-	if format > libretro.PixelFormatRGB565 {
-		return false
-	}
 	return vid.SetPixelFormat(format)
 }
 
