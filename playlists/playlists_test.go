@@ -118,11 +118,11 @@ func TestShortName(t *testing.T) {
 			want: "TurboGrafx-16",
 		},
 		{
-			name: "Should replace with acronym",
+			name: "Should replace with prefered name",
 			args: args{
 				in: "Nintendo - Super Nintendo Entertainment System",
 			},
-			want: "SNES",
+			want: "Super Nintendo",
 		},
 	}
 	for _, tt := range tests {
