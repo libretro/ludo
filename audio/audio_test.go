@@ -46,22 +46,6 @@ func Test_fillInternalBuf(t *testing.T) {
 			},
 			want: 2192,
 		},
-		{
-			name: "Early return to avoid out of range copy",
-			args: args{
-				buf:  make([]byte, bufSize),
-				size: 12000,
-			},
-			want: 12000,
-		},
-		{
-			name: "Early return to avoid out of range bounds",
-			args: args{
-				buf:  make([]byte, 2),
-				size: 12000,
-			},
-			want: 12000,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
