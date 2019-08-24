@@ -10,7 +10,7 @@ import (
 	"golang.org/x/mobile/exp/audio/al"
 )
 
-const bufSize = 1024 * 4
+const bufSize = 1024 * 8
 
 var audio struct {
 	source     al.Source
