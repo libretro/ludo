@@ -184,6 +184,7 @@ func Unload() {
 		state.Global.Core.Deinit()
 		state.Global.CorePath = ""
 		state.Global.Core = nil
+		Options = nil
 	}
 }
 

@@ -76,7 +76,7 @@ func environmentGetSaveDirectory(data unsafe.Pointer) bool {
 	return true
 }
 
-func environmentSetVariable(data unsafe.Pointer) bool {
+func environmentSetVariables(data unsafe.Pointer) bool {
 	var err error
 	Options, err = options.New(libretro.GetVariables(data))
 	if err != nil {
@@ -111,7 +111,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetVariable:
 		return environmentGetVariable(data)
 	case libretro.EnvironmentSetVariables:
-		return environmentSetVariable(data)
+		return environmentSetVariables(data)
 	case libretro.EnvironmentGetVariableUpdate:
 		libretro.SetBool(data, Options.Updated)
 		Options.Updated = false
