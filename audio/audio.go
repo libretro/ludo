@@ -10,7 +10,7 @@ import (
 	"golang.org/x/mobile/exp/audio/al"
 )
 
-const bufSize = 1024 * 4
+const bufSize = 1024 * 8
 
 var audio struct {
 	source     al.Source
@@ -85,10 +85,6 @@ func alGetBuffer() al.Buffer {
 }
 
 func fillInternalBuf(buf []byte, size int32) int32 {
-	// This is a workaround for mednafen-psx
-	if size > bufSize {
-		return size
-	}
 	readSize := min(bufSize-audio.tmpBufPtr, size)
 	if readSize > int32(len(buf)) {
 		return size

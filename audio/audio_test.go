@@ -33,34 +33,18 @@ func Test_fillInternalBuf(t *testing.T) {
 		{
 			name: "Fill the buffer partially",
 			args: args{
-				buf:  make([]byte, 4096),
-				size: 3000,
+				buf:  make([]byte, bufSize),
+				size: 6000,
 			},
-			want: 3000,
+			want: 6000,
 		},
 		{
 			name: "Fill the buffer fully",
 			args: args{
-				buf:  make([]byte, 4096),
-				size: 3000,
-			},
-			want: 1096,
-		},
-		{
-			name: "Early return to avoid out of range copy",
-			args: args{
-				buf:  make([]byte, 4096),
+				buf:  make([]byte, bufSize),
 				size: 6000,
 			},
-			want: 6000,
-		},
-		{
-			name: "Early return to avoid out of range bounds",
-			args: args{
-				buf:  make([]byte, 2),
-				size: 6000,
-			},
-			want: 6000,
+			want: 2192,
 		},
 	}
 	for _, tt := range tests {
