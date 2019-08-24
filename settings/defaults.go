@@ -42,6 +42,7 @@ func defaultSettings() Settings {
 			"Nintendo - Game Boy Color":                      "gambatte_libretro",
 			"Nintendo - Game Boy":                            "gambatte_libretro",
 			"Nintendo - Nintendo Entertainment System":       "fceumm_libretro",
+			"Nintendo - Pokemon Mini":                        "pokemini_libretro",
 			"Nintendo - Super Nintendo Entertainment System": "snes9x_libretro",
 			"Nintendo - Virtual Boy":                         "mednafen_vb_libretro",
 			"Sega - 32X":                                     "picodrive_libretro",

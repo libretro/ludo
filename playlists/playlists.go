@@ -121,7 +121,7 @@ func ShortName(in string) string {
 		"Nintendo - Game Boy Color":                      "Game Boy Color",
 		"Nintendo - Game Boy":                            "Game Boy",
 		"Nintendo - Nintendo Entertainment System":       "NES",
-		"Nintendo - Pokemon Mini":                        "Pokémon Mini",
+		"Nintendo - Pokemon Mini":                        "Pokemon Mini",
 		"Nintendo - Super Nintendo Entertainment System": "SNES",
 		"Nintendo - Virtual Boy":                         "Virtual Boy",
 		"Sega - 32X":                                     "32X",
