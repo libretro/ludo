@@ -17,7 +17,7 @@ func defaultSettings() Settings {
 		VideoMonitorIndex: 0,
 		VideoFilter:       "sharp-bilinear",
 		AudioVolume:       0.5,
-		ShowHiddenFiles:   true,
+		ShowHiddenFiles:   false,
 		GLVersion:         "3.2",
 		CoreForPlaylist: map[string]string{
 			"Atari - 2600":                                   "stella_libretro",
