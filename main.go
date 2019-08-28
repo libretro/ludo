@@ -50,7 +50,11 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			m.Render(dt)
 		}
 		m.RenderNotifications()
-		glfw.SwapInterval(1)
+		if state.Global.FastForward {
+			glfw.SwapInterval(0)
+		} else {
+			glfw.SwapInterval(1)
+		}
 		vid.Window.SwapBuffers()
 		prevTime = currTime
 	}

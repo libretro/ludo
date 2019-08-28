@@ -162,6 +162,7 @@ func LoadGame(gamePath string) error {
 
 	state.Global.Lock()
 	state.Global.CoreRunning = true
+	state.Global.FastForward = false
 	state.Global.Unlock()
 
 	state.Global.GamePath = gamePath

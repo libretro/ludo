@@ -19,6 +19,7 @@ type State struct {
 	GamePath    string         // Path of the current game
 	DB          rdb.DB         // The game database loaded on startup
 	LudOS       bool           // Run Ludo as a unix desktop environment
+	FastForward bool           // Run the core as fast as possible
 
 	sync.Mutex
 }

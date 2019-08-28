@@ -43,8 +43,10 @@ const (
 	ActionFullscreenToggle uint32 = libretro.DeviceIDJoypadR3 + 2
 	// ActionShouldClose will cause the program to shutdown
 	ActionShouldClose uint32 = libretro.DeviceIDJoypadR3 + 3
+	// ActionFastForwardToggle will run the core as fast as possible
+	ActionFastForwardToggle uint32 = libretro.DeviceIDJoypadR3 + 4
 	// ActionLast is used for iterating
-	ActionLast uint32 = libretro.DeviceIDJoypadR3 + 4
+	ActionLast uint32 = libretro.DeviceIDJoypadR3 + 5
 )
 
 // joystickCallback is triggered when a joypad is plugged.

@@ -136,6 +136,15 @@ func (m *Menu) ProcessHotkeys() {
 		}
 	}
 
+	if input.Released[0][input.ActionFastForwardToggle] {
+		state.Global.FastForward = !state.Global.FastForward
+		if state.Global.FastForward {
+			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward ON")
+		} else {
+			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward OFF")
+		}
+	}
+
 	// Close if ActionShouldClose is pressed, but display a confirmation dialog
 	// in case a game is running
 	if input.Pressed[0][input.ActionShouldClose] {
