@@ -253,7 +253,7 @@ func (video *Video) Configure(fullscreen bool) {
 }
 
 // UpdateFilter configures the game texture filter and shader. We currently
-// support 3 modes: nearest, linear and sharp-bilinear.
+// support 4 modes: nearest, linear, sharp-bilinear and zfast-crt.
 func (video *Video) UpdateFilter(filter string) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	switch filter {
