@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/state"
 	"golang.org/x/mobile/exp/audio/al"
 )
 
@@ -96,6 +97,10 @@ func fillInternalBuf(buf []byte, size int32) int32 {
 
 func write(buf []byte, size int32) int32 {
 	written := int32(0)
+
+	if state.Global.FastForward {
+		return written
+	}
 
 	for size > 0 {
 

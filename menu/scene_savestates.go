@@ -57,6 +57,7 @@ func buildSavestates() Scene {
 					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 				} else {
 					state.Global.MenuActive = false
+
 					ntf.DisplayAndLog(ntf.Success, "Menu", "State loaded.")
 				}
 			},

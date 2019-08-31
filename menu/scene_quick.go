@@ -19,6 +19,7 @@ func buildQuickMenu() Scene {
 		icon:  "resume",
 		callbackOK: func() {
 			state.Global.MenuActive = false
+			state.Global.FastForward = false
 		},
 	})
 
@@ -28,6 +29,7 @@ func buildQuickMenu() Scene {
 		callbackOK: func() {
 			state.Global.Core.Reset()
 			state.Global.MenuActive = false
+			state.Global.FastForward = false
 		},
 	})
 

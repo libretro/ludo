@@ -123,6 +123,7 @@ func (m *Menu) ProcessHotkeys() {
 	// Toggle the menu if ActionMenuToggle is pressed
 	if input.Released[0][input.ActionMenuToggle] && state.Global.CoreRunning {
 		state.Global.MenuActive = !state.Global.MenuActive
+		state.Global.FastForward = false
 	}
 
 	// Toggle fullscreen if ActionFullscreenToggle is pressed
@@ -133,6 +134,15 @@ func (m *Menu) ProcessHotkeys() {
 		err := settings.Save()
 		if err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", "Error saving settings: %s", err)
+		}
+	}
+
+	if input.Released[0][input.ActionFastForwardToggle] {
+		state.Global.FastForward = !state.Global.FastForward
+		if state.Global.FastForward {
+			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward ON")
+		} else {
+			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward OFF")
 		}
 	}
 
