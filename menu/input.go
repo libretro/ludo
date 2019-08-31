@@ -123,6 +123,7 @@ func (m *Menu) ProcessHotkeys() {
 	// Toggle the menu if ActionMenuToggle is pressed
 	if input.Released[0][input.ActionMenuToggle] && state.Global.CoreRunning {
 		state.Global.MenuActive = !state.Global.MenuActive
+		state.Global.FastForward = false
 	}
 
 	// Toggle fullscreen if ActionFullscreenToggle is pressed
