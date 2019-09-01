@@ -195,5 +195,14 @@ func (s *sceneKeyboard) render() {
 }
 
 func (s *sceneKeyboard) drawHintBar() {
-	genericDrawHintBar()
+	w, h := vid.Window.GetFramebufferSize()
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+
+	var stack float32
+	stackHint(&stack, "pad-up-down-left-right", "SELECT", h)
+	stackHint(&stack, "pad-b", "BACK", h)
+	stackHint(&stack, "pad-x", "SHIFT", h)
+	stackHint(&stack, "pad-y", "DELETE", h)
+	stackHint(&stack, "pad-a", "INSERT", h)
+	stackHint(&stack, "pad-start", "DONE", h)
 }
