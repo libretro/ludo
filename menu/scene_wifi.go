@@ -90,10 +90,12 @@ func (s *sceneWiFi) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
 
+	_, upDown, _, a, b, _, _, _, _, _ := hintIcons()
+
 	var stack float32
-	stackHint(&stack, "key-up-down", "NAVIGATE", h)
-	stackHint(&stack, "key-z", "BACK", h)
+	stackHint(&stack, upDown, "NAVIGATE", h)
+	stackHint(&stack, b, "BACK", h)
 	if s.children[0].callbackOK != nil {
-		stackHint(&stack, "key-x", "CONNECT", h)
+		stackHint(&stack, a, "CONNECT", h)
 	}
 }

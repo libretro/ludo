@@ -144,15 +144,17 @@ func (s *sceneSavestates) drawHintBar() {
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 
+	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
+
 	var stack float32
 	if state.Global.CoreRunning {
-		stackHint(&stack, "key-p", "RESUME", h)
+		stackHint(&stack, guide, "RESUME", h)
 	}
-	stackHint(&stack, "key-up-down", "NAVIGATE", h)
-	stackHint(&stack, "key-z", "BACK", h)
+	stackHint(&stack, upDown, "NAVIGATE", h)
+	stackHint(&stack, b, "BACK", h)
 	if ptr == 0 {
-		stackHint(&stack, "key-x", "SAVE", h)
+		stackHint(&stack, a, "SAVE", h)
 	} else {
-		stackHint(&stack, "key-x", "LOAD", h)
+		stackHint(&stack, a, "LOAD", h)
 	}
 }

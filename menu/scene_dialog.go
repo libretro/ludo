@@ -78,8 +78,10 @@ func (s *sceneDialog) render() {
 
 	var margin float32 = 15
 
+	_, _, _, a, b, _, _, _, _, _ := hintIcons()
+
 	vid.DrawImage(
-		menu.icons["key-z"],
+		b,
 		fw/2-width/2*menu.ratio+margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
 		70*menu.ratio, 70*menu.ratio, 1.0, c)
@@ -90,7 +92,7 @@ func (s *sceneDialog) render() {
 		"NO")
 
 	vid.DrawImage(
-		menu.icons["key-x"],
+		a,
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
 		70*menu.ratio, 70*menu.ratio, 1.0, c)
