@@ -88,17 +88,14 @@ func refreshTabs() {
 	// Ensure new icons are styled properly
 	for i := range e.children {
 		if i == e.ptr {
-			e.children[i].yp = 0.5
 			e.children[i].iconAlpha = 1
 			e.children[i].scale = 0.75
 			e.children[i].width = 500
 		} else if i < e.ptr {
-			e.children[i].yp = 0.5
 			e.children[i].iconAlpha = 1
 			e.children[i].scale = 0.25
 			e.children[i].width = 128
 		} else if i > e.ptr {
-			e.children[i].yp = 0.5
 			e.children[i].iconAlpha = 1
 			e.children[i].scale = 0.25
 			e.children[i].width = 128
@@ -154,19 +151,16 @@ func (tabs *sceneTags) segueMount() {
 		e := &tabs.children[i]
 
 		if i == tabs.ptr {
-			e.yp = 0.5
 			e.labelAlpha = 1
 			e.iconAlpha = 1
 			e.scale = 0.75
 			e.width = 500
 		} else if i < tabs.ptr {
-			e.yp = 0.5
 			e.labelAlpha = 0
 			e.iconAlpha = 1
 			e.scale = 0.25
 			e.width = 128
 		} else if i > tabs.ptr {
-			e.yp = 0.5
 			e.labelAlpha = 0
 			e.iconAlpha = 1
 			e.scale = 0.25
@@ -185,28 +179,24 @@ func (tabs *sceneTags) animate() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
-		var yp, labelAlpha, iconAlpha, scale, width float32
+		var labelAlpha, iconAlpha, scale, width float32
 		if i == tabs.ptr {
-			yp = 0.5
 			labelAlpha = 1
 			iconAlpha = 1
 			scale = 0.75
 			width = 500
 		} else if i < tabs.ptr {
-			yp = 0.5
 			labelAlpha = 0
 			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		} else if i > tabs.ptr {
-			yp = 0.5
 			labelAlpha = 0
 			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		}
 
-		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
@@ -271,17 +261,17 @@ func (tabs sceneTags) render() {
 		if e.labelAlpha > 0 {
 			vid.Font.SetColor(float32(c.R), float32(c.B), float32(c.G), e.labelAlpha)
 			lw := vid.Font.Width(0.6*menu.ratio, e.label)
-			vid.Font.Printf(x-lw/2, float32(h)*e.yp+250*menu.ratio, 0.6*menu.ratio, e.label)
+			vid.Font.Printf(x-lw/2, float32(h)/2+250*menu.ratio, 0.6*menu.ratio, e.label)
 			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
-			vid.Font.Printf(x-lw/2, float32(h)*e.yp+330*menu.ratio, 0.4*menu.ratio, e.subLabel)
+			vid.Font.Printf(x-lw/2, float32(h)/2+330*menu.ratio, 0.4*menu.ratio, e.subLabel)
 		}
 
 		vid.DrawImage(menu.icons["hexagon"],
-			x-220*e.scale*menu.ratio, float32(h)*e.yp-220*e.scale*menu.ratio,
+			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio,
 			440*menu.ratio, 440*menu.ratio, e.scale, video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.iconAlpha})
 
 		vid.DrawImage(menu.icons[e.icon],
-			x-128*e.scale*menu.ratio, float32(h)*e.yp-128*e.scale*menu.ratio,
+			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
 			256*menu.ratio, 256*menu.ratio, e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 	}
 }
