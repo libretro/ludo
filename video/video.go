@@ -349,12 +349,6 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 	return
 }
 
-// ResizeViewport resizes the GL viewport to the framebuffer size
-func (video *Video) ResizeViewport() {
-	fbw, fbh := video.Window.GetFramebufferSize()
-	gl.Viewport(0, 0, int32(fbw), int32(fbh))
-}
-
 // Render the current frame
 func (video *Video) Render() {
 	if !state.Global.CoreRunning {
