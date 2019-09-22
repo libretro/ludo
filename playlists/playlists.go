@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 
 	"github.com/libretro/ludo/settings"
@@ -73,6 +74,9 @@ func Load() {
 
 			playlist = append(playlist, entry)
 		}
+		sort.Slice(playlist, func(i, j int) bool {
+			return playlist[i].Name < playlist[j].Name
+		})
 		Playlists[path] = playlist
 	}
 }
