@@ -105,7 +105,6 @@ func main() {
 	vid := video.Init(settings.Current.VideoFullscreen, settings.Current.GLVersion)
 
 	m := menu.Init(vid)
-	m.ContextReset()
 
 	core.Init(vid)
 
