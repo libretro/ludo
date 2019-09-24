@@ -16,6 +16,7 @@ type entry struct {
 	width, margin   float32
 	label, subLabel string
 	path            string // full path of the rom linked to the entry
+	system          string // name of the game system
 	labelAlpha      float32
 	icon            string
 	iconAlpha       float32

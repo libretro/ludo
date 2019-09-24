@@ -3,70 +3,53 @@ package menu
 import (
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 
 	"github.com/libretro/ludo/core"
 	"github.com/libretro/ludo/history"
 	ntf "github.com/libretro/ludo/notifications"
-	"github.com/libretro/ludo/playlists"
-	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
-	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 )
 
-type scenePlaylist struct {
+type sceneHistory struct {
 	entry
 }
 
-func buildPlaylist(path string) Scene {
-	var list scenePlaylist
-	list.label = utils.FileName(path)
+func buildHistory() Scene {
+	var list sceneHistory
+	list.label = "History"
 
-	for _, game := range playlists.Playlists[path] {
+	history.Load()
+	for _, game := range history.List {
 		game := game // needed for callbackOK
 		strippedName, tags := extractTags(game.Name)
 		list.children = append(list.children, entry{
 			label:      strippedName,
 			gameName:   game.Name,
 			path:       game.Path,
+			system:     game.System,
 			tags:       tags,
-			icon:       utils.FileName(path) + "-content",
-			callbackOK: func() { loadPlaylistEntry(&list, list.label, game) },
+			callbackOK: func() { loadHistoryEntry(&list, game) },
 		})
 	}
+
+	if len(history.List) == 0 {
+		list.children = append(list.children, entry{
+			label: "Empty history",
+			icon:  "subsetting",
+		})
+	}
+
 	list.segueMount()
 	return &list
 }
 
-func extractTags(name string) (string, []string) {
-	re := regexp.MustCompile(`\(.*?\)`)
-	pars := re.FindAllString(name, -1)
-	var tags []string
-	for _, par := range pars {
-		name = strings.Replace(name, par, "", -1)
-		par = strings.Replace(par, "(", "", -1)
-		par = strings.Replace(par, ")", "", -1)
-		results := strings.Split(par, ",")
-		for _, result := range results {
-			tags = append(tags, strings.TrimSpace(result))
-		}
-	}
-	name = strings.TrimSpace(name)
-	return name, tags
-}
-
-func loadPlaylistEntry(list *scenePlaylist, playlist string, game playlists.Game) {
+func loadHistoryEntry(list *sceneHistory, game history.Game) {
 	if _, err := os.Stat(game.Path); os.IsNotExist(err) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Game not found.")
 		return
 	}
-	corePath, err := settings.CoreForPlaylist(playlist)
-	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-		return
-	}
+	corePath := game.CorePath
 	if _, err := os.Stat(corePath); os.IsNotExist(err) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
 		return
@@ -87,7 +70,7 @@ func loadPlaylistEntry(list *scenePlaylist, playlist string, game playlists.Game
 		history.Push(history.Game{
 			Path:     game.Path,
 			Name:     game.Name,
-			System:   playlist,
+			System:   game.System,
 			CorePath: corePath,
 		})
 		list.segueNext()
@@ -101,28 +84,28 @@ func loadPlaylistEntry(list *scenePlaylist, playlist string, game playlists.Game
 }
 
 // Generic stuff
-func (s *scenePlaylist) Entry() *entry {
+func (s *sceneHistory) Entry() *entry {
 	return &s.entry
 }
 
-func (s *scenePlaylist) segueMount() {
+func (s *sceneHistory) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *scenePlaylist) segueNext() {
+func (s *sceneHistory) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *scenePlaylist) segueBack() {
+func (s *sceneHistory) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *scenePlaylist) update(dt float32) {
+func (s *sceneHistory) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
 
 // Override rendering
-func (s *scenePlaylist) render() {
+func (s *sceneHistory) render() {
 	list := &s.entry
 
 	_, h := vid.Window.GetFramebufferSize()
@@ -143,7 +126,7 @@ func (s *scenePlaylist) render() {
 		if e.labelAlpha > 0 {
 			drawThumbnail(
 				list, i,
-				list.label, e.gameName,
+				e.system, e.gameName,
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio, 128*menu.ratio,
@@ -185,7 +168,7 @@ func (s *scenePlaylist) render() {
 	}
 }
 
-func (s *scenePlaylist) drawHintBar() {
+func (s *sceneHistory) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
 

@@ -41,6 +41,8 @@ func Init(v *video.Video) *Menu {
 
 	menu.Push(buildTabs())
 
+	menu.ContextReset()
+
 	return menu
 }
 
