@@ -29,10 +29,17 @@ func buildHistory() Scene {
 			path:       game.Path,
 			system:     game.System,
 			tags:       tags,
-			icon:       "history",
 			callbackOK: func() { loadHistoryEntry(&list, game) },
 		})
 	}
+
+	if len(history.List) == 0 {
+		list.children = append(list.children, entry{
+			label: "Empty history",
+			icon:  "subsetting",
+		})
+	}
+
 	list.segueMount()
 	return &list
 }
@@ -130,7 +137,7 @@ func (s *sceneHistory) render() {
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
 				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
-			if e.path == state.Global.GamePath {
+			if e.path == state.Global.GamePath && e.path != "" {
 				vid.DrawImage(menu.icons["resume"],
 					680*menu.ratio-64*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
