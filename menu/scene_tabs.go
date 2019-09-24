@@ -44,6 +44,15 @@ func buildTabs() Scene {
 		},
 	})
 
+	list.children = append(list.children, entry{
+		label:    "History",
+		subLabel: "Play again",
+		icon:     "history",
+		callbackOK: func() {
+			menu.Push(buildHistory())
+		},
+	})
+
 	list.children = append(list.children, getPlaylists()...)
 
 	list.children = append(list.children, entry{
