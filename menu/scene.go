@@ -1,8 +1,6 @@
 package menu
 
 import (
-	"math"
-
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 	"github.com/tanema/gween"
@@ -163,10 +161,9 @@ func genericSegueNext(list *entry) {
 // menu entry
 func genericDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
-	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
-	c := video.Color{R: 0.8, G: 1, B: 1, A: alpha}
+	c := video.Color{R: 0.8, G: 1, B: 1, A: list.cursor.alpha}
 	if state.Global.CoreRunning {
-		c = video.Color{R: 0.1, G: 0.1, B: 0.3, A: alpha}
+		c = video.Color{R: 0.1, G: 0.1, B: 0.3, A: list.cursor.alpha}
 	}
 	vid.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
@@ -177,10 +174,9 @@ func genericDrawCursor(list *entry) {
 // menu entry when there is a thumbnail
 func thumbnailDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
-	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
-	c := video.Color{R: 0.8, G: 1, B: 1, A: alpha}
+	c := video.Color{R: 0.8, G: 1, B: 1, A: list.cursor.alpha}
 	if state.Global.CoreRunning {
-		c = video.Color{R: 0.1, G: 0.1, B: 0.3, A: alpha}
+		c = video.Color{R: 0.1, G: 0.1, B: 0.3, A: list.cursor.alpha}
 	}
 	vid.DrawRect(
 		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
