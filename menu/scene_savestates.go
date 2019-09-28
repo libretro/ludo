@@ -125,9 +125,9 @@ func (s *sceneSavestates) render() {
 				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
 			if i == 0 {
 				vid.DrawImage(menu.icons["savestate"],
-					680*menu.ratio-64*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-					128*menu.ratio, 128*menu.ratio,
+					680*menu.ratio-25*e.scale*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
+					50*menu.ratio, 50*menu.ratio,
 					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
