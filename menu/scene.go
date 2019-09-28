@@ -118,7 +118,7 @@ func genericAnimate(list *entry) {
 		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
-	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0.1, 0.15, ease.OutSine)
+	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 1, 0.15, ease.OutSine)
 	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5, 0.15, ease.OutSine)
 }
 
@@ -159,21 +159,32 @@ func genericSegueNext(list *entry) {
 	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5-0.3, 0.15, ease.OutSine)
 }
 
-// drawCursor draws the blinking rectangular background of the active menu entry
-func drawCursor(list *entry) {
+// genericDrawCursor draws the blinking rectangular background of the active
+// menu entry
+func genericDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
 	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: alpha}
+	c := video.Color{R: 0.8, G: 1, B: 1, A: alpha}
 	if state.Global.CoreRunning {
-		c = video.Color{R: 1, G: 1, B: 1, A: alpha}
+		c = video.Color{R: 0.1, G: 0.1, B: 0.3, A: alpha}
 	}
 	vid.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-630*menu.ratio, 100*menu.ratio, 0, c)
-	vid.DrawBorder(
-		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-630*menu.ratio, 100*menu.ratio, 0.02,
-		video.Color{R: c.R, G: c.G, B: c.B, A: alpha * 3})
+		float32(w)-630*menu.ratio, 100*menu.ratio, 1, c)
+}
+
+// thumbnailDrawCursor draws the blinking rectangular background of the active
+// menu entry when there is a thumbnail
+func thumbnailDrawCursor(list *entry) {
+	w, h := vid.Window.GetFramebufferSize()
+	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
+	c := video.Color{R: 0.8, G: 1, B: 1, A: alpha}
+	if state.Global.CoreRunning {
+		c = video.Color{R: 0.1, G: 0.1, B: 0.3, A: alpha}
+	}
+	vid.DrawRect(
+		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
+		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, c)
 }
 
 // genericRender renders a vertical list of menu entries
@@ -181,7 +192,7 @@ func drawCursor(list *entry) {
 func genericRender(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
 
-	drawCursor(list)
+	genericDrawCursor(list)
 
 	for _, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {

@@ -127,6 +127,8 @@ func (s *scenePlaylist) render() {
 
 	_, h := vid.Window.GetFramebufferSize()
 
+	thumbnailDrawCursor(list)
+
 	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			freeThumbnail(list, i)
