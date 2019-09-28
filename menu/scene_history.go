@@ -113,6 +113,8 @@ func (s *sceneHistory) render() {
 
 	thumbnailDrawCursor(list)
 
+	vid.ScissorStart(int32(510*menu.ratio), 0, int32(1310*menu.ratio), int32(h))
+
 	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			freeThumbnail(list, i)
@@ -186,6 +188,8 @@ func (s *sceneHistory) render() {
 				0.6*menu.ratio, e.subLabel)
 		}
 	}
+
+	vid.ScissorEnd()
 }
 
 func (s *sceneHistory) drawHintBar() {
