@@ -25,6 +25,7 @@ func buildHistory() Scene {
 		strippedName, tags := extractTags(game.Name)
 		list.children = append(list.children, entry{
 			label:      strippedName,
+			subLabel:   game.System,
 			gameName:   game.Name,
 			path:       game.Path,
 			system:     game.System,
@@ -44,7 +45,7 @@ func buildHistory() Scene {
 	return &list
 }
 
-func loadHistoryEntry(list *sceneHistory, game history.Game) {
+func loadHistoryEntry(list Scene, game history.Game) {
 	if _, err := os.Stat(game.Path); os.IsNotExist(err) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Game not found.")
 		return
@@ -147,11 +148,17 @@ func (s *sceneHistory) render() {
 					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
+			// Offset on Y to vertically center label + sublabel if there is a sublabel
+			slOffset := float32(0)
+			if e.subLabel != "" {
+				slOffset = 30 * menu.ratio * e.subLabelAlpha
+			}
+
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
 			stack := 840 * menu.ratio
 			vid.Font.Printf(
 				840*menu.ratio,
-				float32(h)*e.yp+fontOffset,
+				float32(h)*e.yp+fontOffset-slOffset,
 				0.6*menu.ratio, e.label)
 			stack += float32(int(vid.Font.Width(0.6*menu.ratio, e.label)))
 			stack += 10
@@ -160,12 +167,18 @@ func (s *sceneHistory) render() {
 				stack += 20
 				vid.DrawImage(
 					menu.icons[tag],
-					stack, float32(h)*e.yp-22*menu.ratio,
+					stack, float32(h)*e.yp-22*menu.ratio-slOffset,
 					60*menu.ratio, 44*menu.ratio, 1.0, video.Color{R: 1, G: 1, B: 1, A: e.tagAlpha})
-				vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
+				vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio-slOffset,
 					60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: e.tagAlpha / 4})
 				stack += 60 * menu.ratio
 			}
+
+			vid.Font.SetColor(0.5, 0.5, 0.5, e.subLabelAlpha)
+			vid.Font.Printf(
+				840*menu.ratio,
+				float32(h)*e.yp+fontOffset+60*menu.ratio-slOffset,
+				0.6*menu.ratio, e.subLabel)
 		}
 	}
 }
