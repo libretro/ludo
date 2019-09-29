@@ -20,7 +20,7 @@ func Test_Sample(t *testing.T) {
 }
 
 func Test_fillInternalBuf(t *testing.T) {
-	Init(48000)
+	Reconfigure(48000)
 	type args struct {
 		buf  []byte
 		size int32

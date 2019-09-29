@@ -9,7 +9,6 @@ import (
 
 // Effect is a static sound effect
 type Effect struct {
-	Data   [4096]byte // make it variable size
 	Format *wav.WavFormat
 	source al.Source
 	buffer al.Buffer
@@ -18,9 +17,6 @@ type Effect struct {
 // LoadEffect loads a wav into memory and prepare the buffer and source in OpenAL
 func LoadEffect(filename string) (*Effect, error) {
 	var e Effect
-
-	al.OpenDevice() // Move this to an init
-
 	e.source = al.GenSources(1)[0]
 	e.buffer = al.GenBuffers(1)[0]
 
@@ -36,12 +32,17 @@ func LoadEffect(filename string) (*Effect, error) {
 	}
 	defer file.Close()
 
-	_, err = reader.Read(e.Data[:])
-	if err != nil {
-		return nil, err
+	wav := []byte{}
+	for {
+		var data [4096]byte
+		n, _ := reader.Read(data[:])
+		if n == 0 {
+			break
+		}
+		wav = append(wav, data[:]...)
 	}
 
-	e.buffer.BufferData(al.FormatStereo16, e.Data[:], int32(e.Format.SampleRate))
+	e.buffer.BufferData(al.FormatMono16, wav, int32(e.Format.SampleRate))
 	e.source.QueueBuffers(e.buffer)
 
 	return &e, nil
