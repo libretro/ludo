@@ -49,6 +49,18 @@ func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c
 	gl.Disable(gl.BLEND)
 }
 
+// ScissorStart starts a GL scissor box, don't forget to call ScissorEnd
+func (video *Video) ScissorStart(x, y, w, h int32) {
+	//_, fbh := video.Window.GetFramebufferSize()
+	gl.Enable(gl.SCISSOR_TEST)
+	gl.Scissor(x, y, w, h)
+}
+
+// ScissorEnd closes a GL scissor box
+func (video *Video) ScissorEnd() {
+	gl.Disable(gl.SCISSOR_TEST)
+}
+
 func (video *Video) vertexArray(x, y, w, h, scale float32) []float32 {
 	fbw, fbh := video.Window.GetFramebufferSize()
 	ffbw := float32(fbw)

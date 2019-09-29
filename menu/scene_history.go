@@ -25,6 +25,7 @@ func buildHistory() Scene {
 		strippedName, tags := extractTags(game.Name)
 		list.children = append(list.children, entry{
 			label:      strippedName,
+			subLabel:   game.System,
 			gameName:   game.Name,
 			path:       game.Path,
 			system:     game.System,
@@ -44,7 +45,7 @@ func buildHistory() Scene {
 	return &list
 }
 
-func loadHistoryEntry(list *sceneHistory, game history.Game) {
+func loadHistoryEntry(list Scene, game history.Game) {
 	if _, err := os.Stat(game.Path); os.IsNotExist(err) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Game not found.")
 		return
@@ -110,6 +111,10 @@ func (s *sceneHistory) render() {
 
 	_, h := vid.Window.GetFramebufferSize()
 
+	thumbnailDrawCursor(list)
+
+	vid.ScissorStart(int32(510*menu.ratio), 0, int32(1310*menu.ratio), int32(h))
+
 	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			freeThumbnail(list, i)
@@ -138,18 +143,29 @@ func (s *sceneHistory) render() {
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
 				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
 			if e.path == state.Global.GamePath && e.path != "" {
+				vid.DrawCircle(
+					680*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio+fontOffset,
+					90*menu.ratio*e.scale,
+					video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha})
 				vid.DrawImage(menu.icons["resume"],
-					680*menu.ratio-64*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-					128*menu.ratio, 128*menu.ratio,
+					680*menu.ratio-25*e.scale*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
+					50*menu.ratio, 50*menu.ratio,
 					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+			}
+
+			// Offset on Y to vertically center label + sublabel if there is a sublabel
+			slOffset := float32(0)
+			if e.subLabel != "" {
+				slOffset = 30 * menu.ratio * e.subLabelAlpha
 			}
 
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
 			stack := 840 * menu.ratio
 			vid.Font.Printf(
 				840*menu.ratio,
-				float32(h)*e.yp+fontOffset,
+				float32(h)*e.yp+fontOffset-slOffset,
 				0.6*menu.ratio, e.label)
 			stack += float32(int(vid.Font.Width(0.6*menu.ratio, e.label)))
 			stack += 10
@@ -158,14 +174,22 @@ func (s *sceneHistory) render() {
 				stack += 20
 				vid.DrawImage(
 					menu.icons[tag],
-					stack, float32(h)*e.yp-22*menu.ratio,
+					stack, float32(h)*e.yp-22*menu.ratio-slOffset,
 					60*menu.ratio, 44*menu.ratio, 1.0, video.Color{R: 1, G: 1, B: 1, A: e.tagAlpha})
-				vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
+				vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio-slOffset,
 					60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: e.tagAlpha / 4})
 				stack += 60 * menu.ratio
 			}
+
+			vid.Font.SetColor(0.5, 0.5, 0.5, e.subLabelAlpha)
+			vid.Font.Printf(
+				840*menu.ratio,
+				float32(h)*e.yp+fontOffset+60*menu.ratio-slOffset,
+				0.6*menu.ratio, e.subLabel)
 		}
 	}
+
+	vid.ScissorEnd()
 }
 
 func (s *sceneHistory) drawHintBar() {

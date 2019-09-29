@@ -127,6 +127,10 @@ func (s *scenePlaylist) render() {
 
 	_, h := vid.Window.GetFramebufferSize()
 
+	thumbnailDrawCursor(list)
+
+	vid.ScissorStart(int32(510*menu.ratio), 0, int32(1310*menu.ratio), int32(h))
+
 	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			freeThumbnail(list, i)
@@ -155,10 +159,15 @@ func (s *scenePlaylist) render() {
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
 				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
 			if e.path == state.Global.GamePath && e.path != "" {
+				vid.DrawCircle(
+					680*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio+fontOffset,
+					90*menu.ratio*e.scale,
+					video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha})
 				vid.DrawImage(menu.icons["resume"],
-					680*menu.ratio-64*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-					128*menu.ratio, 128*menu.ratio,
+					680*menu.ratio-25*e.scale*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
+					50*menu.ratio, 50*menu.ratio,
 					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
@@ -183,6 +192,8 @@ func (s *scenePlaylist) render() {
 			}
 		}
 	}
+
+	vid.ScissorEnd()
 }
 
 func (s *scenePlaylist) drawHintBar() {

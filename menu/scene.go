@@ -1,8 +1,6 @@
 package menu
 
 import (
-	"math"
-
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 	"github.com/tanema/gween"
@@ -21,6 +19,7 @@ type entry struct {
 	icon            string
 	iconAlpha       float32
 	tagAlpha        float32
+	subLabelAlpha   float32
 	callbackOK      func() // callback executed when user presses OK
 	value           func() interface{}
 	stringValue     func() string
@@ -60,18 +59,21 @@ func genericSegueMount(list *entry) {
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.tagAlpha = 0
+			e.subLabelAlpha = 0
 			e.scale = 1.5
 		} else if i < list.ptr {
 			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.tagAlpha = 0
+			e.subLabelAlpha = 0
 			e.scale = 0.5
 		} else if i > list.ptr {
 			e.yp = 0.6 + 0.3 + 0.08*float32(i-list.ptr)
 			e.labelAlpha = 0
 			e.iconAlpha = 0
 			e.tagAlpha = 0
+			e.subLabelAlpha = 0
 			e.scale = 0.5
 		}
 	}
@@ -91,24 +93,27 @@ func genericAnimate(list *entry) {
 		// 	continue
 		// }
 
-		var yp, labelAlpha, iconAlpha, tagAlpha, scale float32
+		var yp, labelAlpha, iconAlpha, tagAlpha, subLabelAlpha, scale float32
 		if i == list.ptr {
 			yp = 0.5
 			labelAlpha = 1
 			iconAlpha = 1
 			tagAlpha = 1
+			subLabelAlpha = 1
 			scale = 1.5
 		} else if i < list.ptr {
 			yp = 0.4 + 0.08*float32(i-list.ptr)
 			labelAlpha = 1
 			iconAlpha = 1
 			tagAlpha = 0
+			subLabelAlpha = 0
 			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 + 0.08*float32(i-list.ptr)
 			labelAlpha = 1
 			iconAlpha = 1
 			tagAlpha = 0
+			subLabelAlpha = 0
 			scale = 0.5
 		}
 
@@ -116,9 +121,10 @@ func genericAnimate(list *entry) {
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.subLabelAlpha] = gween.New(e.subLabelAlpha, subLabelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
-	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0.1, 0.15, ease.OutSine)
+	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 1, 0.15, ease.OutSine)
 	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5, 0.15, ease.OutSine)
 }
 
@@ -128,24 +134,27 @@ func genericSegueNext(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
 
-		var yp, labelAlpha, iconAlpha, tagAlpha, scale float32
+		var yp, labelAlpha, iconAlpha, tagAlpha, subLabelAlpha, scale float32
 		if i == list.ptr {
 			yp = 0.5 - 0.3
 			labelAlpha = 0
 			iconAlpha = 0
 			tagAlpha = 0
+			subLabelAlpha = 0
 			scale = 1.5
 		} else if i < list.ptr {
 			yp = 0.4 - 0.3 + 0.08*float32(i-list.ptr)
 			labelAlpha = 0
 			iconAlpha = 0
 			tagAlpha = 0
+			subLabelAlpha = 0
 			scale = 0.5
 		} else if i > list.ptr {
 			yp = 0.6 - 0.3 + 0.08*float32(i-list.ptr)
 			labelAlpha = 0
 			iconAlpha = 0
 			tagAlpha = 0
+			subLabelAlpha = 0
 			scale = 0.5
 		}
 
@@ -153,27 +162,37 @@ func genericSegueNext(list *entry) {
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.subLabelAlpha] = gween.New(e.subLabelAlpha, subLabelAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
 	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 0.15, ease.OutSine)
 	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5-0.3, 0.15, ease.OutSine)
 }
 
-// drawCursor draws the blinking rectangular background of the active menu entry
-func drawCursor(list *entry) {
+// genericDrawCursor draws the blinking rectangular background of the active
+// menu entry
+func genericDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
-	alpha := list.cursor.alpha - float32(math.Cos(menu.t))*0.025 - 0.025
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: alpha}
+	c := video.Color{R: 0.8784, G: 1, B: 1, A: list.cursor.alpha}
 	if state.Global.CoreRunning {
-		c = video.Color{R: 1, G: 1, B: 1, A: alpha}
+		c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
 	}
 	vid.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-630*menu.ratio, 100*menu.ratio, 0, c)
-	vid.DrawBorder(
-		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-630*menu.ratio, 100*menu.ratio, 0.02,
-		video.Color{R: c.R, G: c.G, B: c.B, A: alpha * 3})
+		float32(w)-630*menu.ratio, 100*menu.ratio, 1, c)
+}
+
+// thumbnailDrawCursor draws the blinking rectangular background of the active
+// menu entry when there is a thumbnail
+func thumbnailDrawCursor(list *entry) {
+	w, h := vid.Window.GetFramebufferSize()
+	c := video.Color{R: 0.8784, G: 1, B: 1, A: list.cursor.alpha}
+	if state.Global.CoreRunning {
+		c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
+	}
+	vid.DrawRect(
+		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
+		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, c)
 }
 
 // genericRender renders a vertical list of menu entries
@@ -181,7 +200,7 @@ func drawCursor(list *entry) {
 func genericRender(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
 
-	drawCursor(list)
+	genericDrawCursor(list)
 
 	for _, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {

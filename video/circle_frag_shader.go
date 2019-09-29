@@ -25,6 +25,6 @@ float circle(vec2 _st, float _radius) {
 }
 
 void main() {
-	COMPAT_FRAGCOLOR = vec4(color.rgb, circle(fragTexCoord.xy, 0.125));
+	COMPAT_FRAGCOLOR = vec4(color.rgb, circle(fragTexCoord.xy, 0.125)*color.a);
 }
 ` + "\x00"
