@@ -235,7 +235,7 @@ func (tabs *sceneTags) update(dt float32) {
 		if tabs.ptr >= len(tabs.children) {
 			tabs.ptr = 0
 		}
-		go audio.PlayEffect(menu.effects["bounce"])
+		go audio.PlayEffect(menu.effects["nav"])
 		tabs.animate()
 	})
 
@@ -245,13 +245,14 @@ func (tabs *sceneTags) update(dt float32) {
 		if tabs.ptr < 0 {
 			tabs.ptr = len(tabs.children) - 1
 		}
-		go audio.PlayEffect(menu.effects["bounce"])
+		go audio.PlayEffect(menu.effects["nav"])
 		tabs.animate()
 	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
 		if tabs.children[tabs.ptr].callbackOK != nil {
+			go audio.PlayEffect(menu.effects["ok"])
 			tabs.segueNext()
 			tabs.children[tabs.ptr].callbackOK()
 		}

@@ -11,14 +11,13 @@ import (
 type Effect struct {
 	Format *wav.WavFormat
 	source al.Source
-	buffer al.Buffer
 }
 
 // LoadEffect loads a wav into memory and prepare the buffer and source in OpenAL
 func LoadEffect(filename string) (*Effect, error) {
 	var e Effect
 	e.source = al.GenSources(1)[0]
-	e.buffer = al.GenBuffers(1)[0]
+	buffer := al.GenBuffers(1)[0]
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -42,8 +41,9 @@ func LoadEffect(filename string) (*Effect, error) {
 		wav = append(wav, data[:]...)
 	}
 
-	e.buffer.BufferData(al.FormatMono16, wav, int32(e.Format.SampleRate))
-	e.source.QueueBuffers(e.buffer)
+	buffer.BufferData(al.FormatMono16, wav, int32(e.Format.SampleRate))
+	e.source.QueueBuffers(buffer)
+	al.DeleteBuffers(buffer)
 
 	return &e, nil
 }
@@ -51,6 +51,4 @@ func LoadEffect(filename string) (*Effect, error) {
 // PlayEffect plays a sound effect, blocking
 func PlayEffect(e *Effect) {
 	al.PlaySources(e.source)
-	for e.source.State() == al.Playing {
-	}
 }
