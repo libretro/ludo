@@ -5,6 +5,7 @@ import (
 	"os/user"
 	"sort"
 
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/playlists"
@@ -234,6 +235,7 @@ func (tabs *sceneTags) update(dt float32) {
 		if tabs.ptr >= len(tabs.children) {
 			tabs.ptr = 0
 		}
+		go audio.PlayEffect(menu.effects["bounce"])
 		tabs.animate()
 	})
 
@@ -243,6 +245,7 @@ func (tabs *sceneTags) update(dt float32) {
 		if tabs.ptr < 0 {
 			tabs.ptr = len(tabs.children) - 1
 		}
+		go audio.PlayEffect(menu.effects["bounce"])
 		tabs.animate()
 	})
 

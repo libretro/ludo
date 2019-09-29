@@ -6,6 +6,7 @@ package menu
 import (
 	"path/filepath"
 
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -17,12 +18,13 @@ var menu *Menu
 
 // Menu is a type holding the menu state, the stack of scenes, tweens, etc
 type Menu struct {
-	stack  []Scene
-	icons  map[string]uint32
-	tweens Tweens
-	scroll float32
-	ratio  float32
-	t      float64
+	stack   []Scene
+	icons   map[string]uint32
+	effects map[string]*audio.Effect
+	tweens  Tweens
+	scroll  float32
+	ratio   float32
+	t       float64
 }
 
 // Init initializes the menu.
@@ -38,6 +40,7 @@ func Init(v *video.Video) *Menu {
 	menu.tweens = make(Tweens)
 	menu.ratio = float32(w) / 1920
 	menu.icons = map[string]uint32{}
+	menu.effects = map[string]*audio.Effect{}
 
 	menu.Push(buildTabs())
 
@@ -104,6 +107,13 @@ func (m *Menu) ContextReset() {
 	curList := m.stack[currentScreenIndex].Entry()
 	for i := range curList.children {
 		curList.children[i].thumbnail = 0
+	}
+
+	paths, _ = filepath.Glob(assets + "/*.wav")
+	for _, path := range paths {
+		path := path
+		filename := utils.FileName(path)
+		m.effects[filename] = audio.LoadEffect(assets + "/" + filename + ".wav")
 	}
 }
 

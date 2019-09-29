@@ -29,6 +29,10 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/tanema/gween v0.0.0-20190613150852-fbc00f26ef8f h1:0B3FLzJKQJbj+QP8fG69MPbgORqClu1ipLFBa/vTTr8=
 github.com/tanema/gween v0.0.0-20190613150852-fbc00f26ef8f/go.mod h1:q58RIyFkCWKEi86xWwyOYLA9YZCY6myIgdN1Os5HECU=
+github.com/youpy/go-riff v0.0.0-20131220112943-557d78c11efb h1:RDh7U5Di6o7fblIBe7rVi9KnrcOXUbLwvvLLdP2InSI=
+github.com/youpy/go-riff v0.0.0-20131220112943-557d78c11efb/go.mod h1:83nxdDV4Z9RzrTut9losK7ve4hUnxUR8ASSz4BsKXwQ=
+github.com/youpy/go-wav v0.0.0-20160223082350-b63a9887d320 h1:YuM+QcBOD3fVTF1p5upTKvfAn+CaI1Tsh2s0dxdEzhI=
+github.com/youpy/go-wav v0.0.0-20160223082350-b63a9887d320/go.mod h1:Zf+Ju+8Ofy5zx/YWWArfcGnl5FAsWumLq/uHeRGgL60=
 golang.org/x/exp v0.0.0-20190306152737-a1d7652674e8/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81/go.mod h1:ux5Hcp/YLpHSI86hEcLt0YII63i6oz57MZXIpbrjZUs=
 golang.org/x/image v0.0.0-20190227222117-0694c2d4d067 h1:KYGJGHOQy8oSi1fDlSpcZF0+juKwk/hEMv5SiwHogR0=
