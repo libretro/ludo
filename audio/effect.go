@@ -11,36 +11,35 @@ import (
 type Effect struct {
 	Data   [4096]byte
 	Format *wav.WavFormat
+	source al.Source
+	buffer al.Buffer
 }
 
-var menu struct {
-	source  al.Source
-	buffers []al.Buffer
-}
-
+// LoadEffect loads a wav into memory and prepare the buffer and source in OpenAL
 func LoadEffect(filename string) *Effect {
+	var e Effect
+
 	al.OpenDevice()
-	menu.source = al.GenSources(1)[0]
-	menu.buffers = al.GenBuffers(1)
+	e.source = al.GenSources(1)[0]
+	e.buffer = al.GenBuffers(1)[0]
 
 	file, _ := os.Open(filename)
 	reader := wav.NewReader(file)
 
-	var e Effect
 	e.Format, _ = reader.Format()
 	defer file.Close()
 
 	reader.Read(e.Data[:])
 
+	e.buffer.BufferData(al.FormatStereo16, e.Data[:], int32(e.Format.SampleRate))
+	e.source.QueueBuffers(e.buffer)
+
 	return &e
 }
 
+// PlayEffect plays a sound effect
 func PlayEffect(e *Effect) {
-	menu.buffers[0].BufferData(al.FormatStereo16, e.Data[:], int32(e.Format.SampleRate))
-	menu.source.QueueBuffers(menu.buffers[0])
-	al.PlaySources(menu.source)
-	for menu.source.State() == al.Playing {
-
+	al.PlaySources(e.source)
+	for e.source.State() == al.Playing {
 	}
-	menu.source.UnqueueBuffers(menu.buffers[0])
 }
