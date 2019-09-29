@@ -155,7 +155,7 @@ func LoadGame(gamePath string) error {
 	}
 
 	input.Init(vid)
-	audio.Init(int32(avi.Timing.SampleRate))
+	audio.Reconfigure(int32(avi.Timing.SampleRate))
 	if state.Global.Core.AudioCallback != nil {
 		state.Global.Core.AudioCallback.SetState(true)
 	}

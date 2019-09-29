@@ -29,14 +29,17 @@ func SetVolume(vol float32) {
 	audio.source.SetGain(vol)
 }
 
-// Init initializes the audio package. It opens the AL devices, sets the number of buffers, the
-// volume and the source.
-func Init(rate int32) {
+// Init initializes the audio device
+func Init() {
 	err := al.OpenDevice()
 	if err != nil {
 		log.Println(err)
 	}
+}
 
+// Reconfigure initializes the audio package. It sets the number of buffers, the
+// volume and the source for the games.
+func Reconfigure(rate int32) {
 	audio.rate = rate
 	audio.numBuffers = 4
 

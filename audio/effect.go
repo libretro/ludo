@@ -9,7 +9,7 @@ import (
 
 // Effect is a static sound effect
 type Effect struct {
-	Data   [4096]byte
+	Data   [4096]byte // make it variable size
 	Format *wav.WavFormat
 	source al.Source
 	buffer al.Buffer
@@ -47,7 +47,7 @@ func LoadEffect(filename string) (*Effect, error) {
 	return &e, nil
 }
 
-// PlayEffect plays a sound effect
+// PlayEffect plays a sound effect, blocking
 func PlayEffect(e *Effect) {
 	al.PlaySources(e.source)
 	for e.source.State() == al.Playing {
