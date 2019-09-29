@@ -113,7 +113,7 @@ func (m *Menu) ContextReset() {
 	for _, path := range paths {
 		path := path
 		filename := utils.FileName(path)
-		m.effects[filename] = audio.LoadEffect(assets + "/" + filename + ".wav")
+		m.effects[filename], _ = audio.LoadEffect(assets + "/" + filename + ".wav")
 	}
 }
 
