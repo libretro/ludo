@@ -15,6 +15,7 @@ func buildDialog(callbackOK func()) Scene {
 	var list sceneDialog
 	list.label = "Exit Dialog"
 	list.callbackOK = callbackOK
+	audio.PlayEffect(audio.Effects["notice"])
 	return &list
 }
 
