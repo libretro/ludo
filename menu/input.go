@@ -71,7 +71,7 @@ func genericInput(list *entry, dt float32) {
 		if list.ptr >= len(list.children) {
 			list.ptr = 0
 		}
-		go audio.PlayEffect(menu.effects["nav"])
+		audio.PlayEffect(menu.effects["down"])
 		genericAnimate(list)
 	})
 
@@ -81,14 +81,14 @@ func genericInput(list *entry, dt float32) {
 		if list.ptr < 0 {
 			list.ptr = len(list.children) - 1
 		}
-		go audio.PlayEffect(menu.effects["nav"])
+		audio.PlayEffect(menu.effects["up"])
 		genericAnimate(list)
 	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
 		if list.children[list.ptr].callbackOK != nil {
-			go audio.PlayEffect(menu.effects["ok"])
+			audio.PlayEffect(menu.effects["ok"])
 			list.children[list.ptr].callbackOK()
 		}
 	}
@@ -96,7 +96,7 @@ func genericInput(list *entry, dt float32) {
 	// Right
 	if input.Released[0][libretro.DeviceIDJoypadRight] {
 		if list.children[list.ptr].incr != nil {
-			go audio.PlayEffect(menu.effects["nav"])
+			audio.PlayEffect(menu.effects["nav"])
 			list.children[list.ptr].incr(1)
 		}
 	}
@@ -104,7 +104,7 @@ func genericInput(list *entry, dt float32) {
 	// Left
 	if input.Released[0][libretro.DeviceIDJoypadLeft] {
 		if list.children[list.ptr].incr != nil {
-			go audio.PlayEffect(menu.effects["nav"])
+			audio.PlayEffect(menu.effects["nav"])
 			list.children[list.ptr].incr(-1)
 		}
 	}
@@ -112,7 +112,7 @@ func genericInput(list *entry, dt float32) {
 	// Cancel
 	if input.Released[0][libretro.DeviceIDJoypadB] {
 		if len(menu.stack) > 1 {
-			go audio.PlayEffect(menu.effects["cancel"])
+			audio.PlayEffect(menu.effects["cancel"])
 			menu.stack[len(menu.stack)-2].segueBack()
 			menu.stack = menu.stack[:len(menu.stack)-1]
 		}
@@ -131,6 +131,11 @@ func (m *Menu) ProcessHotkeys() {
 	if input.Released[0][input.ActionMenuToggle] && state.Global.CoreRunning {
 		state.Global.MenuActive = !state.Global.MenuActive
 		state.Global.FastForward = false
+		if state.Global.MenuActive {
+			audio.PlayEffect(menu.effects["notice"])
+		} else {
+			audio.PlayEffect(menu.effects["notice_back"])
+		}
 	}
 
 	// Toggle fullscreen if ActionFullscreenToggle is pressed

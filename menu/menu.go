@@ -93,27 +93,27 @@ func (m *Menu) ContextReset() {
 	for _, path := range paths {
 		path := path
 		filename := utils.FileName(path)
-		m.icons[filename] = video.NewImage(assets + "/" + filename + ".png")
+		m.icons[filename] = video.NewImage(path)
 	}
 
 	paths, _ = filepath.Glob(assets + "/flags/*.png")
 	for _, path := range paths {
 		path := path
 		filename := utils.FileName(path)
-		m.icons[filename] = video.NewImage(assets + "/flags/" + filename + ".png")
+		m.icons[filename] = video.NewImage(path)
+	}
+
+	paths, _ = filepath.Glob(assets + "/sounds/*.wav")
+	for _, path := range paths {
+		path := path
+		filename := utils.FileName(path)
+		m.effects[filename], _ = audio.LoadEffect(path)
 	}
 
 	currentScreenIndex := len(m.stack) - 1
 	curList := m.stack[currentScreenIndex].Entry()
 	for i := range curList.children {
 		curList.children[i].thumbnail = 0
-	}
-
-	paths, _ = filepath.Glob(assets + "/*.wav")
-	for _, path := range paths {
-		path := path
-		filename := utils.FileName(path)
-		m.effects[filename], _ = audio.LoadEffect(assets + "/" + filename + ".wav")
 	}
 }
 

@@ -18,6 +18,7 @@ func LoadEffect(filename string) (*Effect, error) {
 	var e Effect
 	e.source = al.GenSources(1)[0]
 	buffer := al.GenBuffers(1)[0]
+	e.source.SetGain(0.25)
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -41,14 +42,14 @@ func LoadEffect(filename string) (*Effect, error) {
 		wav = append(wav, data[:]...)
 	}
 
-	buffer.BufferData(al.FormatMono16, wav, int32(e.Format.SampleRate))
+	buffer.BufferData(al.FormatStereo16, wav, int32(e.Format.SampleRate))
 	e.source.QueueBuffers(buffer)
 	al.DeleteBuffers(buffer)
 
 	return &e, nil
 }
 
-// PlayEffect plays a sound effect, blocking
+// PlayEffect plays a sound effect
 func PlayEffect(e *Effect) {
 	al.PlaySources(e.source)
 }
