@@ -208,6 +208,19 @@ var incrCallbacks = map[string]callbackIncrement{
 		audio.SetVolume(v)
 		settings.Save()
 	},
+	"MenuAudioVolume": func(f *structs.Field, direction int) {
+		v := f.Value().(float32)
+		v += 0.1 * float32(direction)
+		if v < 0 {
+			v = 0
+		}
+		if v > 1 {
+			v = 1
+		}
+		f.Set(v)
+		audio.SetEffectsVolume(v)
+		settings.Save()
+	},
 	"ShowHiddenFiles": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v

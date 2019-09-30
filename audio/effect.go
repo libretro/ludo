@@ -3,6 +3,7 @@ package audio
 import (
 	"os"
 
+	"github.com/libretro/ludo/settings"
 	wav "github.com/youpy/go-wav"
 	"golang.org/x/mobile/exp/audio/al"
 )
@@ -18,7 +19,7 @@ func LoadEffect(filename string) (*Effect, error) {
 	var e Effect
 	e.source = al.GenSources(1)[0]
 	buffer := al.GenBuffers(1)[0]
-	e.source.SetGain(0.25)
+	e.source.SetGain(settings.Current.MenuAudioVolume)
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -52,4 +53,11 @@ func LoadEffect(filename string) (*Effect, error) {
 // PlayEffect plays a sound effect
 func PlayEffect(e *Effect) {
 	al.PlaySources(e.source)
+}
+
+// SetEffectsVolume sets the audio volume of sound effects
+func SetEffectsVolume(vol float32) {
+	for _, e := range Effects {
+		e.source.SetGain(vol)
+	}
 }

@@ -34,13 +34,13 @@ func (s *sceneDialog) segueBack() {
 func (s *sceneDialog) update(dt float32) {
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
-		audio.PlayEffect(menu.effects["ok"])
+		audio.PlayEffect(audio.Effects["ok"])
 		s.callbackOK()
 	}
 
 	// Cancel
 	if input.Released[0][libretro.DeviceIDJoypadB] {
-		audio.PlayEffect(menu.effects["cancel"])
+		audio.PlayEffect(audio.Effects["cancel"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
 	}

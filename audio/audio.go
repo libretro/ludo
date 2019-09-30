@@ -4,10 +4,12 @@ package audio
 
 import (
 	"log"
+	"path/filepath"
 	"time"
 
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 	"golang.org/x/mobile/exp/audio/al"
 )
 
@@ -24,6 +26,9 @@ var audio struct {
 	resPtr     int32
 }
 
+// Effects are sound effects
+var Effects map[string]*Effect
+
 // SetVolume sets the audio volume
 func SetVolume(vol float32) {
 	audio.source.SetGain(vol)
@@ -34,6 +39,16 @@ func Init() {
 	err := al.OpenDevice()
 	if err != nil {
 		log.Println(err)
+	}
+
+	Effects = map[string]*Effect{}
+
+	assets := settings.Current.AssetsDirectory
+	paths, _ := filepath.Glob(assets + "/sounds/*.wav")
+	for _, path := range paths {
+		path := path
+		filename := utils.FileName(path)
+		Effects[filename], _ = LoadEffect(path)
 	}
 }
 

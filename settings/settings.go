@@ -28,6 +28,7 @@ type Settings struct {
 
 	GLVersion       string            `hide:"always" json:"video_gl_version"`
 	AudioVolume     float32           `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
+	MenuAudioVolume float32           `json:"menu_audio_volume" label:"Menu Audio Volume" fmt:"%.1f" widget:"range"`
 	ShowHiddenFiles bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
 	CoreForPlaylist map[string]string `hide:"always" json:"core_for_playlist"`
 
