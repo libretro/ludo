@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/video"
@@ -14,6 +15,7 @@ func buildDialog(callbackOK func()) Scene {
 	var list sceneDialog
 	list.label = "Exit Dialog"
 	list.callbackOK = callbackOK
+	audio.PlayEffect(audio.Effects["notice"])
 	return &list
 }
 
@@ -33,11 +35,13 @@ func (s *sceneDialog) segueBack() {
 func (s *sceneDialog) update(dt float32) {
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
+		audio.PlayEffect(audio.Effects["ok"])
 		s.callbackOK()
 	}
 
 	// Cancel
 	if input.Released[0][libretro.DeviceIDJoypadB] {
+		audio.PlayEffect(audio.Effects["cancel"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
 	}

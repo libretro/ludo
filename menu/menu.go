@@ -90,14 +90,14 @@ func (m *Menu) ContextReset() {
 	for _, path := range paths {
 		path := path
 		filename := utils.FileName(path)
-		m.icons[filename] = video.NewImage(assets + "/" + filename + ".png")
+		m.icons[filename] = video.NewImage(path)
 	}
 
 	paths, _ = filepath.Glob(assets + "/flags/*.png")
 	for _, path := range paths {
 		path := path
 		filename := utils.FileName(path)
-		m.icons[filename] = video.NewImage(assets + "/flags/" + filename + ".png")
+		m.icons[filename] = video.NewImage(path)
 	}
 
 	currentScreenIndex := len(m.stack) - 1

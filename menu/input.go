@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
@@ -70,6 +71,7 @@ func genericInput(list *entry, dt float32) {
 		if list.ptr >= len(list.children) {
 			list.ptr = 0
 		}
+		audio.PlayEffect(audio.Effects["down"])
 		genericAnimate(list)
 	})
 
@@ -79,12 +81,14 @@ func genericInput(list *entry, dt float32) {
 		if list.ptr < 0 {
 			list.ptr = len(list.children) - 1
 		}
+		audio.PlayEffect(audio.Effects["up"])
 		genericAnimate(list)
 	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
 		if list.children[list.ptr].callbackOK != nil {
+			audio.PlayEffect(audio.Effects["ok"])
 			list.children[list.ptr].callbackOK()
 		}
 	}
@@ -92,6 +96,7 @@ func genericInput(list *entry, dt float32) {
 	// Right
 	if input.Released[0][libretro.DeviceIDJoypadRight] {
 		if list.children[list.ptr].incr != nil {
+			audio.PlayEffect(audio.Effects["up"])
 			list.children[list.ptr].incr(1)
 		}
 	}
@@ -99,6 +104,7 @@ func genericInput(list *entry, dt float32) {
 	// Left
 	if input.Released[0][libretro.DeviceIDJoypadLeft] {
 		if list.children[list.ptr].incr != nil {
+			audio.PlayEffect(audio.Effects["down"])
 			list.children[list.ptr].incr(-1)
 		}
 	}
@@ -106,6 +112,7 @@ func genericInput(list *entry, dt float32) {
 	// Cancel
 	if input.Released[0][libretro.DeviceIDJoypadB] {
 		if len(menu.stack) > 1 {
+			audio.PlayEffect(audio.Effects["cancel"])
 			menu.stack[len(menu.stack)-2].segueBack()
 			menu.stack = menu.stack[:len(menu.stack)-1]
 		}
@@ -124,6 +131,11 @@ func (m *Menu) ProcessHotkeys() {
 	if input.Released[0][input.ActionMenuToggle] && state.Global.CoreRunning {
 		state.Global.MenuActive = !state.Global.MenuActive
 		state.Global.FastForward = false
+		if state.Global.MenuActive {
+			audio.PlayEffect(audio.Effects["notice"])
+		} else {
+			audio.PlayEffect(audio.Effects["notice_back"])
+		}
 	}
 
 	// Toggle fullscreen if ActionFullscreenToggle is pressed

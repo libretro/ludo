@@ -4,10 +4,12 @@ package audio
 
 import (
 	"log"
+	"path/filepath"
 	"time"
 
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 	"golang.org/x/mobile/exp/audio/al"
 )
 
@@ -24,19 +26,35 @@ var audio struct {
 	resPtr     int32
 }
 
+// Effects are sound effects
+var Effects map[string]*Effect
+
 // SetVolume sets the audio volume
 func SetVolume(vol float32) {
 	audio.source.SetGain(vol)
 }
 
-// Init initializes the audio package. It opens the AL devices, sets the number of buffers, the
-// volume and the source.
-func Init(rate int32) {
+// Init initializes the audio device
+func Init() {
 	err := al.OpenDevice()
 	if err != nil {
 		log.Println(err)
 	}
 
+	Effects = map[string]*Effect{}
+
+	assets := settings.Current.AssetsDirectory
+	paths, _ := filepath.Glob(assets + "/sounds/*.wav")
+	for _, path := range paths {
+		path := path
+		filename := utils.FileName(path)
+		Effects[filename], _ = LoadEffect(path)
+	}
+}
+
+// Reconfigure initializes the audio package. It sets the number of buffers, the
+// volume and the source for the games.
+func Reconfigure(rate int32) {
 	audio.rate = rate
 	audio.numBuffers = 4
 

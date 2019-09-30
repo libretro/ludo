@@ -5,6 +5,7 @@ import (
 	"os/user"
 	"sort"
 
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/playlists"
@@ -234,6 +235,7 @@ func (tabs *sceneTags) update(dt float32) {
 		if tabs.ptr >= len(tabs.children) {
 			tabs.ptr = 0
 		}
+		audio.PlayEffect(audio.Effects["down"])
 		tabs.animate()
 	})
 
@@ -243,12 +245,14 @@ func (tabs *sceneTags) update(dt float32) {
 		if tabs.ptr < 0 {
 			tabs.ptr = len(tabs.children) - 1
 		}
+		audio.PlayEffect(audio.Effects["up"])
 		tabs.animate()
 	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
 		if tabs.children[tabs.ptr].callbackOK != nil {
+			audio.PlayEffect(audio.Effects["ok"])
 			tabs.segueNext()
 			tabs.children[tabs.ptr].callbackOK()
 		}
