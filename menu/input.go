@@ -149,7 +149,7 @@ func (m *Menu) ProcessHotkeys() {
 		}
 	}
 
-	if input.Released[0][input.ActionFastForwardToggle] {
+	if input.Released[0][input.ActionFastForwardToggle] && !state.Global.MenuActive {
 		state.Global.FastForward = !state.Global.FastForward
 		if state.Global.FastForward {
 			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward ON")
