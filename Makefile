@@ -40,7 +40,9 @@ cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
 $(APP).app: ludo $(DYLIBS)
 	mkdir -p $(APP).app/Contents/MacOS
 	mkdir -p $(APP).app/Contents/Resources/$(APP).iconset
-	cp pkg/Info.plist $(APP).app/Contents/
+	cp Info.plist $(APP).app/Contents/
+	sed -i.bak 's/0.1.0/$(VERSION)/' $(APP).app/Contents/Info.plist
+	rm $(APP).app/Contents/Info.plist.bak
 	echo "APPL????" > $(APP).app/Contents/PkgInfo
 	cp -r database $(APP).app/Contents/Resources
 	cp -r assets $(APP).app/Contents/Resources
