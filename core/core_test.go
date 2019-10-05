@@ -195,8 +195,8 @@ func Test_coreLoadGame(t *testing.T) {
 
 	Init(&video.Video{Window: &WindowMock{}})
 
-	if err := glfw.Init(); err != nil {
-		log.Fatalln("failed to initialize glfw:", err)
+	if !glfw.Init() {
+		log.Fatalln("failed to initialize glfw")
 	}
 	defer glfw.Terminate()
 
