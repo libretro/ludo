@@ -36,8 +36,27 @@ func buildPlaylist(path string) Scene {
 			callbackOK: func() { loadPlaylistEntry(&list, list.label, game) },
 		})
 	}
+
+	buildIndexes(&list.entry)
+
 	list.segueMount()
 	return &list
+}
+
+// Index first letters of entries to allow quick jump to the next or previous
+// letter
+func buildIndexes(list *entry) {
+	var last byte
+	for i := 0; i < len(list.children); i++ {
+		char := list.children[i].label[0]
+		if char != last {
+			list.indexes = append(list.indexes, struct {
+				Char  byte
+				Index int
+			}{char, i})
+			last = char
+		}
+	}
 }
 
 func extractTags(name string) (string, []string) {

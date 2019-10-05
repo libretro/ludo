@@ -34,6 +34,10 @@ type entry struct {
 	}
 	children []entry // children entries
 	ptr      int     // index of the active child
+	indexes  []struct {
+		Char  byte
+		Index int
+	}
 }
 
 // Scene represents a page of the UI

@@ -135,6 +135,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		f := f
 		appendNode(&list, path, f, exts, cb, dirAction)
 	}
+	buildIndexes(&list.entry)
 
 	if len(files) == 0 {
 		list.children = append(list.children, entry{
