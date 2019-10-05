@@ -206,6 +206,8 @@ func genericRender(list *entry) {
 
 	genericDrawCursor(list)
 
+	vid.ScissorStart(int32(530*menu.ratio), 0, int32(1310*menu.ratio), int32(h))
+
 	for _, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			continue
@@ -242,6 +244,8 @@ func genericRender(list *entry) {
 			}
 		}
 	}
+
+	vid.ScissorEnd()
 }
 
 func genericDrawHintBar() {
