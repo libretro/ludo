@@ -1,6 +1,6 @@
 module github.com/libretro/ludo
 
-replace github.com/go-gl/glfw => github.com/kivutar/glfw v0.0.0-20191005080925-97c7d4dabc73
+replace github.com/go-gl/glfw => github.com/kivutar/glfw v0.0.0-20191005084155-f62590c2c41c
 
 require (
 	github.com/cavaliercoder/grab v2.0.0+incompatible
