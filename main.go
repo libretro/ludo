@@ -6,12 +6,8 @@ import (
 	"runtime"
 	"time"
 
-<<<<<<< HEAD
-	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/libretro/ludo/audio"
-=======
 	"github.com/go-gl/glfw/v3.3/glfw"
->>>>>>> Update GLFW to 3.3. Closes #44
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/core"
 	"github.com/libretro/ludo/history"
 	"github.com/libretro/ludo/input"
