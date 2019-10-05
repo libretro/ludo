@@ -181,6 +181,9 @@ func genericDrawCursor(list *entry) {
 	if state.Global.CoreRunning {
 		c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
 	}
+	vid.DrawImage(menu.icons["arrow"],
+		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
+		70*menu.ratio, 70*menu.ratio, 1, c)
 	vid.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		float32(w)-630*menu.ratio, 100*menu.ratio, 1, c)
@@ -194,6 +197,9 @@ func thumbnailDrawCursor(list *entry) {
 	if state.Global.CoreRunning {
 		c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
 	}
+	vid.DrawImage(menu.icons["arrow"],
+		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
+		100*menu.ratio, 100*menu.ratio, 1, c)
 	vid.DrawRect(
 		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
 		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, c)
