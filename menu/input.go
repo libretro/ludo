@@ -117,6 +117,37 @@ func genericInput(list *entry, dt float32) {
 			menu.stack = menu.stack[:len(menu.stack)-1]
 		}
 	}
+
+	// Jump to next letter
+	if input.Released[0][libretro.DeviceIDJoypadR] && len(list.indexes) > 0 {
+		list.ptr = indexed(list, +1)
+		audio.PlayEffect(audio.Effects["down"])
+		genericAnimate(list)
+	}
+
+	// Jump to previous letter
+	if input.Released[0][libretro.DeviceIDJoypadL] && len(list.indexes) > 0 {
+		list.ptr = indexed(list, -1)
+		audio.PlayEffect(audio.Effects["up"])
+		genericAnimate(list)
+	}
+}
+
+// indexed allows jumping directly to the next letter in playlists
+func indexed(list *entry, offset int) int {
+	curr := list.children[list.ptr].label[0]
+	for i, t := range list.indexes {
+		if curr == t.Char {
+			if i+offset < 0 {
+				return len(list.children) - 1
+			}
+			if i+offset > len(list.indexes)-1 {
+				return 0
+			}
+			return list.indexes[i+offset].Index
+		}
+	}
+	return 0
 }
 
 // ProcessHotkeys checks if certain keys are pressed and perform corresponding actions
