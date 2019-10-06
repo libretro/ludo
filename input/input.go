@@ -4,7 +4,7 @@
 package input
 
 import (
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
@@ -50,10 +50,10 @@ const (
 )
 
 // joystickCallback is triggered when a joypad is plugged.
-func joystickCallback(joy int, event int) {
-	switch glfw.MonitorEvent(event) {
+func joystickCallback(joy glfw.Joystick, event glfw.PeripheralEvent) {
+	switch event {
 	case glfw.Connected:
-		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
+		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.Joystick.GetName(joy))
 	case glfw.Disconnected:
 		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d unplugged.", joy)
 	default:
@@ -82,9 +82,9 @@ func reset(state inputstate) inputstate {
 // pollJoypads process joypads of all players
 func pollJoypads(state inputstate) inputstate {
 	for p := range state {
-		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
-		axisState := glfw.GetJoystickAxes(glfw.Joystick(p))
-		name := glfw.GetJoystickName(glfw.Joystick(p))
+		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
+		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
+		name := glfw.Joystick.GetName(glfw.Joystick(p))
 		jb := joyBinds[name]
 		if len(buttonState) > 0 {
 			for k, v := range jb {

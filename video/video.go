@@ -8,7 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/go-gl/gl/all-core/gl"
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/kivutar/glfont"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
@@ -142,9 +142,9 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	var err error
-	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
-	if err != nil {
-		panic(err)
+	video.Window = glfw.CreateWindow(width, height, "Ludo", m, nil)
+	if video.Window == nil {
+		panic("Window creation failed")
 	}
 
 	video.Window.MakeContextCurrent()

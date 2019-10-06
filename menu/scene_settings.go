@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/structs"
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/ludos"

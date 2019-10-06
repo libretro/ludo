@@ -1,7 +1,7 @@
 package menu
 
 import (
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/video"
 )
 
@@ -17,7 +17,7 @@ func stackHint(stack *float32, icon uint32, label string, h int) {
 }
 
 func hintIcons() (arrows, upDown, leftRight, a, b, x, y, start, slct, guide uint32) {
-	if glfw.JoystickPresent(glfw.Joystick(0)) {
+	if glfw.Joystick(0).Present() {
 		return menu.icons["pad-arrows"],
 			menu.icons["pad-up-down"],
 			menu.icons["pad-left-right"],
