@@ -10,7 +10,7 @@ It works on OSX, Linux, Linux ARM and Windows. You can download releases [here](
 
 ## Dependencies
 
- * GLFW 3.2
+ * GLFW 3.3
  * OpenGL >= 2.1
  * OpenAL
 

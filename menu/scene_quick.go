@@ -19,6 +19,7 @@ func buildQuickMenu() Scene {
 		icon:  "resume",
 		callbackOK: func() {
 			state.Global.MenuActive = false
+			state.Global.FastForward = false
 		},
 	})
 
@@ -28,6 +29,7 @@ func buildQuickMenu() Scene {
 		callbackOK: func() {
 			state.Global.Core.Reset()
 			state.Global.MenuActive = false
+			state.Global.FastForward = false
 		},
 	})
 
@@ -36,7 +38,7 @@ func buildQuickMenu() Scene {
 		icon:  "states",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildSavestates())
+			menu.Push(buildSavestates())
 		},
 	})
 
@@ -55,7 +57,7 @@ func buildQuickMenu() Scene {
 		icon:  "subsetting",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildCoreOptions())
+			menu.Push(buildCoreOptions())
 		},
 	})
 

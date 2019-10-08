@@ -6,7 +6,7 @@ branches:
 language: go
 
 go:
-  - "1.11"
+  - "1.12"
 
 env:
   - GO111MODULE=on
@@ -22,6 +22,7 @@ matrix:
   include:
     - name: Linux x86_64
       os: linux
+      dist: trusty
       services: xvfb
       before_install:
         - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
@@ -34,8 +35,10 @@ matrix:
         - golint -set_exit_status $(go list ./...)
         - go build -v
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz.sha256; fi
     - name: Linux arm
       os: linux
+      dist: trusty
       before_install:
         - sudo apt-get install binutils-multiarch
         - sudo dpkg --add-architecture armhf
@@ -46,17 +49,19 @@ matrix:
         - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
         - sudo apt-get update -q
         - sudo apt-get install gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
+        - export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       script:
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get -t -v ./...
-        #- GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go test -v -race ./...
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get -v ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go vet ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc staticcheck ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc gocyclo -over 19 $GO_FILES
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc golint -set_exit_status $(go list ./...)
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz.sha256; fi
     - name: OSX
       os: osx
       before_install:
@@ -71,6 +76,7 @@ matrix:
         - golint -set_exit_status $(go list ./...)
         - go build -v
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then shasum -a 256 Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg > Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256; fi
     - name: Windows
       os: windows
       before_install:
@@ -93,6 +99,7 @@ matrix:
         - if [[ -n "$TRAVIS_TAG" ]]; then cp *.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then hashdeep -c sha256 Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip > Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip.sha256; fi
 
 deploy:
   skip_cleanup: true
@@ -101,9 +108,13 @@ deploy:
     secure: N/AOf4iKJoFBJ7NP6hWOHQHNyOj5A5B2WhHzh1pO5pQrLqSJumfTSZZiD5WX3m5ycLokI49xUqwQN7yyNpE8h5FOfjKn5h6Uq2VByTVCzfHgRXn/RbrGUBMnLbEwwVOlpbCv/tYybpqUzGOSkKkzDhbAjQugSbI8B9szHPyX0FnAPoOQzLQoPkHjyl9nHtFgc3gbgZUGEouo5mGmET0VuszbAFiW6UUHgCBGiciZa1TQHREHlM6cFjC+Z9MeqXAxfVCu3CCqxSFwQwGGFe3gfe12wu8LrOGD7FEp11vswKW1bePU1tOgTBC207TyBni9TXAYjpvuEgm1N5NnNsiR+IrggOrJczglvAgwLHPN5a8Tu8ZZsCEc1GotqGNBBFE1GZuhJ45NLvXw4VzCmqT9ciaUYFyl1G1hY8N8TiHWIT+wmklYzHMtHPqQhyzSHnAgnaY50B6vKNp835F3U+Rt9r0M5kgOARe2KeaVgUPxWWevav84cQLSj23yQU2zxNg+H6sOJ2yHS0S0m6e5UGj+Du/9kxICD7t0bEnC0KmD3BLGaR29aQfQxd8PPB2KEjitsQ9wPlzbIyh6I19yxzMBSIy6LDChcJNIDeL0v3fBkdSnOyh6RE+VENMNtVk+QndQWw0NkSuNYGMcGf31OYed6gJ1DZIXDX/vk0uGv7WXLaA=
   file:
     - Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz
+    - Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz.sha256
     - Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz
+    - Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz.sha256
     - Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
+    - Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256
     - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip
+    - Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip.sha256
   on:
     repo: libretro/ludo
     tags: true

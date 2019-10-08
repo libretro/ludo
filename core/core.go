@@ -23,23 +23,15 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-// MenuInterface allows passing a *menu.Menu to the core package while avoiding
-// cyclic dependencies.
-type MenuInterface interface {
-	ContextReset()
-}
-
 var vid *video.Video
-var menu MenuInterface
 
 // Options holds the settings for the current core
 var Options *options.Options
 
 // Init is there mainly for dependency injection.
 // Call Init before calling other functions of this package.
-func Init(v *video.Video, m MenuInterface) {
+func Init(v *video.Video) {
 	vid = v
-	menu = m
 	ticker := time.NewTicker(time.Second)
 	go func() {
 		for range ticker.C {
@@ -126,7 +118,6 @@ func unzipGame(filename string) (string, int64, error) {
 
 // LoadGame loads a game. A core has to be loaded first.
 func LoadGame(gamePath string) error {
-
 	// If we're loading a new game on the same core, save the RAM of the previous
 	// game before closing it.
 	if state.Global.GamePath != gamePath {
@@ -163,14 +154,15 @@ func LoadGame(gamePath string) error {
 		vid.Window.SetTitle("Ludo - " + si.LibraryName)
 	}
 
-	input.Init(vid, menu)
-	audio.Init(int32(avi.Timing.SampleRate))
+	input.Init(vid)
+	audio.Reconfigure(int32(avi.Timing.SampleRate))
 	if state.Global.Core.AudioCallback != nil {
 		state.Global.Core.AudioCallback.SetState(true)
 	}
 
 	state.Global.Lock()
 	state.Global.CoreRunning = true
+	state.Global.FastForward = false
 	state.Global.Unlock()
 
 	state.Global.GamePath = gamePath
@@ -196,6 +188,7 @@ func Unload() {
 		state.Global.Core.Deinit()
 		state.Global.CorePath = ""
 		state.Global.Core = nil
+		Options = nil
 	}
 }
 
@@ -206,6 +199,7 @@ func UnloadGame() {
 		state.Global.Core.UnloadGame()
 		state.Global.GamePath = ""
 		state.Global.CoreRunning = false
+		vid.ResetPitch()
 	}
 }
 

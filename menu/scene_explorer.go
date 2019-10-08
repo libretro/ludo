@@ -55,7 +55,7 @@ func appendFolder(list *sceneExplorer, label, newPath string, exts []string, cb 
 			if dirAction != nil {
 				dirAction.callbackOK = func() { cb(newPath) }
 			}
-			menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
+			menu.Push(buildExplorer(newPath, exts, cb, dirAction))
 		},
 	})
 }
@@ -89,7 +89,7 @@ func appendNode(list *sceneExplorer, path string, f os.FileInfo, exts []string, 
 				if dirAction != nil {
 					dirAction.callbackOK = func() { cb(newPath) }
 				}
-				menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
+				menu.Push(buildExplorer(newPath, exts, cb, dirAction))
 			} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(f.Name()), exts)) {
 				cb(filepath.Clean(filepath.Join(path, f.Name())))
 			}
@@ -135,6 +135,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		f := f
 		appendNode(&list, path, f, exts, cb, dirAction)
 	}
+	buildIndexes(&list.entry)
 
 	if len(files) == 0 {
 		list.children = append(list.children, entry{

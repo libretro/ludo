@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -27,16 +27,12 @@ func (m WindowMock) ShouldClose() bool                           { return false 
 func (m WindowMock) SetTitle(string)                             {}
 func (m WindowMock) SwapBuffers()                                {}
 
-type MenuMock struct{}
-
-func (m MenuMock) ContextReset() {}
-
 func Test_coreLoad(t *testing.T) {
 	state.Global.Verbose = true
 
 	ext := utils.CoreExt()
 
-	Init(&video.Video{Window: &WindowMock{}}, &MenuMock{})
+	Init(&video.Video{Window: &WindowMock{}})
 
 	out := utils.CaptureOutput(func() { Load("testdata/vecx_libretro" + ext) })
 
@@ -54,7 +50,7 @@ func Test_coreLoad(t *testing.T) {
 [Core]: Need fullpath: false
 [Core]: Block extract: false
 `
-		if got != want {
+		if !strings.Contains(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
 		}
 	})
@@ -197,10 +193,10 @@ func Test_coreLoadGame(t *testing.T) {
 
 	ext := utils.CoreExt()
 
-	Init(&video.Video{Window: &WindowMock{}}, &MenuMock{})
+	Init(&video.Video{Window: &WindowMock{}})
 
-	if err := glfw.Init(); err != nil {
-		log.Fatalln("failed to initialize glfw:", err)
+	if !glfw.Init() {
+		log.Fatalln("failed to initialize glfw")
 	}
 	defer glfw.Terminate()
 

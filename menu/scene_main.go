@@ -16,6 +16,37 @@ type sceneMain struct {
 	entry
 }
 
+func cleanShutdown() {
+	cmd := exec.Command("/usr/sbin/shutdown", "-P", "now")
+	core.UnloadGame()
+	err := cmd.Run()
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+	}
+}
+
+func cleanReboot() {
+	cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
+	core.UnloadGame()
+	err := cmd.Run()
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+	}
+}
+
+func askConfirmation(cb func()) {
+	if state.Global.CoreRunning {
+		if !state.Global.MenuActive {
+			state.Global.MenuActive = true
+		}
+		menu.Push(buildDialog(func() {
+			cb()
+		}))
+	} else {
+		cb()
+	}
+}
+
 func buildMainMenu() Scene {
 	var list sceneMain
 	list.label = "Main Menu"
@@ -28,7 +59,7 @@ func buildMainMenu() Scene {
 			icon:  "subsetting",
 			callbackOK: func() {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildQuickMenu())
+				menu.Push(buildQuickMenu())
 			},
 		})
 	}
@@ -38,7 +69,7 @@ func buildMainMenu() Scene {
 		icon:  "subsetting",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildExplorer(
+			menu.Push(buildExplorer(
 				settings.Current.CoresDirectory,
 				[]string{".dll", ".dylib", ".so"},
 				coreExplorerCb,
@@ -53,7 +84,7 @@ func buildMainMenu() Scene {
 		callbackOK: func() {
 			if state.Global.Core != nil {
 				list.segueNext()
-				menu.stack = append(menu.stack, buildExplorer(
+				menu.Push(buildExplorer(
 					usr.HomeDir,
 					nil,
 					gameExplorerCb,
@@ -65,34 +96,23 @@ func buildMainMenu() Scene {
 		},
 	})
 
-	list.children = append(list.children, entry{
-		label: "Settings",
-		icon:  "subsetting",
-		callbackOK: func() {
-			list.segueNext()
-			menu.stack = append(menu.stack, buildSettings())
-		},
-	})
+	if state.Global.LudOS {
+		list.children = append(list.children, entry{
+			label: "Updater",
+			icon:  "subsetting",
+			callbackOK: func() {
+				list.segueNext()
+				menu.Push(buildUpdater())
+			},
+		})
 
-	list.children = append(list.children, entry{
-		label: "Help",
-		icon:  "subsetting",
-		callbackOK: func() {
-			ntf.DisplayAndLog(ntf.Warning, "Menu", "Not implemented yet.")
-		},
-	})
-
-	if state.Global.DeskEnv {
 		list.children = append(list.children, entry{
 			label: "Reboot",
 			icon:  "subsetting",
 			callbackOK: func() {
-				cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
-				core.UnloadGame()
-				err := cmd.Run()
-				if err != nil {
-					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-				}
+				askConfirmation(func() {
+					cleanReboot()
+				})
 			},
 		})
 
@@ -100,12 +120,9 @@ func buildMainMenu() Scene {
 			label: "Shutdown",
 			icon:  "subsetting",
 			callbackOK: func() {
-				cmd := exec.Command("/usr/sbin/shutdown", "-P", "now")
-				core.UnloadGame()
-				err := cmd.Run()
-				if err != nil {
-					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-				}
+				askConfirmation(func() {
+					cleanShutdown()
+				})
 			},
 		})
 	} else {
@@ -113,7 +130,9 @@ func buildMainMenu() Scene {
 			label: "Quit",
 			icon:  "subsetting",
 			callbackOK: func() {
-				vid.Window.SetShouldClose(true)
+				askConfirmation(func() {
+					vid.Window.SetShouldClose(true)
+				})
 			},
 		})
 	}

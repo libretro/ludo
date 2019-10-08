@@ -111,6 +111,49 @@ func TestDB_FindByCRC(t *testing.T) {
 	}
 }
 
+func TestDB_FindByROMName(t *testing.T) {
+	type args struct {
+		romPath string
+		romName string
+		CRC32   uint32
+		games   chan (Game)
+	}
+	tests := []struct {
+		name string
+		db   *DB
+		args args
+		want Game
+	}{
+		{
+			name: "Can find a game in a DB with a single RDB",
+			db:   &DB{"Foo - Bar": sampleRDBParsed},
+			args: args{
+				romPath: "/foo/Urban Champion (Germany).bin",
+				romName: "Urban Champion (Germany).bin",
+				CRC32:   3577638060,
+				games:   make(chan (Game)),
+			},
+			want: Game{
+				System:  "Foo - Bar",
+				Path:    "/foo/Urban Champion (Germany).bin",
+				Name:    "Urban Champion (Germany)",
+				ROMName: "Urban Champion (Germany).bin",
+				Size:    uint64(0),
+				CRC32:   uint32(3577638060),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			go tt.db.FindByROMName(tt.args.romPath, tt.args.romName, tt.args.CRC32, tt.args.games)
+			got := <-tt.args.games
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Find() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 var sampleRDBParsed = RDB{
 	{Name: "Urban Champion (Germany)", Description: "Urban Champion (Germany)", ROMName: "Urban Champion (Germany).bin", Size: uint64(32768), CRC32: uint32(3577638060)},
 	{Name: "Tennis Master (Germany)", Description: "Tennis Master (Germany)", ROMName: "Tennis Master (Germany).bin", Size: uint64(32768), CRC32: uint32(1221862863)},

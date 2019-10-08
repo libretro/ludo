@@ -5,11 +5,10 @@ package video
 
 import (
 	"log"
-
 	"unsafe"
 
 	"github.com/go-gl/gl/all-core/gl"
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/kivutar/glfont"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
@@ -41,6 +40,7 @@ type Video struct {
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
 	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
+	zfastCRTProgram      uint32 // fast CRT program used for the game quad
 	roundedProgram       uint32 // program to draw rectangles with rounded corners
 	borderProgram        uint32 // program to draw rectangles borders
 	circleProgram        uint32 // program to draw textured circles
@@ -48,7 +48,6 @@ type Video struct {
 	vao                  uint32
 	vbo                  uint32
 	texID                uint32
-	white                uint32
 	pitch                int32
 	pixFmt               uint32
 	pixType              uint32
@@ -184,9 +183,9 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	var err error
-	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
-	if err != nil {
-		panic(err)
+	video.Window = glfw.CreateWindow(width, height, "Ludo", m, nil)
+	if video.Window == nil {
+		panic("Window creation failed")
 	}
 
 	video.Window.MakeContextCurrent()
@@ -202,7 +201,7 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	video.CoreRatioViewport(fbw, fbh)
+	video.coreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
@@ -223,6 +222,11 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	video.sharpBilinearProgram, err = newProgram(GLSLVersion, vertexShader, sharpBilinearFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.zfastCRTProgram, err = newProgram(GLSLVersion, vertexShader, zfastCRTFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -288,8 +292,6 @@ func (video *Video) Configure(fullscreen bool) {
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
-	video.white = newWhite()
-
 	if state.Global.CoreRunning {
 		video.InitFramebuffer(video.Geom.BaseWidth, video.Geom.BaseHeight)
 		state.Global.Core.HWRenderCallback.ContextReset()
@@ -297,7 +299,7 @@ func (video *Video) Configure(fullscreen bool) {
 }
 
 // UpdateFilter configures the game texture filter and shader. We currently
-// support 3 modes: nearest, linear and sharp-bilinear.
+// support 4 modes: nearest, linear, sharp-bilinear and zfast-crt.
 func (video *Video) UpdateFilter(filter string) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	switch filter {
@@ -309,6 +311,10 @@ func (video *Video) UpdateFilter(filter string) {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.sharpBilinearProgram
+	case "zfast-crt":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.zfastCRTProgram
 	case "nearest":
 		fallthrough
 	default:
@@ -326,38 +332,55 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 		log.Printf("[Video]: Set Pixel Format: %v\n", format)
 	}
 
+	// PixelStorei also needs to be updated whenever bpp changes
+	defer gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
+
 	switch format {
 	case libretro.PixelFormat0RGB1555:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 		video.pixType = gl.BGRA
 		video.bpp = 2
+		return true
 	case libretro.PixelFormatXRGB8888:
 		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
 		video.pixType = gl.BGRA
 		video.bpp = 4
+		return true
 	case libretro.PixelFormatRGB565:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_6_5
 		video.pixType = gl.RGB
 		video.bpp = 2
+		return true
 	default:
-		log.Fatalf("Unknown pixel type %v", format)
+		log.Printf("Unknown pixel type %v", format)
 	}
 
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
-
-	return true
+	return false
 }
 
-// CoreRatioViewport configures the vertex array to display the game at the center of the window
+// ResetPitch should be called when unloading a game so that the next game won't
+// be rendered with the wrong pitch
+func (video *Video) ResetPitch() {
+	video.pitch = 0
+}
+
+// coreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
-func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
+func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
+
+	// NXEngine workaround
+	aspectRatio := float32(video.Geom.AspectRatio)
+	if aspectRatio == 0 {
+		aspectRatio = float32(video.Geom.BaseWidth) / float32(video.Geom.BaseHeight)
+	}
+
 	h = fbh
-	w = fbh * float32(video.Geom.AspectRatio)
+	w = fbh * aspectRatio
 	if w > fbw {
-		h = fbw / float32(video.Geom.AspectRatio)
+		h = fbw / aspectRatio
 		w = fbw
 	}
 
@@ -388,8 +411,14 @@ func (video *Video) Render() {
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
+	// Early return to not render the first frame of a newly loaded game with the
+	// previous game pitch. A sane pitch must be set by video.Refresh first.
+	if video.pitch == 0 {
+		return
+	}
+
 	fbw, fbh := video.Window.GetFramebufferSize()
-	_, _, w, h := video.CoreRatioViewport(fbw, fbh)
+	_, _, w, h := video.coreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
@@ -415,9 +444,10 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	video.pitch = pitch
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
-	if data != nil {
-		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+	if data == nil {
+		return
 	}
+	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
 }
 
 // CurrentFramebuffer returns the current FBO ID

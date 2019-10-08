@@ -1,7 +1,7 @@
 APP = Ludo
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 
-CORES = fbalpha fceumm gambatte genesis_plus_gx handy mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba pcsx_rearmed picodrive prosystem snes9x stella vecx virtualjaguar
+CORES = bluemsx fbneo fceumm gambatte genesis_plus_gx handy mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella vecx virtualjaguar
 
 ifeq ($(ARCH), arm)
 	CORES := $(filter-out mednafen_saturn,$(CORES))
@@ -13,7 +13,6 @@ SOBJS = $(addprefix cores/, $(addsuffix _libretro.so,$(CORES)))
 
 ifeq ($(OS), OSX)
 	BUILDBOTURL=http://buildbot.libretro.com/nightly/apple/osx/$(ARCH)/latest
-	EXT=dylib
 endif
 ifeq ($(OS), Linux)
 	ifeq ($(ARCH), arm)
@@ -21,11 +20,9 @@ ifeq ($(OS), Linux)
 	else
 		BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/$(ARCH)/latest
 	endif
-	EXT=so
 endif
 ifeq ($(OS), Windows)
 	BUILDBOTURL=http://buildbot.libretro.com/nightly/windows/$(ARCH)/latest
-	EXT=dll
 endif
 
 ludo:
@@ -43,20 +40,24 @@ cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
 $(APP).app: ludo $(DYLIBS)
 	mkdir -p $(APP).app/Contents/MacOS
 	mkdir -p $(APP).app/Contents/Resources/$(APP).iconset
-	cp pkg/Info.plist $(APP).app/Contents/
+	cp Info.plist $(APP).app/Contents/
+	sed -i.bak 's/0.1.0/$(VERSION)/' $(APP).app/Contents/Info.plist
+	rm $(APP).app/Contents/Info.plist.bak
 	echo "APPL????" > $(APP).app/Contents/PkgInfo
 	cp -r database $(APP).app/Contents/Resources
 	cp -r assets $(APP).app/Contents/Resources
 	cp -r cores $(APP).app/Contents/Resources
-	sips -z 16 16     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16.png
-	sips -z 32 32     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16@2x.png
-	sips -z 32 32     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_32x32.png
-	sips -z 64 64     assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_32x32@2x.png
-	sips -z 128 128   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_128x128.png
-	sips -z 256 256   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_128x128@2x.png
-	sips -z 256 256   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_256x256.png
-	sips -z 512 512   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_256x256@2x.png
-	sips -z 512 512   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_512x512.png
+	rm -rf $(APP).app/Contents/Resources/database/.git
+	rm -rf $(APP).app/Contents/Resources/assets/.git
+	sips -z 16 16   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16.png
+	sips -z 32 32   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16@2x.png
+	sips -z 32 32   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_32x32.png
+	sips -z 64 64   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_32x32@2x.png
+	sips -z 128 128 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_128x128.png
+	sips -z 256 256 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_128x128@2x.png
+	sips -z 256 256 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_256x256.png
+	sips -z 512 512 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_256x256@2x.png
+	sips -z 512 512 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_512x512.png
 	cp ludo $(APP).app/Contents/MacOS
 	iconutil -c icns -o $(APP).app/Contents/Resources/$(APP).icns $(APP).app/Contents/Resources/$(APP).iconset
 	rm -rf $(APP).app/Contents/Resources/$(APP).iconset

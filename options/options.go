@@ -18,28 +18,38 @@ import (
 	"github.com/libretro/ludo/utils"
 )
 
+// Variable represents one core option. A variable can take a limited number of
+// values. The possibilities are stored in v.Choices. The current value
+// can be accessed with v.Choices[v.Choice]
+type Variable struct {
+	Key     string   // unique id of the variable
+	Desc    string   // human readable name of the variable
+	Choices []string // available values
+	Choice  int      // index of the current value
+}
+
 // Options is a container type for core options internals
 type Options struct {
-	Vars    []libretro.Variable // the variables exposed by the core
-	Choices []int               // the number of choices each variable can take
-	Updated bool                // notify the core that values have been updated
+	Vars    []*Variable // the variables exposed by the core
+	Updated bool        // notify the core that values have been updated
 
 	sync.Mutex
 }
 
-// New instanciate a core options manager
-func New(vars []libretro.Variable) *Options {
+// New instantiate a core options manager
+func New(vars []libretro.Variable) (*Options, error) {
 	o := &Options{}
-	o.Vars = vars
-	o.Choices = make([]int, len(o.Vars))
+	// Cache core options
+	for _, v := range vars {
+		o.Vars = append(o.Vars, &Variable{
+			Key:     v.Key(),
+			Desc:    v.Desc(),
+			Choices: v.Choices(),
+		})
+	}
 	o.Updated = true
-	o.load()
-	return o
-}
-
-// NumChoices returns the number of choices for a given variable
-func (o *Options) NumChoices(choiceIndex int) int {
-	return len(o.Vars[choiceIndex].Choices())
+	err := o.load()
+	return o, err
 }
 
 // Save core options to a file
@@ -47,11 +57,14 @@ func (o *Options) Save() error {
 	o.Lock()
 	defer o.Unlock()
 
-	usr, _ := user.Current()
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 
 	m := make(map[string]string)
-	for i, v := range o.Vars {
-		m[v.Key()] = v.Choices()[o.Choices[i]]
+	for _, v := range o.Vars {
+		m[v.Key] = v.Choices[v.Choice]
 	}
 	b, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
@@ -59,13 +72,18 @@ func (o *Options) Save() error {
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	f, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
+	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	_, err = io.Copy(f, bytes.NewReader(b))
-	return err
+	defer fd.Close()
+
+	_, err = io.Copy(fd, bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+
+	return fd.Sync()
 }
 
 // Load core options from a file
@@ -73,7 +91,10 @@ func (o *Options) load() error {
 	o.Lock()
 	defer o.Unlock()
 
-	usr, _ := user.Current()
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 
 	name := utils.FileName(state.Global.CorePath)
 	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
@@ -83,18 +104,21 @@ func (o *Options) load() error {
 
 	var opts map[string]string
 	err = json.Unmarshal(b, &opts)
+	if err != nil {
+		return err
+	}
 
 	for optk, optv := range opts {
-		for i, variable := range o.Vars {
-			if variable.Key() == optk {
-				for j, c := range variable.Choices() {
+		for _, variable := range o.Vars {
+			if variable.Key == optk {
+				for j, c := range variable.Choices {
 					if c == optv {
-						o.Choices[i] = j
+						variable.Choice = j
 					}
 				}
 			}
 		}
 	}
 
-	return err
+	return nil
 }

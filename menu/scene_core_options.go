@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/libretro/ludo/core"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 )
@@ -16,25 +17,36 @@ func buildCoreOptions() Scene {
 	var list sceneCoreOptions
 	list.label = "Core Options"
 
-	for i, v := range core.Options.Vars {
-		i := i
+	if core.Options == nil {
+		list.children = append(list.children, entry{
+			label: "No options",
+			icon:  "subsetting",
+		})
+		list.segueMount()
+		return &list
+	}
+
+	for _, v := range core.Options.Vars {
 		v := v
 		list.children = append(list.children, entry{
-			label: strings.Replace(v.Desc(), "%", "%%", -1),
+			label: strings.Replace(v.Desc, "%", "%%", -1),
 			icon:  "subsetting",
 			stringValue: func() string {
-				val := v.Choices()[core.Options.Choices[i]]
+				val := v.Choices[v.Choice]
 				return strings.Replace(val, "%", "%%", -1)
 			},
 			incr: func(direction int) {
-				core.Options.Choices[i] += direction
-				if core.Options.Choices[i] < 0 {
-					core.Options.Choices[i] = core.Options.NumChoices(i) - 1
-				} else if core.Options.Choices[i] > core.Options.NumChoices(i)-1 {
-					core.Options.Choices[i] = 0
+				v.Choice += direction
+				if v.Choice < 0 {
+					v.Choice = len(v.Choices) - 1
+				} else if v.Choice > len(v.Choices)-1 {
+					v.Choice = 0
 				}
 				core.Options.Updated = true
-				core.Options.Save()
+				err := core.Options.Save()
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Core", "Error saving core options: %v", err.Error())
+				}
 			},
 		})
 	}
@@ -70,14 +82,15 @@ func (s *sceneCoreOptions) render() {
 
 func (s *sceneCoreOptions) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	menu.ratio = float32(w) / 1920
-	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+
+	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()
 
 	var stack float32
 	if state.Global.CoreRunning {
-		stackHint(&stack, "key-p", "RESUME", h)
+		stackHint(&stack, guide, "RESUME", h)
 	}
-	stackHint(&stack, "key-up-down", "NAVIGATE", h)
-	stackHint(&stack, "key-z", "BACK", h)
-	stackHint(&stack, "key-left-right", "SET", h)
+	stackHint(&stack, upDown, "NAVIGATE", h)
+	stackHint(&stack, b, "BACK", h)
+	stackHint(&stack, leftRight, "SET", h)
 }

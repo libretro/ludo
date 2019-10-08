@@ -26,13 +26,16 @@ func buildSavestates() Scene {
 		icon:  "savestate",
 		callbackOK: func() {
 			name := utils.DatedName(state.Global.GamePath)
-			vid.TakeScreenshot(name)
-			err := savestates.Save(name)
+			err := vid.TakeScreenshot(name)
+			if err != nil {
+				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+			}
+			err = savestates.Save(name)
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			} else {
 				menu.stack[len(menu.stack)-1] = buildSavestates()
-				fastForwardTweens()
+				menu.tweens.FastForward()
 				ntf.DisplayAndLog(ntf.Success, "Menu", "State saved.")
 			}
 		},
@@ -54,6 +57,7 @@ func buildSavestates() Scene {
 					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 				} else {
 					state.Global.MenuActive = false
+
 					ntf.DisplayAndLog(ntf.Success, "Menu", "State loaded.")
 				}
 			},
@@ -91,6 +95,8 @@ func (s *sceneSavestates) render() {
 
 	_, h := vid.Window.GetFramebufferSize()
 
+	thumbnailDrawCursor(list)
+
 	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			continue
@@ -119,9 +125,9 @@ func (s *sceneSavestates) render() {
 				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
 			if i == 0 {
 				vid.DrawImage(menu.icons["savestate"],
-					680*menu.ratio-64*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-					128*menu.ratio, 128*menu.ratio,
+					680*menu.ratio-25*e.scale*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
+					50*menu.ratio, 50*menu.ratio,
 					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
@@ -136,20 +142,21 @@ func (s *sceneSavestates) render() {
 
 func (s *sceneSavestates) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	menu.ratio = float32(w) / 1920
-	vid.DrawRect(0.0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 1.0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 
+	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
+
 	var stack float32
 	if state.Global.CoreRunning {
-		stackHint(&stack, "key-p", "RESUME", h)
+		stackHint(&stack, guide, "RESUME", h)
 	}
-	stackHint(&stack, "key-up-down", "NAVIGATE", h)
-	stackHint(&stack, "key-z", "BACK", h)
+	stackHint(&stack, upDown, "NAVIGATE", h)
+	stackHint(&stack, b, "BACK", h)
 	if ptr == 0 {
-		stackHint(&stack, "key-x", "SAVE", h)
+		stackHint(&stack, a, "SAVE", h)
 	} else {
-		stackHint(&stack, "key-x", "LOAD", h)
+		stackHint(&stack, a, "LOAD", h)
 	}
 }

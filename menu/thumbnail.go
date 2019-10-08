@@ -1,13 +1,13 @@
 package menu
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/go-gl/gl/all-core/gl"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
 )
@@ -16,7 +16,6 @@ import (
 func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
@@ -29,20 +28,21 @@ func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 
 	err = os.MkdirAll(folderPath, os.ModePerm)
 	if err != nil {
-		fmt.Println(err)
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
 
-	out, err := os.Create(path)
+	imgFile, err := os.Create(path)
 	if err != nil {
-		fmt.Println(err)
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
-	defer out.Close()
+	defer imgFile.Close()
 
-	io.Copy(out, resp.Body)
+	_, err = io.Copy(imgFile, resp.Body)
+	if err != nil {
+		list.children[i].thumbnail = menu.icons["img-broken"]
+	}
 }
 
 // Scrub characters that are not cross-platform and/or violate the
@@ -96,4 +96,13 @@ func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale f
 		x, y, w, h, scale,
 		color,
 	)
+}
+
+func freeThumbnail(list *entry, i int) {
+	if list.children[i].thumbnail != 0 &&
+		list.children[i].thumbnail != menu.icons["img-dl"] &&
+		list.children[i].thumbnail != menu.icons["img-broken"] {
+		gl.DeleteTextures(1, &list.children[i].thumbnail)
+		list.children[i].thumbnail = 0
+	}
 }

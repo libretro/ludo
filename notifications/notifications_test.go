@@ -121,7 +121,7 @@ func Test_Clear(t *testing.T) {
 
 func Test_Update(t *testing.T) {
 	Clear()
-	t.Run("Is able to update a notification independantly", func(t *testing.T) {
+	t.Run("Is able to update a notification independently", func(t *testing.T) {
 		Display(Error, "Test1", Medium/2)
 		nid2 := Display(Error, "Test2", Medium)
 		nid3 := Display(Error, "Test3", Medium)

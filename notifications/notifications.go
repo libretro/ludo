@@ -106,13 +106,20 @@ func find(id xid.ID) *Notification {
 
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
-func Update(id xid.ID, severity Severity, message string) {
+func Update(id xid.ID, severity Severity, message string, vars ...interface{}) {
 	n := find(id)
 	if n == nil {
 		return
 	}
 
+	var msg string
+	if len(vars) > 0 {
+		msg = fmt.Sprintf(message, vars...)
+	} else {
+		msg = message
+	}
+
 	n.Duration = Medium
-	n.Message = message
+	n.Message = msg
 	n.Severity = severity
 }

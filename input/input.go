@@ -4,7 +4,7 @@
 package input
 
 import (
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
@@ -35,11 +35,25 @@ var (
 	Pressed  inputstate // keys just pressed during this frame
 )
 
+// Hot keys
+const (
+	// ActionMenuToggle toggles the menu UI
+	ActionMenuToggle uint32 = libretro.DeviceIDJoypadR3 + 1
+	// ActionFullscreenToggle switches between fullscreen and windowed mode
+	ActionFullscreenToggle uint32 = libretro.DeviceIDJoypadR3 + 2
+	// ActionShouldClose will cause the program to shutdown
+	ActionShouldClose uint32 = libretro.DeviceIDJoypadR3 + 3
+	// ActionFastForwardToggle will run the core as fast as possible
+	ActionFastForwardToggle uint32 = libretro.DeviceIDJoypadR3 + 4
+	// ActionLast is used for iterating
+	ActionLast uint32 = libretro.DeviceIDJoypadR3 + 5
+)
+
 // joystickCallback is triggered when a joypad is plugged.
-func joystickCallback(joy int, event int) {
-	switch glfw.MonitorEvent(event) {
+func joystickCallback(joy glfw.Joystick, event glfw.PeripheralEvent) {
+	switch event {
 	case glfw.Connected:
-		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.GetJoystickName(glfw.Joystick(joy)))
+		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.Joystick.GetName(joy))
 	case glfw.Disconnected:
 		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d unplugged.", joy)
 	default:
@@ -47,19 +61,11 @@ func joystickCallback(joy int, event int) {
 	}
 }
 
-// ContextReseter is an interface to to allow reloading icons after the
-// window is recreated when switching fullscreen
-type ContextReseter interface {
-	ContextReset()
-}
-
 var vid *video.Video
-var menu ContextReseter
 
 // Init initializes the input package
-func Init(v *video.Video, m ContextReseter) {
+func Init(v *video.Video) {
 	vid = v
-	menu = m
 	glfw.SetJoystickCallback(joystickCallback)
 }
 
@@ -76,9 +82,9 @@ func reset(state inputstate) inputstate {
 // pollJoypads process joypads of all players
 func pollJoypads(state inputstate) inputstate {
 	for p := range state {
-		buttonState := glfw.GetJoystickButtons(glfw.Joystick(p))
-		axisState := glfw.GetJoystickAxes(glfw.Joystick(p))
-		name := glfw.GetJoystickName(glfw.Joystick(p))
+		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
+		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
+		name := glfw.Joystick.GetName(glfw.Joystick(p))
 		jb := joyBinds[name]
 		if len(buttonState) > 0 {
 			for k, v := range jb {
