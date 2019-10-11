@@ -120,6 +120,33 @@ func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
 	gl.Disable(gl.BLEND)
 }
 
+func (video *Video) DrawTest(x, y, w, h, r float32, c Color) {
+
+	fbw, fbh := video.Window.GetFramebufferSize()
+
+	va := []float32{
+		-1, -1, +0, +1,
+		-1, +1, +0, +0,
+		+1, -1, +1, +1,
+		+1, +1, +1, +0,
+	}
+
+	gl.UseProgram(video.testProgram)
+	gl.Uniform4f(gl.GetUniformLocation(video.testProgram, gl.Str("box\x00")), x, y, x+w, y+h)
+	gl.Uniform4f(gl.GetUniformLocation(video.testProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform1f(gl.GetUniformLocation(video.testProgram, gl.Str("radius\x00")), r)
+	gl.Uniform2f(gl.GetUniformLocation(video.testProgram, gl.Str("resolution\x00")), float32(fbw), float32(fbh))
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BindVertexArray(video.vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	gl.BindVertexArray(0)
+	gl.UseProgram(0)
+	gl.Disable(gl.BLEND)
+}
+
 // DrawCircle draws a circle
 func (video *Video) DrawCircle(x, y, r float32, c Color) {
 

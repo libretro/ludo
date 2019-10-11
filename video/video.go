@@ -45,6 +45,7 @@ type Video struct {
 	borderProgram        uint32 // program to draw rectangles borders
 	circleProgram        uint32 // program to draw textured circles
 	demulProgram         uint32 // program to draw premultiplied alpha images
+	testProgram          uint32
 	vao                  uint32
 	vbo                  uint32
 	texID                uint32
@@ -206,6 +207,11 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	video.demulProgram, err = newProgram(GLSLVersion, vertexShader, demulFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.testProgram, err = newProgram(GLSLVersion, testVertexShader, testFragmentShader)
 	if err != nil {
 		panic(err)
 	}
