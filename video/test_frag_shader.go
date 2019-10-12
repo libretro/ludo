@@ -34,7 +34,7 @@ void main() {
 	st += vec2(0.5*resolution.x/resolution.y, 0.5);
 
 	float d = rec(st, box.xy/resolution.y, box.zw/resolution.y);
-	float m = 1.0 - d/radius;
+	float m = 1.0 - d/(radius/resolution.y);
 	COMPAT_FRAGCOLOR = vec4(color.rgb, m*color.a);
 }
 ` + "\x00"
