@@ -17,63 +17,63 @@ before_script:
 
 matrix:
   include:
-    - name: Linux x86_64
-      os: linux
-      dist: trusty
-      services: xvfb
-      before_install:
-        - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
-      script:
-        - go get -v ./...
-        - xvfb-run go test -v -race ./...
-        - go vet ./...
-        - staticcheck ./...
-        - gocyclo -over 19 $GO_FILES
-        - golint -set_exit_status $(go list ./...)
-        - go build -v
-        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz.sha256; fi
-    - name: Linux arm
-      os: linux
-      dist: trusty
-      before_install:
-        - sudo apt-get install binutils-multiarch
-        - sudo dpkg --add-architecture armhf
-        - sudo echo "" > /etc/apt/sources.list
-        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
-        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty main restricted universe multiverse" >> /etc/apt/sources.list
-        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
-        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
-        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
-        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
-        - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
-        - sudo apt-get update -q
-        - sudo apt-get install gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
-        - export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
-      script:
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get -v ./...
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go vet ./...
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc staticcheck ./...
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc gocyclo -over 19 $GO_FILES
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc golint -set_exit_status $(go list ./...)
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
-        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz.sha256; fi
-    - name: OSX
-      os: osx
-      before_install:
-        - brew update
-        - brew install openal-soft
-      script:
-        - go get -v ./...
-        - go test -v -race ./...
-        - go vet ./...
-        - staticcheck ./...
-        - gocyclo -over 19 $GO_FILES
-        - golint -set_exit_status $(go list ./...)
-        - go build -v
-        - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then shasum -a 256 Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg > Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256; fi
+#    - name: Linux x86_64
+#      os: linux
+#      dist: trusty
+#      services: xvfb
+#      before_install:
+#        - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
+#      script:
+#        - go get -v ./...
+#        - xvfb-run go test -v -race ./...
+#        - go vet ./...
+#        - staticcheck ./...
+#        - gocyclo -over 19 $GO_FILES
+#        - golint -set_exit_status $(go list ./...)
+#        - go build -v
+#        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
+#        - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz.sha256; fi
+#    - name: Linux arm
+#      os: linux
+#      dist: trusty
+#      before_install:
+#        - sudo apt-get install binutils-multiarch
+#        - sudo dpkg --add-architecture armhf
+#        - sudo echo "" > /etc/apt/sources.list
+#        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
+#        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty main restricted universe multiverse" >> /etc/apt/sources.list
+#        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
+#        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
+#        - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
+#        - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list
+#        - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
+#        - sudo apt-get update -q
+#        - sudo apt-get install gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
+#        - export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
+#      script:
+#        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get -v ./...
+#        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go vet ./...
+#        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc staticcheck ./...
+#        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc gocyclo -over 19 $GO_FILES
+#        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc golint -set_exit_status $(go list ./...)
+#        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
+#        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
+#        - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz.sha256; fi
+#    - name: OSX
+#      os: osx
+#      before_install:
+#        - brew update
+#        - brew install openal-soft
+#      script:
+#        - go get -v ./...
+#        - go test -v -race ./...
+#        - go vet ./...
+#        - staticcheck ./...
+#        - gocyclo -over 19 $GO_FILES
+#        - golint -set_exit_status $(go list ./...)
+#        - go build -v
+#        - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
+#        - if [[ -n "$TRAVIS_TAG" ]]; then shasum -a 256 Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg > Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256; fi
     - name: Windows
       os: windows
       before_install:
@@ -91,7 +91,8 @@ matrix:
         - staticcheck ./...
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
-        - go build -v -ldflags '-H=windowsgui'
+        - go build -v -tags netgo osusergo -ldflags '-H=windowsgui -extldflags "-fno-PIC -static"'
+        - ldd ludo
         - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then cp *.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe; fi
