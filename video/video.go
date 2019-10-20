@@ -100,6 +100,8 @@ func (video *Video) Configure(fullscreen bool) {
 		height = 180 * 3
 	}
 
+	// On OSX we have to force a core profile to not end up with 2.1 which cause
+	// a font drawing issue
 	if runtime.GOOS == "darwin" {
 		glfw.WindowHint(glfw.ContextVersionMajor, 3)
 		glfw.WindowHint(glfw.ContextVersionMinor, 2)
