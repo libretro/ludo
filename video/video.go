@@ -5,6 +5,9 @@ package video
 
 import (
 	"log"
+	"runtime"
+	"strconv"
+	"strings"
 	"unsafe"
 
 	"github.com/go-gl/gl/all-core/gl"
@@ -32,10 +35,9 @@ type WindowInterface interface {
 
 // Video holds the state of the video package
 type Video struct {
-	GLVersion string
-	Window    WindowInterface
-	Geom      libretro.GameGeometry
-	Font      *glfont.Font
+	Window WindowInterface
+	Geom   libretro.GameGeometry
+	Font   *glfont.Font
 
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
@@ -55,9 +57,8 @@ type Video struct {
 }
 
 // Init instanciates the video package
-func Init(fullscreen bool, GLVersion string) *Video {
+func Init(fullscreen bool) *Video {
 	vid := &Video{}
-	vid.GLVersion = GLVersion
 	vid.Configure(fullscreen)
 	return vid
 }
@@ -70,66 +71,24 @@ func (video *Video) Reconfigure(fullscreen bool) {
 	video.Configure(fullscreen)
 }
 
-func (video *Video) configureContext() uint {
-	var GLSLVersion uint
-	switch video.GLVersion {
-	case "2.0":
-		glfw.WindowHint(glfw.ContextVersionMajor, 2)
-		glfw.WindowHint(glfw.ContextVersionMinor, 0)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
-		GLSLVersion = 110
-	case "2.1":
-		glfw.WindowHint(glfw.ContextVersionMajor, 2)
-		glfw.WindowHint(glfw.ContextVersionMinor, 1)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
-		GLSLVersion = 120
-	case "3.0":
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 0)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
-		GLSLVersion = 130
-	case "3.1":
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 1)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
-		GLSLVersion = 140
-	case "3.2":
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 2)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-		GLSLVersion = 150
-	case "4.1":
-		glfw.WindowHint(glfw.ContextVersionMajor, 4)
-		glfw.WindowHint(glfw.ContextVersionMinor, 1)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-		GLSLVersion = 410
-	case "4.2":
-		glfw.WindowHint(glfw.ContextVersionMajor, 4)
-		glfw.WindowHint(glfw.ContextVersionMinor, 2)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-		GLSLVersion = 420
-	default: // 3.2
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 2)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-		GLSLVersion = 150
+func getGLSLVersion() uint {
+	GLVersion := gl.GoStr(gl.GetString(gl.VERSION))
+	GLSLVersion := gl.GoStr(gl.GetString(gl.SHADING_LANGUAGE_VERSION))
+
+	if state.Global.Verbose {
+		log.Println("[Video]: OpenGL version:", GLVersion)
+		log.Println("[Video]: GLSL version:", GLSLVersion)
 	}
-	return GLSLVersion
+
+	clean := strings.Replace(GLSLVersion, ".", "", -1)
+	v, _ := strconv.Atoi(clean)
+	return uint(v)
 }
 
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
 	var width, height int
 	var m *glfw.Monitor
-	GLSLVersion := video.configureContext()
 
 	if fullscreen {
 		m = glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
@@ -139,6 +98,13 @@ func (video *Video) Configure(fullscreen bool) {
 	} else {
 		width = 320 * 3
 		height = 180 * 3
+	}
+
+	if runtime.GOOS == "darwin" {
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 2)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	}
 
 	var err error
@@ -159,6 +125,8 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
+	GLSLVersion := getGLSLVersion()
+
 	fbw, fbh := video.Window.GetFramebufferSize()
 	video.coreRatioViewport(fbw, fbh)
 
@@ -167,11 +135,6 @@ func (video *Video) Configure(fullscreen bool) {
 	video.Font, err = glfont.LoadFont(assets+"/font.ttf", int32(64), fbw, fbh, GLSLVersion)
 	if err != nil {
 		panic(err)
-	}
-
-	if state.Global.Verbose {
-		version := gl.GoStr(gl.GetString(gl.VERSION))
-		log.Println("[Video]: OpenGL version:", version)
 	}
 
 	// Configure the vertex and fragment shaders
