@@ -12,8 +12,8 @@ func stackHint(stack *float32, icon uint32, label string, h int) {
 	*stack += 30 * menu.ratio
 	vid.DrawImage(icon, *stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
 	*stack += 70 * menu.ratio
-	vid.Font.Printf(*stack, float32(h)-23*menu.ratio, 0.5*menu.ratio, label)
-	*stack += vid.Font.Width(0.5*menu.ratio, label)
+	vid.Font.Printf(*stack, float32(h)-23*menu.ratio, 0.8*menu.ratio, label)
+	*stack += vid.Font.Width(0.8*menu.ratio, label)
 }
 
 func hintIcons() (arrows, upDown, leftRight, a, b, x, y, start, slct, guide uint32) {
