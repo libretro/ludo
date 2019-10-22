@@ -67,15 +67,15 @@ func (s *sceneDialog) render() {
 
 	vid.Font.SetColor(0.8, 0.4, 0.1, 1)
 	msg1 := "A game is currently running."
-	lw1 := vid.Font.Width(1.2*menu.ratio, msg1)
-	vid.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 1.2*menu.ratio, msg1)
+	lw1 := vid.Font.Width(0.7*menu.ratio, msg1)
+	vid.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 0.7*menu.ratio, msg1)
 	vid.Font.SetColor(0, 0, 0, 1)
 	msg2 := "If you have not saved yet, your progress will be lost."
-	lw2 := vid.Font.Width(menu.ratio, msg2)
-	vid.Font.Printf(fw/2-lw2/2, fh/2-30*menu.ratio+20*menu.ratio, menu.ratio, msg2)
+	lw2 := vid.Font.Width(0.5*menu.ratio, msg2)
+	vid.Font.Printf(fw/2-lw2/2, fh/2-30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg2)
 	msg3 := "Do you want to exit Ludo anyway?"
-	lw3 := vid.Font.Width(menu.ratio, msg3)
-	vid.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, menu.ratio, msg3)
+	lw3 := vid.Font.Width(0.5*menu.ratio, msg3)
+	vid.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg3)
 
 	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
 	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
@@ -92,7 +92,7 @@ func (s *sceneDialog) render() {
 	vid.Font.Printf(
 		fw/2-width/2*menu.ratio+margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
-		0.8*menu.ratio,
+		0.4*menu.ratio,
 		"NO")
 
 	vid.DrawImage(
@@ -103,7 +103,7 @@ func (s *sceneDialog) render() {
 	vid.Font.Printf(
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
-		0.8*menu.ratio,
+		0.4*menu.ratio,
 		"YES")
 }
 

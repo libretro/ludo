@@ -135,7 +135,7 @@ func (s *sceneSavestates) render() {
 			vid.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				menu.ratio, e.label)
+				0.5*menu.ratio, e.label)
 		}
 	}
 }

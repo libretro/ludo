@@ -164,7 +164,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
-	video.Font, err = glfont.LoadFont(assets+"/font.ttf", int32(36), fbw, fbh, GLSLVersion)
+	video.Font, err = glfont.LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh, GLSLVersion)
 	if err != nil {
 		panic(err)
 	}
