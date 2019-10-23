@@ -215,8 +215,6 @@ func (video *Video) Configure(fullscreen bool) {
 	textureUniform := gl.GetUniformLocation(video.program, gl.Str("Texture\x00"))
 	gl.Uniform1i(textureUniform, 0)
 
-	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
-
 	// Configure the vertex data
 	gl.GenVertexArrays(1, &video.vao)
 	gl.BindVertexArray(video.vao)

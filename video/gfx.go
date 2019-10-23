@@ -32,9 +32,7 @@ func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c
 	va := video.vertexArray(x, y, w, h, scale)
 
 	gl.UseProgram(video.demulProgram)
-	maskUniform := gl.GetUniformLocation(video.demulProgram, gl.Str("mask\x00"))
-	gl.Uniform1f(maskUniform, 0)
-	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("texColor\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BindVertexArray(video.vao)
@@ -51,7 +49,6 @@ func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c
 
 // ScissorStart starts a GL scissor box, don't forget to call ScissorEnd
 func (video *Video) ScissorStart(x, y, w, h int32) {
-	//_, fbh := video.Window.GetFramebufferSize()
 	gl.Enable(gl.SCISSOR_TEST)
 	gl.Scissor(x, y, w, h)
 }
