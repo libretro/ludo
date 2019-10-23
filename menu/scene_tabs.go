@@ -273,8 +273,8 @@ func (tabs sceneTags) render() {
 
 		if e.labelAlpha > 0 {
 			vid.Font.SetColor(float32(c.R), float32(c.B), float32(c.G), e.labelAlpha)
-			lw := vid.Font.Width(0.6*menu.ratio, e.label)
-			vid.Font.Printf(x-lw/2, float32(h)/2+250*menu.ratio, 0.6*menu.ratio, e.label)
+			lw := vid.Font.Width(0.5*menu.ratio, e.label)
+			vid.Font.Printf(x-lw/2, float32(h)/2+250*menu.ratio, 0.5*menu.ratio, e.label)
 			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
 			vid.Font.Printf(x-lw/2, float32(h)/2+330*menu.ratio, 0.4*menu.ratio, e.subLabel)
 		}
