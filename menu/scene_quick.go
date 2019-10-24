@@ -47,8 +47,12 @@ func buildQuickMenu() Scene {
 		icon:  "screenshot",
 		callbackOK: func() {
 			name := utils.DatedName(state.Global.GamePath)
-			vid.TakeScreenshot(name)
-			ntf.DisplayAndLog(ntf.Success, "Menu", "Took a screenshot.")
+			err := vid.TakeScreenshot(name)
+			if err != nil {
+				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+			} else {
+				ntf.DisplayAndLog(ntf.Success, "Menu", "Took a screenshot.")
+			}
 		},
 	})
 
