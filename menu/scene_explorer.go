@@ -2,6 +2,7 @@ package menu
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -133,8 +134,16 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	// Loop over files in the directory and add one entry for each.
 	for _, f := range files {
 		f := f
-		fullPath, _ := filepath.EvalSymlinks(filepath.Join(path, f.Name()))
-		fi, _ := os.Stat(fullPath)
+		fullPath, err := filepath.EvalSymlinks(filepath.Join(path, f.Name()))
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		fi, err := os.Stat(fullPath)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
 		appendNode(&list, fullPath, f.Name(), fi, exts, cb, dirAction)
 	}
 	buildIndexes(&list.entry)
