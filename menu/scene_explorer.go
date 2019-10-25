@@ -2,6 +2,7 @@ package menu
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -68,9 +69,9 @@ func explorerIcon(f os.FileInfo) string {
 	return icon
 }
 
-func appendNode(list *sceneExplorer, path string, f os.FileInfo, exts []string, cb func(string), dirAction *entry) {
+func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo, exts []string, cb func(string), dirAction *entry) {
 	// Check whether or not we are to display hidden files.
-	if f.Name()[:1] == "." && !settings.Current.ShowHiddenFiles {
+	if name[:1] == "." && !settings.Current.ShowHiddenFiles {
 		return
 	}
 
@@ -80,18 +81,18 @@ func appendNode(list *sceneExplorer, path string, f os.FileInfo, exts []string, 
 	}
 
 	list.children = append(list.children, entry{
-		label: f.Name(),
+		label: name,
 		icon:  explorerIcon(f),
 		callbackOK: func() {
 			if f.IsDir() {
 				list.segueNext()
-				newPath := filepath.Clean(filepath.Join(path, f.Name()))
+				newPath := filepath.Clean(fullPath)
 				if dirAction != nil {
 					dirAction.callbackOK = func() { cb(newPath) }
 				}
 				menu.Push(buildExplorer(newPath, exts, cb, dirAction))
-			} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(f.Name()), exts)) {
-				cb(filepath.Clean(filepath.Join(path, f.Name())))
+			} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(name), exts)) {
+				cb(filepath.Clean(fullPath))
 			}
 		},
 	})
@@ -133,7 +134,17 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	// Loop over files in the directory and add one entry for each.
 	for _, f := range files {
 		f := f
-		appendNode(&list, path, f, exts, cb, dirAction)
+		fullPath, err := filepath.EvalSymlinks(filepath.Join(path, f.Name()))
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		fi, err := os.Stat(fullPath)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		appendNode(&list, fullPath, f.Name(), fi, exts, cb, dirAction)
 	}
 	buildIndexes(&list.entry)
 
