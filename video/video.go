@@ -135,7 +135,7 @@ func (video *Video) InitFramebuffer(width, height int) {
 	gl.GenFramebuffers(1, &video.fboID)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
 
-	gl.GenTextures(1, &video.texID)
+	//gl.GenTextures(1, &video.texID)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, int32(width), int32(height))
 
@@ -170,7 +170,13 @@ func (video *Video) InitFramebuffer(width, height int) {
 	}
 
 	gl.ClearColor(0, 0, 0, 1)
-	gl.Clear(gl.COLOR_BUFFER_BIT)
+	if hw.Depth && hw.Stencil {
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
+	} else if hw.Depth {
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	} else {
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+	}
 
 	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 }
