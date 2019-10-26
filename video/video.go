@@ -130,8 +130,15 @@ func (video *Video) configureContext() uint {
 // InitFramebuffer initializes and configures the video frame buffer based on
 // informations from the HWRenderCallback of the libretro core.
 func (video *Video) InitFramebuffer(width, height int) {
+	log.Printf("[Video]: Initializing HW render (%v x %v).\n", width, height)
+
 	gl.GenFramebuffers(1, &video.fboID)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
+
+	gl.GenTextures(1, &video.texID)
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, int32(width), int32(height))
+
 	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
 
 	hw := state.Global.Core.HWRenderCallback
@@ -146,7 +153,7 @@ func (video *Video) InitFramebuffer(width, height int) {
 		} else if hw.Depth {
 			gl.GenRenderbuffers(1, &video.rboID)
 			gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
-			gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, int32(width), int32(height))
+			gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, int32(width), int32(height))
 
 			gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
 		}
@@ -158,7 +165,9 @@ func (video *Video) InitFramebuffer(width, height int) {
 
 	gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
 
-	//SDL_assert(glCheckFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE)
+	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
+		log.Fatalln("[Video] Framebuffer is not complete.")
+	}
 
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)

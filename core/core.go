@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/go-gl/gl/all-core/gl"
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
@@ -137,6 +138,12 @@ func LoadGame(gamePath string) error {
 			return err
 		}
 		gi.SetData(bytes)
+	}
+
+	glError := gl.GetError()
+	for glError != 0 {
+		log.Println("[Video]: GL Error:", glError)
+		glError = gl.GetError()
 	}
 
 	ok := state.Global.Core.LoadGame(*gi)
