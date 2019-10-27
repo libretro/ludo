@@ -18,6 +18,8 @@ github.com/kivutar/glfont v0.0.0-20191022044204-7edbc5f87840 h1:Tc95Zr1ms80dGFr8
 github.com/kivutar/glfont v0.0.0-20191022044204-7edbc5f87840/go.mod h1:yvRxgIrpErStul4gzj88N+5yL15ze5JUVqk6Ze4mU+I=
 github.com/kivutar/glfw v0.0.0-20191005084155-f62590c2c41c h1:J4Y0LGjPE4W1Pa5ASjE5jC6Qdv+lW83LeqkVxmsKfE8=
 github.com/kivutar/glfw v0.0.0-20191005084155-f62590c2c41c/go.mod h1:+slYytY+JI/Q/kMyBN7J8ps03jTLgePW+z0YWmLIuXw=
+github.com/kivutar/glfw v0.0.0-20191008030156-cee43cb8f5e6 h1:y2Th/hDiDrRPSUjR4IgtxYMmmN5nXb2+RQZv0IF0HYs=
+github.com/kivutar/glfw v0.0.0-20191008030156-cee43cb8f5e6/go.mod h1:+slYytY+JI/Q/kMyBN7J8ps03jTLgePW+z0YWmLIuXw=
 github.com/lucasb-eyer/go-colorful v1.0.2 h1:mCMFu6PgSozg9tDNMMK3g18oJBX7oYGrC09mS6CXfO4=
 github.com/lucasb-eyer/go-colorful v1.0.2/go.mod h1:0MS4r+7BZKSJ5mw4/S5MPN+qHFF1fYclkSPilDOKW0s=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

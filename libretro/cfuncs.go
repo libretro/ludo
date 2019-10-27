@@ -156,5 +156,15 @@ int64_t coreGetTimeUsec_cgo() {
 	return coreGetTimeUsec();
 }
 
+uintptr_t coreGetCurrentFramebuffer_cgo() {
+	uintptr_t coreGetCurrentFramebuffer();
+	return coreGetCurrentFramebuffer();
+}
+
+uintptr_t coreGetProcAddress_cgo(const char *sym) {
+	uintptr_t coreGetProcAddress(const char *sym);
+	return coreGetProcAddress(sym);
+}
+
 */
 import "C"
