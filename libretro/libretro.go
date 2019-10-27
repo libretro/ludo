@@ -53,7 +53,6 @@ uintptr_t coreGetProcAddress_cgo(const char *sym);
 */
 import "C"
 import (
-	"fmt"
 	"errors"
 	"strings"
 	"unsafe"
