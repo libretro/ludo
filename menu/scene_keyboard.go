@@ -165,7 +165,7 @@ func (s *sceneKeyboard) render() {
 	vid.Font.Printf(
 		float32(w)/2-ttw/2,
 		s.y+float32(h)*0.15-ksz/2+ksz*0.6,
-		ksz/200, s.label)
+		ksz/260, s.label)
 
 	// Value
 	vid.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.25-ksz/2, ttw, ksz, 0,
@@ -173,7 +173,7 @@ func (s *sceneKeyboard) render() {
 	vid.Font.Printf(
 		float32(w)/2-ttw/2+ksz/4,
 		s.y+float32(h)*0.25-ksz/2+ksz*0.62,
-		ksz/150, s.value+"|")
+		ksz/200, s.value+"|")
 
 	// Keyboard
 
@@ -185,7 +185,7 @@ func (s *sceneKeyboard) render() {
 	for i, key := range layouts[s.layout] {
 		x := float32(i%10)*ksp - ttw/2 + float32(w)/2
 		y := s.y + float32(i/10)*ksp + ksp/2 + float32(h) - kbh
-		gw := vid.Font.Width(ksz/150, key)
+		gw := vid.Font.Width(ksz/200, key)
 
 		c1 := video.Color{R: 0.15, G: 0.15, B: 0.15, A: 1}
 		c2 := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
@@ -200,7 +200,7 @@ func (s *sceneKeyboard) render() {
 		vid.Font.Printf(
 			x+ksz/2-gw/2,
 			y+ksz*0.6,
-			ksz/150, key)
+			ksz/200, key)
 	}
 }
 

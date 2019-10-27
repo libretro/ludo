@@ -14,7 +14,6 @@ out vec4 COMPAT_FRAGCOLOR;
 #define COMPAT_FRAGCOLOR gl_FragColor
 #endif
 
-uniform sampler2D tex;
 uniform vec4 color;
 
 COMPAT_VARYING vec2 fragTexCoord;

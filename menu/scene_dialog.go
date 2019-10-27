@@ -92,7 +92,7 @@ func (s *sceneDialog) render() {
 	vid.Font.Printf(
 		fw/2-width/2*menu.ratio+margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
-		0.5*menu.ratio,
+		0.4*menu.ratio,
 		"NO")
 
 	vid.DrawImage(
@@ -103,7 +103,7 @@ func (s *sceneDialog) render() {
 	vid.Font.Printf(
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
-		0.5*menu.ratio,
+		0.4*menu.ratio,
 		"YES")
 }
 

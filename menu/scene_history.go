@@ -166,8 +166,8 @@ func (s *sceneHistory) render() {
 			vid.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset-slOffset,
-				0.6*menu.ratio, e.label)
-			stack += float32(int(vid.Font.Width(0.6*menu.ratio, e.label)))
+				0.5*menu.ratio, e.label)
+			stack += float32(int(vid.Font.Width(0.5*menu.ratio, e.label)))
 			stack += 10
 
 			for _, tag := range e.tags {
@@ -185,7 +185,7 @@ func (s *sceneHistory) render() {
 			vid.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset+60*menu.ratio-slOffset,
-				0.6*menu.ratio, e.subLabel)
+				0.5*menu.ratio, e.subLabel)
 		}
 	}
 

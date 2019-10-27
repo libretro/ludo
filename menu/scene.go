@@ -237,16 +237,16 @@ func genericRender(list *entry) {
 			vid.Font.Printf(
 				670*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.6*menu.ratio, e.label)
+				0.5*menu.ratio, e.label)
 
 			if e.widget != nil {
 				e.widget(&e)
 			} else if e.stringValue != nil {
-				lw := vid.Font.Width(0.6*menu.ratio, e.stringValue())
+				lw := vid.Font.Width(0.5*menu.ratio, e.stringValue())
 				vid.Font.Printf(
 					float32(w)-lw-128*menu.ratio,
 					float32(h)*e.yp+fontOffset,
-					0.6*menu.ratio, e.stringValue())
+					0.5*menu.ratio, e.stringValue())
 			}
 		}
 	}
