@@ -670,7 +670,7 @@ func SetHWRenderCallback(data unsafe.Pointer) *HWRenderCallback {
 	hwrc := HWRenderCallback{}
 	hwrc.HWContextType = uint32(c.context_type)
 	hwrc.ContextReset = func() {
-		C.bridge_retro_hw_context_reset(c.context_reset)
+		C.bridge_retro_hw_context_reset((C.retro_hw_context_reset_t)(c.context_reset))
 	}
 	hwrc.Depth = bool(c.depth)
 	hwrc.Stencil = bool(c.stencil)
@@ -679,7 +679,7 @@ func SetHWRenderCallback(data unsafe.Pointer) *HWRenderCallback {
 	hwrc.VersionMinor = uint(c.version_minor)
 	hwrc.CacheContext = bool(c.cache_context)
 	hwrc.ContextDestroy = func() {
-		C.bridge_retro_hw_context_destroy(c.context_destroy)
+		C.bridge_retro_hw_context_destroy((C.retro_hw_context_reset_t)(c.context_destroy))
 	}
 	hwrc.DebugContext = bool(c.debug_context)
 	return &hwrc
