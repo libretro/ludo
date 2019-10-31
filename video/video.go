@@ -39,23 +39,21 @@ type Video struct {
 	Geom   libretro.GameGeometry
 	Font   *glfont.Font
 
-	program              uint32 // current program used for the game quad
-	defaultProgram       uint32 // default program used for the game quad
-	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
-	zfastCRTProgram      uint32 // fast CRT program used for the game quad
-	roundedProgram       uint32 // program to draw rectangles with rounded corners
-	borderProgram        uint32 // program to draw rectangles borders
-	circleProgram        uint32 // program to draw textured circles
-	demulProgram         uint32 // program to draw premultiplied alpha images
-	vao                  uint32
-	vbo                  uint32
-	texID                uint32
-	pitch                int32
-	pixFmt               uint32
-	pixType              uint32
-	bpp                  int32
-	fboID                uint32
-	rboID                uint32
+	program        uint32 // current program used for the game quad
+	defaultProgram uint32 // default program used for the game quad
+	roundedProgram uint32 // program to draw rectangles with rounded corners
+	borderProgram  uint32 // program to draw rectangles borders
+	circleProgram  uint32 // program to draw textured circles
+	demulProgram   uint32 // program to draw premultiplied alpha images
+	vao            uint32
+	vbo            uint32
+	texID          uint32
+	pitch          int32
+	pixFmt         uint32
+	pixType        uint32
+	bpp            int32
+	fboID          uint32
+	rboID          uint32
 }
 
 // Init instanciates the video package
@@ -163,6 +161,11 @@ func (video *Video) Configure(fullscreen bool) {
 		glfw.WindowHint(glfw.ContextVersionMinor, 2)
 		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+	} else {
+		glfw.WindowHint(glfw.ContextVersionMajor, 2)
+		glfw.WindowHint(glfw.ContextVersionMinor, 1)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 	}
 
 	var err error
@@ -186,7 +189,6 @@ func (video *Video) Configure(fullscreen bool) {
 	GLSLVersion := getGLSLVersion()
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	video.coreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
@@ -197,16 +199,6 @@ func (video *Video) Configure(fullscreen bool) {
 
 	// Configure the vertex and fragment shaders
 	video.defaultProgram, err = newProgram(GLSLVersion, vertexShader, defaultFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.sharpBilinearProgram, err = newProgram(GLSLVersion, vertexShader, sharpBilinearFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.zfastCRTProgram, err = newProgram(GLSLVersion, vertexShader, zfastCRTFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -270,9 +262,15 @@ func (video *Video) Configure(fullscreen bool) {
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
+	video.coreRatioViewport(fbw, fbh)
+
 	if state.Global.CoreRunning {
 		video.InitFramebuffer(video.Geom.BaseWidth, video.Geom.BaseHeight)
 		state.Global.Core.HWRenderCallback.ContextReset()
+	}
+
+	if e := gl.GetError(); e != gl.NO_ERROR {
+		log.Printf("[Video] OpenGL error: %d\n", e)
 	}
 }
 
@@ -285,14 +283,6 @@ func (video *Video) UpdateFilter(filter string) {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.defaultProgram
-	case "sharp-bilinear":
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		video.program = video.sharpBilinearProgram
-	case "zfast-crt":
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		video.program = video.zfastCRTProgram
 	case "nearest":
 		fallthrough
 	default:
