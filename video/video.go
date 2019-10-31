@@ -133,7 +133,6 @@ func (video *Video) Configure(fullscreen bool) {
 	GLSLVersion := getGLSLVersion()
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	video.coreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
@@ -206,6 +205,12 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
 	video.UpdateFilter(settings.Current.VideoFilter)
+
+	video.coreRatioViewport(fbw, fbh)
+
+	if e := gl.GetError(); e != gl.NO_ERROR {
+		log.Printf("[Video] OpenGL error: %d\n", e)
+	}
 }
 
 // UpdateFilter configures the game texture filter and shader. We currently
