@@ -50,10 +50,12 @@ type Video struct {
 	vao                  uint32
 	vbo                  uint32
 	texID                uint32
-	pitch                int32
-	pixFmt               uint32
-	pixType              uint32
-	bpp                  int32
+
+	pitch         int32  // pitch set by the refresh callback
+	pixFmt        uint32 // format set by the environment callback
+	pixType       uint32
+	bpp           int32
+	width, height int32 // dimensions set by the refresh callback
 }
 
 // Init instanciates the video package
@@ -250,6 +252,8 @@ func (video *Video) UpdateFilter(filter string) {
 		video.program = video.defaultProgram
 	}
 	gl.UseProgram(video.program)
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.width), float32(video.height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
 }
 
 // SetPixelFormat is a callback passed to the libretro implementation.
@@ -360,15 +364,17 @@ func (video *Video) Render() {
 
 // Refresh the texture framebuffer
 func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
+	video.width = width
+	video.height = height
+	video.pitch = pitch
+
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
-
-	video.pitch = pitch
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	if data == nil {
 		return
