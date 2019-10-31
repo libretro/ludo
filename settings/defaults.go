@@ -15,7 +15,7 @@ func defaultSettings() Settings {
 	return Settings{
 		VideoFullscreen:   false,
 		VideoMonitorIndex: 0,
-		VideoFilter:       "nearest",
+		VideoFilter:       "sharp-bilinear",
 		AudioVolume:       0.5,
 		MenuAudioVolume:   0.25,
 		ShowHiddenFiles:   false,
