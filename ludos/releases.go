@@ -65,13 +65,13 @@ func DownloadRelease(path, url string) {
 		return
 	}
 
-	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Downloading update 0%%")
+	n := ntf.DisplayAndLog(ntf.Info, "Menu", "Downloading update 0%%")
 	downloading = true
 	defer func() { downloading = false }()
 
 	req, err := grab.NewRequest(path, url)
 	if err != nil {
-		ntf.Update(nid, ntf.Error, err.Error())
+		n.Update(ntf.Error, err.Error())
 		return
 	}
 
@@ -84,7 +84,7 @@ Loop:
 	for {
 		select {
 		case <-t.C:
-			ntf.Update(nid, ntf.Info, "Downloading update %.0f%%%% ", 100*resp.Progress())
+			n.Update(ntf.Info, "Downloading update %.0f%%%% ", 100*resp.Progress())
 			progress = resp.Progress()
 
 		case <-resp.Done:
@@ -96,13 +96,13 @@ Loop:
 	}
 
 	if err := resp.Err(); err != nil {
-		ntf.Update(nid, ntf.Error, err.Error())
+		n.Update(ntf.Error, err.Error())
 		downloading = false
 		done = false
 		return
 	}
 
-	ntf.Update(nid, ntf.Success, "Done downloading. You can now reboot your system.")
+	n.Update(ntf.Success, "Done downloading. You can now reboot your system.")
 }
 
 // IsDownloading returns true if the updater is currently downloading a release

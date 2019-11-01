@@ -73,7 +73,7 @@ func ScanDir(dir string, doneCb func()) {
 }
 
 // Scan scans a list of roms against the database
-func Scan(dir string, roms []string, games chan (rdb.Game), n ntf.Notification) {
+func Scan(dir string, roms []string, games chan (rdb.Game), n *ntf.Notification) {
 	for i, f := range roms {
 		ext := filepath.Ext(f)
 		switch ext {
