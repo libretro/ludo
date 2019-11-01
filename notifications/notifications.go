@@ -87,12 +87,7 @@ func Clear() {
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
 func (n *Notification) Update(severity Severity, message string, vars ...interface{}) {
-	var msg string
-	if len(vars) > 0 {
-		msg = fmt.Sprintf(message, vars...)
-	} else {
-		msg = message
-	}
+	msg := fmt.Sprintf(message, vars...)
 
 	n.Duration = Medium
 	n.Message = msg
