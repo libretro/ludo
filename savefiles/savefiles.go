@@ -13,20 +13,16 @@ import (
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 )
 
 var mutex sync.Mutex
 
-func name() string {
-	name := filepath.Base(state.Global.GamePath)
-	ext := filepath.Ext(name)
-	name = name[0 : len(name)-len(ext)]
-	return name + ".srm"
-}
-
 // path returns the path of the SRAM file for the current core
 func path() string {
-	return filepath.Join(settings.Current.SavefilesDirectory, name())
+	return filepath.Join(
+		settings.Current.SavefilesDirectory,
+		utils.FileName(state.Global.GamePath) + ".srm")
 }
 
 // SaveSRAM saves the game SRAM to the filesystem
