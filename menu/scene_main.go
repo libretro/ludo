@@ -5,11 +5,12 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/libretro/ludo/settings"
-
 	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/history"
 	ntf "github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 )
 
 type sceneMain struct {
@@ -159,6 +160,11 @@ func gameExplorerCb(path string) {
 		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 		return
 	}
+	history.Push(history.Game{
+		Path:     path,
+		Name:     utils.FileName(path),
+		CorePath: state.Global.CorePath,
+	})
 	menu.WarpToQuickMenu()
 	state.Global.MenuActive = false
 }
