@@ -59,12 +59,7 @@ func Display(severity Severity, message string, duration float32) *Notification 
 
 // DisplayAndLog creates a new notification and also logs the message to stdout.
 func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) *Notification {
-	var msg string
-	if len(vars) > 0 {
-		msg = fmt.Sprintf(message, vars...)
-	} else {
-		msg = message
-	}
+	msg := fmt.Sprintf(message, vars...)
 	if state.Global.Verbose {
 		log.Print("[" + prefix + "]: " + msg + "\n")
 	}
