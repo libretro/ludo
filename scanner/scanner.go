@@ -51,6 +51,7 @@ func ScanDir(dir string, doneCb func()) {
 	games := make(chan (rdb.Game))
 	go Scan(dir, roms, games, nid)
 	go func() {
+		i := 0
 		for game := range games {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
 			CSVPath := filepath.Join(settings.Current.PlaylistsDirectory, game.System+".csv")
@@ -65,9 +66,10 @@ func ScanDir(dir string, doneCb func()) {
 			}
 			f.WriteString("\n")
 			f.Close()
+			i++
 		}
 		doneCb()
-		ntf.Update(nid, ntf.Success, "Done scanning.")
+		ntf.Update(nid, ntf.Success, "Done scanning. %d new games found.", i)
 	}()
 }
 
