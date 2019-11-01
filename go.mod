@@ -12,7 +12,6 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/kivutar/glfont v0.0.0-20191031044325-c308d6367f39
 	github.com/lucasb-eyer/go-colorful v1.0.2
-	github.com/rs/xid v1.2.1
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/tanema/gween v0.0.0-20190613150852-fbc00f26ef8f
 	github.com/youpy/go-riff v0.0.0-20131220112943-557d78c11efb // indirect
