@@ -74,11 +74,11 @@ matrix:
         - go build -v
         - OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make Ludo.app;
         - ls Ludo.app
-        - echo $(OSX_CERT) | base64 --decode > dev.p12
+        - echo $OSX_CERT | base64 --decode > dev.p12
         - security create-keychain -p travis build.keychain
         - security default-keychain -s build.keychain
         - security unlock-keychain -p travis build.keychain
-        - security import dev.p12 -k build.keychain -P $(OSX_CERT_PASS) -T /usr/bin/codesign
+        - security import dev.p12 -k build.keychain -P $OSX_CERT_PASS -T /usr/bin/codesign
         - security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k travis build.keychain
         - codesign --deep --force --verbose --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" Ludo.app
         - rm dev.p12
