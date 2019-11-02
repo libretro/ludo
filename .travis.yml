@@ -72,7 +72,8 @@ matrix:
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v
-        - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
+        - OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg
+        - codesign -dv Ludo.app
         - if [[ -n "$TRAVIS_TAG" ]]; then shasum -a 256 Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg > Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256; fi
     - name: Windows
       os: windows
