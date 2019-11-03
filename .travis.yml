@@ -72,17 +72,20 @@ matrix:
         - gocyclo -over 19 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v
-        - OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make Ludo.app;
         - echo $OSX_CERT | base64 --decode > dev.p12
         - security create-keychain -p travis build.keychain
         - security default-keychain -s build.keychain
         - security unlock-keychain -p travis build.keychain
-        - security import dev.p12 -k build.keychain -P $OSX_CERT_PASS -T /usr/bin/codesign
+        - security import dev.p12 -k build.keychain -P $OSX_CERT_PASS -T /usr/bin/codesign && rm dev.p12
         - "security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k travis build.keychain"
         - codesign --deep --timestamp --force --verbose --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" Ludo.app
-        - rm dev.p12
-        - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
-        - if [[ -n "$TRAVIS_TAG" ]]; then shasum -a 256 Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg > Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256; fi
+        - OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg
+        - REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg --primary-bundle-id org.libretro.ludo -u $APPLE_ID -p $APPLE_ID_PASS | awk '/RequestUUID/ { print $NF; }')
+        - sleep 100
+        - xcrun altool --notarization-info $REQUESTUUID -u $APPLE_ID -p $APPLE_ID_PASS -ascprovider ZE9XE938Z2
+        - xcrun stapler staple Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
+        - xcrun stapler validate Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
+        - shasum -a 256 Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg > Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256
     - name: Windows
       os: windows
       before_install:
