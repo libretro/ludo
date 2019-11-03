@@ -80,7 +80,7 @@ matrix:
         - security import dev.p12 -k build.keychain -P $OSX_CERT_PASS -T /usr/bin/codesign && rm dev.p12
         - "security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k travis build.keychain"
         - OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg
-        - REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg --primary-bundle-id org.libretro.ludo -u $APPLE_ID -p $APPLE_ID_PASS -ascprovider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }')
+        - REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg --primary-bundle-id org.libretro.ludo -u $APPLE_ID -p $APPLE_ID_PASS -itcprovider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }')
         - sleep 100
         - xcrun altool --notarization-info $REQUESTUUID -u $APPLE_ID -p $APPLE_ID_PASS -ascprovider ZE9XE938Z2
         - xcrun stapler staple Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg
