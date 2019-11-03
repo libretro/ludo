@@ -65,6 +65,7 @@ matrix:
         - brew update
         - brew install openal-soft
       script:
+        - sudo xcode-select -r
         - go get -v ./...
         - go test -v -race ./...
         - go vet ./...
@@ -78,7 +79,6 @@ matrix:
         - security unlock-keychain -p travis build.keychain
         - security import dev.p12 -k build.keychain -P $OSX_CERT_PASS -T /usr/bin/codesign && rm dev.p12
         - "security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k travis build.keychain"
-        - codesign --deep --timestamp --force --verbose --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" Ludo.app
         - OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg
         - REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg --primary-bundle-id org.libretro.ludo -u $APPLE_ID -p $APPLE_ID_PASS | awk '/RequestUUID/ { print $NF; }')
         - sleep 100
