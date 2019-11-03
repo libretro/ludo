@@ -61,11 +61,11 @@ matrix:
         - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz.sha256; fi
     - name: OSX
       os: osx
+      osx_image: xcode11.2
       before_install:
         - brew update
         - brew install openal-soft
       script:
-        - sudo xcode-select -r
         - go get -v ./...
         - go test -v -race ./...
         - go vet ./...
