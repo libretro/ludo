@@ -78,7 +78,7 @@ matrix:
         - if [[ -n "$TRAVIS_TAG" ]]; then security default-keychain -s build.keychain; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then security unlock-keychain -p travis build.keychain; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then security import dev.p12 -k build.keychain -P $OSX_CERT_PASS -T /usr/bin/codesign && rm dev.p12; fi
-        - "if [[ -n "$TRAVIS_TAG" ]]; then security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k travis build.keychain; fi"
+        - if [[ -n "$TRAVIS_TAG" ]]; then "security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k travis build.keychain"; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg --primary-bundle-id org.libretro.ludo -u $APPLE_ID -p $APPLE_ID_PASS -itc_provider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }'); fi
         - if [[ -n "$TRAVIS_TAG" ]]; then sleep 100; fi
