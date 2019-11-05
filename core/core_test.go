@@ -223,6 +223,7 @@ func Test_coreLoadGame(t *testing.T) {
 		}
 	})
 
+	UnloadGame()
 	Unload()
 
 	t.Run("Global state should be cleared by Unload", func(t *testing.T) {

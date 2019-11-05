@@ -36,11 +36,10 @@ func Init(v *video.Video) {
 	go func() {
 		for range ticker.C {
 			state.Global.Lock()
-			running := state.Global.CoreRunning
-			state.Global.Unlock()
-			if running && !state.Global.MenuActive {
+			if state.Global.CoreRunning && !state.Global.MenuActive {
 				savefiles.SaveSRAM()
 			}
+			state.Global.Unlock()
 		}
 	}()
 }
@@ -163,9 +162,8 @@ func LoadGame(gamePath string) error {
 	state.Global.Lock()
 	state.Global.CoreRunning = true
 	state.Global.FastForward = false
-	state.Global.Unlock()
-
 	state.Global.GamePath = gamePath
+	state.Global.Unlock()
 
 	state.Global.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
 	state.Global.Core.SetControllerPortDevice(1, libretro.DeviceJoypad)
@@ -180,7 +178,9 @@ func LoadGame(gamePath string) error {
 
 // Unload unloads a libretro core
 func Unload() {
-	if state.Global.CoreRunning {
+	state.Global.Lock()
+	defer state.Global.Unlock()
+	if state.Global.Core != nil {
 		UnloadGame()
 		state.Global.Core.Deinit()
 		state.Global.CorePath = ""
