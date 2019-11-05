@@ -36,10 +36,11 @@ func Init(v *video.Video) {
 	go func() {
 		for range ticker.C {
 			state.Global.Lock()
-			if state.Global.CoreRunning && !state.Global.MenuActive {
+			canSave := state.Global.CoreRunning && !state.Global.MenuActive
+			state.Global.Unlock()
+			if canSave {
 				savefiles.SaveSRAM()
 			}
-			state.Global.Unlock()
 		}
 	}()
 }
@@ -178,14 +179,14 @@ func LoadGame(gamePath string) error {
 
 // Unload unloads a libretro core
 func Unload() {
-	state.Global.Lock()
-	defer state.Global.Unlock()
 	if state.Global.Core != nil {
 		UnloadGame()
 		state.Global.Core.Deinit()
+		state.Global.Lock()
 		state.Global.CorePath = ""
 		state.Global.Core = nil
 		Options = nil
+		state.Global.Unlock()
 	}
 }
 
@@ -194,8 +195,10 @@ func UnloadGame() {
 	if state.Global.CoreRunning {
 		savefiles.SaveSRAM()
 		state.Global.Core.UnloadGame()
+		state.Global.Lock()
 		state.Global.GamePath = ""
 		state.Global.CoreRunning = false
+		state.Global.Unlock()
 		vid.ResetPitch()
 	}
 }
