@@ -18,6 +18,7 @@ import (
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/patch"
 	"github.com/libretro/ludo/savefiles"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
@@ -136,7 +137,18 @@ func LoadGame(gamePath string) error {
 		if err != nil {
 			return err
 		}
-		gi.SetData(bytes)
+
+		pbytes, _ := ioutil.ReadFile("/Users/kivutar/testroms/Nintendo - Super Nintendo Entertainment System/Dragon Quest V - Tenkuu no Hanayome (Japan).ups")
+
+		patched := []byte{}
+		lenfuu := uint64(0)
+		err = patch.UPSApplyPatch(pbytes, uint64(len(pbytes)), bytes, uint64(len(bytes)), &patched, &lenfuu)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		gi.Size = int64(lenfuu)
+		gi.SetData(patched)
 	}
 
 	ok := state.Global.Core.LoadGame(*gi)
