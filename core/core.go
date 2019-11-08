@@ -141,8 +141,8 @@ func LoadGame(gamePath string) error {
 		pbytes, _ := ioutil.ReadFile("/Users/kivutar/testroms/Nintendo - Super Nintendo Entertainment System/Dragon Quest V - Tenkuu no Hanayome (Japan).ups")
 
 		patched := []byte{}
-		lenfuu := uint64(0)
-		err = patch.UPSApplyPatch(pbytes, uint64(len(pbytes)), bytes, uint64(len(bytes)), &patched, &lenfuu)
+		lenfuu := 0
+		err = patch.UPSApplyPatch(pbytes, bytes, &patched, &lenfuu)
 		if err != nil {
 			log.Fatalln(err)
 		}
