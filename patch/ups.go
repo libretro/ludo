@@ -72,15 +72,7 @@ func upsDecode(data *upsData) int {
 }
 
 // UPSApplyPatch applies the UPS patch on the target data
-func UPSApplyPatch(
-	patchData []byte,
-	sourceData []byte,
-	targetData *[]byte, targetLength *int) error {
-
-	var patchReadChecksum uint32
-	var sourceReadChecksum uint32
-	var targetReadChecksum uint32
-
+func UPSApplyPatch(patchData, sourceData []byte, targetData *[]byte) error {
 	data := upsData{
 		PatchData:  patchData,
 		SourceData: sourceData,
@@ -109,13 +101,13 @@ func UPSApplyPatch(
 		return errors.New("invalid source")
 	}
 
-	*targetLength = sourceReadLength
+	targetLength := sourceReadLength
 	if len(data.SourceData) == sourceReadLength {
-		*targetLength = targetReadLength
+		targetLength = targetReadLength
 	}
 
-	if len(data.TargetData) < *targetLength {
-		prov := make([]byte, *targetLength)
+	if len(data.TargetData) < targetLength {
+		prov := make([]byte, targetLength)
 		*targetData = prov
 		data.TargetData = prov
 	}
@@ -140,10 +132,11 @@ func UPSApplyPatch(
 		upsTargetWrite(&data, upsSourceRead(&data))
 	}
 
+	var sourceReadChecksum uint32
 	for i := 0; i < 4; i++ {
 		sourceReadChecksum |= uint32(upsPatchRead(&data)) << (i * 8)
-
 	}
+	var targetReadChecksum uint32
 	for i := 0; i < 4; i++ {
 		targetReadChecksum |= uint32(upsPatchRead(&data)) << (i * 8)
 	}
@@ -152,6 +145,7 @@ func UPSApplyPatch(
 	data.SourceChecksum = ^data.SourceChecksum
 	data.TargetChecksum = ^data.TargetChecksum
 
+	var patchReadChecksum uint32
 	for i := 0; i < 4; i++ {
 		patchReadChecksum |= uint32(upsPatchRead(&data)) << (i * 8)
 	}
