@@ -11,7 +11,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/libretro/ludo/audio"
@@ -118,24 +117,6 @@ func unzipGame(filename string) (string, int64, error) {
 	return path, size, nil
 }
 
-func tryPatch(gamePath string, bytes []byte) (*[]byte, error) {
-	patchFile := strings.TrimSuffix(gamePath, filepath.Ext(gamePath)) + ".ups"
-	if _, err := os.Stat(patchFile); !os.IsNotExist(err) {
-		pbytes, err := ioutil.ReadFile(patchFile)
-		if err != nil {
-			return nil, err
-		}
-
-		patched, err := patch.UPSApplyPatch(pbytes, bytes)
-		if err != nil {
-			return nil, err
-		}
-
-		return patched, nil
-	}
-	return nil, nil
-}
-
 // LoadGame loads a game. A core has to be loaded first.
 func LoadGame(gamePath string) error {
 	// If we're loading a new game on the same core, save the RAM of the previous
@@ -157,7 +138,7 @@ func LoadGame(gamePath string) error {
 			return err
 		}
 
-		if patched, _ := tryPatch(gamePath, bytes); patched != nil {
+		if patched, _ := patch.Try(gamePath, bytes); patched != nil {
 			gi.Size = int64(len(*patched))
 			gi.SetData(*patched)
 		} else {

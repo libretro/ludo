@@ -71,8 +71,7 @@ func upsDecode(data *upsData) int {
 	return offset
 }
 
-// UPSApplyPatch applies the UPS patch on the target data
-func UPSApplyPatch(patchData, sourceData []byte) (*[]byte, error) {
+func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 	data := upsData{
 		PatchData:  patchData,
 		SourceData: sourceData,
