@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/libretro/ludo/audio"
@@ -138,11 +139,15 @@ func LoadGame(gamePath string) error {
 			return err
 		}
 
-		pbytes, _ := ioutil.ReadFile("/Users/kivutar/testroms/Nintendo - Super Nintendo Entertainment System/Dragon Quest V - Tenkuu no Hanayome (Japan).ups")
+		patchFile := strings.TrimSuffix(gamePath, filepath.Ext(gamePath)) + ".ups"
+		pbytes, err := ioutil.ReadFile(patchFile)
+		if err != nil {
+			return err
+		}
 
 		patched, err := patch.UPSApplyPatch(pbytes, bytes)
 		if err != nil {
-			log.Fatalln(err)
+			return err
 		}
 
 		gi.Size = int64(len(*patched))
