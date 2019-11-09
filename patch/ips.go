@@ -4,32 +4,32 @@ import (
 	"errors"
 )
 
-func ipsAllocTargetData(patchData, sourceData []byte) ([]byte, error) {
+func ipsAllocTargetData(patch, source []byte) ([]byte, error) {
 	offset := 5
-	targetLength := len(sourceData)
+	targetLength := len(source)
 
 	for {
-		if offset > len(patchData)-3 {
+		if offset > len(patch)-3 {
 			break
 		}
 
-		address := int(patchData[offset]) << 16
+		address := int(patch[offset]) << 16
 		offset++
-		address |= int(patchData[offset]) << 8
+		address |= int(patch[offset]) << 8
 		offset++
-		address |= int(patchData[offset]) << 0
+		address |= int(patch[offset]) << 0
 		offset++
 
 		if address == 0x454f46 /* EOF */ {
-			if offset == len(patchData) {
+			if offset == len(patch) {
 				prov := make([]byte, targetLength)
 				return prov, nil
-			} else if offset == len(patchData)-3 {
-				size := int(patchData[offset]) << 16
+			} else if offset == len(patch)-3 {
+				size := int(patch[offset]) << 16
 				offset++
-				size |= int(patchData[offset]) << 8
+				size |= int(patch[offset]) << 8
 				offset++
-				size |= int(patchData[offset]) << 0
+				size |= int(patch[offset]) << 0
 				offset++
 				targetLength = size
 				prov := make([]byte, targetLength)
@@ -37,17 +37,17 @@ func ipsAllocTargetData(patchData, sourceData []byte) ([]byte, error) {
 			}
 		}
 
-		if offset > len(patchData)-2 {
+		if offset > len(patch)-2 {
 			break
 		}
 
-		length := int(patchData[offset]) << 8
+		length := int(patch[offset]) << 8
 		offset++
-		length |= int(patchData[offset]) << 0
+		length |= int(patch[offset]) << 0
 		offset++
 
 		if length > 0 /* Copy */ {
-			if offset > len(patchData)-int(length) {
+			if offset > len(patch)-int(length) {
 				break
 			}
 
@@ -57,13 +57,13 @@ func ipsAllocTargetData(patchData, sourceData []byte) ([]byte, error) {
 				length--
 			}
 		} else /* RLE */ {
-			if offset > len(patchData)-3 {
+			if offset > len(patch)-3 {
 				break
 			}
 
-			length := int(patchData[offset]) << 8
+			length := int(patch[offset]) << 8
 			offset++
-			length |= int(patchData[offset]) << 0
+			length |= int(patch[offset]) << 0
 			offset++
 
 			if length == 0 /* Illegal */ {
@@ -86,77 +86,76 @@ func ipsAllocTargetData(patchData, sourceData []byte) ([]byte, error) {
 	return nil, errors.New("invalid patch")
 }
 
-func applyIPS(patchData, sourceData []byte) (*[]byte, error) {
-	if len(patchData) < 8 ||
-		patchData[0] != 'P' ||
-		patchData[1] != 'A' ||
-		patchData[2] != 'T' ||
-		patchData[3] != 'C' ||
-		patchData[4] != 'H' {
+func applyIPS(patch, source []byte) (*[]byte, error) {
+	if len(patch) < 8 {
+		return nil, errors.New("patch too small")
+	}
+
+	if string(patch[0:5]) != "PATCH" {
 		return nil, errors.New("invalid patch header")
 	}
 
-	targetData, err := ipsAllocTargetData(patchData, sourceData)
+	targetData, err := ipsAllocTargetData(patch, source)
 	if err != nil {
 		return nil, err
 	}
 
-	copy(targetData, sourceData)
+	copy(targetData, source)
 
 	offset := 5
 	for {
-		if offset > len(patchData)-3 {
+		if offset > len(patch)-3 {
 			break
 		}
 
-		address := int(patchData[offset]) << 16
+		address := int(patch[offset]) << 16
 		offset++
-		address |= int(patchData[offset]) << 8
+		address |= int(patch[offset]) << 8
 		offset++
-		address |= int(patchData[offset]) << 0
+		address |= int(patch[offset]) << 0
 		offset++
 
 		if address == 0x454f46 /* EOF */ {
-			if offset == len(patchData) {
+			if offset == len(patch) {
 				return &targetData, nil
-			} else if offset == len(patchData)-3 {
-				size := int(patchData[offset]) << 16
+			} else if offset == len(patch)-3 {
+				size := int(patch[offset]) << 16
 				offset++
-				size |= int(patchData[offset]) << 8
+				size |= int(patch[offset]) << 8
 				offset++
-				size |= int(patchData[offset]) << 0
+				size |= int(patch[offset]) << 0
 				offset++
 				return &targetData, nil
 			}
 		}
 
-		if offset > len(patchData)-2 {
+		if offset > len(patch)-2 {
 			break
 		}
 
-		length := int(patchData[offset]) << 8
+		length := int(patch[offset]) << 8
 		offset++
-		length |= int(patchData[offset]) << 0
+		length |= int(patch[offset]) << 0
 		offset++
 
 		if length > 0 /* Copy */ {
-			if offset > len(patchData)-length {
+			if offset > len(patch)-length {
 				break
 			}
 
 			for ; length > 0; length-- {
-				targetData[address] = patchData[offset]
+				targetData[address] = patch[offset]
 				address++
 				offset++
 			}
 		} else /* RLE */ {
-			if offset > len(patchData)-3 {
+			if offset > len(patch)-3 {
 				break
 			}
 
-			length = int(patchData[offset]) << 8
+			length = int(patch[offset]) << 8
 			offset++
-			length |= int(patchData[offset]) << 0
+			length |= int(patch[offset]) << 0
 			offset++
 
 			if length == 0 /* Illegal */ {
@@ -164,7 +163,7 @@ func applyIPS(patchData, sourceData []byte) (*[]byte, error) {
 			}
 
 			for ; length > 0; length-- {
-				targetData[address] = patchData[offset]
+				targetData[address] = patch[offset]
 				address++
 			}
 
