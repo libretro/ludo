@@ -104,10 +104,8 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 		targetLength = targetReadLength
 	}
 
-	if len(data.TargetData) < targetLength {
-		prov := make([]byte, targetLength)
-		data.TargetData = prov
-	}
+	prov := make([]byte, targetLength)
+	data.TargetData = prov
 
 	for data.PatchOffset < len(data.PatchData)-12 {
 		for length := upsDecode(&data); length > 0; length-- {
@@ -129,13 +127,21 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 		upsTargetWrite(&data, upsSourceRead(&data))
 	}
 
+	if err := checks(&data, sourceReadLength, targetReadLength); err != nil {
+		return nil, err
+	}
+	return &data.TargetData, nil
+}
+
+// checks verifies that the patching process went well by comparing checksums
+func checks(data *upsData, sourceReadLength, targetReadLength int) error {
 	var sourceReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		sourceReadChecksum |= uint32(upsPatchRead(&data)) << (i * 8)
+		sourceReadChecksum |= uint32(upsPatchRead(data)) << (i * 8)
 	}
 	var targetReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		targetReadChecksum |= uint32(upsPatchRead(&data)) << (i * 8)
+		targetReadChecksum |= uint32(upsPatchRead(data)) << (i * 8)
 	}
 
 	patchResultChecksum := ^data.PatchChecksum
@@ -144,28 +150,24 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 
 	var patchReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		patchReadChecksum |= uint32(upsPatchRead(&data)) << (i * 8)
+		patchReadChecksum |= uint32(upsPatchRead(data)) << (i * 8)
 	}
 
 	if patchResultChecksum != patchReadChecksum {
-		return nil, errors.New("invalid patch")
+		return errors.New("invalid patch")
 	}
 
-	if data.SourceChecksum == sourceReadChecksum &&
-		len(data.SourceData) == sourceReadLength {
-		if data.TargetChecksum == targetReadChecksum &&
-			len(data.TargetData) == targetReadLength {
-			return &data.TargetData, nil
+	if data.SourceChecksum == sourceReadChecksum && len(data.SourceData) == sourceReadLength {
+		if data.TargetChecksum == targetReadChecksum && len(data.TargetData) == targetReadLength {
+			return nil
 		}
-		return nil, errors.New("invalid target")
-	} else if data.SourceChecksum == targetReadChecksum &&
-		len(data.SourceData) == targetReadLength {
-		if data.TargetChecksum == sourceReadChecksum &&
-			len(data.TargetData) == sourceReadLength {
-			return &data.TargetData, nil
+		return errors.New("invalid target")
+	} else if data.SourceChecksum == targetReadChecksum && len(data.SourceData) == targetReadLength {
+		if data.TargetChecksum == sourceReadChecksum && len(data.TargetData) == sourceReadLength {
+			return nil
 		}
-		return nil, errors.New("invalid target")
+		return errors.New("invalid target")
 	}
 
-	return nil, errors.New("invalid source")
+	return errors.New("invalid source")
 }
