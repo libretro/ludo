@@ -4,6 +4,9 @@ import (
 	"errors"
 )
 
+// EOF is the end of the IPS patch
+const EOF = 0x454f46
+
 func ipsAllocTargetData(patch, source []byte) ([]byte, error) {
 	offset := 5
 	targetLength := len(source)
@@ -20,7 +23,7 @@ func ipsAllocTargetData(patch, source []byte) ([]byte, error) {
 		address |= int(patch[offset]) << 0
 		offset++
 
-		if address == 0x454f46 /* EOF */ {
+		if address == EOF {
 			if offset == len(patch) {
 				prov := make([]byte, targetLength)
 				return prov, nil
@@ -115,7 +118,7 @@ func applyIPS(patch, source []byte) (*[]byte, error) {
 		address |= int(patch[offset]) << 0
 		offset++
 
-		if address == 0x454f46 /* EOF */ {
+		if address == EOF {
 			if offset == len(patch) {
 				return &targetData, nil
 			} else if offset == len(patch)-3 {
