@@ -1,3 +1,6 @@
+// Package patch allows softpatching ROMs based on the presence of a patch file
+// next to the ROM. This is useful to apply fan translations without altering
+// No-Intro ROMs. Softpatching only works for cores where NeedFullPath is false.
 package patch
 
 import (

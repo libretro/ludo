@@ -6,52 +6,50 @@ import (
 	"hash/crc32"
 )
 
+type file struct {
+	Data     []byte
+	Offset   int
+	Checksum uint32
+	Hash     hash.Hash32
+}
+
 type upsData struct {
-	PatchData      []byte
-	SourceData     []byte
-	TargetData     []byte
-	PatchOffset    int
-	SourceOffset   int
-	TargetOffset   int
-	PatchChecksum  uint32
-	SourceChecksum uint32
-	TargetChecksum uint32
-	PatchHash      hash.Hash32
-	SourceHash     hash.Hash32
-	TargetHash     hash.Hash32
+	Patch  *file // ups patch
+	Source *file // game to be patched
+	Target *file // result of the patching process
 }
 
 func upsPatchRead(data *upsData) (n byte) {
-	if data != nil && data.PatchOffset < len(data.PatchData) {
-		n = data.PatchData[data.PatchOffset]
-		data.PatchOffset++
-		data.PatchHash.Write([]byte{n})
-		data.PatchChecksum = ^data.PatchHash.Sum32()
+	if data != nil && data.Patch.Offset < len(data.Patch.Data) {
+		n = data.Patch.Data[data.Patch.Offset]
+		data.Patch.Offset++
+		data.Patch.Hash.Write([]byte{n})
+		data.Patch.Checksum = ^data.Patch.Hash.Sum32()
 		return
 	}
 	return
 }
 
 func upsSourceRead(data *upsData) (n byte) {
-	if data != nil && data.SourceOffset < len(data.SourceData) {
-		n = data.SourceData[data.SourceOffset]
-		data.SourceOffset++
-		data.SourceHash.Write([]byte{n})
-		data.SourceChecksum = ^data.SourceHash.Sum32()
+	if data != nil && data.Source.Offset < len(data.Source.Data) {
+		n = data.Source.Data[data.Source.Offset]
+		data.Source.Offset++
+		data.Source.Hash.Write([]byte{n})
+		data.Source.Checksum = ^data.Source.Hash.Sum32()
 		return
 	}
 	return
 }
 
 func upsTargetWrite(data *upsData, n byte) {
-	if data != nil && data.TargetOffset < len(data.TargetData) {
-		data.TargetData[data.TargetOffset] = n
-		data.TargetHash.Write([]byte{n})
-		data.TargetChecksum = ^data.TargetHash.Sum32()
+	if data != nil && data.Target.Offset < len(data.Target.Data) {
+		data.Target.Data[data.Target.Offset] = n
+		data.Target.Hash.Write([]byte{n})
+		data.Target.Checksum = ^data.Target.Hash.Sum32()
 	}
 
 	if data != nil {
-		data.TargetOffset++
+		data.Target.Offset++
 	}
 }
 
@@ -61,7 +59,6 @@ func upsDecode(data *upsData) int {
 	for {
 		x := upsPatchRead(data)
 		offset += int(x&0x7f) * shift
-
 		if x&0x80 != 0 {
 			break
 		}
@@ -73,14 +70,20 @@ func upsDecode(data *upsData) int {
 
 func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 	data := upsData{
-		PatchData:  patchData,
-		SourceData: sourceData,
-		PatchHash:  crc32.NewIEEE(),
-		SourceHash: crc32.NewIEEE(),
-		TargetHash: crc32.NewIEEE(),
+		Patch: &file{
+			Data: patchData,
+			Hash: crc32.NewIEEE(),
+		},
+		Source: &file{
+			Data: sourceData,
+			Hash: crc32.NewIEEE(),
+		},
+		Target: &file{
+			Hash: crc32.NewIEEE(),
+		},
 	}
 
-	if len(data.PatchData) < 18 {
+	if len(data.Patch.Data) < 18 {
 		return nil, errors.New("patch too small")
 	}
 
@@ -94,20 +97,20 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 	sourceReadLength := upsDecode(&data)
 	targetReadLength := upsDecode(&data)
 
-	if len(data.SourceData) != sourceReadLength &&
-		len(data.SourceData) != targetReadLength {
+	if len(data.Source.Data) != sourceReadLength &&
+		len(data.Source.Data) != targetReadLength {
 		return nil, errors.New("invalid source")
 	}
 
 	targetLength := sourceReadLength
-	if len(data.SourceData) == sourceReadLength {
+	if len(data.Source.Data) == sourceReadLength {
 		targetLength = targetReadLength
 	}
 
 	prov := make([]byte, targetLength)
-	data.TargetData = prov
+	data.Target.Data = prov
 
-	for data.PatchOffset < len(data.PatchData)-12 {
+	for data.Patch.Offset < len(data.Patch.Data)-12 {
 		for length := upsDecode(&data); length > 0; length-- {
 			upsTargetWrite(&data, upsSourceRead(&data))
 		}
@@ -120,17 +123,17 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 		}
 	}
 
-	for data.SourceOffset < len(data.SourceData) {
+	for data.Source.Offset < len(data.Source.Data) {
 		upsTargetWrite(&data, upsSourceRead(&data))
 	}
-	for data.TargetOffset < len(data.TargetData) {
+	for data.Target.Offset < len(data.Target.Data) {
 		upsTargetWrite(&data, upsSourceRead(&data))
 	}
 
 	if err := checks(&data, sourceReadLength, targetReadLength); err != nil {
 		return nil, err
 	}
-	return &data.TargetData, nil
+	return &data.Target.Data, nil
 }
 
 // checks verifies that the patching process went well by comparing checksums
@@ -144,9 +147,9 @@ func checks(data *upsData, sourceReadLength, targetReadLength int) error {
 		targetReadChecksum |= uint32(upsPatchRead(data)) << (i * 8)
 	}
 
-	patchResultChecksum := ^data.PatchChecksum
-	data.SourceChecksum = ^data.SourceChecksum
-	data.TargetChecksum = ^data.TargetChecksum
+	patchResultChecksum := ^data.Patch.Checksum
+	data.Source.Checksum = ^data.Source.Checksum
+	data.Target.Checksum = ^data.Target.Checksum
 
 	var patchReadChecksum uint32
 	for i := 0; i < 4; i++ {
@@ -157,13 +160,13 @@ func checks(data *upsData, sourceReadLength, targetReadLength int) error {
 		return errors.New("invalid patch")
 	}
 
-	if data.SourceChecksum == sourceReadChecksum && len(data.SourceData) == sourceReadLength {
-		if data.TargetChecksum == targetReadChecksum && len(data.TargetData) == targetReadLength {
+	if data.Source.Checksum == sourceReadChecksum && len(data.Source.Data) == sourceReadLength {
+		if data.Target.Checksum == targetReadChecksum && len(data.Target.Data) == targetReadLength {
 			return nil
 		}
 		return errors.New("invalid target")
-	} else if data.SourceChecksum == targetReadChecksum && len(data.SourceData) == targetReadLength {
-		if data.TargetChecksum == sourceReadChecksum && len(data.TargetData) == sourceReadLength {
+	} else if data.Source.Checksum == targetReadChecksum && len(data.Source.Data) == targetReadLength {
+		if data.Target.Checksum == sourceReadChecksum && len(data.Target.Data) == sourceReadLength {
 			return nil
 		}
 		return errors.New("invalid target")
