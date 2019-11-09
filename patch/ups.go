@@ -13,12 +13,6 @@ type file struct {
 	Hash     hash.Hash32
 }
 
-type upsData struct {
-	Patch  *file // ups patch
-	Source *file // game to be patched
-	Target *file // result of the patching process
-}
-
 func upsRead(f *file) (n byte) {
 	if f.Offset < len(f.Data) {
 		n = f.Data[f.Offset]
@@ -54,104 +48,102 @@ func upsDecode(f *file) int {
 }
 
 func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
-	data := upsData{
-		Patch: &file{
-			Data: patchData,
-			Hash: crc32.NewIEEE(),
-		},
-		Source: &file{
-			Data: sourceData,
-			Hash: crc32.NewIEEE(),
-		},
-		Target: &file{
-			Hash: crc32.NewIEEE(),
-		},
+	patch := &file{
+		Data: patchData,
+		Hash: crc32.NewIEEE(),
+	}
+	source := &file{
+		Data: sourceData,
+		Hash: crc32.NewIEEE(),
+	}
+	target := &file{
+		Hash: crc32.NewIEEE(),
 	}
 
-	if len(data.Patch.Data) < 18 {
+	if len(patch.Data) < 18 {
 		return nil, errors.New("patch too small")
 	}
 
-	if upsRead(data.Patch) != 'U' ||
-		upsRead(data.Patch) != 'P' ||
-		upsRead(data.Patch) != 'S' ||
-		upsRead(data.Patch) != '1' {
+	if upsRead(patch) != 'U' ||
+		upsRead(patch) != 'P' ||
+		upsRead(patch) != 'S' ||
+		upsRead(patch) != '1' {
 		return nil, errors.New("invalid patch header")
 	}
 
-	sourceReadLength := upsDecode(data.Patch)
-	targetReadLength := upsDecode(data.Patch)
+	sourceReadLength := upsDecode(patch)
+	targetReadLength := upsDecode(patch)
 
-	if len(data.Source.Data) != sourceReadLength &&
-		len(data.Source.Data) != targetReadLength {
+	if len(source.Data) != sourceReadLength &&
+		len(source.Data) != targetReadLength {
 		return nil, errors.New("invalid source")
 	}
 
 	targetLength := sourceReadLength
-	if len(data.Source.Data) == sourceReadLength {
+	if len(source.Data) == sourceReadLength {
 		targetLength = targetReadLength
 	}
 
 	prov := make([]byte, targetLength)
-	data.Target.Data = prov
+	target.Data = prov
 
-	for data.Patch.Offset < len(data.Patch.Data)-12 {
-		for length := upsDecode(data.Patch); length > 0; length-- {
-			upsWrite(data.Target, upsRead(data.Source))
+	for patch.Offset < len(patch.Data)-12 {
+		for length := upsDecode(patch); length > 0; length-- {
+			upsWrite(target, upsRead(source))
 		}
 		for {
-			patchXOR := upsRead(data.Patch)
-			upsWrite(data.Target, patchXOR^upsRead(data.Source))
+			patchXOR := upsRead(patch)
+			upsWrite(target, patchXOR^upsRead(source))
 			if patchXOR == 0 {
 				break
 			}
 		}
 	}
 
-	for data.Source.Offset < len(data.Source.Data) {
-		upsWrite(data.Target, upsRead(data.Source))
+	for source.Offset < len(source.Data) {
+		upsWrite(target, upsRead(source))
 	}
-	for data.Target.Offset < len(data.Target.Data) {
-		upsWrite(data.Target, upsRead(data.Source))
+	for target.Offset < len(target.Data) {
+		upsWrite(target, upsRead(source))
 	}
 
-	if err := checks(&data, sourceReadLength, targetReadLength); err != nil {
+	if err := checks(patch, source, target, sourceReadLength, targetReadLength); err != nil {
 		return nil, err
 	}
-	return &data.Target.Data, nil
+	return &target.Data, nil
 }
 
 // checks verifies that the patching process went well by comparing checksums
-func checks(data *upsData, sourceReadLength, targetReadLength int) error {
+func checks(patch, source, target *file, sourceReadLength, targetReadLength int) error {
 	var sourceReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		sourceReadChecksum |= uint32(upsRead(data.Patch)) << (i * 8)
+		sourceReadChecksum |= uint32(upsRead(patch)) << (i * 8)
 	}
 	var targetReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		targetReadChecksum |= uint32(upsRead(data.Patch)) << (i * 8)
+		targetReadChecksum |= uint32(upsRead(patch)) << (i * 8)
 	}
 
-	patchResultChecksum := ^data.Patch.Checksum
-	data.Source.Checksum = ^data.Source.Checksum
-	data.Target.Checksum = ^data.Target.Checksum
+	patchResultChecksum := ^patch.Checksum
+	source.Checksum = ^source.Checksum
+	target.Checksum = ^target.Checksum
 
 	var patchReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		patchReadChecksum |= uint32(upsRead(data.Patch)) << (i * 8)
+		patchReadChecksum |= uint32(upsRead(patch)) << (i * 8)
 	}
 
 	if patchResultChecksum != patchReadChecksum {
 		return errors.New("invalid patch")
 	}
 
-	if data.Source.Checksum == sourceReadChecksum && len(data.Source.Data) == sourceReadLength {
-		if data.Target.Checksum == targetReadChecksum && len(data.Target.Data) == targetReadLength {
+	if source.Checksum == sourceReadChecksum && len(source.Data) == sourceReadLength {
+		if target.Checksum == targetReadChecksum && len(target.Data) == targetReadLength {
 			return nil
 		}
 		return errors.New("invalid target")
-	} else if data.Source.Checksum == targetReadChecksum && len(data.Source.Data) == targetReadLength {
-		if data.Target.Checksum == sourceReadChecksum && len(data.Target.Data) == sourceReadLength {
+	} else if source.Checksum == targetReadChecksum && len(source.Data) == targetReadLength {
+		if target.Checksum == sourceReadChecksum && len(target.Data) == sourceReadLength {
 			return nil
 		}
 		return errors.New("invalid target")
