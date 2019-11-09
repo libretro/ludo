@@ -54,10 +54,9 @@ func ipsAllocTargetData(patch, source []byte) ([]byte, error) {
 				break
 			}
 
-			for length > 0 {
+			for ; length > 0; length-- {
 				address++
 				offset++
-				length--
 			}
 		} else /* RLE */ {
 			if offset > len(patch)-3 {
@@ -73,9 +72,8 @@ func ipsAllocTargetData(patch, source []byte) ([]byte, error) {
 				break
 			}
 
-			for length > 0 {
+			for ; length > 0; length-- {
 				address++
-				length--
 			}
 
 			offset++
