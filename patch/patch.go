@@ -13,9 +13,9 @@ import (
 // Try to apply different patches located next to the game
 // Currently only .ups is supported
 func Try(gamePath string, bytes []byte) (*[]byte, error) {
-	patchFile := strings.TrimSuffix(gamePath, filepath.Ext(gamePath)) + ".ups"
-	if _, err := os.Stat(patchFile); !os.IsNotExist(err) {
-		pbytes, err := ioutil.ReadFile(patchFile)
+	upsFile := strings.TrimSuffix(gamePath, filepath.Ext(gamePath)) + ".ups"
+	if _, err := os.Stat(upsFile); !os.IsNotExist(err) {
+		pbytes, err := ioutil.ReadFile(upsFile)
 		if err != nil {
 			return nil, err
 		}
@@ -27,5 +27,21 @@ func Try(gamePath string, bytes []byte) (*[]byte, error) {
 
 		return patched, nil
 	}
+
+	ipsFile := strings.TrimSuffix(gamePath, filepath.Ext(gamePath)) + ".ips"
+	if _, err := os.Stat(ipsFile); !os.IsNotExist(err) {
+		pbytes, err := ioutil.ReadFile(ipsFile)
+		if err != nil {
+			return nil, err
+		}
+
+		patched, err := applyIPS(pbytes, bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		return patched, nil
+	}
+
 	return nil, nil
 }
