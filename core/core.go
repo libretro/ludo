@@ -18,6 +18,7 @@ import (
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/patch"
 	"github.com/libretro/ludo/savefiles"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
@@ -136,7 +137,13 @@ func LoadGame(gamePath string) error {
 		if err != nil {
 			return err
 		}
-		gi.SetData(bytes)
+
+		if patched, _ := patch.Try(gamePath, bytes); patched != nil {
+			gi.Size = int64(len(*patched))
+			gi.SetData(*patched)
+		} else {
+			gi.SetData(bytes)
+		}
 	}
 
 	ok := state.Global.Core.LoadGame(*gi)
