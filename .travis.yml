@@ -62,8 +62,9 @@ matrix:
     - name: OSX
       os: osx
       osx_image: xcode11.2
+      before_cache:
+        - brew cleanup
       before_install:
-        - brew update
         - brew install openal-soft
       script:
         - go get -v ./...
