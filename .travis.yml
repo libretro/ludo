@@ -132,3 +132,4 @@ deploy:
 cache:
   directories:
     - $HOME/Library/Caches/Homebrew
+    - $GOPATH/pkg/mod
