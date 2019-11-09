@@ -19,45 +19,30 @@ type upsData struct {
 	Target *file // result of the patching process
 }
 
-func upsPatchRead(data *upsData) (n byte) {
-	if data != nil && data.Patch.Offset < len(data.Patch.Data) {
-		n = data.Patch.Data[data.Patch.Offset]
-		data.Patch.Offset++
-		data.Patch.Hash.Write([]byte{n})
-		data.Patch.Checksum = ^data.Patch.Hash.Sum32()
-		return
+func upsRead(f *file) (n byte) {
+	if f.Offset < len(f.Data) {
+		n = f.Data[f.Offset]
+		f.Offset++
+		f.Hash.Write([]byte{n})
+		f.Checksum = ^f.Hash.Sum32()
 	}
 	return
 }
 
-func upsSourceRead(data *upsData) (n byte) {
-	if data != nil && data.Source.Offset < len(data.Source.Data) {
-		n = data.Source.Data[data.Source.Offset]
-		data.Source.Offset++
-		data.Source.Hash.Write([]byte{n})
-		data.Source.Checksum = ^data.Source.Hash.Sum32()
-		return
+func upsWrite(f *file, n byte) {
+	if f.Offset < len(f.Data) {
+		f.Data[f.Offset] = n
+		f.Hash.Write([]byte{n})
+		f.Checksum = ^f.Hash.Sum32()
 	}
-	return
+	f.Offset++
 }
 
-func upsTargetWrite(data *upsData, n byte) {
-	if data != nil && data.Target.Offset < len(data.Target.Data) {
-		data.Target.Data[data.Target.Offset] = n
-		data.Target.Hash.Write([]byte{n})
-		data.Target.Checksum = ^data.Target.Hash.Sum32()
-	}
-
-	if data != nil {
-		data.Target.Offset++
-	}
-}
-
-func upsDecode(data *upsData) int {
+func upsDecode(f *file) int {
 	var offset = 0
 	var shift = 1
 	for {
-		x := upsPatchRead(data)
+		x := upsRead(f)
 		offset += int(x&0x7f) * shift
 		if x&0x80 != 0 {
 			break
@@ -87,15 +72,15 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 		return nil, errors.New("patch too small")
 	}
 
-	if upsPatchRead(&data) != 'U' ||
-		upsPatchRead(&data) != 'P' ||
-		upsPatchRead(&data) != 'S' ||
-		upsPatchRead(&data) != '1' {
+	if upsRead(data.Patch) != 'U' ||
+		upsRead(data.Patch) != 'P' ||
+		upsRead(data.Patch) != 'S' ||
+		upsRead(data.Patch) != '1' {
 		return nil, errors.New("invalid patch header")
 	}
 
-	sourceReadLength := upsDecode(&data)
-	targetReadLength := upsDecode(&data)
+	sourceReadLength := upsDecode(data.Patch)
+	targetReadLength := upsDecode(data.Patch)
 
 	if len(data.Source.Data) != sourceReadLength &&
 		len(data.Source.Data) != targetReadLength {
@@ -111,12 +96,12 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 	data.Target.Data = prov
 
 	for data.Patch.Offset < len(data.Patch.Data)-12 {
-		for length := upsDecode(&data); length > 0; length-- {
-			upsTargetWrite(&data, upsSourceRead(&data))
+		for length := upsDecode(data.Patch); length > 0; length-- {
+			upsWrite(data.Target, upsRead(data.Source))
 		}
 		for {
-			patchXOR := upsPatchRead(&data)
-			upsTargetWrite(&data, patchXOR^upsSourceRead(&data))
+			patchXOR := upsRead(data.Patch)
+			upsWrite(data.Target, patchXOR^upsRead(data.Source))
 			if patchXOR == 0 {
 				break
 			}
@@ -124,10 +109,10 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 	}
 
 	for data.Source.Offset < len(data.Source.Data) {
-		upsTargetWrite(&data, upsSourceRead(&data))
+		upsWrite(data.Target, upsRead(data.Source))
 	}
 	for data.Target.Offset < len(data.Target.Data) {
-		upsTargetWrite(&data, upsSourceRead(&data))
+		upsWrite(data.Target, upsRead(data.Source))
 	}
 
 	if err := checks(&data, sourceReadLength, targetReadLength); err != nil {
@@ -140,11 +125,11 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 func checks(data *upsData, sourceReadLength, targetReadLength int) error {
 	var sourceReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		sourceReadChecksum |= uint32(upsPatchRead(data)) << (i * 8)
+		sourceReadChecksum |= uint32(upsRead(data.Patch)) << (i * 8)
 	}
 	var targetReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		targetReadChecksum |= uint32(upsPatchRead(data)) << (i * 8)
+		targetReadChecksum |= uint32(upsRead(data.Patch)) << (i * 8)
 	}
 
 	patchResultChecksum := ^data.Patch.Checksum
@@ -153,7 +138,7 @@ func checks(data *upsData, sourceReadLength, targetReadLength int) error {
 
 	var patchReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		patchReadChecksum |= uint32(upsPatchRead(data)) << (i * 8)
+		patchReadChecksum |= uint32(upsRead(data.Patch)) << (i * 8)
 	}
 
 	if patchResultChecksum != patchReadChecksum {
