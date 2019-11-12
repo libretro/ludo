@@ -82,8 +82,12 @@ func getGLSLVersion() uint {
 		log.Println("[Video]: GLSL version:", GLSLVersion)
 	}
 
-	clean := strings.Replace(GLSLVersion, ".", "", -1)
-	v, _ := strconv.Atoi(clean)
+	clean := strings.Replace(GLSLVersion[:4], ".", "", -1)
+	v, err := strconv.Atoi(clean)
+	if err != nil {
+		log.Println("[Video]: Couldn't parse GLSL version:", err)
+		return 120
+	}
 	return uint(v)
 }
 
