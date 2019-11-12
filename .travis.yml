@@ -29,7 +29,7 @@ matrix:
         - staticcheck ./...
         - gocyclo -over 20 $GO_FILES
         - golint -set_exit_status $(go list ./...)
-        - go build -v -ldflags '-w -extldflags "-static"'
+        - go build -v -ldflags '-extldflags "-fno-PIC -static"' -tags 'osusergo netgo static_build'
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-x86_64-${TRAVIS_TAG:1}.tar.gz.sha256; fi
     - name: Linux arm
@@ -54,7 +54,7 @@ matrix:
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc staticcheck ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc gocyclo -over 20 $GO_FILES
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc golint -set_exit_status $(go list ./...)
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v -ldflags '-w -extldflags "-static"'
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v -ldflags '-extldflags "-fno-PIC -static"' -tags 'osusergo netgo static_build'
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz.sha256; fi
     - name: OSX
