@@ -12,10 +12,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"gopkg.in/yaml.v2"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
+	"gopkg.in/yaml.v2"
 )
 
 // Variable represents one core option. A variable can take a limited number of
@@ -66,7 +66,7 @@ func (o *Options) Save() error {
 	for _, v := range o.Vars {
 		m[v.Key] = v.Choices[v.Choice]
 	}
-	b, err := yaml.MarshalIndent(m)
+	b, err := yaml.Marshal(m)
 	if err != nil {
 		return err
 	}
