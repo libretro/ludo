@@ -1,7 +1,6 @@
 ludo
 ludo.exe
 debug
-settings.json
 *.app
 *.dmg
 cores

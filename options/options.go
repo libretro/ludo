@@ -5,7 +5,6 @@ package options
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"io/ioutil"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"gopkg.in/yaml.v2"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -66,13 +66,13 @@ func (o *Options) Save() error {
 	for _, v := range o.Vars {
 		m[v.Key] = v.Choices[v.Choice]
 	}
-	b, err := json.MarshalIndent(m, "", "  ")
+	b, err := yaml.MarshalIndent(m)
 	if err != nil {
 		return err
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
+	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".yaml"))
 	if err != nil {
 		return err
 	}
@@ -97,13 +97,13 @@ func (o *Options) load() error {
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".json"))
+	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".yaml"))
 	if err != nil {
 		return err
 	}
 
 	var opts map[string]string
-	err = json.Unmarshal(b, &opts)
+	err = yaml.Unmarshal(b, &opts)
 	if err != nil {
 		return err
 	}

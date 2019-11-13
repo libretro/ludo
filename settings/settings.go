@@ -12,13 +12,13 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"gopkg.in/yaml.v2"
 	"github.com/fatih/structs"
 	"github.com/libretro/ludo/ludos"
 	"github.com/libretro/ludo/utils"
+	"gopkg.in/yaml.v2"
 )
 
-// Settings is the list of available settings for the program. It serializes to JSON.
+// Settings is the list of available settings for the program. It serializes to YAML.
 // Tags are used to set a human readable label and a format for the settings value.
 // Widget sets the graphical representation of the value.
 type Settings struct {
@@ -71,7 +71,7 @@ func Load() error {
 	// Set default values for settings
 	Current = Defaults
 
-	// If /etc/ludo.json exists, override the defaults
+	// If /etc/ludo.yml exists, override the defaults
 	if _, err := os.Stat("/etc/ludo.yml"); !os.IsNotExist(err) {
 		b, _ := ioutil.ReadFile("/etc/ludo.yml")
 		err = yaml.Unmarshal(b, &Current)
@@ -89,7 +89,7 @@ func Load() error {
 		return err
 	}
 
-	// Those are special fields, their value is not saved in settings.json but
+	// Those are special fields, their value is not saved in settings.yml but
 	// depends on the presence of some files
 	ludos.InitializeServiceSettingsValues(structs.Fields(&Current))
 
