@@ -72,7 +72,7 @@ func (o *Options) Save() error {
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".yaml"))
+	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".yml"))
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (o *Options) load() error {
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".yaml"))
+	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".yml"))
 	if err != nil {
 		return err
 	}
