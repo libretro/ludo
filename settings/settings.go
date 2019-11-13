@@ -4,7 +4,6 @@ package settings
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -13,6 +12,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"gopkg.in/yaml.v2"
 	"github.com/fatih/structs"
 	"github.com/libretro/ludo/ludos"
 	"github.com/libretro/ludo/utils"
@@ -22,28 +22,28 @@ import (
 // Tags are used to set a human readable label and a format for the settings value.
 // Widget sets the graphical representation of the value.
 type Settings struct {
-	VideoFullscreen   bool   `hide:"ludos" json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
-	VideoMonitorIndex int    `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
-	VideoFilter       string `json:"video_filter" label:"Video Filter" fmt:"<%s>"`
+	VideoFullscreen   bool   `hide:"ludos" yaml:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
+	VideoMonitorIndex int    `yaml:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
+	VideoFilter       string `yaml:"video_filter" label:"Video Filter" fmt:"<%s>"`
 
-	AudioVolume     float32           `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
-	MenuAudioVolume float32           `json:"menu_audio_volume" label:"Menu Audio Volume" fmt:"%.1f" widget:"range"`
-	ShowHiddenFiles bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
-	CoreForPlaylist map[string]string `hide:"always" json:"core_for_playlist"`
+	AudioVolume     float32           `yaml:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
+	MenuAudioVolume float32           `yaml:"menu_audio_volume" label:"Menu Audio Volume" fmt:"%.1f" widget:"range"`
+	ShowHiddenFiles bool              `yaml:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
+	CoreForPlaylist map[string]string `hide:"always" yaml:"core_for_playlist"`
 
-	CoresDirectory       string `hide:"ludos" json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
-	AssetsDirectory      string `hide:"ludos" json:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
-	DatabaseDirectory    string `hide:"ludos" json:"database_dir" label:"Database Directory" fmt:"%s" widget:"dir"`
-	SavestatesDirectory  string `hide:"ludos" json:"savestates_dir" label:"Savestates Directory" fmt:"%s" widget:"dir"`
-	SavefilesDirectory   string `hide:"ludos" json:"savefiles_dir" label:"Savefiles Directory" fmt:"%s" widget:"dir"`
-	ScreenshotsDirectory string `hide:"ludos" json:"screenshots_dir" label:"Screenshots Directory" fmt:"%s" widget:"dir"`
-	SystemDirectory      string `hide:"ludos" json:"system_dir" label:"System Directory" fmt:"%s" widget:"dir"`
-	PlaylistsDirectory   string `hide:"ludos" json:"playlists_dir" label:"Playlists Directory" fmt:"%s" widget:"dir"`
-	ThumbnailsDirectory  string `hide:"ludos" json:"thumbnail_dir" label:"Thumbnails Directory" fmt:"%s" widget:"dir"`
+	CoresDirectory       string `hide:"ludos" yaml:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
+	AssetsDirectory      string `hide:"ludos" yaml:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
+	DatabaseDirectory    string `hide:"ludos" yaml:"database_dir" label:"Database Directory" fmt:"%s" widget:"dir"`
+	SavestatesDirectory  string `hide:"ludos" yaml:"savestates_dir" label:"Savestates Directory" fmt:"%s" widget:"dir"`
+	SavefilesDirectory   string `hide:"ludos" yaml:"savefiles_dir" label:"Savefiles Directory" fmt:"%s" widget:"dir"`
+	ScreenshotsDirectory string `hide:"ludos" yaml:"screenshots_dir" label:"Screenshots Directory" fmt:"%s" widget:"dir"`
+	SystemDirectory      string `hide:"ludos" yaml:"system_dir" label:"System Directory" fmt:"%s" widget:"dir"`
+	PlaylistsDirectory   string `hide:"ludos" yaml:"playlists_dir" label:"Playlists Directory" fmt:"%s" widget:"dir"`
+	ThumbnailsDirectory  string `hide:"ludos" yaml:"thumbnail_dir" label:"Thumbnails Directory" fmt:"%s" widget:"dir"`
 
-	SSHService       bool `hide:"app" json:"ssh_service" label:"SSH" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
-	SambaService     bool `hide:"app" json:"samba_service" label:"Samba" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
-	BluetoothService bool `hide:"app" json:"bluetooth_service" label:"Bluetooth" widget:"switch" service:"bluetooth.service" path:"/storage/.cache/services/bluez.conf"`
+	SSHService       bool `hide:"app" yaml:"ssh_service" label:"SSH" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
+	SambaService     bool `hide:"app" yaml:"samba_service" label:"Samba" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
+	BluetoothService bool `hide:"app" yaml:"bluetooth_service" label:"Bluetooth" widget:"switch" service:"bluetooth.service" path:"/storage/.cache/services/bluez.conf"`
 }
 
 // Current stores the current settings at runtime
@@ -72,19 +72,19 @@ func Load() error {
 	Current = Defaults
 
 	// If /etc/ludo.json exists, override the defaults
-	if _, err := os.Stat("/etc/ludo.json"); !os.IsNotExist(err) {
-		b, _ := ioutil.ReadFile("/etc/ludo.json")
-		err = json.Unmarshal(b, &Current)
+	if _, err := os.Stat("/etc/ludo.yml"); !os.IsNotExist(err) {
+		b, _ := ioutil.ReadFile("/etc/ludo.yml")
+		err = yaml.Unmarshal(b, &Current)
 		if err != nil {
 			return err
 		}
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
+	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", "settings.yml"))
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(b, &Current)
+	err = yaml.Unmarshal(b, &Current)
 	if err != nil {
 		return err
 	}
@@ -108,12 +108,12 @@ func Save() error {
 		return err
 	}
 
-	b, err := json.MarshalIndent(Current, "", "  ")
+	b, err := yaml.Marshal(Current)
 	if err != nil {
 		return err
 	}
 
-	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
+	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "settings.yml"))
 	if err != nil {
 		return err
 	}
