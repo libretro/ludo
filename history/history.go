@@ -1,20 +1,21 @@
 package history
 
 import (
-	"bufio"
-	"encoding/csv"
-	"io"
+	"bytes"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+
+	"gopkg.in/laverya/yaml.v3"
 )
 
 // Game represents a game in the history file
 type Game struct {
-	Path      string // Absolute path of the game on the filesystem
-	Name      string // Human readable name of the game, comes from the RDB
-	System    string
-	CorePath  string
-	Savestate string // Absolute path of the last savestate on this game
+	Path   string // Absolute path of the game on the filesystem
+	Name   string // Human readable name of the game, comes from the RDB
+	System string
+	Core   string
 }
 
 // History is a list of games
@@ -44,65 +45,42 @@ func Push(g Game) {
 	}
 }
 
-// Load loads history.csv in memory
+// Load loads history.yml in memory
 func Load() error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
 
-	file, err := os.Open(homeDir + "/.ludo/history.csv")
+	b, err := ioutil.ReadFile(filepath.Join(homeDir, ".ludo", "history.yml"))
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
-	wr := csv.NewReader(bufio.NewReader(file))
-
-	List = History{}
-	for {
-		record, err := wr.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		List = append(List, Game{
-			Path:     record[0],
-			Name:     record[1],
-			System:   record[2],
-			CorePath: record[3],
-		})
-	}
-
-	return nil
+	return yaml.Unmarshal(b, &List)
 }
 
-// Save persists the history as a csv file
+// Save persists the history as a yml file
 func Save() error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
 
-	file, err := os.Create(homeDir + "/.ludo/history.csv")
+	file, err := os.Create(homeDir + "/.ludo/history.yml")
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	wr := csv.NewWriter(bufio.NewWriter(file))
-	defer wr.Flush()
-
-	for _, game := range List {
-		wr.Write([]string{
-			game.Path,
-			game.Name,
-			game.System,
-			game.CorePath,
-		})
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	defer enc.Close()
+	enc.SetLineLength(-1)
+	if err := enc.Encode(List); err != nil {
+		return err
 	}
 
-	return nil
+	_, err = buf.WriteTo(file)
+	return err
 }

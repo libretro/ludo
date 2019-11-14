@@ -15,7 +15,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/libretro/ludo/ludos"
 	"github.com/libretro/ludo/utils"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/laverya/yaml.v3"
 )
 
 // Settings is the list of available settings for the program. It serializes to YAML.

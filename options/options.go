@@ -15,7 +15,7 @@ import (
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/laverya/yaml.v3"
 )
 
 // Variable represents one core option. A variable can take a limited number of

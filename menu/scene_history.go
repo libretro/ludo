@@ -50,7 +50,7 @@ func loadHistoryEntry(list Scene, game history.Game) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Game not found.")
 		return
 	}
-	corePath := game.CorePath
+	corePath := game.Core
 	if _, err := os.Stat(corePath); os.IsNotExist(err) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
 		return
@@ -69,10 +69,10 @@ func loadHistoryEntry(list Scene, game history.Game) {
 			return
 		}
 		history.Push(history.Game{
-			Path:     game.Path,
-			Name:     game.Name,
-			System:   game.System,
-			CorePath: corePath,
+			Path:   game.Path,
+			Name:   game.Name,
+			System: game.System,
+			Core:   corePath,
 		})
 		list.segueNext()
 		menu.Push(buildQuickMenu())
