@@ -104,10 +104,10 @@ func loadPlaylistEntry(list *scenePlaylist, playlist string, game playlists.Game
 			return
 		}
 		history.Push(history.Game{
-			Path:   game.Path,
-			Name:   game.Name,
-			System: playlist,
-			Core:   corePath,
+			Path:     game.Path,
+			Name:     game.Name,
+			System:   playlist,
+			CorePath: corePath,
 		})
 		list.segueNext()
 		menu.Push(buildQuickMenu())

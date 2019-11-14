@@ -18,8 +18,7 @@ require (
 	github.com/youpy/go-wav v0.0.0-20160223082350-b63a9887d320
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/mobile v0.0.0-20190607214518-6fa95d984e88
-	gopkg.in/laverya/yaml.v3 v3.0.0-beta4
-	gopkg.in/yaml.v2 v2.2.5 // indirect
+	gopkg.in/yaml.v2 v2.2.5
 )
 
 go 1.13

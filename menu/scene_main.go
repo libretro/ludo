@@ -126,9 +126,9 @@ func gameExplorerCb(path string) {
 		return
 	}
 	history.Push(history.Game{
-		Path: path,
-		Name: utils.FileName(path),
-		Core: state.Global.CorePath,
+		Path:     path,
+		Name:     utils.FileName(path),
+		CorePath: state.Global.CorePath,
 	})
 	menu.WarpToQuickMenu()
 	state.Global.MenuActive = false
