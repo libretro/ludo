@@ -15,7 +15,7 @@ import (
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"gopkg.in/yaml.v2"
+	"github.com/pelletier/go-toml"
 )
 
 // Variable represents one core option. A variable can take a limited number of
@@ -66,13 +66,13 @@ func (o *Options) Save() error {
 	for _, v := range o.Vars {
 		m[v.Key] = v.Choices[v.Choice]
 	}
-	b, err := yaml.Marshal(m)
+	b, err := toml.Marshal(m)
 	if err != nil {
 		return err
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".yml"))
+	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".toml"))
 	if err != nil {
 		return err
 	}
@@ -97,13 +97,13 @@ func (o *Options) load() error {
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".yml"))
+	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".toml"))
 	if err != nil {
 		return err
 	}
 
 	var opts map[string]string
-	err = yaml.Unmarshal(b, &opts)
+	err = toml.Unmarshal(b, &opts)
 	if err != nil {
 		return err
 	}
