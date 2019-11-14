@@ -117,11 +117,11 @@ func applyUPS(patchData, sourceData []byte) (*[]byte, error) {
 func checks(patch, source, target *file, sourceReadLength, targetReadLength int) error {
 	var sourceReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		sourceReadChecksum |= uint32(upsRead(patch)) << (i * 8)
+		sourceReadChecksum |= uint32(upsRead(patch)) << uint32(i*8)
 	}
 	var targetReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		targetReadChecksum |= uint32(upsRead(patch)) << (i * 8)
+		targetReadChecksum |= uint32(upsRead(patch)) << uint32(i*8)
 	}
 
 	patchResultChecksum := ^patch.Checksum
@@ -130,7 +130,7 @@ func checks(patch, source, target *file, sourceReadLength, targetReadLength int)
 
 	var patchReadChecksum uint32
 	for i := 0; i < 4; i++ {
-		patchReadChecksum |= uint32(upsRead(patch)) << (i * 8)
+		patchReadChecksum |= uint32(upsRead(patch)) << uint32(i*8)
 	}
 
 	if patchResultChecksum != patchReadChecksum {
