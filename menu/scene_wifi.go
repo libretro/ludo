@@ -41,8 +41,7 @@ func buildWiFi() Scene {
 							"Passpharse for "+network.SSID,
 							func(pass string) {
 								go func() {
-									err := ludos.ConnectNetwork(network, pass)
-									if err != nil {
+									if err := ludos.ConnectNetwork(network, pass); err != nil {
 										ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 									}
 								}()

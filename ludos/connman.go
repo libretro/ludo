@@ -25,7 +25,7 @@ var cache map[string]string
 
 // ScanNetworks enables connman and returns the list of available SSIDs
 func ScanNetworks() ([]Network, error) {
-	cache = map[string]string{}
+	cache = map[string]string{} // clear the status cache
 	networks := []Network{}
 
 	err := exec.Command("/usr/bin/connmanctl", "enable", "wifi").Run()
@@ -57,26 +57,30 @@ func ScanNetworks() ([]Network, error) {
 
 // NetworkStatus returns the status of a network
 func NetworkStatus(network Network) string {
-	_, ok := cache[network.Path]
-	if !ok && counter%120 == 0 {
-		out, _ := exec.Command(
-			"/usr/bin/bash",
-			"-c",
-			"connmanctl services "+network.Path+" | grep State",
-		).Output()
-		if strings.Contains(string(out), "online") {
-			cache[network.Path] = "Online"
-			CurrentNetwork = network
-		} else if strings.Contains(string(out), "ready") {
-			cache[network.Path] = "Ready"
-			CurrentNetwork = network
-		} else if strings.Contains(string(out), "association") {
-			cache[network.Path] = "Association"
-		} else {
-			cache[network.Path] = ""
-		}
+	if counter++; counter%120 != 0 {
+		return cache[network.Path]
 	}
-	counter++
+
+	out, err := exec.Command(
+		"/usr/bin/bash", "-c",
+		"connmanctl services "+network.Path+" | grep State",
+	).Output()
+	if err != nil {
+		return cache[network.Path]
+	}
+
+	if strings.Contains(string(out), "online") {
+		cache[network.Path] = "Online"
+		CurrentNetwork = network
+	} else if strings.Contains(string(out), "ready") {
+		cache[network.Path] = "Ready"
+		CurrentNetwork = network
+	} else if strings.Contains(string(out), "association") {
+		cache[network.Path] = "Association"
+	} else {
+		cache[network.Path] = ""
+	}
+
 	return cache[network.Path]
 }
 
@@ -93,34 +97,37 @@ Passphrase=%s
 IPv4.method=dhcp
 `, network.Path, network.SSID, hexSSID, passphrase)
 
-	err := os.MkdirAll(filepath.Join(connmanPath, network.Path), os.ModePerm)
+	netPath := filepath.Join(connmanPath, network.Path)
+
+	if err := os.MkdirAll(netPath, os.ModePerm); err != nil {
+		return err
+	}
+
+	fd, err := os.Create(filepath.Join(netPath, "settings"))
 	if err != nil {
 		return err
 	}
 
-	fd, err := os.Create(filepath.Join(connmanPath, network.Path, "settings"))
-	if err != nil {
-		return err
-	}
-	defer fd.Close()
-
-	_, err = fd.WriteString(config)
-	if err != nil {
+	if _, err := fd.WriteString(config); err != nil {
 		return err
 	}
 
 	// We want the sync to happen before connmanctl connect, don't defer
-	err = fd.Sync()
-	if err != nil {
+	if err := fd.Sync(); err != nil {
 		return err
 	}
 
-	err = exec.Command("/usr/bin/connmanctl", "connect", network.Path).Run()
-	if err != nil {
+	if err := fd.Close(); err != nil {
 		return err
 	}
 
-	cache = map[string]string{}
+	if err := exec.Command("/usr/bin/connmanctl", "connect", network.Path).
+		Run(); err != nil {
+		return err
+	}
+
+	cache = map[string]string{} // clear the status cache
+	cache[network.Path] = "Connecting"
 
 	return nil
 }
