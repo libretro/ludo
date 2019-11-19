@@ -126,6 +126,11 @@ IPv4.method=dhcp
 		return err
 	}
 
+	if err := exec.Command("/usr/bin/systemctl", "restart", "connman").
+		Run(); err != nil {
+		return err
+	}
+
 	cache = map[string]string{} // clear the status cache
 	cache[network.Path] = "Connecting"
 
