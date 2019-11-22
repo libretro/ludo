@@ -118,16 +118,16 @@ var nes30proJoyBinds = joybinds{
 
 // Joypad bindings fox the 8BITDO SFC30 pad (Wired) on OSX
 var sfc30JoyBinds = joybinds{
-	bind{btn, 0, 0, 0}:  libretro.DeviceIDJoypadA,
-	bind{btn, 1, 0, 0}:  libretro.DeviceIDJoypadB,
-	bind{btn, 3, 0, 0}:  libretro.DeviceIDJoypadX,
-	bind{btn, 4, 0, 0}:  libretro.DeviceIDJoypadY,
-	bind{btn, 6, 0, 0}:  libretro.DeviceIDJoypadL,
-	bind{btn, 7, 0, 0}:  libretro.DeviceIDJoypadR,
-	bind{btn, 10, 0, 0}: libretro.DeviceIDJoypadSelect,
-	bind{btn, 11, 0, 0}: libretro.DeviceIDJoypadStart,
-	bind{btn, 12, 0, 0}: libretro.DeviceIDJoypadUp,
-	bind{btn, 13, 0, 0}: libretro.DeviceIDJoypadRight,
-	bind{btn, 14, 0, 0}: libretro.DeviceIDJoypadDown,
-	bind{btn, 15, 0, 0}: libretro.DeviceIDJoypadLeft,
+	bind{btn, 0, 0, 0}:      libretro.DeviceIDJoypadA,
+	bind{btn, 1, 0, 0}:      libretro.DeviceIDJoypadB,
+	bind{btn, 3, 0, 0}:      libretro.DeviceIDJoypadX,
+	bind{btn, 4, 0, 0}:      libretro.DeviceIDJoypadY,
+	bind{btn, 6, 0, 0}:      libretro.DeviceIDJoypadL,
+	bind{btn, 7, 0, 0}:      libretro.DeviceIDJoypadR,
+	bind{btn, 10, 0, 0}:     libretro.DeviceIDJoypadSelect,
+	bind{btn, 11, 0, 0}:     libretro.DeviceIDJoypadStart,
+	bind{axis, 0, -1, -0.5}: libretro.DeviceIDJoypadLeft,
+	bind{axis, 1, -1, -0.5}: libretro.DeviceIDJoypadUp,
+	bind{axis, 0, 1, 0.5}:   libretro.DeviceIDJoypadRight,
+	bind{axis, 1, 1, 0.5}:   libretro.DeviceIDJoypadDown,
 }
