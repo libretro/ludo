@@ -95,7 +95,7 @@ var nes30proJoyBinds = joybinds{
 	bind{btn, 15, 0, 0}: libretro.DeviceIDJoypadUp,
 }
 
-// Joypad bindings fox the 8BITDO SFC30 pad (Wired) on OSX
+// Joypad bindings fox the 8BITDO SFC30 pad (Wired) on Windows
 var sfc30JoyBinds = joybinds{
 	bind{btn, 0, 0, 0}:      libretro.DeviceIDJoypadA,
 	bind{btn, 1, 0, 0}:      libretro.DeviceIDJoypadB,

@@ -4,8 +4,6 @@
 package input
 
 import (
-	"fmt"
-
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
@@ -90,7 +88,6 @@ func pollJoypads(state inputstate) inputstate {
 	for p := range state {
 		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
 		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
-		fmt.Println(axisState)
 		name := glfw.Joystick.GetName(glfw.Joystick(p))
 		jb := joyBinds[name]
 		if len(buttonState) > 0 {
