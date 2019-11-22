@@ -89,8 +89,8 @@ func reset(state inputstate) inputstate {
 func pollJoypads(state inputstate) inputstate {
 	for p := range state {
 		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
-		fmt.Println(buttonState)
 		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
+		fmt.Println(axisState)
 		name := glfw.Joystick.GetName(glfw.Joystick(p))
 		jb := joyBinds[name]
 		if len(buttonState) > 0 {
