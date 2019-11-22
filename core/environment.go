@@ -103,6 +103,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 			data,
 			vid.CurrentFramebuffer,
 			vid.ProcAddress)
+		log.Println("HWContextType:", state.Global.Core.HWRenderCallback.HWContextType)
 		return true
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
