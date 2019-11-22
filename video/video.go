@@ -282,7 +282,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	video.coreRatioViewport(fbw, fbh)
 
-	if state.Global.CoreRunning {
+	if state.Global.CoreRunning && state.Global.Core.HWRenderCallback != nil {
 		video.InitFramebuffer(video.Geom.BaseWidth, video.Geom.BaseHeight)
 		state.Global.Core.HWRenderCallback.ContextReset()
 	}
