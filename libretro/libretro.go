@@ -686,7 +686,7 @@ func SetHWRenderCallback(
 	currentFramebuffer getCurrentFramebufferFunc,
 	procAddress getProcAddressFunc,
 ) *HWRenderCallback {
-	c := *(*C.struct_retro_hw_render_callback)(data)
+	c := (*C.struct_retro_hw_render_callback)(data)
 	hwrc := HWRenderCallback{}
 	hwrc.HWContextType = uint32(c.context_type)
 
