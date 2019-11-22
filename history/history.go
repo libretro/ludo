@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/user"
+	"path/filepath"
 )
 
 // Game represents a game in the history file
@@ -46,12 +48,12 @@ func Push(g Game) {
 
 // Load loads history.csv in memory
 func Load() error {
-	homeDir, err := os.UserHomeDir()
+	usr, err := user.Current()
 	if err != nil {
 		return err
 	}
 
-	file, err := os.Open(homeDir + "/.ludo/history.csv")
+	file, err := os.Open(filepath.Join(usr.HomeDir, ".ludo", "history.csv"))
 	if err != nil {
 		return err
 	}
@@ -81,12 +83,12 @@ func Load() error {
 
 // Save persists the history as a csv file
 func Save() error {
-	homeDir, err := os.UserHomeDir()
+	usr, err := user.Current()
 	if err != nil {
 		return err
 	}
 
-	file, err := os.Create(homeDir + "/.ludo/history.csv")
+	file, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "history.csv"))
 	if err != nil {
 		return err
 	}

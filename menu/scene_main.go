@@ -5,46 +5,16 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/libretro/ludo/settings"
-
 	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/history"
 	ntf "github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 )
 
 type sceneMain struct {
 	entry
-}
-
-func cleanShutdown() {
-	cmd := exec.Command("/usr/sbin/shutdown", "-P", "now")
-	core.UnloadGame()
-	err := cmd.Run()
-	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-	}
-}
-
-func cleanReboot() {
-	cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
-	core.UnloadGame()
-	err := cmd.Run()
-	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-	}
-}
-
-func askConfirmation(cb func()) {
-	if state.Global.CoreRunning {
-		if !state.Global.MenuActive {
-			state.Global.MenuActive = true
-		}
-		menu.Push(buildDialog(func() {
-			cb()
-		}))
-	} else {
-		cb()
-	}
 }
 
 func buildMainMenu() Scene {
@@ -110,9 +80,7 @@ func buildMainMenu() Scene {
 			label: "Reboot",
 			icon:  "subsetting",
 			callbackOK: func() {
-				askConfirmation(func() {
-					cleanReboot()
-				})
+				askConfirmation(func() { cleanReboot() })
 			},
 		})
 
@@ -120,9 +88,7 @@ func buildMainMenu() Scene {
 			label: "Shutdown",
 			icon:  "subsetting",
 			callbackOK: func() {
-				askConfirmation(func() {
-					cleanShutdown()
-				})
+				askConfirmation(func() { cleanShutdown() })
 			},
 		})
 	} else {
@@ -159,8 +125,45 @@ func gameExplorerCb(path string) {
 		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 		return
 	}
+	history.Push(history.Game{
+		Path:     path,
+		Name:     utils.FileName(path),
+		CorePath: state.Global.CorePath,
+	})
 	menu.WarpToQuickMenu()
 	state.Global.MenuActive = false
+}
+
+// Shutdown the operating system
+func cleanShutdown() {
+	core.UnloadGame()
+	err := exec.Command("/usr/sbin/shutdown", "-P", "now").Run()
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+	}
+}
+
+// Reboots the operating system
+func cleanReboot() {
+	core.UnloadGame()
+	err := exec.Command("/usr/sbin/shutdown", "-r", "now").Run()
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+	}
+}
+
+// Displays a confirmation dialog before performing an irreversible action
+func askConfirmation(cb func()) {
+	if state.Global.CoreRunning {
+		if !state.Global.MenuActive {
+			state.Global.MenuActive = true
+		}
+		menu.Push(buildDialog(func() {
+			cb()
+		}))
+	} else {
+		cb()
+	}
 }
 
 func (main *sceneMain) Entry() *entry {

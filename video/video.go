@@ -39,21 +39,25 @@ type Video struct {
 	Geom   libretro.GameGeometry
 	Font   *glfont.Font
 
-	program        uint32 // current program used for the game quad
-	defaultProgram uint32 // default program used for the game quad
-	roundedProgram uint32 // program to draw rectangles with rounded corners
-	borderProgram  uint32 // program to draw rectangles borders
-	circleProgram  uint32 // program to draw textured circles
-	demulProgram   uint32 // program to draw premultiplied alpha images
-	vao            uint32
-	vbo            uint32
-	texID          uint32
-	pitch          int32
-	pixFmt         uint32
-	pixType        uint32
-	bpp            int32
-	fboID          uint32
-	rboID          uint32
+	program              uint32 // current program used for the game quad
+	defaultProgram       uint32 // default program used for the game quad
+	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
+	zfastCRTProgram      uint32 // fast CRT program used for the game quad
+	roundedProgram       uint32 // program to draw rectangles with rounded corners
+	borderProgram        uint32 // program to draw rectangles borders
+	circleProgram        uint32 // program to draw textured circles
+	demulProgram         uint32 // program to draw premultiplied alpha images
+	vao                  uint32
+	vbo                  uint32
+	texID                uint32
+	fboID                uint32
+	rboID                uint32
+
+	pitch         int32  // pitch set by the refresh callback
+	pixFmt        uint32 // format set by the environment callback
+	pixType       uint32
+	bpp           int32
+	width, height int32 // dimensions set by the refresh callback
 }
 
 // Init instanciates the video package
@@ -80,8 +84,12 @@ func getGLSLVersion() uint {
 		log.Println("[Video]: GLSL version:", GLSLVersion)
 	}
 
-	clean := strings.Replace(GLSLVersion, ".", "", -1)
-	v, _ := strconv.Atoi(clean)
+	clean := strings.Replace(GLSLVersion[:4], ".", "", -1)
+	v, err := strconv.Atoi(clean)
+	if err != nil {
+		log.Println("[Video]: Couldn't parse GLSL version:", err)
+		return 120
+	}
 	return uint(v)
 }
 
@@ -203,6 +211,16 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
+	video.sharpBilinearProgram, err = newProgram(GLSLVersion, vertexShader, sharpBilinearFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.zfastCRTProgram, err = newProgram(GLSLVersion, vertexShader, zfastCRTFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
 	video.roundedProgram, err = newProgram(GLSLVersion, vertexShader, roundedFragmentShader)
 	if err != nil {
 		panic(err)
@@ -283,6 +301,14 @@ func (video *Video) UpdateFilter(filter string) {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.defaultProgram
+	case "sharp-bilinear":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.sharpBilinearProgram
+	case "zfast-crt":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.zfastCRTProgram
 	case "nearest":
 		fallthrough
 	default:
@@ -291,6 +317,8 @@ func (video *Video) UpdateFilter(filter string) {
 		video.program = video.defaultProgram
 	}
 	gl.UseProgram(video.program)
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.width), float32(video.height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
 }
 
 // SetPixelFormat is a callback passed to the libretro implementation.
@@ -402,15 +430,18 @@ func (video *Video) Render() {
 // Refresh the texture framebuffer
 func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
 	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+
+	video.width = width
+	video.height = height
+	video.pitch = pitch
+
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
-
-	video.pitch = pitch
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	if data == nil {
 		return

@@ -4,7 +4,6 @@ package settings
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -16,34 +15,35 @@ import (
 	"github.com/fatih/structs"
 	"github.com/libretro/ludo/ludos"
 	"github.com/libretro/ludo/utils"
+	"github.com/pelletier/go-toml"
 )
 
-// Settings is the list of available settings for the program. It serializes to JSON.
+// Settings is the list of available settings for the program. It serializes to TOML.
 // Tags are used to set a human readable label and a format for the settings value.
 // Widget sets the graphical representation of the value.
 type Settings struct {
-	VideoFullscreen   bool   `hide:"ludos" json:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
-	VideoMonitorIndex int    `json:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
-	VideoFilter       string `json:"video_filter" label:"Video Filter" fmt:"<%s>"`
+	VideoFullscreen   bool   `hide:"ludos" toml:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
+	VideoMonitorIndex int    `toml:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
+	VideoFilter       string `toml:"video_filter" label:"Video Filter" fmt:"<%s>"`
 
-	AudioVolume     float32           `json:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
-	MenuAudioVolume float32           `json:"menu_audio_volume" label:"Menu Audio Volume" fmt:"%.1f" widget:"range"`
-	ShowHiddenFiles bool              `json:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
-	CoreForPlaylist map[string]string `hide:"always" json:"core_for_playlist"`
+	AudioVolume     float32           `toml:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
+	MenuAudioVolume float32           `toml:"menu_audio_volume" label:"Menu Audio Volume" fmt:"%.1f" widget:"range"`
+	ShowHiddenFiles bool              `toml:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
+	CoreForPlaylist map[string]string `hide:"always" toml:"core_for_playlist"`
 
-	CoresDirectory       string `hide:"ludos" json:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
-	AssetsDirectory      string `hide:"ludos" json:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
-	DatabaseDirectory    string `hide:"ludos" json:"database_dir" label:"Database Directory" fmt:"%s" widget:"dir"`
-	SavestatesDirectory  string `hide:"ludos" json:"savestates_dir" label:"Savestates Directory" fmt:"%s" widget:"dir"`
-	SavefilesDirectory   string `hide:"ludos" json:"savefiles_dir" label:"Savefiles Directory" fmt:"%s" widget:"dir"`
-	ScreenshotsDirectory string `hide:"ludos" json:"screenshots_dir" label:"Screenshots Directory" fmt:"%s" widget:"dir"`
-	SystemDirectory      string `hide:"ludos" json:"system_dir" label:"System Directory" fmt:"%s" widget:"dir"`
-	PlaylistsDirectory   string `hide:"ludos" json:"playlists_dir" label:"Playlists Directory" fmt:"%s" widget:"dir"`
-	ThumbnailsDirectory  string `hide:"ludos" json:"thumbnail_dir" label:"Thumbnails Directory" fmt:"%s" widget:"dir"`
+	CoresDirectory       string `hide:"ludos" toml:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
+	AssetsDirectory      string `hide:"ludos" toml:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
+	DatabaseDirectory    string `hide:"ludos" toml:"database_dir" label:"Database Directory" fmt:"%s" widget:"dir"`
+	SavestatesDirectory  string `hide:"ludos" toml:"savestates_dir" label:"Savestates Directory" fmt:"%s" widget:"dir"`
+	SavefilesDirectory   string `hide:"ludos" toml:"savefiles_dir" label:"Savefiles Directory" fmt:"%s" widget:"dir"`
+	ScreenshotsDirectory string `hide:"ludos" toml:"screenshots_dir" label:"Screenshots Directory" fmt:"%s" widget:"dir"`
+	SystemDirectory      string `hide:"ludos" toml:"system_dir" label:"System Directory" fmt:"%s" widget:"dir"`
+	PlaylistsDirectory   string `hide:"ludos" toml:"playlists_dir" label:"Playlists Directory" fmt:"%s" widget:"dir"`
+	ThumbnailsDirectory  string `hide:"ludos" toml:"thumbnail_dir" label:"Thumbnails Directory" fmt:"%s" widget:"dir"`
 
-	SSHService       bool `hide:"app" json:"ssh_service" label:"SSH" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
-	SambaService     bool `hide:"app" json:"samba_service" label:"Samba" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
-	BluetoothService bool `hide:"app" json:"bluetooth_service" label:"Bluetooth" widget:"switch" service:"bluetooth.service" path:"/storage/.cache/services/bluez.conf"`
+	SSHService       bool `hide:"app" toml:"ssh_service" label:"SSH" widget:"switch" service:"sshd.service" path:"/storage/.cache/services/sshd.conf"`
+	SambaService     bool `hide:"app" toml:"samba_service" label:"Samba" widget:"switch" service:"smbd.service" path:"/storage/.cache/services/samba.conf"`
+	BluetoothService bool `hide:"app" toml:"bluetooth_service" label:"Bluetooth" widget:"switch" service:"bluetooth.service" path:"/storage/.cache/services/bluez.conf"`
 }
 
 // Current stores the current settings at runtime
@@ -71,25 +71,25 @@ func Load() error {
 	// Set default values for settings
 	Current = Defaults
 
-	// If /etc/ludo.json exists, override the defaults
-	if _, err := os.Stat("/etc/ludo.json"); !os.IsNotExist(err) {
-		b, _ := ioutil.ReadFile("/etc/ludo.json")
-		err = json.Unmarshal(b, &Current)
+	// If /etc/ludo.toml exists, override the defaults
+	if _, err := os.Stat("/etc/ludo.toml"); !os.IsNotExist(err) {
+		b, _ := ioutil.ReadFile("/etc/ludo.toml")
+		err = toml.Unmarshal(b, &Current)
 		if err != nil {
 			return err
 		}
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
+	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", "settings.toml"))
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(b, &Current)
+	err = toml.Unmarshal(b, &Current)
 	if err != nil {
 		return err
 	}
 
-	// Those are special fields, their value is not saved in settings.json but
+	// Those are special fields, their value is not saved in settings.toml but
 	// depends on the presence of some files
 	ludos.InitializeServiceSettingsValues(structs.Fields(&Current))
 
@@ -108,12 +108,12 @@ func Save() error {
 		return err
 	}
 
-	b, err := json.MarshalIndent(Current, "", "  ")
+	b, err := toml.Marshal(Current)
 	if err != nil {
 		return err
 	}
 
-	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "settings.json"))
+	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "settings.toml"))
 	if err != nil {
 		return err
 	}

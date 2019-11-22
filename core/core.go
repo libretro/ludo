@@ -19,6 +19,7 @@ import (
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/options"
+	"github.com/libretro/ludo/patch"
 	"github.com/libretro/ludo/savefiles"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
@@ -33,13 +34,13 @@ var Options *options.Options
 // Call Init before calling other functions of this package.
 func Init(v *video.Video) {
 	vid = v
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Second * 10)
 	go func() {
 		for range ticker.C {
 			state.Global.Lock()
-			running := state.Global.CoreRunning
+			canSave := state.Global.CoreRunning && !state.Global.MenuActive
 			state.Global.Unlock()
-			if running && !state.Global.MenuActive {
+			if canSave {
 				savefiles.SaveSRAM()
 			}
 		}
@@ -137,7 +138,13 @@ func LoadGame(gamePath string) error {
 		if err != nil {
 			return err
 		}
-		gi.SetData(bytes)
+
+		if patched, _ := patch.Try(gamePath, bytes); patched != nil {
+			gi.Size = int64(len(*patched))
+			gi.SetData(*patched)
+		} else {
+			gi.SetData(bytes)
+		}
 	}
 
 	glError := gl.GetError()
@@ -170,9 +177,8 @@ func LoadGame(gamePath string) error {
 	state.Global.Lock()
 	state.Global.CoreRunning = true
 	state.Global.FastForward = false
-	state.Global.Unlock()
-
 	state.Global.GamePath = gamePath
+	state.Global.Unlock()
 
 	state.Global.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
 	state.Global.Core.SetControllerPortDevice(1, libretro.DeviceJoypad)
@@ -193,12 +199,14 @@ func LoadGame(gamePath string) error {
 
 // Unload unloads a libretro core
 func Unload() {
-	if state.Global.CoreRunning {
+	if state.Global.Core != nil {
 		UnloadGame()
 		state.Global.Core.Deinit()
+		state.Global.Lock()
 		state.Global.CorePath = ""
 		state.Global.Core = nil
 		Options = nil
+		state.Global.Unlock()
 	}
 }
 
@@ -207,8 +215,10 @@ func UnloadGame() {
 	if state.Global.CoreRunning {
 		savefiles.SaveSRAM()
 		state.Global.Core.UnloadGame()
+		state.Global.Lock()
 		state.Global.GamePath = ""
 		state.Global.CoreRunning = false
+		state.Global.Unlock()
 		vid.ResetPitch()
 	}
 }

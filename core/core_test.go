@@ -211,8 +211,30 @@ func Test_coreLoadGame(t *testing.T) {
 		}
 	})
 
-	state.Global.Core.UnloadGame()
-	state.Global.Core.Deinit()
-	state.Global.GamePath = ""
-	state.Global.Verbose = false
+	t.Run("Global state should be set by Load", func(t *testing.T) {
+		if state.Global.Core == nil {
+			t.Errorf("got = %v, want %v", nil, state.Global.Core)
+		}
+		if state.Global.GamePath != "testdata/Polar Rescue (USA).vec" {
+			t.Errorf("got = %v, want %v", state.Global.GamePath, "testdata/Polar Rescue (USA).vec")
+		}
+		if !state.Global.CoreRunning {
+			t.Errorf("got = %v, want %v", state.Global.CoreRunning, true)
+		}
+	})
+
+	UnloadGame()
+	Unload()
+
+	t.Run("Global state should be cleared by Unload", func(t *testing.T) {
+		if state.Global.Core != nil {
+			t.Errorf("got = %v, want %v", state.Global.Core, nil)
+		}
+		if state.Global.GamePath != "" {
+			t.Errorf("got = %v, want %v", state.Global.GamePath, "")
+		}
+		if state.Global.CoreRunning {
+			t.Errorf("got = %v, want %v", state.Global.CoreRunning, false)
+		}
+	})
 }

@@ -18,7 +18,6 @@ import (
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"github.com/rs/xid"
 )
 
 // LoadDB loops over the RDBs in a given directory and parses them
@@ -42,15 +41,16 @@ func LoadDB(dir string) (rdb.DB, error) {
 
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
-	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
+	n := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
 	roms, err := utils.AllFilesIn(dir)
 	if err != nil {
-		ntf.Update(nid, ntf.Error, err.Error())
+		n.Update(ntf.Error, err.Error())
 		return
 	}
 	games := make(chan (rdb.Game))
-	go Scan(dir, roms, games, nid)
+	go Scan(dir, roms, games, n)
 	go func() {
+		i := 0
 		for game := range games {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
 			CSVPath := filepath.Join(settings.Current.PlaylistsDirectory, game.System+".csv")
@@ -60,19 +60,20 @@ func ScanDir(dir string, doneCb func()) {
 			f, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 			f.WriteString(game.Path + "\t")
 			f.WriteString(game.Name + "\t")
-			if uint64(game.CRC32) > 0 {
+			if game.CRC32 > 0 {
 				f.WriteString(strconv.FormatUint(uint64(game.CRC32), 16))
 			}
 			f.WriteString("\n")
 			f.Close()
+			i++
 		}
 		doneCb()
-		ntf.Update(nid, ntf.Success, "Done scanning.")
+		n.Update(ntf.Success, "Done scanning. %d new games found.", i)
 	}()
 }
 
 // Scan scans a list of roms against the database
-func Scan(dir string, roms []string, games chan (rdb.Game), nid xid.ID) {
+func Scan(dir string, roms []string, games chan (rdb.Game), n *ntf.Notification) {
 	for i, f := range roms {
 		ext := filepath.Ext(f)
 		switch ext {
@@ -80,30 +81,30 @@ func Scan(dir string, roms []string, games chan (rdb.Game), nid xid.ID) {
 			// Open the ZIP archive
 			z, err := zip.OpenReader(f)
 			if err != nil {
-				ntf.Update(nid, ntf.Error, err.Error())
+				n.Update(ntf.Error, err.Error())
 				continue
 			}
 			for _, rom := range z.File {
 				if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
 					state.Global.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
-					ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				}
 			}
 			z.Close()
 		case ".cue":
 			// Look for a matching game entry in the database
 			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
-			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		case ".32x", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc":
 			bytes, err := ioutil.ReadFile(f)
 			if err != nil {
-				ntf.Update(nid, ntf.Error, err.Error())
+				n.Update(ntf.Error, err.Error())
 				continue
 			}
 			CRC32 := crc32.ChecksumIEEE(bytes)
 			state.Global.DB.FindByCRC(f, utils.FileName(f), CRC32, games)
-			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}
 	}
 	close(games)

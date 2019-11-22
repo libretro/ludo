@@ -53,7 +53,11 @@ const (
 func joystickCallback(joy glfw.Joystick, event glfw.PeripheralEvent) {
 	switch event {
 	case glfw.Connected:
-		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.Joystick.GetName(joy))
+		if HasBinding(joy) {
+			ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.Joystick.GetName(joy))
+		} else {
+			ntf.DisplayAndLog(ntf.Warning, "Input", "Joystick #%d plugged: %s but not configured.", joy, glfw.Joystick.GetName(joy))
+		}
 	case glfw.Disconnected:
 		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d unplugged.", joy)
 	default:
@@ -149,4 +153,11 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		return 1
 	}
 	return 0
+}
+
+// HasBinding returns true if the joystick has an autoconfig binding
+func HasBinding(joy glfw.Joystick) bool {
+	name := glfw.Joystick.GetName(joy)
+	_, ok := joyBinds[name]
+	return ok
 }

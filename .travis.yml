@@ -24,11 +24,10 @@ matrix:
       before_install:
         - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
       script:
-        - go get -v ./...
         - xvfb-run go test -v -race ./...
         - go vet ./...
         - staticcheck ./...
-        - gocyclo -over 19 $GO_FILES
+        - gocyclo -over 20 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make tar; fi
@@ -51,28 +50,39 @@ matrix:
         - sudo apt-get install gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
         - export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       script:
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get -v ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go vet ./...
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc staticcheck ./...
-        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc gocyclo -over 19 $GO_FILES
+        - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc gocyclo -over 20 $GO_FILES
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc golint -set_exit_status $(go list ./...)
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz.sha256; fi
     - name: OSX
       os: osx
+      osx_image: xcode11.2
+      before_cache:
+        - brew cleanup
       before_install:
-        - brew update
         - brew install openal-soft
       script:
-        - go get -v ./...
         - go test -v -race ./...
         - go vet ./...
         - staticcheck ./...
-        - gocyclo -over 19 $GO_FILES
+        - gocyclo -over 20 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v
+        - if [[ -n "$TRAVIS_TAG" ]]; then echo $OSX_CERT | base64 --decode > dev.p12; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security create-keychain -p travis build.keychain; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security default-keychain -s build.keychain; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security unlock-keychain -p travis build.keychain; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security import dev.p12 -k build.keychain -P $OSX_CERT_PASS -T /usr/bin/codesign && rm dev.p12; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k travis build.keychain; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg --primary-bundle-id org.libretro.ludo -u $APPLE_ID -p $APPLE_ID_PASS -itc_provider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }'); fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then sleep 180; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then xcrun altool --notarization-info $REQUESTUUID -u $APPLE_ID -p $APPLE_ID_PASS -ascprovider ZE9XE938Z2; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then xcrun stapler staple Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then xcrun stapler validate Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then shasum -a 256 Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg > Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256; fi
     - name: Windows
       os: windows
@@ -86,11 +96,10 @@ matrix:
         - cp /c/Users/travis/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
         - cp /c/Windows/System32/VCRUNTIME140.dll .
       script:
-        - go get -v ./...
         #- go test -v ./...
         #- go vet ./...
         - staticcheck ./...
-        - gocyclo -over 19 $GO_FILES
+        - gocyclo -over 20 $GO_FILES
         - golint -set_exit_status $(go list ./...)
         - go build -v -ldflags '-H=windowsgui'
         - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
@@ -120,3 +129,4 @@ deploy:
 cache:
   directories:
     - $HOME/Library/Caches/Homebrew
+    - $GOPATH/pkg/mod
