@@ -11,6 +11,7 @@ var joyBinds = map[string]joybinds{
 	"SHANWAN PS3 GamePad":                                ds3JoyBinds,
 	"8Bitdo NES30 Pro   8Bitdo NES30 Pro":                nes30proJoyBinds,
 	"SFC30              SFC30 Joystick":                  sfc30JoyBinds,
+	"SNES30             SNES30 Joy    ":                  sfc30JoyBinds,
 }
 
 // Joypad bindings fox Xbox360 pad on Linux
