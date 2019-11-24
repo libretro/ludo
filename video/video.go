@@ -300,6 +300,12 @@ func (video *Video) ResetPitch() {
 	video.pitch = 0
 }
 
+// ResetRot should be called when unloading a game so that the next game won't
+// be rendered with the wrong rotation
+func (video *Video) ResetRot() {
+	video.rot = 0
+}
+
 // coreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
 func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {

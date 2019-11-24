@@ -207,6 +207,7 @@ func UnloadGame() {
 		state.Global.CoreRunning = false
 		state.Global.Unlock()
 		vid.ResetPitch()
+		vid.ResetRot()
 	}
 }
 
