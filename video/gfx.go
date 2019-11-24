@@ -46,6 +46,15 @@ func rotateUV(va []float32, rot uint) []float32 {
 		va[11] = 0
 		va[14] = 0
 		va[15] = 1
+	case 3: // 270 degrees
+		va[2] = 1
+		va[3] = 1
+		va[6] = 0
+		va[7] = 1
+		va[10] = 1
+		va[11] = 0
+		va[14] = 0
+		va[15] = 0
 	}
 	return va
 }
