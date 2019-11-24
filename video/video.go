@@ -56,6 +56,7 @@ type Video struct {
 	pixType       uint32
 	bpp           int32
 	width, height int32 // dimensions set by the refresh callback
+	rot           uint
 }
 
 // Init instanciates the video package
@@ -324,6 +325,16 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 	y = (fbh - h) / 2
 
 	va := video.vertexArray(x, y, w, h, 1.0)
+	if video.rot == 1 {
+		va[2] = 0
+		va[3] = 0
+		va[6] = 1
+		va[7] = 0
+		va[10] = 0
+		va[11] = 1
+		va[14] = 1
+		va[15] = 1
+	}
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
@@ -384,6 +395,12 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 		return
 	}
 	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+}
+
+// SetRotation rotates the game image as requested by the core
+func (video *Video) SetRotation(rot uint) bool {
+	video.rot = rot
+	return true
 }
 
 var vertices = []float32{

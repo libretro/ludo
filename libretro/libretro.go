@@ -211,6 +211,7 @@ const (
 
 // Environment callback API. See libretro.h for details
 const (
+	EnvironmentSetRotation          = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
 	EnvironmentGetUsername          = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
 	EnvironmentGetLogInterface      = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
 	EnvironmentGetCanDupe           = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
