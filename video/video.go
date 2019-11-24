@@ -319,6 +319,7 @@ func (video *Video) UpdateFilter(filter string) {
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.width), float32(video.height))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
+	gl.UseProgram(0)
 }
 
 // SetPixelFormat is a callback passed to the libretro implementation.
@@ -425,6 +426,8 @@ func (video *Video) Render() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+
+	gl.UseProgram(0)
 }
 
 // Refresh the texture framebuffer
@@ -433,20 +436,26 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 
 	video.width = width
 	video.height = height
-	video.pitch = pitch
 
-	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
+	if pitch != video.pitch {
+		video.pitch = pitch
+		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
+	}
+
+	if data != nil && data != libretro.HWFrameBufferValid {
+		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+	}
 
 	gl.UseProgram(video.program)
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
 
-	if data == nil {
-		return
-	}
-	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+	gl.UseProgram(0)
 }
 
 // CurrentFramebuffer returns the current FBO ID

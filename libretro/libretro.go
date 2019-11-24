@@ -277,6 +277,12 @@ const (
 	HWContextDummy           = uint32(C.RETRO_HW_CONTEXT_DUMMY)
 )
 
+// Pass this to retro_video_refresh_t if rendering to hardware.
+// Passing NULL to retro_video_refresh_t is still a frame dupe as normal.
+var (
+	HWFrameBufferValid = unsafe.Pointer(C.RETRO_HW_FRAME_BUFFER_VALID)
+)
+
 type (
 	environmentFunc           func(uint32, unsafe.Pointer) bool
 	videoRefreshFunc          func(unsafe.Pointer, int32, int32, int32)
