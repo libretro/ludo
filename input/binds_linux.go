@@ -10,6 +10,8 @@ var joyBinds = map[string]joybinds{
 	"Sony PLAYSTATION(R)3 Controller":                    ds3JoyBinds,
 	"SHANWAN PS3 GamePad":                                ds3JoyBinds,
 	"8Bitdo NES30 Pro   8Bitdo NES30 Pro":                nes30proJoyBinds,
+	"SFC30              SFC30 Joystick":                  sfc30JoyBinds,
+	"SNES30             SNES30 Joy    ":                  sfc30JoyBinds,
 }
 
 // Joypad bindings fox Xbox360 pad on Linux
@@ -114,4 +116,20 @@ var nes30proJoyBinds = joybinds{
 	bind{btn, 18, 0, 0}: libretro.DeviceIDJoypadLeft,
 	bind{btn, 16, 0, 0}: libretro.DeviceIDJoypadRight,
 	bind{btn, 15, 0, 0}: libretro.DeviceIDJoypadUp,
+}
+
+// Joypad bindings fox the 8BITDO SFC30 pad (Wired) on Linux
+var sfc30JoyBinds = joybinds{
+	bind{btn, 0, 0, 0}:      libretro.DeviceIDJoypadA,
+	bind{btn, 1, 0, 0}:      libretro.DeviceIDJoypadB,
+	bind{btn, 3, 0, 0}:      libretro.DeviceIDJoypadX,
+	bind{btn, 4, 0, 0}:      libretro.DeviceIDJoypadY,
+	bind{btn, 6, 0, 0}:      libretro.DeviceIDJoypadL,
+	bind{btn, 7, 0, 0}:      libretro.DeviceIDJoypadR,
+	bind{btn, 10, 0, 0}:     libretro.DeviceIDJoypadSelect,
+	bind{btn, 11, 0, 0}:     libretro.DeviceIDJoypadStart,
+	bind{axis, 0, -1, -0.5}: libretro.DeviceIDJoypadLeft,
+	bind{axis, 1, -1, -0.5}: libretro.DeviceIDJoypadUp,
+	bind{axis, 0, 1, 0.5}:   libretro.DeviceIDJoypadRight,
+	bind{axis, 1, 1, 0.5}:   libretro.DeviceIDJoypadDown,
 }
