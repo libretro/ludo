@@ -325,16 +325,7 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 	y = (fbh - h) / 2
 
 	va := video.vertexArray(x, y, w, h, 1.0)
-	if video.rot == 1 {
-		va[2] = 0
-		va[3] = 0
-		va[6] = 1
-		va[7] = 0
-		va[10] = 0
-		va[11] = 1
-		va[14] = 1
-		va[15] = 1
-	}
+	va = rotateUV(va, video.rot)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 

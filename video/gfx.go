@@ -26,6 +26,21 @@ func XYWHTo4points(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 floa
 	return
 }
 
+func rotateUV(va []float32, rot uint) []float32 {
+	switch rot {
+	case 1: // 90 degrees
+		va[2] = 0
+		va[3] = 0
+		va[6] = 1
+		va[7] = 0
+		va[10] = 0
+		va[11] = 1
+		va[14] = 1
+		va[15] = 1
+	}
+	return va
+}
+
 // DrawImage draws an image with x, y, w, h
 func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c Color) {
 
