@@ -270,12 +270,11 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	gl.GenTextures(1, &video.texID)
-
-	gl.ActiveTexture(gl.TEXTURE0)
 	if video.texID == 0 && state.Global.Verbose {
-		log.Println("[Video]: Failed to create the vid texture")
+		log.Fatalln("[Video]: Failed to create the vid texture")
 	}
 
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
 	video.UpdateFilter(settings.Current.VideoFilter)
@@ -295,6 +294,7 @@ func (video *Video) Configure(fullscreen bool) {
 // UpdateFilter configures the game texture filter and shader. We currently
 // support 4 modes: nearest, linear, sharp-bilinear and zfast-crt.
 func (video *Video) UpdateFilter(filter string) {
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	switch filter {
 	case "linear":
