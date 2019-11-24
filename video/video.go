@@ -56,6 +56,7 @@ type Video struct {
 	pixType       uint32
 	bpp           int32
 	width, height int32 // dimensions set by the refresh callback
+	rot           uint
 }
 
 // Init instanciates the video package
@@ -299,6 +300,12 @@ func (video *Video) ResetPitch() {
 	video.pitch = 0
 }
 
+// ResetRot should be called when unloading a game so that the next game won't
+// be rendered with the wrong rotation
+func (video *Video) ResetRot() {
+	video.rot = 0
+}
+
 // coreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
 func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
@@ -324,6 +331,7 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 	y = (fbh - h) / 2
 
 	va := video.vertexArray(x, y, w, h, 1.0)
+	va = rotateUV(va, video.rot)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
@@ -384,6 +392,12 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 		return
 	}
 	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+}
+
+// SetRotation rotates the game image as requested by the core
+func (video *Video) SetRotation(rot uint) bool {
+	video.rot = rot
+	return true
 }
 
 var vertices = []float32{

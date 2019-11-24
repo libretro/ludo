@@ -88,6 +88,8 @@ func environmentSetVariables(data unsafe.Pointer) bool {
 
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
+	case libretro.EnvironmentSetRotation:
+		return vid.SetRotation(*(*uint)(data))
 	case libretro.EnvironmentGetUsername:
 		return environmentGetUsername(data)
 	case libretro.EnvironmentGetLogInterface:
