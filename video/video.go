@@ -436,11 +436,8 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 
 	video.width = width
 	video.height = height
-
-	if pitch != video.pitch {
-		video.pitch = pitch
-		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
-	}
+	video.pitch = pitch
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	if data != nil && data != libretro.HWFrameBufferValid {
 		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
