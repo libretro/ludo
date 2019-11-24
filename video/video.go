@@ -281,13 +281,17 @@ func (video *Video) Configure(fullscreen bool) {
 
 	video.coreRatioViewport(fbw, fbh)
 
+	gl.BindVertexArray(0)
+
 	if state.Global.CoreRunning && state.Global.Core.HWRenderCallback != nil {
 		video.InitFramebuffer(video.Geom.BaseWidth, video.Geom.BaseHeight)
 		state.Global.Core.HWRenderCallback.ContextReset()
 	}
 
-	if e := gl.GetError(); e != gl.NO_ERROR {
+	e := gl.GetError()
+	for e != gl.NO_ERROR {
 		log.Printf("[Video] OpenGL error: %d\n", e)
+		e = gl.GetError()
 	}
 }
 
@@ -420,12 +424,13 @@ func (video *Video) Render() {
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
-	gl.BindVertexArray(video.vao)
-
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 
+	gl.BindVertexArray(video.vao)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	gl.BindVertexArray(0)
 
 	gl.UseProgram(0)
 }
