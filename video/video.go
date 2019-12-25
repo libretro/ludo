@@ -398,7 +398,13 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 
 // SetRotation rotates the game image as requested by the core
 func (video *Video) SetRotation(rot uint) bool {
-	video.rot = rot
+	// limit to valid values (0, 1, 2, 3, which rotates screen by 0, 90, 180 270 degrees counter-clockwise)
+	video.rot = rot % 4
+
+	if state.Global.Verbose {
+		log.Printf("[Video]: Set Rotation: %v", video.rot)
+	}
+
 	return true
 }
 
