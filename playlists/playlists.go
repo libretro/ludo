@@ -111,7 +111,7 @@ func ShortName(in string) string {
 		"Bandai - WonderSwan":                            "WonderSwan",
 		"Coleco - ColecoVision":                          "ColecoVision",
 		"Commodore - 64":                                 "Commodore 64",
-		"FB Alpha - Arcade Games":                        "Arcade (FB Alpha)",
+		"FBNeo - Arcade Games":                           "Arcade (FBNeo)",
 		"GCE - Vectrex":                                  "Vectrex",
 		"Magnavox - Odyssey2":                            "Magnavox Odyssey²",
 		"Microsoft - MSX":                                "MSX",
