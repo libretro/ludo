@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/kivutar/glfont"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
@@ -52,6 +53,8 @@ type Video struct {
 	texID                uint32
 	fboID                uint32
 	rboID                uint32
+	identityMat          mgl32.Mat4 // just a cache
+	orthoMat             mgl32.Mat4
 
 	pitch         int32  // pitch set by the refresh callback
 	pixFmt        uint32 // format set by the environment callback
@@ -63,6 +66,7 @@ type Video struct {
 // Init instanciates the video package
 func Init(fullscreen bool) *Video {
 	vid := &Video{}
+	vid.identityMat = mgl32.Ident4()
 	vid.Configure(fullscreen)
 	return vid
 }
@@ -107,6 +111,9 @@ func (video *Video) InitFramebuffer(width, height int) {
 
 	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
 
+	// Default origin is top left
+	video.orthoMat = mgl32.Ortho2D(-1, 1, -1, 1)
+
 	hw := state.Global.Core.HWRenderCallback
 
 	if hw != nil {
@@ -126,6 +133,10 @@ func (video *Video) InitFramebuffer(width, height int) {
 
 		if hw.Depth || hw.Stencil {
 			gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
+		}
+
+		if hw.BottomLeftOrigin {
+			video.orthoMat = mgl32.Ortho2D(-1, 1, 1, -1)
 		}
 	}
 
@@ -404,17 +415,36 @@ func (video *Video) ResizeViewport() {
 
 // Render the current frame
 func (video *Video) Render() {
+	// Render directly to the screen
+	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+
+	// We can't trust the core to leave the OpenGL in the same state as
+	// before retro_run() was called so we restore some state manually.
+	gl.Disable(gl.DEPTH_TEST)
+	gl.Disable(gl.CULL_FACE)
+	gl.Disable(gl.DITHER)
+	gl.Disable(gl.STENCIL_TEST)
+	gl.Disable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BlendEquation(gl.FUNC_ADD)
+
+	// The next line might be necessary, but doesn't work in core contexts
+	// gl.Enable(gl.TEXTURE_2D)
+
+	video.ResizeViewport()
+
 	if !state.Global.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		return
 	}
+
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	// Early return to not render the first frame of a newly loaded game with the
 	// previous game pitch. A sane pitch must be set by video.Refresh first.
-	if video.pitch == 0 {
+	if state.Global.Core.HWRenderCallback == nil && video.pitch == 0 {
 		return
 	}
 
@@ -424,6 +454,10 @@ func (video *Video) Render() {
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
+	if state.Global.Core.HWRenderCallback != nil {
+		gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.orthoMat[0])
+	}
+
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
@@ -432,6 +466,8 @@ func (video *Video) Render() {
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 	gl.BindVertexArray(0)
 
+	// Reset MVP to identity to avoid menu issues
+	gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.identityMat[0])
 	gl.UseProgram(0)
 }
 
