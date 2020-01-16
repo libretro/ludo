@@ -99,7 +99,10 @@ func getGLSLVersion() uint {
 
 // InitFramebuffer initializes and configures the video frame buffer based on
 // informations from the HWRenderCallback of the libretro core.
-func (video *Video) InitFramebuffer(width, height int) {
+func (video *Video) InitFramebuffer() {
+	width := video.Geom.MaxWidth
+	height := video.Geom.MaxHeight
+
 	log.Printf("[Video]: Initializing HW render (%v x %v).\n", width, height)
 
 	gl.GenFramebuffers(1, &video.fboID)
@@ -280,6 +283,11 @@ func (video *Video) Configure(fullscreen bool) {
 		video.bpp = 2
 	}
 
+	if video.Geom.MaxWidth == 0 || video.Geom.MaxHeight == 0 {
+		video.Geom.MaxWidth = video.Geom.BaseWidth
+		video.Geom.MaxHeight = video.Geom.BaseHeight
+	}
+
 	gl.GenTextures(1, &video.texID)
 	if video.texID == 0 && state.Global.Verbose {
 		log.Fatalln("[Video]: Failed to create the vid texture")
@@ -287,15 +295,16 @@ func (video *Video) Configure(fullscreen bool) {
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(video.Geom.MaxWidth), int32(video.Geom.MaxHeight), 0, video.pixType, video.pixFmt, nil)
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
-	video.coreRatioViewport(fbw, fbh)
+	video.coreRatioViewport(fbw, fbh, video.Geom.BaseWidth, video.Geom.BaseHeight)
 
 	gl.BindVertexArray(0)
 
 	if state.Global.CoreRunning && state.Global.Core.HWRenderCallback != nil {
-		video.InitFramebuffer(video.Geom.BaseWidth, video.Geom.BaseHeight)
+		video.InitFramebuffer()
 		state.Global.Core.HWRenderCallback.ContextReset()
 	}
 
@@ -378,7 +387,7 @@ func (video *Video) ResetPitch() {
 
 // coreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
-func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
+func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight int) (x, y, w, h float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
@@ -401,6 +410,12 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 	y = (fbh - h) / 2
 
 	va := video.vertexArray(x, y, w, h, 1.0)
+
+	va[3] = float32(clipHeight) / float32(video.Geom.MaxHeight)
+	va[10] = float32(clipWidth) / float32(video.Geom.MaxWidth)
+	va[11] = va[3]
+	va[14] = va[10]
+
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
@@ -449,7 +464,7 @@ func (video *Video) Render() {
 	}
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	_, _, w, h := video.coreRatioViewport(fbw, fbh)
+	_, _, w, h := video.coreRatioViewport(fbw, fbh, int(video.width), int(video.height))
 
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
@@ -488,7 +503,7 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(video.Geom.MaxWidth), int32(video.Geom.MaxHeight), 0, video.pixType, video.pixFmt, nil)
 
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))

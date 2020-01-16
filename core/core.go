@@ -189,7 +189,7 @@ func LoadGame(gamePath string) error {
 	ntf.Display(ntf.Info, "Press P to toggle the menu", ntf.Medium)
 
 	if state.Global.Core.HWRenderCallback != nil {
-		vid.InitFramebuffer(vid.Geom.BaseWidth, vid.Geom.BaseHeight)
+		vid.InitFramebuffer()
 		state.Global.Core.HWRenderCallback.ContextReset()
 	}
 
