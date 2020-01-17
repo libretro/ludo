@@ -16,7 +16,6 @@ import (
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
-	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/patch"
 	"github.com/libretro/ludo/savefiles"
@@ -178,8 +177,6 @@ func LoadGame(gamePath string) error {
 
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
-
-	ntf.Display(ntf.Info, "Press P to toggle the menu", ntf.Medium)
 
 	return nil
 }
