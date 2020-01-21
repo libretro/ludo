@@ -1,8 +1,8 @@
 package menu
 
 import (
+	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
 
 	"github.com/libretro/ludo/core"
@@ -21,7 +21,7 @@ func buildMainMenu() Scene {
 	var list sceneMain
 	list.label = "Main Menu"
 
-	usr, _ := user.Current()
+	home, _ := os.UserHomeDir()
 
 	if state.Global.CoreRunning {
 		list.children = append(list.children, entry{
@@ -55,7 +55,7 @@ func buildMainMenu() Scene {
 			if state.Global.Core != nil {
 				list.segueNext()
 				menu.Push(buildExplorer(
-					usr.HomeDir,
+					home,
 					nil,
 					gameExplorerCb,
 					nil,

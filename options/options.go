@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path/filepath"
 	"sync"
 
@@ -57,7 +56,7 @@ func (o *Options) Save() error {
 	o.Lock()
 	defer o.Unlock()
 
-	usr, err := user.Current()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
@@ -72,7 +71,7 @@ func (o *Options) Save() error {
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", name+".toml"))
+	fd, err := os.Create(filepath.Join(home, ".ludo", name+".toml"))
 	if err != nil {
 		return err
 	}
@@ -91,13 +90,13 @@ func (o *Options) load() error {
 	o.Lock()
 	defer o.Unlock()
 
-	usr, err := user.Current()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
 
 	name := utils.FileName(state.Global.CorePath)
-	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", name+".toml"))
+	b, err := ioutil.ReadFile(filepath.Join(home, ".ludo", name+".toml"))
 	if err != nil {
 		return err
 	}

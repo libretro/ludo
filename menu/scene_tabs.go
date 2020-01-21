@@ -2,7 +2,7 @@ package menu
 
 import (
 	"fmt"
-	"os/user"
+	"os"
 	"sort"
 
 	"github.com/libretro/ludo/audio"
@@ -61,8 +61,8 @@ func buildTabs() Scene {
 		subLabel: "Scan your collection",
 		icon:     "add",
 		callbackOK: func() {
-			usr, _ := user.Current()
-			menu.Push(buildExplorer(usr.HomeDir, nil,
+			home, _ := os.UserHomeDir()
+			menu.Push(buildExplorer(home, nil,
 				func(path string) {
 					scanner.ScanDir(path, refreshTabs)
 				},
