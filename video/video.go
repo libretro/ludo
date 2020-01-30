@@ -74,6 +74,14 @@ func Init(fullscreen bool) *Video {
 // Reconfigure destroys and recreates the window with new attributes
 func (video *Video) Reconfigure(fullscreen bool) {
 	if video.Window != nil {
+		// This is the expected frontend behavior and Flycast requires this
+		// for fullscreen toggling to work, but ppsspp breaks. OTOH, ppsspp
+		// breaks in those situations even if we don't call context_destroy
+		// so ignore it.
+		hw := state.Global.Core.HWRenderCallback
+		if state.Global.CoreRunning && hw != nil && hw.ContextDestroy != nil {
+			state.Global.Core.HWRenderCallback.ContextDestroy()
+		}
 		video.Window.Destroy()
 	}
 	video.Configure(fullscreen)
