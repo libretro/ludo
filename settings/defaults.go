@@ -2,12 +2,12 @@ package settings
 
 import (
 	"log"
-	"os/user"
+	"os"
 	"path/filepath"
 )
 
 func defaultSettings() Settings {
-	usr, err := user.Current()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -60,11 +60,11 @@ func defaultSettings() Settings {
 		CoresDirectory:       "./cores",
 		AssetsDirectory:      "./assets",
 		DatabaseDirectory:    "./database",
-		SavestatesDirectory:  filepath.Join(usr.HomeDir, ".ludo", "savestates"),
-		SavefilesDirectory:   filepath.Join(usr.HomeDir, ".ludo", "savefiles"),
-		ScreenshotsDirectory: filepath.Join(usr.HomeDir, ".ludo", "screenshots"),
-		SystemDirectory:      filepath.Join(usr.HomeDir, ".ludo", "system"),
-		PlaylistsDirectory:   filepath.Join(usr.HomeDir, ".ludo", "playlists"),
-		ThumbnailsDirectory:  filepath.Join(usr.HomeDir, ".ludo", "thumbnails"),
+		SavestatesDirectory:  filepath.Join(home, ".ludo", "savestates"),
+		SavefilesDirectory:   filepath.Join(home, ".ludo", "savefiles"),
+		ScreenshotsDirectory: filepath.Join(home, ".ludo", "screenshots"),
+		SystemDirectory:      filepath.Join(home, ".ludo", "system"),
+		PlaylistsDirectory:   filepath.Join(home, ".ludo", "playlists"),
+		ThumbnailsDirectory:  filepath.Join(home, ".ludo", "thumbnails"),
 	}
 }
