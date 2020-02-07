@@ -17,7 +17,6 @@ import (
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
-	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/patch"
 	"github.com/libretro/ludo/savefiles"
@@ -87,7 +86,9 @@ func Load(sofile string) error {
 	return nil
 }
 
-// unzipGame unzips a rom to tmpdir and returns the path and size of the extracted rom
+// unzipGame unzips a rom to tmpdir and returns the path and size of the extracted ROM.
+// In case the zip contains more than one file, they are all extracted and the
+// first one is passed to the libretro core.
 func unzipGame(filename string) (string, int64, error) {
 	r, err := zip.OpenReader(filename)
 	if err != nil {
@@ -95,27 +96,35 @@ func unzipGame(filename string) (string, int64, error) {
 	}
 	defer r.Close()
 
-	cf := r.File[0]
-	size := int64(cf.UncompressedSize)
-	rc, err := cf.Open()
-	if err != nil {
-		return "", 0, err
-	}
-	defer rc.Close()
+	var mainPath string
+	var mainSize int64
+	for i, cf := range r.File {
+		size := int64(cf.UncompressedSize)
+		rc, err := cf.Open()
+		if err != nil {
+			return "", 0, err
+		}
+		defer rc.Close()
 
-	path := os.TempDir() + "/" + cf.Name
+		path := filepath.Join(os.TempDir(), cf.Name)
 
-	f2, err := os.Create(path)
-	if err != nil {
-		return "", 0, err
-	}
-	defer f2.Close()
-	_, err = io.CopyN(f2, rc, size)
-	if err != nil {
-		return "", 0, err
+		f2, err := os.Create(path)
+		if err != nil {
+			return "", 0, err
+		}
+		defer f2.Close()
+		_, err = io.CopyN(f2, rc, size)
+		if err != nil {
+			return "", 0, err
+		}
+
+		if i == 0 {
+			mainPath = path
+			mainSize = size
+		}
 	}
 
-	return path, size, nil
+	return mainPath, mainSize, nil
 }
 
 // LoadGame loads a game. A core has to be loaded first.
@@ -186,8 +195,6 @@ func LoadGame(gamePath string) error {
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
 
-	ntf.Display(ntf.Info, "Press P to toggle the menu", ntf.Medium)
-
 	if state.Global.Core.HWRenderCallback != nil {
 		vid.InitFramebuffer()
 		state.Global.Core.HWRenderCallback.ContextReset()
@@ -219,6 +226,7 @@ func UnloadGame() {
 		state.Global.CoreRunning = false
 		state.Global.Unlock()
 		vid.ResetPitch()
+		vid.ResetRot()
 	}
 }
 
