@@ -103,19 +103,28 @@ func unzipGame(filename string) (string, int64, error) {
 		if err != nil {
 			return "", 0, err
 		}
-		defer rc.Close()
 
 		path := filepath.Join(os.TempDir(), cf.Name)
 
-		f2, err := os.Create(path)
+		if cf.FileInfo().IsDir() {
+			os.MkdirAll(path, os.ModePerm)
+			continue
+		}
+
+		if err = os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+			return "", 0, err
+		}
+
+		outFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, cf.Mode())
 		if err != nil {
 			return "", 0, err
 		}
-		defer f2.Close()
-		_, err = io.CopyN(f2, rc, size)
-		if err != nil {
+
+		if _, err = io.Copy(outFile, rc); err != nil {
 			return "", 0, err
 		}
+		outFile.Close()
+		rc.Close()
 
 		if i == 0 {
 			mainPath = path
