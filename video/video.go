@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/kivutar/glfont"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
@@ -52,6 +53,8 @@ type Video struct {
 	texID                uint32
 	fboID                uint32
 	rboID                uint32
+	identityMat          mgl32.Mat4 // just a cache
+	orthoMat             mgl32.Mat4
 
 	pitch         int32  // pitch set by the refresh callback
 	pixFmt        uint32 // format set by the environment callback
@@ -63,6 +66,7 @@ type Video struct {
 // Init instanciates the video package
 func Init(fullscreen bool) *Video {
 	vid := &Video{}
+	vid.identityMat = mgl32.Ident4()
 	vid.Configure(fullscreen)
 	return vid
 }
@@ -70,6 +74,14 @@ func Init(fullscreen bool) *Video {
 // Reconfigure destroys and recreates the window with new attributes
 func (video *Video) Reconfigure(fullscreen bool) {
 	if video.Window != nil {
+		// This is the expected frontend behavior and Flycast requires this
+		// for fullscreen toggling to work, but ppsspp breaks. OTOH, ppsspp
+		// breaks in those situations even if we don't call context_destroy
+		// so ignore it.
+		hw := state.Global.Core.HWRenderCallback
+		if state.Global.CoreRunning && hw != nil && hw.ContextDestroy != nil {
+			state.Global.Core.HWRenderCallback.ContextDestroy()
+		}
 		video.Window.Destroy()
 	}
 	video.Configure(fullscreen)
@@ -95,7 +107,10 @@ func getGLSLVersion() uint {
 
 // InitFramebuffer initializes and configures the video frame buffer based on
 // informations from the HWRenderCallback of the libretro core.
-func (video *Video) InitFramebuffer(width, height int) {
+func (video *Video) InitFramebuffer() {
+	width := video.Geom.MaxWidth
+	height := video.Geom.MaxHeight
+
 	log.Printf("[Video]: Initializing HW render (%v x %v).\n", width, height)
 
 	gl.GenFramebuffers(1, &video.fboID)
@@ -106,6 +121,9 @@ func (video *Video) InitFramebuffer(width, height int) {
 	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, int32(width), int32(height))
 
 	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
+
+	// Default origin is top left
+	video.orthoMat = mgl32.Ortho2D(-1, 1, -1, 1)
 
 	hw := state.Global.Core.HWRenderCallback
 
@@ -126,6 +144,10 @@ func (video *Video) InitFramebuffer(width, height int) {
 
 		if hw.Depth || hw.Stencil {
 			gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
+		}
+
+		if hw.BottomLeftOrigin {
+			video.orthoMat = mgl32.Ortho2D(-1, 1, 1, -1)
 		}
 	}
 
@@ -269,6 +291,11 @@ func (video *Video) Configure(fullscreen bool) {
 		video.bpp = 2
 	}
 
+	if video.Geom.MaxWidth == 0 || video.Geom.MaxHeight == 0 {
+		video.Geom.MaxWidth = video.Geom.BaseWidth
+		video.Geom.MaxHeight = video.Geom.BaseHeight
+	}
+
 	gl.GenTextures(1, &video.texID)
 	if video.texID == 0 && state.Global.Verbose {
 		log.Fatalln("[Video]: Failed to create the vid texture")
@@ -276,15 +303,16 @@ func (video *Video) Configure(fullscreen bool) {
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(video.Geom.MaxWidth), int32(video.Geom.MaxHeight), 0, video.pixType, video.pixFmt, nil)
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
-	video.coreRatioViewport(fbw, fbh)
+	video.coreRatioViewport(fbw, fbh, video.Geom.BaseWidth, video.Geom.BaseHeight)
 
 	gl.BindVertexArray(0)
 
 	if state.Global.CoreRunning && state.Global.Core.HWRenderCallback != nil {
-		video.InitFramebuffer(video.Geom.BaseWidth, video.Geom.BaseHeight)
+		video.InitFramebuffer()
 		state.Global.Core.HWRenderCallback.ContextReset()
 	}
 
@@ -367,7 +395,7 @@ func (video *Video) ResetPitch() {
 
 // coreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
-func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
+func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight int) (x, y, w, h float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
@@ -390,6 +418,12 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 	y = (fbh - h) / 2
 
 	va := video.vertexArray(x, y, w, h, 1.0)
+
+	va[3] = float32(clipHeight) / float32(video.Geom.MaxHeight)
+	va[10] = float32(clipWidth) / float32(video.Geom.MaxWidth)
+	va[11] = va[3]
+	va[14] = va[10]
+
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
@@ -404,25 +438,48 @@ func (video *Video) ResizeViewport() {
 
 // Render the current frame
 func (video *Video) Render() {
+	// Render directly to the screen
+	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+
+	// We can't trust the core to leave the OpenGL in the same state as
+	// before retro_run() was called so we restore some state manually.
+	gl.Disable(gl.DEPTH_TEST)
+	gl.Disable(gl.CULL_FACE)
+	gl.Disable(gl.DITHER)
+	gl.Disable(gl.STENCIL_TEST)
+	gl.Disable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BlendEquation(gl.FUNC_ADD)
+
+	// The next line might be necessary, but doesn't work in core contexts
+	// gl.Enable(gl.TEXTURE_2D)
+
+	video.ResizeViewport()
+
 	if !state.Global.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		return
 	}
+
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	// Early return to not render the first frame of a newly loaded game with the
 	// previous game pitch. A sane pitch must be set by video.Refresh first.
-	if video.pitch == 0 {
+	if state.Global.Core.HWRenderCallback == nil && video.pitch == 0 {
 		return
 	}
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	_, _, w, h := video.coreRatioViewport(fbw, fbh)
+	_, _, w, h := video.coreRatioViewport(fbw, fbh, int(video.width), int(video.height))
 
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
+
+	if state.Global.Core.HWRenderCallback != nil {
+		gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.orthoMat[0])
+	}
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
@@ -432,6 +489,8 @@ func (video *Video) Render() {
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 	gl.BindVertexArray(0)
 
+	// Reset MVP to identity to avoid menu issues
+	gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.identityMat[0])
 	gl.UseProgram(0)
 }
 
@@ -452,7 +511,7 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(video.Geom.MaxWidth), int32(video.Geom.MaxHeight), 0, video.pixType, video.pixFmt, nil)
 
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
