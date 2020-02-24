@@ -199,7 +199,6 @@ func Test_coreLoadGame(t *testing.T) {
 	if !glfw.Init() {
 		log.Fatalln("failed to initialize glfw")
 	}
-	defer glfw.Terminate()
 
 	Load("testdata/vecx_libretro" + ext)
 
