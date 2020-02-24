@@ -513,14 +513,15 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	video.pitch = pitch
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
-	if data != nil && data != libretro.HWFrameBufferValid {
-		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
-	}
-
 	gl.UseProgram(video.program)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+
+	if data != nil && data != libretro.HWFrameBufferValid {
+		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+	}
+
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(video.Geom.MaxWidth), int32(video.Geom.MaxHeight), 0, video.pixType, video.pixFmt, nil)
 
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.Geom.MaxWidth), float32(video.Geom.MaxHeight))
