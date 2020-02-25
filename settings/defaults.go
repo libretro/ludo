@@ -4,12 +4,23 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 func defaultSettings() Settings {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatalln(err)
+	}
+
+	coresDir := "./cores"
+	if runtime.GOOS == "darwin" {
+		exe, err := os.Executable()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		exeDir := filepath.Dir(exe)
+		coresDir = filepath.Join(exeDir, "..", "Resources", "cores")
 	}
 
 	return Settings{
@@ -57,7 +68,7 @@ func defaultSettings() Settings {
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 			"Sony - PlayStation":                             playstationCore,
 		},
-		CoresDirectory:       "./cores",
+		CoresDirectory:       coresDir,
 		AssetsDirectory:      "./assets",
 		DatabaseDirectory:    "./database",
 		SavestatesDirectory:  filepath.Join(home, ".ludo", "savestates"),
