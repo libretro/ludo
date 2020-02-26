@@ -63,8 +63,8 @@ func scrubIllegalChars(str string) string {
 // Draws a thumbnail in the playlist scene.
 func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, color video.Color) {
 	folderPath := filepath.Join(settings.Current.ThumbnailsDirectory, system, "Named_Snaps")
-	path := filepath.Join(folderPath, gameName+".png")
 	legalName := scrubIllegalChars(gameName)
+	path := filepath.Join(folderPath, legalName+".png")
 	url := "http://thumbnails.libretro.com/" + system + "/Named_Snaps/" + legalName + ".png"
 
 	if list.children[i].thumbnail == 0 || list.children[i].thumbnail == menu.icons["img-dl"] {

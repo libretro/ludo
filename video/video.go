@@ -325,24 +325,28 @@ func (video *Video) Configure(fullscreen bool) {
 }
 
 // UpdateFilter configures the game texture filter and shader. We currently
-// support 4 modes: nearest, linear, sharp-bilinear and zfast-crt.
+// support 4 modes:
+// Raw: nearest
+// Smooth: linear
+// Pixel Perfect: sharp-bilinear
+// CRT: zfast-crt
 func (video *Video) UpdateFilter(filter string) {
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	switch filter {
-	case "linear":
+	case "Smooth":
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.defaultProgram
-	case "sharp-bilinear":
+	case "Pixel Perfect":
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.sharpBilinearProgram
-	case "zfast-crt":
+	case "CRT":
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.zfastCRTProgram
-	case "nearest":
+	case "Raw":
 		fallthrough
 	default:
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)

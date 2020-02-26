@@ -110,8 +110,7 @@ func buildMainMenu() Scene {
 
 // triggered when a core is selected in the file explorer of Load Core
 func coreExplorerCb(path string) {
-	err := core.Load(path)
-	if err != nil {
+	if err := core.Load(path); err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 		return
 	}
@@ -120,8 +119,7 @@ func coreExplorerCb(path string) {
 
 // triggered when a game is selected in the file explorer of Load Game
 func gameExplorerCb(path string) {
-	err := core.LoadGame(path)
-	if err != nil {
+	if err := core.LoadGame(path); err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 		return
 	}
@@ -137,8 +135,7 @@ func gameExplorerCb(path string) {
 // Shutdown the operating system
 func cleanShutdown() {
 	core.UnloadGame()
-	err := exec.Command("/usr/sbin/shutdown", "-P", "now").Run()
-	if err != nil {
+	if err := exec.Command("/usr/sbin/shutdown", "-P", "now").Run(); err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}
 }
@@ -146,8 +143,7 @@ func cleanShutdown() {
 // Reboots the operating system
 func cleanReboot() {
 	core.UnloadGame()
-	err := exec.Command("/usr/sbin/shutdown", "-r", "now").Run()
-	if err != nil {
+	if err := exec.Command("/usr/sbin/shutdown", "-r", "now").Run(); err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}
 }

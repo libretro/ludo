@@ -4,7 +4,22 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 )
+
+func coresDir() string {
+	coresDir := "./cores"
+	// with hardened runtime enabled, dylibs can't be loaded from a relative path
+	if runtime.GOOS == "darwin" {
+		exe, err := os.Executable()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		exeDir := filepath.Dir(exe)
+		coresDir = filepath.Join(exeDir, "..", "Frameworks")
+	}
+	return coresDir
+}
 
 func defaultSettings() Settings {
 	home, err := os.UserHomeDir()
@@ -15,7 +30,7 @@ func defaultSettings() Settings {
 	return Settings{
 		VideoFullscreen:   false,
 		VideoMonitorIndex: 0,
-		VideoFilter:       "sharp-bilinear",
+		VideoFilter:       "Pixel Perfect",
 		AudioVolume:       0.5,
 		MenuAudioVolume:   0.25,
 		ShowHiddenFiles:   false,
@@ -31,7 +46,7 @@ func defaultSettings() Settings {
 			"Cave Story":                                     "nxengine_libretro",
 			"ChaiLove":                                       "chailove_libretro",
 			"Coleco - ColecoVision":                          "bluemsx_libretro",
-			"FB Alpha - Arcade Games":                        "fbneo_libretro",
+			"FBNeo - Arcade Games":                           "fbneo_libretro",
 			"GCE - Vectrex":                                  "vecx_libretro",
 			"Magnavox - Odyssey2":                            "o2em_libretro",
 			"Microsoft - MSX":                                "bluemsx_libretro",
@@ -57,7 +72,7 @@ func defaultSettings() Settings {
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 			"Sony - PlayStation":                             playstationCore,
 		},
-		CoresDirectory:       "./cores",
+		CoresDirectory:       coresDir(),
 		AssetsDirectory:      "./assets",
 		DatabaseDirectory:    "./database",
 		SavestatesDirectory:  filepath.Join(home, ".ludo", "savestates"),
