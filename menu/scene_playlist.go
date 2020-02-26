@@ -198,14 +198,16 @@ func (s *scenePlaylist) render() {
 			stack += 10
 
 			for _, tag := range e.tags {
-				stack += 20
-				vid.DrawImage(
-					menu.icons[tag],
-					stack, float32(h)*e.yp-22*menu.ratio,
-					60*menu.ratio, 44*menu.ratio, 1.0, video.Color{R: 1, G: 1, B: 1, A: e.tagAlpha})
-				vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
-					60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: e.tagAlpha / 4})
-				stack += 60 * menu.ratio
+				if _, ok := menu.icons[tag]; ok {
+					stack += 20
+					vid.DrawImage(
+						menu.icons[tag],
+						stack, float32(h)*e.yp-22*menu.ratio,
+						60*menu.ratio, 44*menu.ratio, 1.0, video.Color{R: 1, G: 1, B: 1, A: e.tagAlpha})
+					vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
+						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: e.tagAlpha / 4})
+					stack += 60 * menu.ratio
+				}
 			}
 		}
 	}

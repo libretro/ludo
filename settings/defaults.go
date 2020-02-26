@@ -46,7 +46,7 @@ func defaultSettings() Settings {
 			"Cave Story":                                     "nxengine_libretro",
 			"ChaiLove":                                       "chailove_libretro",
 			"Coleco - ColecoVision":                          "bluemsx_libretro",
-			"FB Alpha - Arcade Games":                        "fbneo_libretro",
+			"FBNeo - Arcade Games":                           "fbneo_libretro",
 			"GCE - Vectrex":                                  "vecx_libretro",
 			"Magnavox - Odyssey2":                            "o2em_libretro",
 			"Microsoft - MSX":                                "bluemsx_libretro",

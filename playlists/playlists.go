@@ -29,17 +29,35 @@ type Playlist []Game
 // Playlists is a map of playlists organized per system.
 var Playlists = map[string]Playlist{}
 
-// Load loops over lpl files in the playlists directory and loads them into
-// memory.
-func Load() {
+// Gets a list of full paths to playlists
+func getPaths() (paths []string) {
 	paths, err := filepath.Glob(settings.Current.PlaylistsDirectory + "/*.csv")
 	if err != nil {
 		log.Println(err)
-		return
 	}
+	return
+}
 
-	Playlists = map[string]Playlist{}
-	for _, path := range paths {
+// Update older versions of playlists
+func Update() {
+	for _, fp := range getPaths() {
+
+		// Renames FB Alpha playlist to FBNeo playlist
+		if filepath.Base(fp) == "FB Alpha - Arcade Games.csv" {
+			newPath := filepath.Join(filepath.Dir(fp), "FBNeo - Arcade Games.csv")
+			if err := os.Rename(fp, newPath); err == nil {
+				log.Println("[INFO]: Renamed playlist:", filepath.Base(fp))
+			} else {
+				log.Println("Error renaming playlist:", err)
+			}
+		}
+	}
+}
+
+// Load loops over lpl files in the playlists directory and loads them into
+// memory.
+func Load() {
+	for _, path := range getPaths() {
 		path := path
 
 		file, err := os.Open(path)
@@ -111,7 +129,7 @@ func ShortName(in string) string {
 		"Bandai - WonderSwan":                            "WonderSwan",
 		"Coleco - ColecoVision":                          "ColecoVision",
 		"Commodore - 64":                                 "Commodore 64",
-		"FB Alpha - Arcade Games":                        "Arcade (FB Alpha)",
+		"FBNeo - Arcade Games":                           "Arcade (FBNeo)",
 		"GCE - Vectrex":                                  "Vectrex",
 		"Magnavox - Odyssey2":                            "Magnavox Odyssey²",
 		"Microsoft - MSX":                                "MSX",
