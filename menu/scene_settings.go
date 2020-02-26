@@ -181,7 +181,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		settings.Save()
 	},
 	"VideoFilter": func(f *structs.Field, direction int) {
-		filters := []string{"nearest", "linear", "sharp-bilinear", "zfast-crt"}
+		filters := []string{"Raw", "Smooth", "Pixel Perfect", "CRT"}
 		v := f.Value().(string)
 		i := utils.IndexOfString(v, filters)
 		i += direction
