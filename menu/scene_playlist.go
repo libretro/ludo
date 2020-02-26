@@ -91,15 +91,13 @@ func loadPlaylistEntry(list *scenePlaylist, playlist string, game playlists.Game
 		return
 	}
 	if state.Global.CorePath != corePath {
-		err := core.Load(corePath)
-		if err != nil {
+		if err := core.Load(corePath); err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
 		}
 	}
 	if state.Global.GamePath != game.Path {
-		err := core.LoadGame(game.Path)
-		if err != nil {
+		if err := core.LoadGame(game.Path); err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
 		}
