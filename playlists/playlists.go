@@ -38,22 +38,6 @@ func getPaths() (paths []string) {
 	return
 }
 
-// Update older versions of playlists
-func Update() {
-	for _, fp := range getPaths() {
-
-		// Renames FB Alpha playlist to FBNeo playlist
-		if filepath.Base(fp) == "FB Alpha - Arcade Games.csv" {
-			newPath := filepath.Join(filepath.Dir(fp), "FBNeo - Arcade Games.csv")
-			if err := os.Rename(fp, newPath); err == nil {
-				log.Println("[INFO]: Renamed playlist:", filepath.Base(fp))
-			} else {
-				log.Println("Error renaming playlist:", err)
-			}
-		}
-	}
-}
-
 // Load loops over lpl files in the playlists directory and loads them into
 // memory.
 func Load() {

@@ -90,7 +90,6 @@ func main() {
 		log.Println("Can't load game database:", err)
 	}
 
-	playlists.Update()
 	playlists.Load()
 
 	history.Load()
