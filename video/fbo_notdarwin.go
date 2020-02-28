@@ -27,40 +27,37 @@ func (video *Video) InitFramebuffer() {
 
 	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
 
-	// Default origin is top left
-	video.orthoMat = mgl32.Ortho2D(-1, 1, -1, 1)
-
 	hw := state.Global.Core.HWRenderCallback
 
-	if hw != nil {
-		if hw.Depth && hw.Stencil {
-			gl.GenRenderbuffers(1, &video.rboID)
-			gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
-			gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, int32(width), int32(height))
+	if hw.Depth && hw.Stencil {
+		gl.GenRenderbuffers(1, &video.rboID)
+		gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
+		gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, int32(width), int32(height))
 
-			gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
-		} else if hw.Depth {
-			gl.GenRenderbuffers(1, &video.rboID)
-			gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
-			gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, int32(width), int32(height))
+		gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
+	} else if hw.Depth {
+		gl.GenRenderbuffers(1, &video.rboID)
+		gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
+		gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, int32(width), int32(height))
 
-			gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
-		}
+		gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
+	}
 
-		if hw.Depth || hw.Stencil {
-			gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
-		}
+	if hw.Depth || hw.Stencil {
+		gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
+	}
 
-		if hw.BottomLeftOrigin {
-			video.orthoMat = mgl32.Ortho2D(-1, 1, 1, -1)
-		}
+	// Default origin is top left
+	video.orthoMat = mgl32.Ortho2D(-1, 1, -1, 1)
+	if hw.BottomLeftOrigin {
+		video.orthoMat = mgl32.Ortho2D(-1, 1, 1, -1)
+	}
+
+	if st := gl.CheckFramebufferStatus(gl.FRAMEBUFFER); st != gl.FRAMEBUFFER_COMPLETE {
+		log.Fatalf("[Video] Framebuffer is not complete. Error: %v\n", st)
 	}
 
 	bindBackbuffer()
-
-	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
-		log.Fatalln("[Video] Framebuffer is not complete.")
-	}
 
 	gl.ClearColor(0, 0, 0, 1)
 	if hw.Depth && hw.Stencil {
@@ -70,8 +67,6 @@ func (video *Video) InitFramebuffer() {
 	} else {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 	}
-
-	bindBackbuffer()
 }
 
 func bindBackbuffer() {
