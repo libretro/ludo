@@ -5,7 +5,7 @@ import (
 	"image/draw"
 	"os"
 
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 )
 
 // Color is an RGBA type that we use in the menu
