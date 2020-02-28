@@ -56,7 +56,7 @@ func (video *Video) InitFramebuffer() {
 		}
 	}
 
-	gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
+	bindBackbuffer()
 
 	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
 		log.Fatalln("[Video] Framebuffer is not complete.")
@@ -71,7 +71,7 @@ func (video *Video) InitFramebuffer() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 	}
 
-	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+	bindBackbuffer()
 }
 
 func bindBackbuffer() {
