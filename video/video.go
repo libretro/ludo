@@ -233,11 +233,6 @@ func (video *Video) Configure(fullscreen bool) {
 
 	gl.BindVertexArray(0)
 
-	if state.Global.CoreRunning && state.Global.Core.HWRenderCallback != nil {
-		video.InitFramebuffer()
-		state.Global.Core.HWRenderCallback.ContextReset()
-	}
-
 	e := gl.GetError()
 	for e != gl.NO_ERROR {
 		log.Printf("[Video] OpenGL error: %d\n", e)
