@@ -13,13 +13,13 @@ import (
 // InitFramebuffer initializes and configures the video frame buffer based on
 // informations from the HWRenderCallback of the libretro core.
 func (video *Video) InitFramebuffer() {
-	width := video.Geom.MaxWidth
-	height := video.Geom.MaxHeight
+	width := int32(video.Geom.MaxWidth)
+	height := int32(video.Geom.MaxHeight)
 
 	log.Printf("[Video]: Initializing HW render (%v x %v).\n", width, height)
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, int32(width), int32(height))
+	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, width, height)
 
 	gl.GenFramebuffers(1, &video.fboID)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
@@ -33,7 +33,7 @@ func (video *Video) InitFramebuffer() {
 		if hw.Stencil {
 			format = gl.DEPTH24_STENCIL8
 		}
-		gl.RenderbufferStorage(gl.RENDERBUFFER, uint32(format), int32(width), int32(height))
+		gl.RenderbufferStorage(gl.RENDERBUFFER, uint32(format), width, height)
 		gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
 
 		if hw.Stencil {
