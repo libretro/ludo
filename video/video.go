@@ -12,7 +12,6 @@ import (
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/kivutar/glfont"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -37,7 +36,7 @@ type WindowInterface interface {
 type Video struct {
 	Window WindowInterface
 	Geom   libretro.GameGeometry
-	Font   *glfont.Font
+	Font   *Font
 
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
@@ -144,7 +143,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
-	video.Font, err = glfont.LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh, GLSLVersion)
+	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh, GLSLVersion)
 	if err != nil {
 		panic(err)
 	}
@@ -431,6 +430,8 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	video.width = width
 	video.height = height
 	video.pitch = pitch
+
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	gl.UseProgram(video.program)
@@ -439,10 +440,8 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
 	if data != nil && data != libretro.HWFrameBufferValid {
-		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(video.Geom.MaxWidth), int32(video.Geom.MaxHeight), 0, video.pixType, video.pixFmt, data)
 	}
-
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(video.Geom.MaxWidth), int32(video.Geom.MaxHeight), 0, video.pixType, video.pixFmt, nil)
 
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.Geom.MaxWidth), float32(video.Geom.MaxHeight))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
