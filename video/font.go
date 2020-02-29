@@ -41,16 +41,9 @@ type Font struct {
 	vbo         uint32
 	program     uint32
 	textureID   uint32 // Holds the glyph texture id.
-	color       color
+	color       Color
 	atlasWidth  float32
 	atlasHeight float32
-}
-
-type color struct {
-	r float32
-	g float32
-	b float32
-	a float32
 }
 
 type point [4]float32
@@ -78,8 +71,8 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	// Make Font stuct type
 	f := new(Font)
 	f.fontChar = make([]*character, 0, high-low+1)
-	f.program = program            // Set shader program
-	f.SetColor(1.0, 1.0, 1.0, 1.0) // Set default white
+	f.program = program    // Set shader program
+	f.SetColor(1, 1, 1, 1) // Set default white
 
 	// Create new face
 	ttfFace := truetype.NewFace(ttf, &truetype.Options{
@@ -188,8 +181,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(rgba.Rect.Dx()), int32(rgba.Rect.Dy()), 0,
-		gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(rgba.Rect.Dx()), int32(rgba.Rect.Dy()), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
 
 	gl.GenerateMipmap(gl.TEXTURE_2D)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
@@ -240,10 +232,10 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int, GLSLV
 
 // SetColor allows you to set the text color to be used when you draw the text
 func (f *Font) SetColor(red float32, green float32, blue float32, alpha float32) {
-	f.color.r = red
-	f.color.g = green
-	f.color.b = blue
-	f.color.a = alpha
+	f.color.R = red
+	f.color.G = green
+	f.color.B = blue
+	f.color.A = alpha
 }
 
 // UpdateResolution passes the new framebuffer size to the font shader
@@ -271,7 +263,7 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 	// Activate corresponding render state
 	gl.UseProgram(f.program)
 	// Set text color
-	gl.Uniform4f(gl.GetUniformLocation(f.program, gl.Str("textColor\x00")), f.color.r, f.color.g, f.color.b, f.color.a)
+	gl.Uniform4f(gl.GetUniformLocation(f.program, gl.Str("textColor\x00")), f.color.R, f.color.G, f.color.B, f.color.A)
 
 	var coords []point
 
