@@ -190,7 +190,7 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.Uniform1i(textureUniform, 0)
 
 	// Configure the vertex data
-	gl.GenVertexArrays(1, &video.vao)
+	genVertexArrays(1, &video.vao)
 	bindVertexArray(video.vao)
 
 	gl.GenBuffers(1, &video.vbo)

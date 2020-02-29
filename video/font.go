@@ -178,7 +178,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	gl.Uniform1i(textureUniform, 0)
 
 	// Configure VAO/VBO for texture quads
-	gl.GenVertexArraysAPPLE(1, &f.vao)
+	genVertexArrays(1, &f.vao)
 	bindVertexArray(f.vao)
 
 	gl.GenBuffers(1, &f.vbo)
