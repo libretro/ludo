@@ -232,10 +232,8 @@ func (video *Video) Configure(fullscreen bool) {
 
 	bindVertexArray(0)
 
-	e := gl.GetError()
-	for e != gl.NO_ERROR {
+	for e := gl.GetError(); e != gl.NO_ERROR; e = gl.NO_ERROR {
 		log.Printf("[Video] OpenGL error: %d\n", e)
-		e = gl.GetError()
 	}
 }
 

@@ -18,6 +18,7 @@ func (video *Video) InitFramebuffer() {
 
 	log.Printf("[Video]: Initializing HW render (%v x %v).\n", width, height)
 
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, width, height)
 
