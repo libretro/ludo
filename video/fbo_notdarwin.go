@@ -68,3 +68,7 @@ func (video *Video) InitFramebuffer() {
 func bindBackbuffer() {
 	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 }
+
+func bindVertexArray(array uint32) {
+	gl.BindVertexArray(array)
+}

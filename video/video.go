@@ -191,7 +191,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	// Configure the vertex data
 	gl.GenVertexArrays(1, &video.vao)
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 
 	gl.GenBuffers(1, &video.vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
@@ -230,7 +230,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	video.coreRatioViewport(fbw, fbh, video.Geom.BaseWidth, video.Geom.BaseHeight)
 
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 
 	e := gl.GetError()
 	for e != gl.NO_ERROR {
@@ -414,9 +414,9 @@ func (video *Video) Render() {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 
 	// Reset MVP to identity to avoid menu issues
 	gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.identityMat[0])
