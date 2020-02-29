@@ -21,18 +21,13 @@ func (video *Video) InitFramebuffer() {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, int32(width), int32(height))
 
-	hw := state.Global.Core.HWRenderCallback
-
 	gl.GenFramebuffersEXT(1, &video.fboID)
-
-	if hw.Depth {
-		gl.GenRenderbuffersEXT(1, &video.rboID)
-	}
-
 	gl.BindFramebufferEXT(gl.FRAMEBUFFER_EXT, video.fboID)
 	gl.FramebufferTexture2DEXT(gl.FRAMEBUFFER_EXT, gl.COLOR_ATTACHMENT0_EXT, gl.TEXTURE_2D, video.texID, 0)
 
+	hw := state.Global.Core.HWRenderCallback
 	if hw.Depth {
+		gl.GenRenderbuffersEXT(1, &video.rboID)
 		gl.BindRenderbufferEXT(gl.RENDERBUFFER_EXT, video.rboID)
 		format := gl.DEPTH_COMPONENT16
 		if hw.Stencil {
