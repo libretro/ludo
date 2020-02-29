@@ -387,7 +387,6 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	video.pitch = pitch
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	gl.UseProgram(video.program)
@@ -397,7 +396,7 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	if data == nil {
 		return
 	}
-	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, data)
 }
 
 // SetRotation rotates the game image as requested by the core
