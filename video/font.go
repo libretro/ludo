@@ -86,7 +86,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	f.atlasHeight = 1024
 	for ch := low; ch <= high; ch++ {
 		gBnd, _, ok := ttfFace.GlyphBounds(ch)
-		if ok != true {
+		if !ok {
 			return nil, fmt.Errorf("ttf face glyphBounds error")
 		}
 		gh := int32((gBnd.Max.Y - gBnd.Min.Y) >> 6)
@@ -97,7 +97,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	fg, bg := image.White, image.Black
 	rect := image.Rect(0, 0, int(f.atlasWidth), int(f.atlasHeight))
 	rgba := image.NewRGBA(rect)
-	draw.Draw(rgba, rgba.Bounds(), bg, image.ZP, draw.Src)
+	draw.Draw(rgba, rgba.Bounds(), bg, image.Point{}, draw.Src)
 
 	margin := 2
 	x := margin
@@ -108,7 +108,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 		char := new(character)
 
 		gBnd, gAdv, ok := ttfFace.GlyphBounds(ch)
-		if ok != true {
+		if !ok {
 			return nil, fmt.Errorf("ttf face glyphBounds error")
 		}
 
