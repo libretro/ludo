@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/kivutar/glfont"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -37,7 +36,7 @@ type WindowInterface interface {
 type Video struct {
 	Window WindowInterface
 	Geom   libretro.GameGeometry
-	Font   *glfont.Font
+	Font   *Font
 
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
@@ -145,7 +144,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
-	video.Font, err = glfont.LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh, GLSLVersion)
+	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh, GLSLVersion)
 	if err != nil {
 		panic(err)
 	}
