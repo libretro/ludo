@@ -105,7 +105,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 			data,
 			vid.CurrentFramebuffer,
 			vid.ProcAddress)
-		log.Println("HWContextType:", state.Global.Core.HWRenderCallback.HWContextType)
+		log.Println("[Env]: HWContextType:", state.Global.Core.HWRenderCallback.HWContextType)
 		return true
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
@@ -115,6 +115,9 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		return environmentGetSystemDirectory(data)
 	case libretro.EnvironmentGetSaveDirectory:
 		return environmentGetSaveDirectory(data)
+	case libretro.EnvironmentGetPrefferedHWRenderer:
+		log.Println("[Env]: EnvironmentGetPrefferedHWRenderer: 1")
+		libretro.SetUnsigned(data, libretro.HWContextOpenGL)
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetVariable:

@@ -231,23 +231,24 @@ const (
 
 // Environment callback API. See libretro.h for details
 const (
-	EnvironmentSetRotation          = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
-	EnvironmentGetUsername          = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
-	EnvironmentGetLogInterface      = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
-	EnvironmentGetCanDupe           = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
-	EnvironmentSetPixelFormat       = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
-	EnvironmentGetSystemDirectory   = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
-	EnvironmentGetSaveDirectory     = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
-	EnvironmentShutdown             = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
-	EnvironmentGetVariable          = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
-	EnvironmentSetVariables         = uint32(C.RETRO_ENVIRONMENT_SET_VARIABLES)
-	EnvironmentGetVariableUpdate    = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE)
-	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
-	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
-	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
-	EnvironmentSetHWRenderer        = uint32(C.RETRO_ENVIRONMENT_SET_HW_RENDER)
-	EnvironmentSetGeometry          = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
-	EnvironmentSetSystemAVInfo      = uint32(C.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO)
+	EnvironmentSetRotation            = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
+	EnvironmentGetUsername            = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
+	EnvironmentGetLogInterface        = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
+	EnvironmentGetCanDupe             = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
+	EnvironmentSetPixelFormat         = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
+	EnvironmentGetSystemDirectory     = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
+	EnvironmentGetSaveDirectory       = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
+	EnvironmentShutdown               = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
+	EnvironmentGetVariable            = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
+	EnvironmentSetVariables           = uint32(C.RETRO_ENVIRONMENT_SET_VARIABLES)
+	EnvironmentGetVariableUpdate      = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE)
+	EnvironmentGetPerfInterface       = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
+	EnvironmentSetFrameTimeCallback   = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
+	EnvironmentSetAudioCallback       = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
+	EnvironmentSetHWRenderer          = uint32(C.RETRO_ENVIRONMENT_SET_HW_RENDER)
+	EnvironmentSetGeometry            = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
+	EnvironmentSetSystemAVInfo        = uint32(C.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO)
+	EnvironmentGetPrefferedHWRenderer = uint32(C.RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER)
 )
 
 // Debug levels
@@ -682,6 +683,12 @@ func SetBool(data unsafe.Pointer, val bool) {
 func SetString(data unsafe.Pointer, val string) {
 	s := (**C.char)(data)
 	*s = C.CString(val)
+}
+
+// SetUnsigned is an environment callback helper to set an unsigned integer
+func SetUnsigned(data unsafe.Pointer, val uint32) {
+	s := (*C.uint)(data)
+	*s = C.uint(val)
 }
 
 // SetFrameTimeCallback is an environment callback helper to set the FrameTimeCallback
