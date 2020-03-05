@@ -106,9 +106,9 @@ func TestShortName(t *testing.T) {
 		{
 			name: "Should specify vendor as additional information",
 			args: args{
-				in: "FB Alpha - Arcade Games",
+				in: "FBNeo - Arcade Games",
 			},
-			want: "Arcade (FB Alpha)",
+			want: "Arcade (FBNeo)",
 		},
 		{
 			name: "Should remove vendor and alternative name",

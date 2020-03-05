@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/user"
 	"path/filepath"
 
 	"github.com/fatih/structs"
@@ -63,7 +62,7 @@ func Load() error {
 		}
 	}()
 
-	usr, err := user.Current()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
@@ -80,7 +79,7 @@ func Load() error {
 		}
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, ".ludo", "settings.toml"))
+	b, err := ioutil.ReadFile(filepath.Join(home, ".ludo", "settings.toml"))
 	if err != nil {
 		return err
 	}
@@ -98,12 +97,12 @@ func Load() error {
 
 // Save saves the current configuration to the home directory
 func Save() error {
-	usr, err := user.Current()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
 
-	err = os.MkdirAll(filepath.Join(usr.HomeDir, ".ludo"), os.ModePerm)
+	err = os.MkdirAll(filepath.Join(home, ".ludo"), os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -113,7 +112,7 @@ func Save() error {
 		return err
 	}
 
-	fd, err := os.Create(filepath.Join(usr.HomeDir, ".ludo", "settings.toml"))
+	fd, err := os.Create(filepath.Join(home, ".ludo", "settings.toml"))
 	if err != nil {
 		return err
 	}

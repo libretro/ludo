@@ -3,6 +3,7 @@ package core
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -85,7 +86,7 @@ func Test_getGameInfo(t *testing.T) {
 			name: "Returns the right path and size for a zipped ROM",
 			args: args{filename: "testdata/Polar Rescue (USA).zip", blockExtract: false},
 			want: &libretro.GameInfo{
-				Path: os.TempDir() + "/Polar Rescue (USA).vec",
+				Path: filepath.Join(os.TempDir(), "Polar Rescue (USA).vec"),
 				Size: 8192,
 			},
 			wantErr: false,
@@ -152,7 +153,7 @@ func Test_unzipGame(t *testing.T) {
 		{
 			name:    "Should unzip to the right path",
 			args:    args{filename: "testdata/Polar Rescue (USA).zip"},
-			want:    os.TempDir() + "/Polar Rescue (USA).vec",
+			want:    filepath.Join(os.TempDir(), "Polar Rescue (USA).vec"),
 			want1:   8192,
 			wantErr: false,
 		},
@@ -198,7 +199,6 @@ func Test_coreLoadGame(t *testing.T) {
 	if !glfw.Init() {
 		log.Fatalln("failed to initialize glfw")
 	}
-	defer glfw.Terminate()
 
 	Load("testdata/vecx_libretro" + ext)
 

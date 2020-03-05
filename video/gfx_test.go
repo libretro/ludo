@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/kivutar/glfont"
 	"github.com/libretro/ludo/libretro"
 )
 
@@ -93,7 +92,7 @@ func TestVideo_vertexArray(t *testing.T) {
 	type fields struct {
 		Window         WindowInterface
 		Geom           libretro.GameGeometry
-		Font           *glfont.Font
+		Font           *Font
 		program        uint32
 		roundedProgram uint32
 		borderProgram  uint32

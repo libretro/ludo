@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/kivutar/glfont"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -37,7 +36,7 @@ type WindowInterface interface {
 type Video struct {
 	Window WindowInterface
 	Geom   libretro.GameGeometry
-	Font   *glfont.Font
+	Font   *Font
 
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
@@ -145,7 +144,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
-	video.Font, err = glfont.LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh, GLSLVersion)
+	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh, GLSLVersion)
 	if err != nil {
 		panic(err)
 	}
@@ -233,29 +232,35 @@ func (video *Video) Configure(fullscreen bool) {
 }
 
 // UpdateFilter configures the game texture filter and shader. We currently
-// support 4 modes: nearest, linear, sharp-bilinear and zfast-crt.
+// support 4 modes:
+// Raw: nearest
+// Smooth: linear
+// Pixel Perfect: sharp-bilinear
+// CRT: zfast-crt
 func (video *Video) UpdateFilter(filter string) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	switch filter {
-	case "linear":
+	case "Smooth":
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.defaultProgram
-	case "sharp-bilinear":
+	case "Pixel Perfect":
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.sharpBilinearProgram
-	case "zfast-crt":
+	case "CRT":
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.zfastCRTProgram
-	case "nearest":
+	case "Raw":
 		fallthrough
 	default:
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 		video.program = video.defaultProgram
 	}
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.width), float32(video.height))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
@@ -381,7 +386,6 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	video.pitch = pitch
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	gl.UseProgram(video.program)
@@ -391,12 +395,18 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	if data == nil {
 		return
 	}
-	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, data)
 }
 
 // SetRotation rotates the game image as requested by the core
 func (video *Video) SetRotation(rot uint) bool {
-	video.rot = rot
+	// limit to valid values (0, 1, 2, 3, which rotates screen by 0, 90, 180 270 degrees counter-clockwise)
+	video.rot = rot % 4
+
+	if state.Global.Verbose {
+		log.Printf("[Video]: Set Rotation: %v", video.rot)
+	}
+
 	return true
 }
 

@@ -19,12 +19,12 @@ import (
 	"github.com/tanema/gween/ease"
 )
 
-type sceneTags struct {
+type sceneTabs struct {
 	entry
 }
 
 func buildTabs() Scene {
-	var list sceneTags
+	var list sceneTabs
 	list.label = "Ludo"
 
 	list.children = append(list.children, entry{
@@ -152,11 +152,11 @@ func getPlaylists() []entry {
 	return pls
 }
 
-func (tabs *sceneTags) Entry() *entry {
+func (tabs *sceneTabs) Entry() *entry {
 	return &tabs.entry
 }
 
-func (tabs *sceneTags) segueMount() {
+func (tabs *sceneTabs) segueMount() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
@@ -181,11 +181,11 @@ func (tabs *sceneTags) segueMount() {
 	tabs.animate()
 }
 
-func (tabs *sceneTags) segueBack() {
+func (tabs *sceneTabs) segueBack() {
 	tabs.animate()
 }
 
-func (tabs *sceneTags) animate() {
+func (tabs *sceneTabs) animate() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
@@ -216,7 +216,7 @@ func (tabs *sceneTags) animate() {
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.15, ease.OutSine)
 }
 
-func (tabs *sceneTags) segueNext() {
+func (tabs *sceneTabs) segueNext() {
 	cur := &tabs.children[tabs.ptr]
 	menu.tweens[&cur.margin] = gween.New(cur.margin, 1360, 0.15, ease.OutSine)
 	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+680, 0.15, ease.OutSine)
@@ -228,7 +228,7 @@ func (tabs *sceneTags) segueNext() {
 	}
 }
 
-func (tabs *sceneTags) update(dt float32) {
+func (tabs *sceneTabs) update(dt float32) {
 	// Right
 	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight], func() {
 		tabs.ptr++
@@ -259,7 +259,7 @@ func (tabs *sceneTags) update(dt float32) {
 	}
 }
 
-func (tabs sceneTags) render() {
+func (tabs sceneTabs) render() {
 	_, h := vid.Window.GetFramebufferSize()
 
 	stackWidth := 710 * menu.ratio
@@ -289,7 +289,7 @@ func (tabs sceneTags) render() {
 	}
 }
 
-func (tabs sceneTags) drawHintBar() {
+func (tabs sceneTabs) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
 
