@@ -22,7 +22,7 @@ matrix:
       dist: bionic
       services: xvfb
       before_install:
-        - sudo apt-get install libopenal-dev xorg-dev -y --allow-unauthenticated
+        - sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       script:
         - xvfb-run go test -v -race ./...
         - go vet ./...
