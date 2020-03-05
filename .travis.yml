@@ -57,56 +57,56 @@ matrix:
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
         - if [[ -n "$TRAVIS_TAG" ]]; then OS="Linux" ARCH=arm VERSION=${TRAVIS_TAG:1} make tar; fi
         - if [[ -n "$TRAVIS_TAG" ]]; then sha256sum Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz > Ludo-Linux-arm-${TRAVIS_TAG:1}.tar.gz.sha256; fi
-    # - name: OSX
-    #   os: osx
-    #   osx_image: xcode11.2
-    #   before_cache:
-    #     - brew cleanup
-    #   before_install:
-    #     - brew install openal-soft
-    #   script:
-    #     - go test -v -race ./...
-    #     - go vet ./...
-    #     - staticcheck ./...
-    #     - gocyclo -over 20 $GO_FILES
-    #     - golint -set_exit_status $(go list ./...)
-    #     - go build -v
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then echo $OSX_CERT | base64 --decode > dev.p12; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then security create-keychain -p travis build.keychain; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then security default-keychain -s build.keychain; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then security unlock-keychain -p travis build.keychain; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then security import dev.p12 -k build.keychain -P $OSX_CERT_PASS -T /usr/bin/codesign && rm dev.p12; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k travis build.keychain; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg --primary-bundle-id org.libretro.ludo -u $APPLE_ID -p $APPLE_ID_PASS -itc_provider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }'); fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then sleep 180; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then xcrun altool --notarization-info $REQUESTUUID -u $APPLE_ID -p $APPLE_ID_PASS -ascprovider ZE9XE938Z2; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then xcrun stapler staple Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then xcrun stapler validate Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then shasum -a 256 Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg > Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256; fi
-    # - name: Windows
-    #   os: windows
-    #   before_install:
-    #     - choco install make --ignore-checksums
-    #     - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
-    #     - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
-    #     - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
-    #     - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
-    #     - cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
-    #     - cp /c/Users/travis/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
-    #     - cp /c/Windows/System32/VCRUNTIME140.dll .
-    #   script:
-    #     #- go test -v ./...
-    #     #- go vet ./...
-    #     - staticcheck ./...
-    #     - gocyclo -over 20 $GO_FILES
-    #     - golint -set_exit_status $(go list ./...)
-    #     - go build -v -ldflags '-H=windowsgui'
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then cp *.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
-    #     - if [[ -n "$TRAVIS_TAG" ]]; then hashdeep -c sha256 Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip > Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip.sha256; fi
+    - name: OSX
+      os: osx
+      osx_image: xcode11.2
+      before_cache:
+        - brew cleanup
+      before_install:
+        - brew install openal-soft
+      script:
+        - go test -v -race ./...
+        - go vet ./...
+        - staticcheck ./...
+        - gocyclo -over 20 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
+        - go build -v
+        - if [[ -n "$TRAVIS_TAG" ]]; then echo $OSX_CERT | base64 --decode > dev.p12; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security create-keychain -p travis build.keychain; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security default-keychain -s build.keychain; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security unlock-keychain -p travis build.keychain; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security import dev.p12 -k build.keychain -P $OSX_CERT_PASS -T /usr/bin/codesign && rm dev.p12; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k travis build.keychain; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="OSX" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make dmg; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg --primary-bundle-id org.libretro.ludo -u $APPLE_ID -p $APPLE_ID_PASS -itc_provider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }'); fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then sleep 180; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then xcrun altool --notarization-info $REQUESTUUID -u $APPLE_ID -p $APPLE_ID_PASS -ascprovider ZE9XE938Z2; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then xcrun stapler staple Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then xcrun stapler validate Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then shasum -a 256 Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg > Ludo-OSX-x86_64-${TRAVIS_TAG:1}.dmg.sha256; fi
+    - name: Windows
+      os: windows
+      before_install:
+        - choco install make --ignore-checksums
+        - wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
+        - 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
+        - export CGO_CFLAGS="-I/c/Users/travis/openal-soft-1.19.0-bin/include/"
+        - export CGO_LDFLAGS="-L/c/Users/travis/openal-soft-1.19.0-bin/build/Release/"
+        - cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
+        - cp /c/Users/travis/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
+        - cp /c/Windows/System32/VCRUNTIME140.dll .
+      script:
+        #- go test -v ./...
+        #- go vet ./...
+        - staticcheck ./...
+        - gocyclo -over 20 $GO_FILES
+        - golint -set_exit_status $(go list ./...)
+        - go build -v -ldflags '-H=windowsgui'
+        - if [[ -n "$TRAVIS_TAG" ]]; then mkdir -p ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then cp *.dll ./Ludo-Windows-x86_64-${TRAVIS_TAG:1}/; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then OS="Windows" ARCH=x86_64 VERSION=${TRAVIS_TAG:1} make zip; fi
+        - if [[ -n "$TRAVIS_TAG" ]]; then hashdeep -c sha256 Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip > Ludo-Windows-x86_64-${TRAVIS_TAG:1}.zip.sha256; fi
 
 deploy:
   skip_cleanup: true
