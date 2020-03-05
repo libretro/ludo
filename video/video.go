@@ -121,9 +121,9 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	var err error
-	video.Window = glfw.CreateWindow(width, height, "Ludo", m, nil)
-	if video.Window == nil {
-		panic("Window creation failed")
+	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
+	if err != nil {
+		panic("Window creation failed:" + err.Error())
 	}
 
 	video.Window.MakeContextCurrent()

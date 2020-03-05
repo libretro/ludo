@@ -80,8 +80,8 @@ func main() {
 		gamePath = args[0]
 	}
 
-	if !glfw.Init() {
-		log.Fatalln("Failed to initialize glfw")
+	if err := glfw.Init(); err != nil {
+		log.Fatalln("Failed to initialize glfw", err)
 	}
 	defer glfw.Terminate()
 
