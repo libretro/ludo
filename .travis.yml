@@ -42,10 +42,13 @@ matrix:
         - sudo echo "" > /etc/apt/sources.list
         - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=i386] http://ports.ubuntu.com/ubuntu-ports bionic main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=i386] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ bionic-backports main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" >> /etc/apt/sources.list
+        - sudo echo "deb [arch=i386] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
         - sudo apt-get update -q
         - sudo apt-get install libc6-dev:i386 libstdc++-7-dev:i386 gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
