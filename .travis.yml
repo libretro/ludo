@@ -48,7 +48,7 @@ matrix:
         - sudo echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" >> /etc/apt/sources.list
         - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
         - sudo apt-get update -q
-        - sudo apt-get install libc6-dev:i386 libstdc++-7-dev:i386 gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
+        - sudo apt-get install libc6-dev:i386 libc6-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
         - export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       script:
         - GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go vet ./...
