@@ -12,6 +12,7 @@ import (
 	"github.com/libretro/ludo/history"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/menu"
+	"github.com/libretro/ludo/netplay"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
@@ -72,6 +73,8 @@ func main() {
 	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
 	flag.BoolVar(&state.Global.LudOS, "ludos", false, "Expose the features related to LudOS")
+	flag.StringVar(&netplay.Listen, "listen", "", "Example: :8080")
+	flag.StringVar(&netplay.Join, "join", "", "Peer IP and port to join")
 	flag.Parse()
 	args := flag.Args()
 

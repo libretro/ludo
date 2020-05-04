@@ -4,8 +4,11 @@
 package input
 
 import (
+	"log"
+
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/netplay"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
 )
@@ -110,14 +113,61 @@ func pollJoypads(state inputstate) inputstate {
 	return state
 }
 
-// pollKeyboard processes keyboard keys
-func pollKeyboard(state inputstate) inputstate {
+func keyboardToPlayer(st inputstate, p int) inputstate {
 	for k, v := range keyBinds {
 		if vid.Window.GetKey(k) == glfw.Press {
-			state[0][v] = true
+			st[p][v] = true
 		}
 	}
-	return state
+	return st
+}
+
+func playerToNet(st inputstate, p int) {
+	netoutput := [20]byte{}
+	for i, b := range st[p] {
+		if b {
+			netoutput[i] = 1
+		}
+	}
+	if _, err := netplay.Conn.Write(netoutput[:]); err != nil {
+		log.Println(err)
+	}
+}
+
+func netToPlayer(st inputstate, p int) inputstate {
+	netinput := [20]byte{}
+	if _, err := netplay.Conn.Read(netinput[:]); err != nil {
+		log.Println(err)
+	}
+	for i, b := range netinput {
+		if b == 1 {
+			st[p][i] = true
+		}
+	}
+	return st
+}
+
+// pollKeyboard processes keyboard keys
+func pollKeyboard(st inputstate) inputstate {
+	if netplay.Conn != nil { // Netplay mode
+		if netplay.Listen != "" { // Host mode
+			st = keyboardToPlayer(st, 0)
+			// Write
+			playerToNet(st, 0)
+			// Read
+			st = netToPlayer(st, 1)
+		} else if netplay.Join != "" { // Guest mode
+			st = keyboardToPlayer(st, 1)
+			// Write
+			playerToNet(st, 1)
+			// Read
+			st = netToPlayer(st, 0)
+		}
+	} else { // Non netplay mode
+		st = keyboardToPlayer(st, 0)
+	}
+
+	return st
 }
 
 // Compute the keys pressed or released during this frame
