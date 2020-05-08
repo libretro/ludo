@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/libretro/ludo/delay"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/netplay"
 	ntf "github.com/libretro/ludo/notifications"
@@ -149,23 +150,23 @@ func netToPlayer(st inputstate, p int) inputstate {
 
 // pollKeyboard processes keyboard keys
 func pollKeyboard(st inputstate) inputstate {
-	if netplay.Conn != nil { // Netplay mode
-		if netplay.Listen != "" { // Host mode
-			st = keyboardToPlayer(st, 0)
-			// Write
-			playerToNet(st, 0)
-			// Read
-			st = netToPlayer(st, 1)
-		} else if netplay.Join != "" { // Guest mode
-			st = keyboardToPlayer(st, 1)
-			// Write
-			playerToNet(st, 1)
-			// Read
-			st = netToPlayer(st, 0)
-		}
-	} else { // Non netplay mode
-		st = keyboardToPlayer(st, 0)
-	}
+	// if netplay.Conn != nil { // Netplay mode
+	// 	if netplay.Listen != "" { // Host mode
+	// 		st = keyboardToPlayer(st, 0)
+	// 		// Write
+	// 		playerToNet(st, 0)
+	// 		// Read
+	// 		st = netToPlayer(st, 1)
+	// 	} else if netplay.Join != "" { // Guest mode
+	// 		st = keyboardToPlayer(st, 1)
+	// 		// Write
+	// 		playerToNet(st, 1)
+	// 		// Read
+	// 		st = netToPlayer(st, 0)
+	// 	}
+	// } else { // Non netplay mode
+	st = keyboardToPlayer(st, 0)
+	//}
 
 	return st
 }
@@ -183,6 +184,8 @@ func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate)
 
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
+	log.Println("poll")
+
 	NewState = reset(NewState)
 	NewState = pollJoypads(NewState)
 	NewState = pollKeyboard(NewState)
@@ -190,6 +193,8 @@ func Poll() {
 
 	// Store the old input state for comparisions
 	OldState = NewState
+
+	playerToNet(NewState, 0)
 }
 
 // State is a callback passed to core.SetInputState
@@ -199,8 +204,11 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		return 0
 	}
 
-	if NewState[port][id] {
-		return 1
+	if port == 1 {
+		playerInput := <-delay.InputQueue
+		if playerInput[id] {
+			return 1
+		}
 	}
 	return 0
 }
