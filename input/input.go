@@ -7,7 +7,6 @@ import (
 	"log"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/libretro/ludo/delay"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/netplay"
 	ntf "github.com/libretro/ludo/notifications"
@@ -37,6 +36,10 @@ var (
 	OldState inputstate // input state for the previous frame
 	Released inputstate // keys just released during this frame
 	Pressed  inputstate // keys just pressed during this frame
+
+	InputQueue  chan [10]inputstate
+	Count       uint64
+	playerInput [10]inputstate
 )
 
 // Hot keys
@@ -75,6 +78,9 @@ var vid *video.Video
 func Init(v *video.Video) {
 	vid = v
 	glfw.SetJoystickCallback(joystickCallback)
+
+	InputQueue = make(chan [10]inputstate, 10)
+	playerInput = [10]inputstate{}
 }
 
 // Resets all retropad buttons to false
@@ -150,23 +156,23 @@ func netToPlayer(st inputstate, p int) inputstate {
 
 // pollKeyboard processes keyboard keys
 func pollKeyboard(st inputstate) inputstate {
-	// if netplay.Conn != nil { // Netplay mode
-	// 	if netplay.Listen != "" { // Host mode
-	// 		st = keyboardToPlayer(st, 0)
-	// 		// Write
-	// 		playerToNet(st, 0)
-	// 		// Read
-	// 		st = netToPlayer(st, 1)
-	// 	} else if netplay.Join != "" { // Guest mode
-	// 		st = keyboardToPlayer(st, 1)
-	// 		// Write
-	// 		playerToNet(st, 1)
-	// 		// Read
-	// 		st = netToPlayer(st, 0)
-	// 	}
-	// } else { // Non netplay mode
-	st = keyboardToPlayer(st, 0)
-	//}
+	if netplay.Conn != nil { // Netplay mode
+		if netplay.Listen != "" { // Host mode
+			st = keyboardToPlayer(st, 0)
+			// Write
+			playerToNet(st, 0)
+			// Read
+			st = netToPlayer(st, 1)
+		} else if netplay.Join != "" { // Guest mode
+			st = keyboardToPlayer(st, 1)
+			// Write
+			playerToNet(st, 1)
+			// Read
+			st = netToPlayer(st, 0)
+		}
+	} else { // Non netplay mode
+		st = keyboardToPlayer(st, 0)
+	}
 
 	return st
 }
@@ -184,17 +190,63 @@ func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate)
 
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
-	log.Println("poll")
-
 	NewState = reset(NewState)
-	NewState = pollJoypads(NewState)
-	NewState = pollKeyboard(NewState)
+
+	if Count >= 10 {
+		playerInput = <-InputQueue
+		NewState = playerInput[Count%10]
+	}
+
+	//NewState = pollJoypads(NewState)
+	//NewState = pollKeyboard(NewState)
 	Pressed, Released = getPressedReleased(NewState, OldState)
+	mustDebug := false
+	for i := range NewState {
+		for j := range NewState[i] {
+			if NewState[i][j] {
+				mustDebug = true
+			}
+		}
+	}
+
+	if mustDebug {
+		log.Println("NewState", NewState)
+	}
 
 	// Store the old input state for comparisions
 	OldState = NewState
 
 	playerToNet(NewState, 0)
+}
+
+func LocalInputs() {
+	for {
+		log.Println("local inputs")
+		var st inputstate
+		st = reset(st)
+		st = pollJoypads(st)
+		st = pollKeyboard(st)
+
+		Count++
+		log.Println("incr", Count)
+
+		mustDebug := false
+		for i := range st {
+			for j := range st[i] {
+				if st[i][j] {
+					mustDebug = true
+				}
+			}
+		}
+
+		if mustDebug {
+			log.Println("LocalInput", st)
+		}
+
+		playerInput[Count%10] = st
+
+		InputQueue <- playerInput
+	}
 }
 
 // State is a callback passed to core.SetInputState
@@ -204,12 +256,10 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		return 0
 	}
 
-	if port == 1 {
-		playerInput := <-delay.InputQueue
-		if playerInput[id] {
-			return 1
-		}
+	if NewState[port][id] {
+		return 1
 	}
+
 	return 0
 }
 

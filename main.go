@@ -9,7 +9,6 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/core"
-	"github.com/libretro/ludo/delay"
 	"github.com/libretro/ludo/history"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/menu"
@@ -37,13 +36,13 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		ntf.Process(dt)
 		vid.ResizeViewport()
 		if !state.Global.MenuActive {
-			log.Println(delay.Count)
+			log.Println("Count", input.Count)
 
-			if state.Global.CoreRunning && delay.Count <= 9 {
+			if state.Global.CoreRunning && input.Count <= 9 {
 				input.Poll()
 			}
 
-			if state.Global.CoreRunning && delay.Count > 9 {
+			if state.Global.CoreRunning && input.Count > 9 {
 				state.Global.Core.Run()
 				if state.Global.Core.FrameTimeCallback != nil {
 					state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
@@ -128,7 +127,7 @@ func main() {
 		} else {
 			m.WarpToQuickMenu()
 
-			go delay.ReceiveInputs()
+			go input.LocalInputs()
 		}
 	}
 
