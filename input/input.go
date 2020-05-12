@@ -186,7 +186,6 @@ func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate)
 func Poll() {
 	log.Println("poll")
 
-	NewState = reset(NewState)
 	NewState = pollJoypads(NewState)
 	NewState = pollKeyboard(NewState)
 	Pressed, Released = getPressedReleased(NewState, OldState)
@@ -197,6 +196,17 @@ func Poll() {
 	playerToNet(NewState, 0)
 }
 
+func Reset() {
+	NewState = reset(NewState)
+}
+
+func DeQueue() {
+	log.Println("DeQueue")
+
+	playerInput := <-delay.InputQueue
+	NewState[1] = playerInput
+}
+
 // State is a callback passed to core.SetInputState
 // It returns 1 if the button corresponding to the parameters is pressed
 func State(port uint, device uint32, index uint, id uint) int16 {
@@ -204,11 +214,8 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		return 0
 	}
 
-	if port == 1 {
-		playerInput := <-delay.InputQueue
-		if playerInput[id] {
-			return 1
-		}
+	if NewState[port][id] {
+		return 1
 	}
 	return 0
 }
