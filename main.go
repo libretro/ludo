@@ -38,18 +38,16 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		vid.ResizeViewport()
 		if !state.Global.MenuActive {
 			input.Reset()
-
 			if state.Global.CoreRunning {
 				input.EnQueue()
-			}
-
-			if state.Global.CoreRunning && delay.Count > 9 {
-				state.Global.Core.Run()
-				if state.Global.Core.FrameTimeCallback != nil {
-					state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
-				}
-				if state.Global.Core.AudioCallback != nil {
-					state.Global.Core.AudioCallback.Callback()
+				if delay.Count > delay.Delay {
+					state.Global.Core.Run()
+					if state.Global.Core.FrameTimeCallback != nil {
+						state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
+					}
+					if state.Global.Core.AudioCallback != nil {
+						state.Global.Core.AudioCallback.Callback()
+					}
 				}
 			}
 			vid.Render()

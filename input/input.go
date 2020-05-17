@@ -184,8 +184,6 @@ func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate)
 
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
-	log.Println("poll")
-
 	if netplay.Listen != "" { // Host mode
 		NewState[0] = <-delay.LocalQueue
 		NewState[1] = <-delay.RemoteQueue

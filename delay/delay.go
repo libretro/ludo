@@ -10,6 +10,7 @@ var LocalQueue chan [20]bool
 var RemoteQueue chan [20]bool
 
 var Count uint64
+var Delay uint64 = 5
 
 func init() {
 	LocalQueue = make(chan [20]bool, 60)
