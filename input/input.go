@@ -186,25 +186,29 @@ func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate)
 func Poll() {
 	log.Println("poll")
 
-	NewState = pollJoypads(NewState)
-	NewState = pollKeyboard(NewState)
+	if netplay.Listen != "" { // Host mode
+		NewState[0] = <-delay.LocalQueue
+		NewState[1] = <-delay.RemoteQueue
+	} else if netplay.Join != "" { // Guest mode
+		NewState[1] = <-delay.LocalQueue
+		NewState[0] = <-delay.RemoteQueue
+	}
+	// NewState = pollJoypads(NewState)
+	// NewState = pollKeyboard(NewState)
 	Pressed, Released = getPressedReleased(NewState, OldState)
 
 	// Store the old input state for comparisions
 	OldState = NewState
-
-	playerToNet(NewState, 0)
 }
 
 func Reset() {
 	NewState = reset(NewState)
 }
 
-func DeQueue() {
-	log.Println("DeQueue")
-
-	playerInput := <-delay.InputQueue
-	NewState[1] = playerInput
+func EnQueue() {
+	st := pollKeyboard(NewState)
+	delay.LocalQueue <- st[0]
+	playerToNet(st, 0)
 }
 
 // State is a callback passed to core.SetInputState
