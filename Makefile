@@ -103,4 +103,4 @@ tar: ludo $(SOBJS)
 	tar -zcf $(BUNDLENAME).tar.gz $(BUNDLENAME)\
 
 clean:
-	rm -rf Ludo.app ludo wc empty.dmg $(BUNDLENAME).dmg $(BUNDLENAME)-* cores/
+	rm -rf Ludo.app ludo wc *.dmg $(BUNDLENAME)-* cores/
