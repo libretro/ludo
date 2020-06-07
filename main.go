@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"runtime"
 	"time"
 
@@ -69,6 +70,7 @@ func main() {
 		log.Println("[Settings]: Using default settings")
 	}
 
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
 	flag.BoolVar(&state.Global.LudOS, "ludos", false, "Expose the features related to LudOS")
