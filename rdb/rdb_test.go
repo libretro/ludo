@@ -29,7 +29,7 @@ func TestEntry_SetField(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := &Entry{}
+			g := &Game{}
 			g.SetField(tt.args.key, tt.args.value)
 			got := reflect.ValueOf(*g).FieldByName(tt.args.fieldName)
 			if !reflect.DeepEqual(got.Interface(), tt.want) {
@@ -73,13 +73,13 @@ func TestDB_FindByCRC(t *testing.T) {
 		romPath string
 		romName string
 		CRC32   uint32
-		games   chan (Entry)
+		games   chan (Game)
 	}
 	tests := []struct {
 		name string
 		db   *DB
 		args args
-		want Entry
+		want Game
 	}{
 		{
 			name: "Can find a game in a DB with a single RDB",
@@ -88,9 +88,9 @@ func TestDB_FindByCRC(t *testing.T) {
 				romPath: "/foo/Urban Champion (Germany).bin",
 				romName: "Urban Champion (Germany).bin",
 				CRC32:   3577638060,
-				games:   make(chan (Entry)),
+				games:   make(chan (Game)),
 			},
-			want: Entry{
+			want: Game{
 				System:  "Foo - Bar",
 				Path:    "/foo/Urban Champion (Germany).bin",
 				Name:    "Urban Champion (Germany)",
@@ -103,6 +103,49 @@ func TestDB_FindByCRC(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.db.FindByCRC(tt.args.romPath, tt.args.romName, tt.args.CRC32, tt.args.games)
+			got := <-tt.args.games
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Find() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDB_FindByROMName(t *testing.T) {
+	type args struct {
+		romPath string
+		romName string
+		CRC32   uint32
+		games   chan (Game)
+	}
+	tests := []struct {
+		name string
+		db   *DB
+		args args
+		want Game
+	}{
+		{
+			name: "Can find a game in a DB with a single RDB",
+			db:   &DB{"Foo - Bar": sampleRDBParsed},
+			args: args{
+				romPath: "/foo/Urban Champion (Germany).bin",
+				romName: "Urban Champion (Germany).bin",
+				CRC32:   3577638060,
+				games:   make(chan (Game)),
+			},
+			want: Game{
+				System:  "Foo - Bar",
+				Path:    "/foo/Urban Champion (Germany).bin",
+				Name:    "Urban Champion (Germany)",
+				ROMName: "Urban Champion (Germany).bin",
+				Size:    uint64(0),
+				CRC32:   uint32(3577638060),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			go tt.db.FindByROMName(tt.args.romPath, tt.args.romName, tt.args.CRC32, tt.args.games)
 			got := <-tt.args.games
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Find() = %v, want %v", got, tt.want)
@@ -136,6 +179,6 @@ var sampleRDBParsed2 = RDB{
 	{Name: "Madou King Granzort (Japan)", Description: "Madou King Granzort (Japan)", ROMName: "Madou King Granzort (Japan).pce", Size: uint64(524288), CRC32: uint32(520360294)},
 	{Name: "Daimakaimura (Japan)", Description: "Daimakaimura (Japan)", ROMName: "Daimakaimura (Japan).pce", Size: uint64(1048576), CRC32: uint32(3028723949)},
 	{Name: "Battle Ace (Japan)", Description: "Battle Ace (Japan)", ROMName: "Battle Ace (Japan).pce", Size: uint64(524288), CRC32: uint32(991145825)},
-	{Name: "Aldynes - The Misson Code for Rage Crisis (Japan)", Description: "Aldynes - The Misson Code for Rage Crisis (Japan)", Genre: "Shooter", Developer: "Produce", Publisher: "Hudson Soft", ROMName: "Aldynes - The Misson Code for Rage Crisis (Japan).pce", Size: uint64(1048576), CRC32: uint32(1277241008)},
-	{Name: "1941 - Counter Attack (Japan)", Description: "1941 - Counter Attack (Japan)", Genre: "Shooter", Developer: "Capcom", Publisher: "Capcom", ROMName: "1941 - Counter Attack (Japan).pce", Size: uint64(1048576), CRC32: uint32(2353367266)},
+	{Name: "Aldynes - The Misson Code for Rage Crisis (Japan)", Description: "Aldynes - The Misson Code for Rage Crisis (Japan)", Genre: "Shooter", Developer: "Produce", Publisher: "Hudson Soft", ROMName: "Aldynes - The Misson Code for Rage Crisis (Japan).pce", ReleaseMonth: 2, ReleaseYear: 1991, Size: uint64(1048576), CRC32: uint32(1277241008)},
+	{Name: "1941 - Counter Attack (Japan)", Description: "1941 - Counter Attack (Japan)", Genre: "Shooter", Developer: "Capcom", Publisher: "Capcom", ROMName: "1941 - Counter Attack (Japan).pce", ReleaseMonth: 2, ReleaseYear: 1990, Size: uint64(1048576), CRC32: uint32(2353367266)},
 }

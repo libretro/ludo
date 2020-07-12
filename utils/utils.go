@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 // StringInSlice check wether a string is contain in a string slice.
@@ -22,12 +23,31 @@ func StringInSlice(a string, list []string) bool {
 	return false
 }
 
-// Filename returns the name of a file, without the path and extension.
-func Filename(path string) string {
+// IndexOfString returns the index of a string in a string slice or -1 if not
+// found.
+func IndexOfString(element string, data []string) int {
+	for k, v := range data {
+		if element == v {
+			return k
+		}
+	}
+	return -1
+}
+
+// FileName returns the name of a file, without the path and extension.
+func FileName(path string) string {
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
 	name = name[0 : len(name)-len(ext)]
 	return name
+}
+
+// DatedName returns the name of a file with a date appended, without extension.
+// It is used for savestates and screenshot names.
+func DatedName(path string) string {
+	name := FileName(path)
+	date := time.Now().Format("2006-01-02-15-04-05")
+	return name + "@" + date
 }
 
 type logWriter struct {
@@ -37,7 +57,7 @@ func (writer logWriter) Write(bytes []byte) (int, error) {
 	return fmt.Print(string(bytes))
 }
 
-// CaptureOutput executes a function and capture all the text outputed to logs.
+// CaptureOutput executes a function and capture all the text outputted to logs.
 // Used in unit tests.
 func CaptureOutput(f func()) string {
 	var buf bytes.Buffer
@@ -50,15 +70,15 @@ func CaptureOutput(f func()) string {
 }
 
 // AllFilesIn recursively builds a list of the files in a given directory
-func AllFilesIn(dir string) []string {
+func AllFilesIn(dir string) ([]string, error) {
 	file := []string{}
-	filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		if !f.IsDir() && !strings.HasPrefix(f.Name(), ".") {
 			file = append(file, path)
 		}
 		return nil
 	})
-	return file
+	return file, err
 }
 
 // CoreExt returns the libretro core extension for the current OS

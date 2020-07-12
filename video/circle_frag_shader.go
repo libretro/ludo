@@ -14,7 +14,6 @@ out vec4 COMPAT_FRAGCOLOR;
 #define COMPAT_FRAGCOLOR gl_FragColor
 #endif
 
-uniform sampler2D tex;
 uniform vec4 color;
 
 COMPAT_VARYING vec2 fragTexCoord;
@@ -25,6 +24,6 @@ float circle(vec2 _st, float _radius) {
 }
 
 void main() {
-	COMPAT_FRAGCOLOR = vec4(color.rgb, circle(fragTexCoord.xy, 0.125));
+	COMPAT_FRAGCOLOR = vec4(color.rgb, circle(fragTexCoord.xy, 0.125)*color.a);
 }
 ` + "\x00"

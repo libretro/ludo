@@ -1,6 +1,6 @@
 ludo
 ludo.exe
-settings.json
-Ludo.app
-Ludo.dmg
+debug
+*.app
+*.dmg
 cores

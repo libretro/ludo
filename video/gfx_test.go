@@ -4,8 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/kivutar/glfont"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 )
 
@@ -93,7 +92,7 @@ func TestVideo_vertexArray(t *testing.T) {
 	type fields struct {
 		Window         WindowInterface
 		Geom           libretro.GameGeometry
-		Font           *glfont.Font
+		Font           *Font
 		program        uint32
 		roundedProgram uint32
 		borderProgram  uint32
@@ -102,7 +101,6 @@ func TestVideo_vertexArray(t *testing.T) {
 		vao            uint32
 		vbo            uint32
 		texID          uint32
-		white          uint32
 		pitch          int32
 		pixFmt         uint32
 		pixType        uint32
@@ -154,7 +152,6 @@ func TestVideo_vertexArray(t *testing.T) {
 				vao:            tt.fields.vao,
 				vbo:            tt.fields.vbo,
 				texID:          tt.fields.texID,
-				white:          tt.fields.white,
 				pitch:          tt.fields.pitch,
 				pixFmt:         tt.fields.pixFmt,
 				pixType:        tt.fields.pixType,

@@ -14,9 +14,8 @@ out vec4 COMPAT_FRAGCOLOR;
 #define COMPAT_FRAGCOLOR gl_FragColor
 #endif
 
-uniform sampler2D tex;
-uniform float mask;
-uniform vec4 texColor;
+uniform sampler2D Texture;
+uniform vec4 color;
 
 COMPAT_VARYING vec2 fragTexCoord;
 
@@ -25,7 +24,6 @@ vec4 demultiply(vec4 c) {
 }
 
 void main() {
-  vec4 color = demultiply(COMPAT_TEXTURE(tex, fragTexCoord));
-  COMPAT_FRAGCOLOR = texColor * color;
+  COMPAT_FRAGCOLOR = color * demultiply(COMPAT_TEXTURE(Texture, fragTexCoord));
 }
 ` + "\x00"

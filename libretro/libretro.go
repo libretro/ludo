@@ -51,7 +51,6 @@ import "C"
 import (
 	"errors"
 	"strings"
-	"sync"
 	"unsafe"
 )
 
@@ -114,7 +113,7 @@ func (v *Variable) Choices() []string {
 
 // SetValue sets the value of a Variable
 func (v *Variable) SetValue(val string) {
-	s := (**C.char)(&v.value)
+	s := &v.value
 	*s = C.CString(val)
 }
 
@@ -214,6 +213,7 @@ const (
 
 // Environment callback API. See libretro.h for details
 const (
+	EnvironmentSetRotation          = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
 	EnvironmentGetUsername          = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
 	EnvironmentGetLogInterface      = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
 	EnvironmentGetCanDupe           = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
@@ -227,6 +227,8 @@ const (
 	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
 	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
 	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
+	EnvironmentSetGeometry          = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
+	EnvironmentSetSystemAVInfo      = uint32(C.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO)
 )
 
 // Debug levels
@@ -269,13 +271,10 @@ var (
 	getTimeUsec      getTimeUsecFunc
 )
 
-var mu sync.Mutex
-
 // Load dynamically loads a libretro core at the given path and returns a Core instance
 func Load(sofile string) (*Core, error) {
 	core := Core{}
 
-	mu.Lock()
 	var err error
 	core.handle, err = DlOpen(sofile)
 	if err != nil {
@@ -303,7 +302,6 @@ func Load(sofile string) (*Core, error) {
 	core.symRetroUnserialize = core.DlSym("retro_unserialize")
 	core.symRetroGetMemorySize = core.DlSym("retro_get_memory_size")
 	core.symRetroGetMemoryData = core.DlSym("retro_get_memory_data")
-	mu.Unlock()
 
 	return &core, nil
 }
@@ -322,6 +320,14 @@ func (core *Core) APIVersion() uint {
 // Deinit takes care of the library global deinitialization
 func (core *Core) Deinit() {
 	C.bridge_retro_deinit(core.symRetroDeinit)
+	environment = nil
+	videoRefresh = nil
+	audioSample = nil
+	audioSampleBatch = nil
+	inputPoll = nil
+	inputState = nil
+	log = nil
+	getTimeUsec = nil
 }
 
 // Run runs the game for one video frame.
@@ -525,16 +531,22 @@ func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
 	if audioSampleBatch == nil {
 		return 0
 	}
-	return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4096)), int32(frames)))
+	return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4*int(frames))), int32(frames))) / 4
 }
 
 //export coreLog
 func coreLog(level C.enum_retro_log_level, msg *C.char) {
-	log(uint32(level), C.GoString(msg))
+	if log == nil {
+		return
+	}
+	log(level, C.GoString(msg))
 }
 
 //export coreGetTimeUsec
 func coreGetTimeUsec() C.uint64_t {
+	if getTimeUsec == nil {
+		return 0
+	}
 	return C.uint64_t(getTimeUsec())
 }
 
@@ -571,6 +583,34 @@ func GetVariables(data unsafe.Pointer) []Variable {
 	}
 
 	return vars
+}
+
+// GetGeometry is an environment callback helper that returns the game geometry
+// in EnvironmentSetGeometry.
+func GetGeometry(data unsafe.Pointer) GameGeometry {
+	geometry := (*C.struct_retro_game_geometry)(data)
+	return GameGeometry{
+		AspectRatio: float64(geometry.aspect_ratio),
+		BaseWidth:   int(geometry.base_width),
+		BaseHeight:  int(geometry.base_height),
+	}
+}
+
+// GetSystemAVInfo is an environment callback helper that returns the game geometry
+// in EnvironmentSetGeometry.
+func GetSystemAVInfo(data unsafe.Pointer) SystemAVInfo {
+	avi := (*C.struct_retro_system_av_info)(data)
+	return SystemAVInfo{
+		Geometry: GameGeometry{
+			AspectRatio: float64(avi.geometry.aspect_ratio),
+			BaseWidth:   int(avi.geometry.base_width),
+			BaseHeight:  int(avi.geometry.base_height),
+		},
+		Timing: SystemTiming{
+			FPS:        float64(avi.timing.fps),
+			SampleRate: float64(avi.timing.sample_rate),
+		},
+	}
 }
 
 // SetBool is an environment callback helper to set a boolean

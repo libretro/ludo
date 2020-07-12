@@ -29,6 +29,6 @@ void main() {
 	vec2 halfRes = vec2(0.5*ratio, 0.5);
 	float b = udRoundBox(fragTexCoord*vec2(ratio,1.0) - halfRes, halfRes, min(halfRes.x,halfRes.y)*radius);
 	vec4 c = min(color, vec4(1.0, 1.0, 1.0, 1.0));
-	COMPAT_FRAGCOLOR = vec4(c.r, c.g, c.b, c.a * (1.0-smoothstep(0.00001,0.01,b)));
+	COMPAT_FRAGCOLOR = vec4(c.r, c.g, c.b, c.a * (1.0-smoothstep(0.00002,0.0001,b)));
 }
 ` + "\x00"

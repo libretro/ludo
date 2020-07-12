@@ -29,7 +29,7 @@ void main() {
 
 	if (fragTexCoord.x < maxX && fragTexCoord.x > minX &&
 			fragTexCoord.y < maxY && fragTexCoord.y > minY) {
-		COMPAT_FRAGCOLOR = vec4(0,0,0,0);
+		COMPAT_FRAGCOLOR = vec4(0.0,0.0,0.0,0.0);
 	} else {
 		COMPAT_FRAGCOLOR = color;
 	}

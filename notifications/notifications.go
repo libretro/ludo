@@ -1,3 +1,5 @@
+// Package notifications exposes functions to display messages in toast
+// widgets.
 package notifications
 
 import (
@@ -5,8 +7,6 @@ import (
 	"log"
 
 	"github.com/libretro/ludo/state"
-
-	"github.com/rs/xid"
 )
 
 // Severity represents the severity of a notification message. It will affect
@@ -27,57 +27,52 @@ const (
 )
 
 // Notification is a message that will be displayed on the screen during a
-// certain time (number of frames).
+// certain time.
 type Notification struct {
-	ID       xid.ID
 	Severity Severity
 	Message  string
-	Frames   int
+	Duration float32
 }
 
-var notifications []Notification
+// Medium is the standard duration for a notification
+const Medium float32 = 4
+
+var notifications []*Notification
 
 // List lists the current notifications.
-func List() []Notification {
+func List() []*Notification {
 	return notifications
 }
 
 // Display creates a new notification.
-func Display(severity Severity, message string, frames int) xid.ID {
-	id := xid.New()
-	n := Notification{
-		id,
+func Display(severity Severity, message string, duration float32) *Notification {
+	n := &Notification{
 		severity,
 		message,
-		frames,
+		duration,
 	}
 
 	notifications = append(notifications, n)
 
-	return id
+	return n
 }
 
 // DisplayAndLog creates a new notification and also logs the message to stdout.
-func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) xid.ID {
-	var msg string
-	if len(vars) > 0 {
-		msg = fmt.Sprintf(message, vars...)
-	} else {
-		msg = message
-	}
+func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) *Notification {
+	msg := fmt.Sprintf(message, vars...)
 	if state.Global.Verbose {
 		log.Print("[" + prefix + "]: " + msg + "\n")
 	}
-	return Display(severity, msg, 240)
+	return Display(severity, msg, Medium)
 }
 
 // Process iterates over the notifications, update them, delete the old ones.
-func Process() {
+func Process(dt float32) {
 	deleted := 0
 	for i := range notifications {
 		j := i - deleted
-		notifications[j].Frames--
-		if notifications[j].Frames <= 0 {
+		notifications[j].Duration -= dt
+		if notifications[j].Duration <= 0 {
 			notifications = append(notifications[:j], notifications[j+1:]...)
 			deleted++
 		}
@@ -86,28 +81,15 @@ func Process() {
 
 // Clear empties the notification list
 func Clear() {
-	notifications = []Notification{}
-}
-
-// find notification by unique ID
-func find(id xid.ID) *Notification {
-	for i := range notifications {
-		if notifications[i].ID == id {
-			return &notifications[i]
-		}
-	}
-	return nil
+	notifications = []*Notification{}
 }
 
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
-func Update(id xid.ID, severity Severity, message string) {
-	n := find(id)
-	if n == nil {
-		return
-	}
+func (n *Notification) Update(severity Severity, message string, vars ...interface{}) {
+	msg := fmt.Sprintf(message, vars...)
 
-	n.Frames = 240
-	n.Message = message
+	n.Duration = Medium
+	n.Message = msg
 	n.Severity = severity
 }

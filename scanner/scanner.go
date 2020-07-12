@@ -1,7 +1,11 @@
+// Package scanner generates game playlists by scanning your game collection
+// against the database. It uses CRC checksums for No-Intro zip files and
+// name matching for Redump cue files.
 package scanner
 
 import (
 	"archive/zip"
+	"hash/crc32"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -24,12 +28,12 @@ func LoadDB(dir string) (rdb.DB, error) {
 	}
 	db := make(rdb.DB)
 	for _, f := range files {
-		if !strings.Contains(f.Name(), ".rdb") {
+		name := f.Name()
+		if !strings.Contains(name, ".rdb") {
 			continue
 		}
-		filename := f.Name()
-		system := filename[0 : len(filename)-4]
-		bytes, _ := ioutil.ReadFile(dir + "/" + f.Name())
+		system := name[0 : len(name)-4]
+		bytes, _ := ioutil.ReadFile(filepath.Join(dir, name))
 		db[system] = rdb.Parse(bytes)
 	}
 	return db, nil
@@ -37,57 +41,71 @@ func LoadDB(dir string) (rdb.DB, error) {
 
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
-	roms := utils.AllFilesIn(dir)
-	scannedGames := make(chan (rdb.Entry))
-	go Scan(dir, roms, scannedGames, doneCb)
+	n := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
+	roms, err := utils.AllFilesIn(dir)
+	if err != nil {
+		n.Update(ntf.Error, err.Error())
+		return
+	}
+	games := make(chan (rdb.Game))
+	go Scan(dir, roms, games, n)
 	go func() {
 		i := 0
-		for game := range scannedGames {
+		for game := range games {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
-			lplpath := settings.Current.PlaylistsDirectory + "/" + game.System + ".lpl"
-			if playlists.ExistsInPlaylist(lplpath, game.Path, game.CRC32) {
+			CSVPath := filepath.Join(settings.Current.PlaylistsDirectory, game.System+".csv")
+			if playlists.Contains(CSVPath, game.Path, game.CRC32) {
 				continue
 			}
-			i++
-			lpl, _ := os.OpenFile(lplpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-			lpl.WriteString(game.Path + "\n")
-			lpl.WriteString(game.Name + "\n")
-			lpl.WriteString("DETECT\n")
-			lpl.WriteString("DETECT\n")
-			if uint64(game.CRC32) > 0 {
-				lpl.WriteString(strconv.FormatUint(uint64(game.CRC32), 10) + "|crc\n")
-			} else {
-				lpl.WriteString("DETECT\n")
+			f, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+			f.WriteString(game.Path + "\t")
+			f.WriteString(game.Name + "\t")
+			if game.CRC32 > 0 {
+				f.WriteString(strconv.FormatUint(uint64(game.CRC32), 16))
 			}
-			lpl.WriteString(game.System + ".lpl\n")
-			lpl.Close()
+			f.WriteString("\n")
+			f.Close()
+			i++
 		}
+		doneCb()
+		n.Update(ntf.Success, "Done scanning. %d new games found.", i)
 	}()
 }
 
 // Scan scans a list of roms against the database
-func Scan(dir string, roms []string, games chan (rdb.Entry), doneCb func()) {
-	nid := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
+func Scan(dir string, roms []string, games chan (rdb.Game), n *ntf.Notification) {
 	for i, f := range roms {
 		ext := filepath.Ext(f)
 		switch ext {
 		case ".zip":
 			// Open the ZIP archive
-			z, _ := zip.OpenReader(f)
+			z, err := zip.OpenReader(f)
+			if err != nil {
+				n.Update(ntf.Error, err.Error())
+				continue
+			}
 			for _, rom := range z.File {
 				if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
 					state.Global.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
-					ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				}
 			}
 			z.Close()
 		case ".cue":
 			// Look for a matching game entry in the database
 			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
-			ntf.Update(nid, ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+		case ".32x", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc":
+			bytes, err := ioutil.ReadFile(f)
+			if err != nil {
+				n.Update(ntf.Error, err.Error())
+				continue
+			}
+			CRC32 := crc32.ChecksumIEEE(bytes)
+			state.Global.DB.FindByCRC(f, utils.FileName(f), CRC32, games)
+			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}
 	}
-	ntf.Update(nid, ntf.Success, "Done scanning.")
-	doneCb()
+	close(games)
 }

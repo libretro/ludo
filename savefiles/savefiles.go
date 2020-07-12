@@ -3,84 +3,92 @@ package savefiles
 
 import (
 	"C"
+	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"unsafe"
 
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 )
 
-func name() string {
-	name := filepath.Base(state.Global.GamePath)
-	ext := filepath.Ext(name)
-	name = name[0 : len(name)-len(ext)]
-	return name + ".srm"
-}
+var mutex sync.Mutex
 
-// Path returns the path of the SRAM file for the current core
-func Path() string {
-	return filepath.Join(settings.Current.SavefilesDirectory, name())
+// path returns the path of the SRAM file for the current core
+func path() string {
+	return filepath.Join(
+		settings.Current.SavefilesDirectory,
+		utils.FileName(state.Global.GamePath) + ".srm")
 }
 
 // SaveSRAM saves the game SRAM to the filesystem
-func SaveSRAM() {
-	if state.Global.CoreRunning {
-		len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
-		ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
-		if ptr == nil || len == 0 {
-			if state.Global.Verbose {
-				log.Println("[Core]: Unable to get SRAM address")
-			}
-			return
-		}
-		// convert the C array to a go slice
-		bytes := C.GoBytes(ptr, C.int(len))
-		err := os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
-		if err != nil {
-			log.Println("[Core]:", err)
-			return
-		}
-		fd, err := os.Create(Path())
-		if err != nil {
-			log.Println("[Core]:", err)
-			return
-		}
-		fd.Write(bytes)
-		if state.Global.Verbose {
-			log.Println("[Core]: Saved SRAM", Path())
-		}
+func SaveSRAM() error {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if !state.Global.CoreRunning {
+		return errors.New("core not running")
 	}
+
+	len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
+	ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
+	if ptr == nil || len == 0 {
+		return errors.New("unable to get SRAM address")
+	}
+
+	// convert the C array to a go slice
+	bytes := C.GoBytes(ptr, C.int(len))
+	err := os.MkdirAll(settings.Current.SavefilesDirectory, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	fd, err := os.Create(path())
+	if err != nil {
+		return err
+	}
+
+	_, err = fd.Write(bytes)
+	if err != nil {
+		fd.Close()
+		return err
+	}
+
+	err = fd.Close()
+	if err != nil {
+		return err
+	}
+
+	return fd.Sync()
 }
 
 // LoadSRAM saves the game SRAM to the filesystem
-func LoadSRAM() {
-	if state.Global.CoreRunning {
-		fd, err := os.Open(Path())
-		if err != nil {
-			log.Println("[Core]:", err)
-			return
-		}
-		len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
-		ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
-		if ptr == nil || len == 0 {
-			log.Println("[Core]: Unable to get SRAM address")
-			return
-		}
-		// this *[1 << 30]byte points to the same memory as ptr, allowing to
-		// overwrite this memory
-		destination := (*[1 << 30]byte)(unsafe.Pointer(ptr))[:len:len]
-		source, err := ioutil.ReadAll(fd)
-		if err != nil {
-			log.Println("[Core]:", err)
-			return
-		}
-		copy(destination, source)
-		if state.Global.Verbose {
-			log.Println("[Core]: Loaded SRAM", Path())
-		}
+func LoadSRAM() error {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if !state.Global.CoreRunning {
+		return errors.New("core not running")
 	}
+
+	len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
+	ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
+	if ptr == nil || len == 0 {
+		return errors.New("unable to get SRAM address")
+	}
+
+	// this *[1 << 30]byte points to the same memory as ptr, allowing to
+	// overwrite this memory
+	destination := (*[1 << 30]byte)(unsafe.Pointer(ptr))[:len:len]
+	source, err := ioutil.ReadFile(path())
+	if err != nil {
+		return err
+	}
+	copy(destination, source)
+
+	return nil
 }

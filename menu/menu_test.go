@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
@@ -85,7 +85,7 @@ func Test_fastForwardTweens(t *testing.T) {
 	bar := float32(-10)
 	menu.tweens[&bar] = gween.New(bar, 0, 0.9, ease.OutSine)
 
-	fastForwardTweens()
+	menu.tweens.FastForward()
 
 	t.Run("No tweens are left", func(t *testing.T) {
 		got := len(menu.tweens)
@@ -141,7 +141,7 @@ func Test_buildExplorer(t *testing.T) {
 	os.Mkdir(tmp+"Folder 1", 0777)
 
 	scene := buildExplorer(os.TempDir()+"/Test_buildExplorer/", []string{".img"}, cbMock, dirActionMock)
-	menu.stack = append(menu.stack, scene)
+	menu.Push(scene)
 
 	children := scene.Entry().children
 

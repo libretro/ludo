@@ -4,35 +4,49 @@ import (
 	"strings"
 
 	"github.com/libretro/ludo/core"
+	ntf "github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/video"
 )
 
-type screenCoreOptions struct {
+type sceneCoreOptions struct {
 	entry
 }
 
 func buildCoreOptions() Scene {
-	var list screenCoreOptions
+	var list sceneCoreOptions
 	list.label = "Core Options"
 
-	for i, v := range core.Options.Vars {
-		i := i
+	if core.Options == nil {
+		list.children = append(list.children, entry{
+			label: "No options",
+			icon:  "subsetting",
+		})
+		list.segueMount()
+		return &list
+	}
+
+	for _, v := range core.Options.Vars {
 		v := v
 		list.children = append(list.children, entry{
-			label: strings.Replace(v.Desc(), "%", "%%", -1),
+			label: strings.Replace(v.Desc, "%", "%%", -1),
 			icon:  "subsetting",
 			stringValue: func() string {
-				val := v.Choices()[core.Options.Choices[i]]
+				val := v.Choices[v.Choice]
 				return strings.Replace(val, "%", "%%", -1)
 			},
 			incr: func(direction int) {
-				core.Options.Choices[i] += direction
-				if core.Options.Choices[i] < 0 {
-					core.Options.Choices[i] = core.Options.NumChoices(i) - 1
-				} else if core.Options.Choices[i] > core.Options.NumChoices(i)-1 {
-					core.Options.Choices[i] = 0
+				v.Choice += direction
+				if v.Choice < 0 {
+					v.Choice = len(v.Choices) - 1
+				} else if v.Choice > len(v.Choices)-1 {
+					v.Choice = 0
 				}
 				core.Options.Updated = true
-				core.Options.Save()
+				err := core.Options.Save()
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Core", "Error saving core options: %v", err.Error())
+				}
 			},
 		})
 	}
@@ -42,30 +56,41 @@ func buildCoreOptions() Scene {
 	return &list
 }
 
-func (s *screenCoreOptions) Entry() *entry {
+func (s *sceneCoreOptions) Entry() *entry {
 	return &s.entry
 }
 
-func (s *screenCoreOptions) segueMount() {
+func (s *sceneCoreOptions) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *screenCoreOptions) segueNext() {
+func (s *sceneCoreOptions) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *screenCoreOptions) segueBack() {
+func (s *sceneCoreOptions) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenCoreOptions) update() {
-	genericInput(&s.entry)
+func (s *sceneCoreOptions) update(dt float32) {
+	genericInput(&s.entry, dt)
 }
 
-func (s *screenCoreOptions) render() {
+func (s *sceneCoreOptions) render() {
 	genericRender(&s.entry)
 }
 
-func (s *screenCoreOptions) drawHintBar() {
-	genericDrawHintBar()
+func (s *sceneCoreOptions) drawHintBar() {
+	w, h := vid.Window.GetFramebufferSize()
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+
+	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()
+
+	var stack float32
+	if state.Global.CoreRunning {
+		stackHint(&stack, guide, "RESUME", h)
+	}
+	stackHint(&stack, upDown, "NAVIGATE", h)
+	stackHint(&stack, b, "BACK", h)
+	stackHint(&stack, leftRight, "SET", h)
 }

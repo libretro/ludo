@@ -3,10 +3,14 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"runtime"
+	"time"
 
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/history"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/menu"
 	ntf "github.com/libretro/ludo/notifications"
@@ -22,10 +26,15 @@ func init() {
 	runtime.LockOSThread()
 }
 
-func runLoop(vid *video.Video) {
+func runLoop(vid *video.Video, m *menu.Menu) {
+	var currTime, prevTime time.Time
 	for !vid.Window.ShouldClose() {
+		currTime = time.Now()
+		dt := float32(currTime.Sub(prevTime)) / 1000000000
 		glfw.PollEvents()
-		ntf.Process()
+		m.ProcessHotkeys()
+		ntf.Process(dt)
+		vid.ResizeViewport()
 		if !state.Global.MenuActive {
 			if state.Global.CoreRunning {
 				state.Global.Core.Run()
@@ -39,14 +48,18 @@ func runLoop(vid *video.Video) {
 			vid.Render()
 		} else {
 			input.Poll()
-			menu.Update()
+			m.Update(dt)
 			vid.Render()
-			menu.Render()
+			m.Render(dt)
 		}
-		input.ProcessActions()
-		menu.RenderNotifications()
-		glfw.SwapInterval(1)
+		m.RenderNotifications()
+		if state.Global.FastForward {
+			glfw.SwapInterval(0)
+		} else {
+			glfw.SwapInterval(1)
+		}
 		vid.Window.SwapBuffers()
+		prevTime = currTime
 	}
 }
 
@@ -57,17 +70,12 @@ func main() {
 		log.Println("[Settings]: Using default settings")
 	}
 
-	var GLVersion string
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
-	flag.StringVar(&GLVersion, "glver", settings.Defaults.GLVersion, "OpenGL version, possible values are 2.0, 2.1, 3.0, 3.1, 3.2, 4.1, 4.2")
+	flag.BoolVar(&state.Global.LudOS, "ludos", false, "Expose the features related to LudOS")
 	flag.Parse()
 	args := flag.Args()
-
-	if GLVersion != settings.Defaults.GLVersion {
-		settings.Current.GLVersion = GLVersion
-		settings.Save()
-	}
 
 	var gamePath string
 	if len(args) > 0 {
@@ -75,7 +83,7 @@ func main() {
 	}
 
 	if err := glfw.Init(); err != nil {
-		log.Fatalln("failed to initialize glfw:", err)
+		log.Fatalln("Failed to initialize glfw", err)
 	}
 	defer glfw.Terminate()
 
@@ -84,16 +92,19 @@ func main() {
 		log.Println("Can't load game database:", err)
 	}
 
-	playlists.LoadPlaylists()
+	playlists.Load()
 
-	vid := video.Init(settings.Current.VideoFullscreen, settings.Current.GLVersion)
+	history.Load()
+
+	vid := video.Init(settings.Current.VideoFullscreen)
+
+	audio.Init()
 
 	m := menu.Init(vid)
-	m.ContextReset()
 
-	core.Init(vid, m)
+	core.Init(vid)
 
-	input.Init(vid, m)
+	input.Init(vid)
 
 	if len(state.Global.CorePath) > 0 {
 		err := core.Load(state.Global.CorePath)
@@ -114,7 +125,7 @@ func main() {
 	// No game running? display the menu
 	state.Global.MenuActive = !state.Global.CoreRunning
 
-	runLoop(vid)
+	runLoop(vid, m)
 
 	// Unload and deinit in the core.
 	core.Unload()

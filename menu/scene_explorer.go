@@ -2,19 +2,22 @@ package menu
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
+	"regexp"
+	"runtime"
 
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/utils"
 )
 
-type screenExplorer struct {
+type sceneExplorer struct {
 	entry
 }
 
-func contains(f os.FileInfo, exts []string) bool {
+func matchesExtensions(f os.FileInfo, exts []string) bool {
 	if len(exts) > 0 {
 		var fileExtension = filepath.Ext(f.Name())
 		for _, ext := range exts {
@@ -26,14 +29,78 @@ func contains(f os.FileInfo, exts []string) bool {
 	return false
 }
 
-func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
-	var list screenExplorer
-	list.label = "Explorer"
+func isWindowsDrive(path string) bool {
+	path, _ = filepath.Abs(path)
+	validWindowsDrive := regexp.MustCompile(`^[A-Z]\:\\$`)
+	return validWindowsDrive.MatchString(path)
+}
 
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+func getWindowsDrives() (drives []string) {
+	for _, drive := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
+		fd, err := os.Open(string(drive) + ":\\")
+		if err == nil {
+			drives = append(drives, string(drive))
+			fd.Close()
+		}
 	}
+	return drives
+}
+
+func appendFolder(list *sceneExplorer, label, newPath string, exts []string, cb func(string), dirAction *entry) {
+	list.children = append(list.children, entry{
+		label: label,
+		icon:  "folder",
+		callbackOK: func() {
+			list.segueNext()
+			newPath := newPath
+			if dirAction != nil {
+				dirAction.callbackOK = func() { cb(newPath) }
+			}
+			menu.Push(buildExplorer(newPath, exts, cb, dirAction))
+		},
+	})
+}
+
+func explorerIcon(f os.FileInfo) string {
+	icon := "file"
+	if f.IsDir() {
+		icon = "folder"
+	}
+	return icon
+}
+
+func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo, exts []string, cb func(string), dirAction *entry) {
+	// Check whether or not we are to display hidden files.
+	if name[:1] == "." && !settings.Current.ShowHiddenFiles {
+		return
+	}
+
+	// Filter files by extension.
+	if exts != nil && !f.IsDir() && !matchesExtensions(f, exts) {
+		return
+	}
+
+	list.children = append(list.children, entry{
+		label: name,
+		icon:  explorerIcon(f),
+		callbackOK: func() {
+			if f.IsDir() {
+				list.segueNext()
+				newPath := filepath.Clean(fullPath)
+				if dirAction != nil {
+					dirAction.callbackOK = func() { cb(newPath) }
+				}
+				menu.Push(buildExplorer(newPath, exts, cb, dirAction))
+			} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(name), exts)) {
+				cb(filepath.Clean(fullPath))
+			}
+		},
+	})
+}
+
+func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
+	var list sceneExplorer
+	list.label = "Explorer"
 
 	// Display the special directory action entry.
 	if dirAction != nil && dirAction.label != "" {
@@ -41,56 +108,45 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		list.children = append(list.children, *dirAction)
 	}
 
-	// Add a first entry for the parent directory.
-	list.children = append(list.children, entry{
-		label: "..",
-		icon:  "folder",
-		callbackOK: func() {
-			list.segueNext()
-			newPath := filepath.Clean(path + "/..")
-			if dirAction != nil {
-				dirAction.callbackOK = func() { cb(newPath) }
+	if path == "/" {
+		// On Windows there is no / and we want to display a list of drives instead
+		if runtime.GOOS == "windows" {
+			drives := getWindowsDrives()
+			for _, drive := range drives {
+				appendFolder(&list, drive+":\\", drive+":\\", exts, cb, dirAction)
 			}
-			menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
-		},
-	})
+			list.segueMount()
+			return &list
+		}
+	} else if isWindowsDrive(path) {
+		// Special .. entry pointing to the list of drives on Windows
+		appendFolder(&list, "..", "/", exts, cb, dirAction)
+	} else {
+		// Add a first entry for the parent directory.
+		appendFolder(&list, "..", filepath.Clean(path+"/.."), exts, cb, dirAction)
+	}
+
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+	}
 
 	// Loop over files in the directory and add one entry for each.
 	for _, f := range files {
 		f := f
-		icon := "file"
-
-		// Check whether or not we are to display hidden files.
-		if f.Name()[:1] == "." && settings.Current.ShowHiddenFiles {
+		fullPath, err := filepath.EvalSymlinks(filepath.Join(path, f.Name()))
+		if err != nil {
+			log.Println(err)
 			continue
 		}
-
-		// Filter files by extension.
-		if exts != nil && !f.IsDir() && !contains(f, exts) {
+		fi, err := os.Stat(fullPath)
+		if err != nil {
+			log.Println(err)
 			continue
 		}
-
-		if f.IsDir() {
-			icon = "folder"
-		}
-
-		list.children = append(list.children, entry{
-			label: f.Name(),
-			icon:  icon,
-			callbackOK: func() {
-				if f.IsDir() {
-					list.segueNext()
-					newPath := path + "/" + f.Name()
-					if dirAction != nil {
-						dirAction.callbackOK = func() { cb(newPath) }
-					}
-					menu.stack = append(menu.stack, buildExplorer(newPath, exts, cb, dirAction))
-				} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(f.Name()), exts)) {
-					cb(path + "/" + f.Name())
-				}
-			},
-		})
+		appendNode(&list, fullPath, f.Name(), fi, exts, cb, dirAction)
 	}
+	buildIndexes(&list.entry)
 
 	if len(files) == 0 {
 		list.children = append(list.children, entry{
@@ -104,30 +160,30 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	return &list
 }
 
-func (explorer *screenExplorer) Entry() *entry {
+func (explorer *sceneExplorer) Entry() *entry {
 	return &explorer.entry
 }
 
-func (explorer *screenExplorer) segueMount() {
+func (explorer *sceneExplorer) segueMount() {
 	genericSegueMount(&explorer.entry)
 }
 
-func (explorer *screenExplorer) segueNext() {
+func (explorer *sceneExplorer) segueNext() {
 	genericSegueNext(&explorer.entry)
 }
 
-func (explorer *screenExplorer) segueBack() {
+func (explorer *sceneExplorer) segueBack() {
 	genericAnimate(&explorer.entry)
 }
 
-func (explorer *screenExplorer) update() {
-	genericInput(&explorer.entry)
+func (explorer *sceneExplorer) update(dt float32) {
+	genericInput(&explorer.entry, dt)
 }
 
-func (explorer *screenExplorer) render() {
+func (explorer *sceneExplorer) render() {
 	genericRender(&explorer.entry)
 }
 
-func (explorer *screenExplorer) drawHintBar() {
+func (explorer *sceneExplorer) drawHintBar() {
 	genericDrawHintBar()
 }
