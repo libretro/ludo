@@ -529,7 +529,7 @@ func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
 	if audioSampleBatch == nil {
 		return 0
 	}
-	return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4*int(frames))), int32(frames)))
+	return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4*int(frames))), int32(frames))) / 4
 }
 
 //export coreLog
