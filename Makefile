@@ -1,7 +1,7 @@
 APP = Ludo
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 
-CORES = bluemsx fbneo fceumm gambatte genesis_plus_gx handy mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella vecx virtualjaguar
+CORES = bluemsx chailove fbneo fceumm gambatte genesis_plus_gx handy lutro mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella vecx virtualjaguar
 
 ifeq ($(ARCH), arm)
 	CORES := $(filter-out mednafen_saturn,$(CORES))
