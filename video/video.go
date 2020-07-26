@@ -5,12 +5,11 @@ package video
 
 import (
 	"log"
-	"runtime"
 	"strconv"
 	"strings"
 	"unsafe"
 
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
@@ -106,20 +105,6 @@ func (video *Video) Configure(fullscreen bool) {
 		height = 180 * 3
 	}
 
-	// On OSX we have to force a core profile to not end up with 2.1 which cause
-	// a font drawing issue
-	if runtime.GOOS == "darwin" {
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 2)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-	} else {
-		glfw.WindowHint(glfw.ContextVersionMajor, 2)
-		glfw.WindowHint(glfw.ContextVersionMinor, 1)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
-	}
-
 	var err error
 	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
 	if err != nil {
@@ -191,8 +176,8 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.Uniform1i(textureUniform, 0)
 
 	// Configure the vertex data
-	gl.GenVertexArrays(1, &video.vao)
-	gl.BindVertexArray(video.vao)
+	genVertexArrays(1, &video.vao)
+	bindVertexArray(video.vao)
 
 	gl.GenBuffers(1, &video.vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
@@ -371,7 +356,7 @@ func (video *Video) Render() {
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
