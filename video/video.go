@@ -5,8 +5,6 @@ package video
 
 import (
 	"log"
-	"strconv"
-	"strings"
 	"unsafe"
 
 	"github.com/go-gl/gl/v2.1/gl"
@@ -72,24 +70,6 @@ func (video *Video) Reconfigure(fullscreen bool) {
 	video.Configure(fullscreen)
 }
 
-func getGLSLVersion() uint {
-	GLVersion := gl.GoStr(gl.GetString(gl.VERSION))
-	GLSLVersion := gl.GoStr(gl.GetString(gl.SHADING_LANGUAGE_VERSION))
-
-	if state.Global.Verbose {
-		log.Println("[Video]: OpenGL version:", GLVersion)
-		log.Println("[Video]: GLSL version:", GLSLVersion)
-	}
-
-	clean := strings.Replace(GLSLVersion[:4], ".", "", -1)
-	v, err := strconv.Atoi(clean)
-	if err != nil {
-		log.Println("[Video]: Couldn't parse GLSL version:", err)
-		return 120
-	}
-	return uint(v)
-}
-
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
 	var width, height int
@@ -123,49 +103,47 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
-	GLSLVersion := getGLSLVersion()
-
 	fbw, fbh := video.Window.GetFramebufferSize()
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
-	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh, GLSLVersion)
+	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh)
 	if err != nil {
 		panic(err)
 	}
 
 	// Configure the vertex and fragment shaders
-	video.defaultProgram, err = newProgram(GLSLVersion, vertexShader, defaultFragmentShader)
+	video.defaultProgram, err = newProgram(vertexShader, defaultFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.sharpBilinearProgram, err = newProgram(GLSLVersion, vertexShader, sharpBilinearFragmentShader)
+	video.sharpBilinearProgram, err = newProgram(vertexShader, sharpBilinearFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.zfastCRTProgram, err = newProgram(GLSLVersion, vertexShader, zfastCRTFragmentShader)
+	video.zfastCRTProgram, err = newProgram(vertexShader, zfastCRTFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.roundedProgram, err = newProgram(GLSLVersion, vertexShader, roundedFragmentShader)
+	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.borderProgram, err = newProgram(GLSLVersion, vertexShader, borderFragmentShader)
+	video.borderProgram, err = newProgram(vertexShader, borderFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.circleProgram, err = newProgram(GLSLVersion, vertexShader, circleFragmentShader)
+	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.demulProgram, err = newProgram(GLSLVersion, vertexShader, demulFragmentShader)
+	video.demulProgram, err = newProgram(vertexShader, demulFragmentShader)
 	if err != nil {
 		panic(err)
 	}
