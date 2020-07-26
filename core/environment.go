@@ -26,8 +26,7 @@ func logCallback(level uint32, str string) {
 }
 
 func getTimeUsec() int64 {
-	//fmt.Printf("Seconds since epoch %d", time.Now().Unix())
-	return time.Now().UnixNano()
+	return time.Now().UnixNano() / 1000
 }
 
 func environmentGetVariable(data unsafe.Pointer) bool {

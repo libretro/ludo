@@ -2,6 +2,7 @@ package menu
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/fatih/structs"
@@ -104,6 +105,15 @@ func dirExplorerCb(path string, f *structs.Field) {
 	path, err = filepath.Abs(path)
 	if err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
+	if !info.IsDir() {
+		ntf.DisplayAndLog(ntf.Error, "Settings", "Not a directory")
 		return
 	}
 	f.Set(path)

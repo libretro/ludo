@@ -22,7 +22,7 @@ You can execute the following command and follow the instructions about exportin
 
 #### On Debian or Ubuntu
 
-    sudo apt-get install libopenal-dev xorg-dev
+    sudo apt-get install libopenal-dev xorg-dev golang
 
 #### On Raspbian
 

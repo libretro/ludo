@@ -209,7 +209,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 }
 
 // LoadFont loads the specified font at the given scale.
-func LoadFont(file string, scale int32, windowWidth int, windowHeight int, GLSLVersion uint) (*Font, error) {
+func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Font, error) {
 	fd, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -217,7 +217,7 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int, GLSLV
 	defer fd.Close()
 
 	// Configure the default font vertex and fragment shaders
-	program, err := newProgram(GLSLVersion, fontVertexShader, fontFragmentShader)
+	program, err := newProgram(fontVertexShader, fontFragmentShader)
 	if err != nil {
 		panic(err)
 	}

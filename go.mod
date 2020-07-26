@@ -1,13 +1,11 @@
 module github.com/libretro/ludo
 
-replace github.com/go-gl/glfw => github.com/kivutar/glfw v0.0.0-20191008030156-cee43cb8f5e6
-
 require (
 	github.com/cavaliercoder/grab v2.0.0+incompatible
 	github.com/disintegration/imaging v1.6.0
 	github.com/fatih/structs v1.1.0
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
-	github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2
 	github.com/go-gl/mathgl v0.0.0-20190713194549-592312d8590a
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/lucasb-eyer/go-colorful v1.0.2
