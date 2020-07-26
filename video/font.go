@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
@@ -187,9 +187,9 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 
 	// Configure VAO/VBO for texture quads
-	gl.GenVertexArrays(1, &f.vao)
+	genVertexArrays(1, &f.vao)
 	gl.GenBuffers(1, &f.vbo)
-	gl.BindVertexArray(f.vao)
+	bindVertexArray(f.vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, f.vbo)
 
 	vertAttrib := uint32(gl.GetAttribLocation(f.program, gl.Str("vert\x00")))
@@ -201,13 +201,13 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 
 	return f, nil
 }
 
 // LoadFont loads the specified font at the given scale.
-func LoadFont(file string, scale int32, windowWidth int, windowHeight int, GLSLVersion uint) (*Font, error) {
+func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Font, error) {
 	fd, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -215,7 +215,7 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int, GLSLV
 	defer fd.Close()
 
 	// Configure the default font vertex and fragment shaders
-	program, err := newProgram(GLSLVersion, fontVertexShader, fontFragmentShader)
+	program, err := newProgram(fontVertexShader, fontFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -305,13 +305,13 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		x += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
 	}
 
-	gl.BindVertexArray(f.vao)
+	bindVertexArray(f.vao)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, f.textureID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, f.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(coords)*16, gl.Ptr(coords), gl.DYNAMIC_DRAW)
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(coords)))
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 	gl.UseProgram(0)
 	gl.Disable(gl.BLEND)

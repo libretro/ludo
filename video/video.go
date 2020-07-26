@@ -5,12 +5,9 @@ package video
 
 import (
 	"log"
-	"runtime"
-	"strconv"
-	"strings"
 	"unsafe"
 
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
@@ -73,24 +70,6 @@ func (video *Video) Reconfigure(fullscreen bool) {
 	video.Configure(fullscreen)
 }
 
-func getGLSLVersion() uint {
-	GLVersion := gl.GoStr(gl.GetString(gl.VERSION))
-	GLSLVersion := gl.GoStr(gl.GetString(gl.SHADING_LANGUAGE_VERSION))
-
-	if state.Global.Verbose {
-		log.Println("[Video]: OpenGL version:", GLVersion)
-		log.Println("[Video]: GLSL version:", GLSLVersion)
-	}
-
-	clean := strings.Replace(GLSLVersion[:4], ".", "", -1)
-	v, err := strconv.Atoi(clean)
-	if err != nil {
-		log.Println("[Video]: Couldn't parse GLSL version:", err)
-		return 120
-	}
-	return uint(v)
-}
-
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
 	var width, height int
@@ -104,20 +83,6 @@ func (video *Video) Configure(fullscreen bool) {
 	} else {
 		width = 320 * 3
 		height = 180 * 3
-	}
-
-	// On OSX we have to force a core profile to not end up with 2.1 which cause
-	// a font drawing issue
-	if runtime.GOOS == "darwin" {
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 2)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-	} else {
-		glfw.WindowHint(glfw.ContextVersionMajor, 2)
-		glfw.WindowHint(glfw.ContextVersionMinor, 1)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 	}
 
 	var err error
@@ -138,49 +103,47 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
-	GLSLVersion := getGLSLVersion()
-
 	fbw, fbh := video.Window.GetFramebufferSize()
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
-	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh, GLSLVersion)
+	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh)
 	if err != nil {
 		panic(err)
 	}
 
 	// Configure the vertex and fragment shaders
-	video.defaultProgram, err = newProgram(GLSLVersion, vertexShader, defaultFragmentShader)
+	video.defaultProgram, err = newProgram(vertexShader, defaultFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.sharpBilinearProgram, err = newProgram(GLSLVersion, vertexShader, sharpBilinearFragmentShader)
+	video.sharpBilinearProgram, err = newProgram(vertexShader, sharpBilinearFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.zfastCRTProgram, err = newProgram(GLSLVersion, vertexShader, zfastCRTFragmentShader)
+	video.zfastCRTProgram, err = newProgram(vertexShader, zfastCRTFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.roundedProgram, err = newProgram(GLSLVersion, vertexShader, roundedFragmentShader)
+	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.borderProgram, err = newProgram(GLSLVersion, vertexShader, borderFragmentShader)
+	video.borderProgram, err = newProgram(vertexShader, borderFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.circleProgram, err = newProgram(GLSLVersion, vertexShader, circleFragmentShader)
+	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.demulProgram, err = newProgram(GLSLVersion, vertexShader, demulFragmentShader)
+	video.demulProgram, err = newProgram(vertexShader, demulFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -191,8 +154,8 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.Uniform1i(textureUniform, 0)
 
 	// Configure the vertex data
-	gl.GenVertexArrays(1, &video.vao)
-	gl.BindVertexArray(video.vao)
+	genVertexArrays(1, &video.vao)
+	bindVertexArray(video.vao)
 
 	gl.GenBuffers(1, &video.vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
@@ -371,7 +334,7 @@ func (video *Video) Render() {
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
