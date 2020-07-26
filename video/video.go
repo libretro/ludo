@@ -355,9 +355,7 @@ func (video *Video) Render() {
 	gl.Disable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BlendEquation(gl.FUNC_ADD)
-
-	// The next line might be necessary, but doesn't work in core contexts
-	// gl.Enable(gl.TEXTURE_2D)
+	gl.Enable(gl.TEXTURE_2D)
 
 	video.ResizeViewport()
 
