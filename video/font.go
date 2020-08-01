@@ -99,7 +99,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	rgba := image.NewRGBA(rect)
 	draw.Draw(rgba, rgba.Bounds(), bg, image.Point{}, draw.Src)
 
-	margin := 2
+	margin := 4
 	x := margin
 	y := margin
 
@@ -283,10 +283,10 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		}
 
 		// Calculate position and size for current rune
-		xpos := x + float32(ch.bearingH)*scale
-		ypos := y - float32(ch.height-ch.bearingV)*scale
-		w := float32(ch.width) * scale
-		h := float32(ch.height) * scale
+		xpos := x - 1 + float32(ch.bearingH)*scale
+		ypos := y - 2 - float32(ch.height-ch.bearingV)*scale
+		w := float32(ch.width+2) * scale
+		h := float32(ch.height+2) * scale
 
 		// Set quad positions
 		var x1 = xpos
@@ -294,12 +294,12 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		var y1 = ypos
 		var y2 = ypos + h
 
-		coords = append(coords, point{x1, y1, float32(ch.x) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
-		coords = append(coords, point{x2, y1, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
-		coords = append(coords, point{x1, y2, float32(ch.x) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
-		coords = append(coords, point{x2, y1, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
-		coords = append(coords, point{x1, y2, float32(ch.x) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
-		coords = append(coords, point{x2, y2, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
+		coords = append(coords, point{x1, y1, float32(ch.x-1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
+		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
+		coords = append(coords, point{x1, y2, float32(ch.x-1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
+		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
+		coords = append(coords, point{x1, y2, float32(ch.x-1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
+		coords = append(coords, point{x2, y2, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
 		x += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
