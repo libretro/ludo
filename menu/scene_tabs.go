@@ -189,26 +189,23 @@ func (tabs *sceneTabs) animate() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
-		var labelAlpha, iconAlpha, scale, width float32
+		var labelAlpha, scale, width float32
 		if i == tabs.ptr {
 			labelAlpha = 1
-			iconAlpha = 1
 			scale = 0.75
 			width = 500
 		} else if i < tabs.ptr {
 			labelAlpha = 0
-			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		} else if i > tabs.ptr {
 			labelAlpha = 0
-			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		}
 
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 1, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 		menu.tweens[&e.width] = gween.New(e.width, width, 0.15, ease.OutSine)
 		menu.tweens[&e.margin] = gween.New(e.margin, 0, 0.15, ease.OutSine)

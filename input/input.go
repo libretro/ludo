@@ -73,16 +73,6 @@ func Init(v *video.Video) {
 	glfw.SetJoystickCallback(joystickCallback)
 }
 
-// Resets all retropad buttons to false
-func reset(state inputstate) inputstate {
-	for p := range state {
-		for k := range state[p] {
-			state[p][k] = false
-		}
-	}
-	return state
-}
-
 // pollJoypads process joypads of all players
 func pollJoypads(state inputstate) inputstate {
 	for p := range state {
@@ -133,7 +123,7 @@ func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate)
 
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
-	NewState = reset(NewState)
+	NewState = inputstate{}
 	NewState = pollJoypads(NewState)
 	NewState = pollKeyboard(NewState)
 	Pressed, Released = getPressedReleased(NewState, OldState)
