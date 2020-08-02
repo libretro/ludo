@@ -8,17 +8,17 @@ import (
 
 // Used to easily compose different hint bars based on the context.
 func stackHint(stack *float32, icon uint32, label string, h int) {
-	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
-	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
-	*stack += 30 * menu.ratio
-	vid.DrawImage(icon, *stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
-	*stack += 70 * menu.ratio
-	vid.Font.Printf(*stack, float32(h)-23*menu.ratio, 0.4*menu.ratio, label)
+	c := video.Color{R: 0.28, G: 0.28, B: 0.28, A: 1}
+	vid.Font.SetColor(0.28, 0.28, 0.28, 1.0)
+	vid.DrawImage(icon, *stack, float32(h)-88*menu.ratio, 88*menu.ratio, 88*menu.ratio, 1.0, c)
+	*stack += 80 * menu.ratio
+	vid.Font.Printf(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
 	*stack += vid.Font.Width(0.4*menu.ratio, label)
+	*stack += 32 * menu.ratio
 }
 
 func hintIcons() (arrows, upDown, leftRight, a, b, x, y, start, slct, guide uint32) {
-	if glfw.Joystick(0).Present() && input.HasBinding(glfw.Joystick(0)) {
+	if true || glfw.Joystick(0).Present() && input.HasBinding(glfw.Joystick(0)) {
 		return menu.icons["pad-arrows"],
 			menu.icons["pad-up-down"],
 			menu.icons["pad-left-right"],

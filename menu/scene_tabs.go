@@ -1,19 +1,17 @@
 package menu
 
 import (
-	"fmt"
-	"os/user"
+	"math"
 	"sort"
 
 	"github.com/libretro/ludo/audio"
+	"github.com/libretro/ludo/history"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/playlists"
-	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
-	colorful "github.com/lucasb-eyer/go-colorful"
 
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -21,110 +19,46 @@ import (
 
 type sceneTabs struct {
 	entry
+	yptr     int
+	yscroll  float32
+	xscrolls []float32
+	xptrs    []int
 }
 
 func buildTabs() Scene {
 	var list sceneTabs
-	list.label = "Ludo"
+	list.label = "Home"
 
-	list.children = append(list.children, entry{
-		label:    "Main Menu",
-		subLabel: "Load cores and games manually",
-		icon:     "main",
-		callbackOK: func() {
-			menu.Push(buildMainMenu())
-		},
-	})
+	cat := 0
+	history.Load()
+	if len(history.List) > 0 {
+		list.children = append(list.children, entry{
+			label: "Recently played",
+		})
+		list.xscrolls = append(list.xscrolls, 0)
+		list.xptrs = append(list.xptrs, 0)
 
-	list.children = append(list.children, entry{
-		label:    "Settings",
-		subLabel: "Configure Ludo",
-		icon:     "setting",
-		callbackOK: func() {
-			menu.Push(buildSettings())
-		},
-	})
-
-	list.children = append(list.children, entry{
-		label:    "History",
-		subLabel: "Play again",
-		icon:     "history",
-		callbackOK: func() {
-			menu.Push(buildHistory())
-		},
-	})
-
-	list.children = append(list.children, getPlaylists()...)
-
-	list.children = append(list.children, entry{
-		label:    "Add games",
-		subLabel: "Scan your collection",
-		icon:     "add",
-		callbackOK: func() {
-			usr, _ := user.Current()
-			menu.Push(buildExplorer(usr.HomeDir, nil,
-				func(path string) {
-					scanner.ScanDir(path, refreshTabs)
+		for _, game := range history.List {
+			game := game
+			strippedName, _ := extractTags(game.Name)
+			//baseName := filepath.Base(game.Path)
+			list.children[cat].children = append(list.children[cat].children, entry{
+				label:    strippedName,
+				gameName: game.Name,
+				subLabel: game.System,
+				callbackOK: func() {
+					// menu.Push(buildGamePage(
+					// 	game.CorePath,
+					// 	game.Path,
+					// 	game.Name,
+					// 	"roms/"+baseName,
+					// ))
 				},
-				&entry{
-					label: "<Scan this directory>",
-					icon:  "scan",
-				}))
-		},
-	})
-
-	list.segueMount()
-
-	return &list
-}
-
-// refreshTabs is called after playlist scanning is complete. It inserts the new
-// playlists in the tabs, and makes sure that all the icons are positioned and
-// sized properly.
-func refreshTabs() {
-	e := menu.stack[0].Entry()
-	l := len(e.children)
-	pls := getPlaylists()
-
-	// This assumes that the 3 first tabs are not playlists, and that the last
-	// tab is the scanner.
-	e.children = append(e.children[:3], append(pls, e.children[l-1:]...)...)
-
-	// Update which tab is the active tab after the refresh
-	if e.ptr >= 3 {
-		e.ptr += len(pls) - (l - 4)
-	}
-
-	// Ensure new icons are styled properly
-	for i := range e.children {
-		if i == e.ptr {
-			e.children[i].iconAlpha = 1
-			e.children[i].scale = 0.75
-			e.children[i].width = 500
-		} else if i < e.ptr {
-			e.children[i].iconAlpha = 1
-			e.children[i].scale = 0.25
-			e.children[i].width = 128
-		} else if i > e.ptr {
-			e.children[i].iconAlpha = 1
-			e.children[i].scale = 0.25
-			e.children[i].width = 128
+			})
 		}
+		cat++
 	}
 
-	// Adapt the tabs scroll value
-	if len(menu.stack) == 1 {
-		menu.scroll = float32(e.ptr * 128)
-	} else {
-		e.children[e.ptr].margin = 1360
-		menu.scroll = float32(e.ptr*128 + 680)
-	}
-}
-
-// getPlaylists browse the filesystem for CSV files, parse them and returns
-// a list of menu entries. It is used in the tabs, but could be used somewhere
-// else too.
-func getPlaylists() []entry {
 	playlists.Load()
 
 	// To store the keys in slice in sorted order
@@ -134,168 +68,281 @@ func getPlaylists() []entry {
 	}
 	sort.Strings(keys)
 
-	var pls []entry
 	for _, path := range keys {
 		path := path
 		filename := utils.FileName(path)
-		count := playlists.Count(path)
 		label := playlists.ShortName(filename)
-		pls = append(pls, entry{
-			label:    label,
-			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
-			icon:     filename,
-			callbackOK: func() {
-				menu.Push(buildPlaylist(path))
-			},
+
+		list.children = append(list.children, entry{
+			label: label,
 		})
+		list.xscrolls = append(list.xscrolls, 0)
+		list.xptrs = append(list.xptrs, 0)
+
+		for _, game := range playlists.Playlists[path] {
+			game := game
+			strippedName, tags := extractTags(game.Name)
+			list.children[cat].children = append(list.children[cat].children, entry{
+				label:    strippedName,
+				gameName: game.Name,
+				path:     game.Path,
+				tags:     tags,
+				icon:     utils.FileName(path) + "-content",
+				//callbackOK: func() { loadPlaylistEntry(&list, list.label, game) },
+			})
+		}
+		cat++
 	}
-	return pls
+
+	list.segueMount()
+
+	return &list
 }
 
-func (tabs *sceneTabs) Entry() *entry {
-	return &tabs.entry
+func (s *sceneTabs) Entry() *entry {
+	return &s.entry
 }
 
-func (tabs *sceneTabs) segueMount() {
-	for i := range tabs.children {
-		e := &tabs.children[i]
+func (s *sceneTabs) segueMount() {
+	s.alpha = 0
+	for j := range s.children {
+		s.xscrolls[j] = 0
+	}
+	s.yscroll = -500
 
-		if i == tabs.ptr {
-			e.labelAlpha = 1
-			e.iconAlpha = 1
-			e.scale = 0.75
-			e.width = 500
-		} else if i < tabs.ptr {
-			e.labelAlpha = 0
-			e.iconAlpha = 1
-			e.scale = 0.25
-			e.width = 128
-		} else if i > tabs.ptr {
-			e.labelAlpha = 0
-			e.iconAlpha = 1
-			e.scale = 0.25
-			e.width = 128
+	for j := range s.children {
+		ve := &s.children[j]
+		ve.labelAlpha = 0
+		ve.height = 504 + 136
+		if j == s.yptr {
+			ve.height = 240 + 136
+		}
+
+		for i := range ve.children {
+			e := &s.children[j].children[i]
+
+			if j == s.yptr && i == s.xptrs[j] {
+				e.labelAlpha = 0
+				e.iconAlpha = 0
+				e.scale = 2.1
+				e.borderAlpha = 0
+			} else if i < s.xptrs[j] {
+				e.labelAlpha = 0
+				e.iconAlpha = 0
+				e.scale = 1
+				e.borderAlpha = 0
+			} else {
+				e.labelAlpha = 0
+				e.iconAlpha = 0
+				e.scale = 1
+				e.borderAlpha = 0
+			}
 		}
 	}
 
-	tabs.animate()
+	s.animate()
 }
 
-func (tabs *sceneTabs) segueBack() {
-	tabs.animate()
+func (s *sceneTabs) segueBack() {
+	s.animate()
 }
 
-func (tabs *sceneTabs) animate() {
-	for i := range tabs.children {
-		e := &tabs.children[i]
+func (s *sceneTabs) animate() {
+	alpha := float32(1)
 
-		var labelAlpha, scale, width float32
-		if i == tabs.ptr {
-			labelAlpha = 1
-			scale = 0.75
-			width = 500
-		} else if i < tabs.ptr {
+	for j := range s.children {
+		ve := &s.children[j]
+
+		var labelAlpha = float32(0.8)
+		if j < s.yptr {
 			labelAlpha = 0
-			scale = 0.25
-			width = 128
-		} else if i > tabs.ptr {
-			labelAlpha = 0
-			scale = 0.25
-			width = 128
 		}
+		menu.tweens[&ve.labelAlpha] = gween.New(ve.labelAlpha, labelAlpha, 0.15, ease.OutSine)
+		height := float32(240 + 136)
+		if j == s.yptr {
+			height = 504 + 136
+		}
+		menu.tweens[&ve.height] = gween.New(ve.height, height, 0.15, ease.OutSine)
 
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 1, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
-		menu.tweens[&e.width] = gween.New(e.width, width, 0.15, ease.OutSine)
-		menu.tweens[&e.margin] = gween.New(e.margin, 0, 0.15, ease.OutSine)
+		for i := range ve.children {
+			e := &s.children[j].children[i]
+
+			var labelAlpha, iconAlpha, scale, borderAlpha float32
+			if j == s.yptr && i == s.xptrs[j] {
+				labelAlpha = 1
+				iconAlpha = 1
+				scale = 2.1
+				borderAlpha = 1
+			} else if j < s.yptr {
+				labelAlpha = 0
+				iconAlpha = 0
+				scale = 1
+				borderAlpha = 0
+			} else {
+				labelAlpha = 0
+				iconAlpha = 1
+				scale = 1
+				borderAlpha = 0
+			}
+
+			menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
+			menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
+			menu.tweens[&e.borderAlpha] = gween.New(e.borderAlpha, borderAlpha, 0.15, ease.OutSine)
+			menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
+		}
 	}
-	menu.tweens[&menu.scroll] = gween.New(menu.scroll, float32(tabs.ptr*128), 0.15, ease.OutSine)
+
+	for j := range s.children {
+		menu.tweens[&s.xscrolls[j]] = gween.New(s.xscrolls[j], float32(s.xptrs[j]*(320+32)), 0.15, ease.OutSine)
+	}
+
+	vst := float32(0)
+	for j := range s.children {
+		if j == s.yptr {
+			break
+		}
+		vst += 240 + 136
+	}
+
+	menu.tweens[&s.yscroll] = gween.New(s.yscroll, vst, 0.15, ease.OutSine)
+	menu.tweens[&s.alpha] = gween.New(s.alpha, alpha, 0.15, ease.OutSine)
 }
 
-func (tabs *sceneTabs) segueNext() {
-	cur := &tabs.children[tabs.ptr]
-	menu.tweens[&cur.margin] = gween.New(cur.margin, 1360, 0.15, ease.OutSine)
-	menu.tweens[&menu.scroll] = gween.New(menu.scroll, menu.scroll+680, 0.15, ease.OutSine)
-	for i := range tabs.children {
-		e := &tabs.children[i]
-		if i != tabs.ptr {
+func (s *sceneTabs) segueNext() {
+	menu.tweens[&s.alpha] = gween.New(s.alpha, 0, 0.15, ease.OutSine)
+	menu.tweens[&s.yscroll] = gween.New(s.yscroll, s.yscroll+300, 0.15, ease.OutSine)
+
+	for j := range s.children {
+		ve := &s.children[j]
+		for i := range ve.children {
+			e := &s.children[j].children[i]
 			menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 0, 0.15, ease.OutSine)
 		}
 	}
 }
 
-func (tabs *sceneTabs) update(dt float32) {
+func (s *sceneTabs) update(dt float32) {
 	// Right
 	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight], func() {
-		tabs.ptr++
-		if tabs.ptr >= len(tabs.children) {
-			tabs.ptr = 0
+		if s.xptrs[s.yptr] < len(s.children[s.yptr].children)-1 {
+			s.xptrs[s.yptr]++
+			audio.PlayEffect(audio.Effects["down"])
+			menu.t = 0
+			s.animate()
 		}
-		audio.PlayEffect(audio.Effects["down"])
-		tabs.animate()
 	})
 
 	// Left
 	repeatLeft(dt, input.NewState[0][libretro.DeviceIDJoypadLeft], func() {
-		tabs.ptr--
-		if tabs.ptr < 0 {
-			tabs.ptr = len(tabs.children) - 1
+		if s.xptrs[s.yptr] > 0 {
+			s.xptrs[s.yptr]--
+			audio.PlayEffect(audio.Effects["up"])
+			menu.t = 0
+			s.animate()
+		} else if s.xptrs[s.yptr] == 0 && len(menu.stack) > 1 {
+			// Pressing left on the leftmost item should come back to the left tabs
+			audio.PlayEffect(audio.Effects["cancel"])
+			menu.stack[len(menu.stack)-2].segueBack()
+			//menu.focus--
+			menu.t = 0
 		}
-		audio.PlayEffect(audio.Effects["up"])
-		tabs.animate()
+	})
+
+	// Down
+	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown], func() {
+		if s.yptr < len(s.children)-1 {
+			s.yptr++
+			audio.PlayEffect(audio.Effects["down"])
+			menu.t = 0
+			s.animate()
+		}
+	})
+
+	// Up
+	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp], func() {
+		if s.yptr > 0 {
+			s.yptr--
+			audio.PlayEffect(audio.Effects["up"])
+			menu.t = 0
+			s.animate()
+		}
 	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
-		if tabs.children[tabs.ptr].callbackOK != nil {
+		if s.children[s.yptr].children[s.xptrs[s.yptr]].callbackOK != nil {
 			audio.PlayEffect(audio.Effects["ok"])
-			tabs.segueNext()
-			tabs.children[tabs.ptr].callbackOK()
+			s.segueNext()
+			s.children[s.yptr].children[s.xptrs[s.yptr]].callbackOK()
 		}
 	}
 }
 
-func (tabs sceneTabs) render() {
-	_, h := vid.Window.GetFramebufferSize()
+func (s sceneTabs) render() {
+	//_, h := vid.Window.GetFramebufferSize()
 
-	stackWidth := 710 * menu.ratio
-	for i, e := range tabs.children {
+	vst := float32(0)
+	for j, ve := range s.children {
+		vid.Font.SetColor(0.129, 0.443, 0.686, ve.labelAlpha*s.alpha)
+		vid.Font.Printf(
+			96*menu.ratio,
+			230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
+			0.5*menu.ratio, ve.label)
 
-		c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
+		y := 272 + vst - s.yscroll
 
-		x := -menu.scroll*menu.ratio + stackWidth + e.width/2*menu.ratio
+		stackWidth := float32(96)
+		for i, e := range ve.children {
+			blink := float32(1)
+			if j == s.yptr && i == s.xptrs[s.yptr] {
+				blink = float32(math.Cos(menu.t))
+			}
 
-		stackWidth += e.width*menu.ratio + e.margin*menu.ratio
+			x := -s.xscrolls[j] + stackWidth
 
-		if e.labelAlpha > 0 {
-			vid.Font.SetColor(float32(c.R), float32(c.B), float32(c.G), e.labelAlpha)
-			lw := vid.Font.Width(0.5*menu.ratio, e.label)
-			vid.Font.Printf(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), 0.5*menu.ratio, e.label)
-			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
-			vid.Font.Printf(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), 0.4*menu.ratio, e.subLabel)
+			vid.Font.SetColor(0, 0, 0, e.iconAlpha*s.alpha*0.75)
+
+			vid.DrawRect(
+				x*menu.ratio-8*menu.ratio,
+				y*menu.ratio-8*menu.ratio,
+				320*e.scale*menu.ratio+16*menu.ratio, 240*e.scale*menu.ratio+16*menu.ratio,
+				0, video.Color{R: 1, G: 0.557, B: 0.220, A: e.borderAlpha*s.alpha - blink})
+
+			vid.DrawImage(menu.icons["img-broken"],
+				x*menu.ratio,
+				y*menu.ratio,
+				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
+				1, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha * s.alpha})
+
+			vid.Font.SetColor(0, 0, 0, e.labelAlpha*s.alpha)
+			vid.Font.Printf(
+				(x+672+32)*menu.ratio,
+				(y+360)*menu.ratio,
+				0.7*menu.ratio, e.label)
+
+			vid.Font.SetColor(0.56, 0.56, 0.56, e.labelAlpha*s.alpha)
+			vid.Font.Printf(
+				(x+672+32)*menu.ratio,
+				(y+430)*menu.ratio,
+				0.5*menu.ratio, e.subLabel)
+
+			stackWidth += 320*e.scale + e.margin + 32
 		}
-
-		vid.DrawImage(menu.icons["hexagon"],
-			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio,
-			440*menu.ratio, 440*menu.ratio, e.scale, video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.iconAlpha})
-
-		vid.DrawImage(menu.icons[e.icon],
-			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+		vst += ve.height
 	}
 }
 
-func (tabs sceneTabs) drawHintBar() {
+func (s sceneTabs) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, video.Color{R: 1, G: 1, B: 1, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1})
 
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 
-	var stack float32
+	stack := float32(96)
 	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
+		stackHint(&stack, guide, "Resume", h)
 	}
-	stackHint(&stack, leftRight, "NAVIGATE", h)
-	stackHint(&stack, a, "OPEN", h)
+	stackHint(&stack, leftRight, "Navigate", h)
+	stackHint(&stack, a, "Open", h)
 }

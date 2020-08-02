@@ -142,21 +142,22 @@ func (s *sceneSavestates) render() {
 
 func (s *sceneSavestates) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, video.Color{R: 1, G: 1, B: 1, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1})
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
-	var stack float32
+	stack := float32(96)
 	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
+		stackHint(&stack, guide, "Resume", h)
 	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
+	stackHint(&stack, upDown, "Navigate", h)
+	stackHint(&stack, b, "Back", h)
 	if ptr == 0 {
-		stackHint(&stack, a, "SAVE", h)
+		stackHint(&stack, a, "Save", h)
 	} else {
-		stackHint(&stack, a, "LOAD", h)
+		stackHint(&stack, a, "Load", h)
 	}
 }

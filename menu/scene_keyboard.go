@@ -206,15 +206,16 @@ func (s *sceneKeyboard) render() {
 
 func (s *sceneKeyboard) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, video.Color{R: 1, G: 1, B: 1, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1})
 
 	arrows, _, _, a, b, x, y, start, _, _ := hintIcons()
 
-	var stack float32
-	stackHint(&stack, arrows, "SELECT", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, x, "SHIFT", h)
-	stackHint(&stack, y, "DELETE", h)
-	stackHint(&stack, a, "INSERT", h)
-	stackHint(&stack, start, "DONE", h)
+	stack := float32(96)
+	stackHint(&stack, arrows, "Select", h)
+	stackHint(&stack, b, "Back", h)
+	stackHint(&stack, x, "Shift", h)
+	stackHint(&stack, y, "Delete", h)
+	stackHint(&stack, a, "Insert", h)
+	stackHint(&stack, start, "Done", h)
 }
