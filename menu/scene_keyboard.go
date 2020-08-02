@@ -211,7 +211,7 @@ func (s *sceneKeyboard) drawHintBar() {
 
 	arrows, _, _, a, b, x, y, start, _, _ := hintIcons()
 
-	stack := float32(96)
+	stack := float32(96) * menu.ratio
 	stackHint(&stack, arrows, "Select", h)
 	stackHint(&stack, b, "Back", h)
 	stackHint(&stack, x, "Shift", h)

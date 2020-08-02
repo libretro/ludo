@@ -35,6 +35,9 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		m.ProcessHotkeys()
 		ntf.Process(dt)
 		vid.ResizeViewport()
+		w, h := vid.Window.GetFramebufferSize()
+		vid.Font.UpdateResolution(w, h)
+		vid.BoldFont.UpdateResolution(w, h)
 		if !state.Global.MenuActive {
 			if state.Global.CoreRunning {
 				state.Global.Core.Run()

@@ -41,11 +41,11 @@ func buildTabs() Scene {
 		for _, game := range history.List {
 			game := game
 			strippedName, _ := extractTags(game.Name)
-			//baseName := filepath.Base(game.Path)
 			list.children[cat].children = append(list.children[cat].children, entry{
 				label:    strippedName,
 				gameName: game.Name,
 				subLabel: game.System,
+				system:   game.System,
 				callbackOK: func() {
 					// menu.Push(buildGamePage(
 					// 	game.CorePath,
@@ -71,10 +71,9 @@ func buildTabs() Scene {
 	for _, path := range keys {
 		path := path
 		filename := utils.FileName(path)
-		label := playlists.ShortName(filename)
 
 		list.children = append(list.children, entry{
-			label: label,
+			label: filename,
 		})
 		list.xscrolls = append(list.xscrolls, 0)
 		list.xptrs = append(list.xptrs, 0)
@@ -88,6 +87,8 @@ func buildTabs() Scene {
 				path:     game.Path,
 				tags:     tags,
 				icon:     utils.FileName(path) + "-content",
+				subLabel: filename,
+				system:   filename,
 				//callbackOK: func() { loadPlaylistEntry(&list, list.label, game) },
 			})
 		}
@@ -153,7 +154,7 @@ func (s *sceneTabs) animate() {
 	for j := range s.children {
 		ve := &s.children[j]
 
-		var labelAlpha = float32(0.8)
+		labelAlpha := float32(1)
 		if j < s.yptr {
 			labelAlpha = 0
 		}
@@ -239,12 +240,6 @@ func (s *sceneTabs) update(dt float32) {
 			audio.PlayEffect(audio.Effects["up"])
 			menu.t = 0
 			s.animate()
-		} else if s.xptrs[s.yptr] == 0 && len(menu.stack) > 1 {
-			// Pressing left on the leftmost item should come back to the left tabs
-			audio.PlayEffect(audio.Effects["cancel"])
-			menu.stack[len(menu.stack)-2].segueBack()
-			//menu.focus--
-			menu.t = 0
 		}
 	})
 
@@ -279,17 +274,17 @@ func (s *sceneTabs) update(dt float32) {
 }
 
 func (s sceneTabs) render() {
-	//_, h := vid.Window.GetFramebufferSize()
-
 	vst := float32(0)
 	for j, ve := range s.children {
-		vid.Font.SetColor(0.129, 0.443, 0.686, ve.labelAlpha*s.alpha)
-		vid.Font.Printf(
+		ve := ve
+
+		y := 272 + vst - s.yscroll
+
+		vid.BoldFont.SetColor(0.129, 0.443, 0.686, ve.labelAlpha*s.alpha)
+		vid.BoldFont.Printf(
 			96*menu.ratio,
 			230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
 			0.5*menu.ratio, ve.label)
-
-		y := 272 + vst - s.yscroll
 
 		stackWidth := float32(96)
 		for i, e := range ve.children {
@@ -300,28 +295,28 @@ func (s sceneTabs) render() {
 
 			x := -s.xscrolls[j] + stackWidth
 
-			vid.Font.SetColor(0, 0, 0, e.iconAlpha*s.alpha*0.75)
-
 			vid.DrawRect(
 				x*menu.ratio-8*menu.ratio,
 				y*menu.ratio-8*menu.ratio,
 				320*e.scale*menu.ratio+16*menu.ratio, 240*e.scale*menu.ratio+16*menu.ratio,
 				0, video.Color{R: 1, G: 0.557, B: 0.220, A: e.borderAlpha*s.alpha - blink})
 
-			vid.DrawImage(menu.icons["img-broken"],
+			drawThumbnail(
+				&ve, i,
+				e.system, e.gameName,
 				x*menu.ratio,
 				y*menu.ratio,
 				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
 				1, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha * s.alpha})
 
-			vid.Font.SetColor(0, 0, 0, e.labelAlpha*s.alpha)
-			vid.Font.Printf(
+			vid.BoldFont.SetColor(0, 0, 0, e.labelAlpha*s.alpha)
+			vid.BoldFont.Printf(
 				(x+672+32)*menu.ratio,
 				(y+360)*menu.ratio,
 				0.7*menu.ratio, e.label)
 
-			vid.Font.SetColor(0.56, 0.56, 0.56, e.labelAlpha*s.alpha)
-			vid.Font.Printf(
+			vid.BoldFont.SetColor(0.56, 0.56, 0.56, e.labelAlpha*s.alpha)
+			vid.BoldFont.Printf(
 				(x+672+32)*menu.ratio,
 				(y+430)*menu.ratio,
 				0.5*menu.ratio, e.subLabel)
@@ -339,7 +334,7 @@ func (s sceneTabs) drawHintBar() {
 
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 
-	stack := float32(96)
+	stack := float32(96) * menu.ratio
 	if state.Global.CoreRunning {
 		stackHint(&stack, guide, "Resume", h)
 	}

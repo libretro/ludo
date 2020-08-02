@@ -222,7 +222,7 @@ func (s *scenePlaylist) drawHintBar() {
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
-	stack := float32(96)
+	stack := float32(96) * menu.ratio
 	if state.Global.CoreRunning {
 		stackHint(&stack, guide, "Resume", h)
 	}

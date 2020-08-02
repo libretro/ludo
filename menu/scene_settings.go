@@ -275,7 +275,7 @@ func (s *sceneSettings) drawHintBar() {
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 
-	stack := float32(96)
+	stack := float32(96) * menu.ratio
 	list := menu.stack[len(menu.stack)-1].Entry()
 	if state.Global.CoreRunning {
 		stackHint(&stack, guide, "Resume", h)

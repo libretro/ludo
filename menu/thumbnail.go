@@ -14,6 +14,9 @@ import (
 
 // Downloads a thumbnail from the web and cache it to the local filesystem.
 func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
+	if i >= len(list.children) {
+		return
+	}
 	resp, err := http.Get(url)
 	if err != nil {
 		list.children[i].thumbnail = menu.icons["img-broken"]

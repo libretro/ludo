@@ -31,9 +31,10 @@ type WindowInterface interface {
 
 // Video holds the state of the video package
 type Video struct {
-	Window WindowInterface
-	Geom   libretro.GameGeometry
-	Font   *Font
+	Window   WindowInterface
+	Geom     libretro.GameGeometry
+	Font     *Font
+	BoldFont *Font
 
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
@@ -108,6 +109,10 @@ func (video *Video) Configure(fullscreen bool) {
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
 	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh)
+	if err != nil {
+		panic(err)
+	}
+	video.BoldFont, err = LoadFont(assets+"/boldfont.ttf", int32(36*2), fbw, fbh)
 	if err != nil {
 		panic(err)
 	}
