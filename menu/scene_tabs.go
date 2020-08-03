@@ -305,7 +305,7 @@ func (s sceneTabs) render() {
 				x*menu.ratio-8*menu.ratio,
 				y*menu.ratio-8*menu.ratio,
 				320*e.scale*menu.ratio+16*menu.ratio, 240*e.scale*menu.ratio+16*menu.ratio,
-				1, video.Color{R: 1, G: 1, B: 1, A: (e.borderAlpha - blink) * s.alpha})
+				1, 0.1, video.Color{R: 1, G: 1, B: 1, A: (e.borderAlpha - blink) * s.alpha})
 
 			drawThumbnail(
 				&ve, i,
@@ -320,7 +320,7 @@ func (s sceneTabs) render() {
 				x*menu.ratio,
 				y*menu.ratio,
 				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
-				1, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha * s.alpha * 0.25})
+				1, 0.07, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha * s.alpha})
 
 			vid.BoldFont.SetColor(0, 0, 0, e.labelAlpha*s.alpha)
 			vid.BoldFont.Printf(
@@ -345,7 +345,7 @@ func (s sceneTabs) drawHintBar() {
 	arrows, _, _, a, _, _, _, _, _, guide := hintIcons()
 
 	lstack := float32(75) * menu.ratio
-	rstack := float32(w-96) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
 	stackHintLeft(&lstack, arrows, "Navigate", h)
 	stackHintRight(&rstack, a, "Open", h)
 	if state.Global.CoreRunning {

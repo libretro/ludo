@@ -143,7 +143,7 @@ var widgets = map[string]func(*entry){
 			float32(w)-128*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			1.25, color)
+			1.25, 0, color)
 	},
 
 	// Range widget for audio volume and similat float settings
@@ -276,7 +276,7 @@ func (s *sceneSettings) drawHintBar() {
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 
 	lstack := float32(75) * menu.ratio
-	rstack := float32(w-96) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
 	list := menu.stack[len(menu.stack)-1].Entry()
 	stackHintLeft(&lstack, upDown, "Navigate", h)
 	if list.children[list.ptr].callbackOK != nil {

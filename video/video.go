@@ -36,6 +36,7 @@ type Video struct {
 	Font     *Font
 	BoldFont *Font
 
+	white                uint32 // white texture for sampler2D
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
 	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
@@ -193,6 +194,8 @@ func (video *Video) Configure(fullscreen bool) {
 	video.UpdateFilter(settings.Current.VideoFilter)
 
 	video.coreRatioViewport(fbw, fbh)
+
+	video.white = newWhite()
 
 	if e := gl.GetError(); e != gl.NO_ERROR {
 		log.Printf("[Video] OpenGL error: %d\n", e)

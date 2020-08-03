@@ -152,7 +152,7 @@ func (s *sceneHistory) render() {
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+					e.scale, 0, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
 			// Offset on Y to vertically center label + sublabel if there is a sublabel
@@ -176,7 +176,7 @@ func (s *sceneHistory) render() {
 					vid.DrawImage(
 						menu.icons[tag],
 						stack, float32(h)*e.yp-22*menu.ratio-slOffset,
-						60*menu.ratio, 44*menu.ratio, 1.0, video.Color{R: 1, G: 1, B: 1, A: e.tagAlpha})
+						60*menu.ratio, 44*menu.ratio, 1.0, 0, video.Color{R: 1, G: 1, B: 1, A: e.tagAlpha})
 					vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio-slOffset,
 						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: e.tagAlpha / 4})
 					stack += 60 * menu.ratio
@@ -202,7 +202,7 @@ func (s *sceneHistory) drawHintBar() {
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
 	lstack := float32(75) * menu.ratio
-	rstack := float32(w-96) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
 	stackHintLeft(&lstack, upDown, "Navigate", h)
 	stackHintRight(&rstack, a, "Run", h)
 	stackHintRight(&rstack, b, "Back", h)

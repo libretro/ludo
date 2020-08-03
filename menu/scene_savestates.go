@@ -128,7 +128,7 @@ func (s *sceneSavestates) render() {
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+					e.scale, 0, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
@@ -150,7 +150,7 @@ func (s *sceneSavestates) drawHintBar() {
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
 	lstack := float32(75) * menu.ratio
-	rstack := float32(w-96) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
 	stackHintLeft(&lstack, upDown, "Navigate", h)
 	if ptr == 0 {
 		stackHintRight(&rstack, a, "Save", h)

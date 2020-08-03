@@ -185,7 +185,7 @@ func (s *scenePlaylist) render() {
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+					e.scale, 0, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
@@ -203,7 +203,7 @@ func (s *scenePlaylist) render() {
 					vid.DrawImage(
 						menu.icons[tag],
 						stack, float32(h)*e.yp-22*menu.ratio,
-						60*menu.ratio, 44*menu.ratio, 1.0, video.Color{R: 1, G: 1, B: 1, A: e.tagAlpha})
+						60*menu.ratio, 44*menu.ratio, 1.0, 0, video.Color{R: 1, G: 1, B: 1, A: e.tagAlpha})
 					vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
 						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: e.tagAlpha / 4})
 					stack += 60 * menu.ratio

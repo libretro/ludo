@@ -160,7 +160,7 @@ func genericDrawCursor(list *entry) {
 	// }
 	vid.DrawImage(menu.icons["arrow"],
 		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1, c)
+		70*menu.ratio, 70*menu.ratio, 1, 0, c)
 	vid.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		float32(w)-630*menu.ratio, 100*menu.ratio, 1, c)
@@ -176,7 +176,7 @@ func thumbnailDrawCursor(list *entry) {
 	// }
 	vid.DrawImage(menu.icons["arrow"],
 		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		100*menu.ratio, 100*menu.ratio, 1, c)
+		100*menu.ratio, 100*menu.ratio, 1, 0, c)
 	vid.DrawRect(
 		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
 		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, c)
@@ -207,7 +207,7 @@ func genericRender(list *entry) {
 			610*menu.ratio-64*0.5*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*0.5*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			0.5, color)
+			0.5, 0, color)
 
 		if e.labelAlpha > 0 {
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
@@ -239,7 +239,7 @@ func genericDrawHintBar() {
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
 	lstack := float32(75) * menu.ratio
-	rstack := float32(w-96) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
 	stackHintLeft(&lstack, upDown, "Navigate", h)
 	stackHintRight(&rstack, a, "Ok", h)
 	stackHintRight(&rstack, b, "Back", h)

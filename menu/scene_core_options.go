@@ -88,7 +88,7 @@ func (s *sceneCoreOptions) drawHintBar() {
 	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()
 
 	lstack := float32(75) * menu.ratio
-	rstack := float32(w-96) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
 	stackHintLeft(&lstack, upDown, "Navigate", h)
 	stackHintRight(&rstack, leftRight, "Set", h)
 	stackHintRight(&rstack, b, "Back", h)

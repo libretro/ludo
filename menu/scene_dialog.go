@@ -88,7 +88,7 @@ func (s *sceneDialog) render() {
 		b,
 		fw/2-width/2*menu.ratio+margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, c)
+		70*menu.ratio, 70*menu.ratio, 1.0, 0, c)
 	vid.Font.Printf(
 		fw/2-width/2*menu.ratio+margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
@@ -99,7 +99,7 @@ func (s *sceneDialog) render() {
 		a,
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, c)
+		70*menu.ratio, 70*menu.ratio, 1.0, 0, c)
 	vid.Font.Printf(
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
