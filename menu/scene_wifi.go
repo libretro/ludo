@@ -92,10 +92,11 @@ func (s *sceneWiFi) drawHintBar() {
 
 	_, upDown, _, a, b, _, _, _, _, _ := hintIcons()
 
-	stack := float32(75) * menu.ratio
-	stackHint(&stack, upDown, "Navigate", h)
-	stackHint(&stack, b, "Back", h)
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w-96) * menu.ratio
+	stackHintLeft(&lstack, upDown, "Navigate", h)
 	if s.children[0].callbackOK != nil {
-		stackHint(&stack, a, "Connect", h)
+		stackHintRight(&rstack, a, "Connect", h)
 	}
+	stackHintRight(&rstack, b, "Back", h)
 }

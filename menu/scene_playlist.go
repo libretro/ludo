@@ -224,9 +224,9 @@ func (s *scenePlaylist) drawHintBar() {
 
 	stack := float32(75) * menu.ratio
 	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "Resume", h)
+		stackHintLeft(&stack, guide, "Resume", h)
 	}
-	stackHint(&stack, upDown, "Navigate", h)
-	stackHint(&stack, b, "Back", h)
-	stackHint(&stack, a, "Run", h)
+	stackHintLeft(&stack, upDown, "Navigate", h)
+	stackHintLeft(&stack, b, "Back", h)
+	stackHintLeft(&stack, a, "Run", h)
 }

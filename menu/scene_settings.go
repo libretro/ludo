@@ -275,16 +275,17 @@ func (s *sceneSettings) drawHintBar() {
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 
-	stack := float32(75) * menu.ratio
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w-96) * menu.ratio
 	list := menu.stack[len(menu.stack)-1].Entry()
-	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "Resume", h)
-	}
-	stackHint(&stack, upDown, "Navigate", h)
-	stackHint(&stack, b, "Back", h)
+	stackHintLeft(&lstack, upDown, "Navigate", h)
 	if list.children[list.ptr].callbackOK != nil {
-		stackHint(&stack, a, "Set", h)
+		stackHintRight(&rstack, a, "Set", h)
 	} else {
-		stackHint(&stack, leftRight, "Set", h)
+		stackHintRight(&rstack, leftRight, "Set", h)
+	}
+	stackHintRight(&rstack, b, "Back", h)
+	if state.Global.CoreRunning {
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
 }

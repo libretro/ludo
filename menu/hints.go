@@ -7,7 +7,7 @@ import (
 )
 
 // Used to easily compose different hint bars based on the context.
-func stackHint(stack *float32, icon uint32, label string, h int) {
+func stackHintLeft(stack *float32, icon uint32, label string, h int) {
 	c := video.Color{R: 0.28, G: 0.28, B: 0.28, A: 1}
 	vid.Font.SetColor(0.28, 0.28, 0.28, 1.0)
 	vid.DrawImage(icon, *stack, float32(h)-79*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
@@ -17,8 +17,19 @@ func stackHint(stack *float32, icon uint32, label string, h int) {
 	*stack += 32 * menu.ratio
 }
 
+// Used to easily compose different hint bars based on the context.
+func stackHintRight(stack *float32, icon uint32, label string, h int) {
+	c := video.Color{R: 0.28, G: 0.28, B: 0.28, A: 1}
+	*stack -= vid.Font.Width(0.4*menu.ratio, label)
+	vid.Font.SetColor(0.28, 0.28, 0.28, 1.0)
+	vid.Font.Printf(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
+	*stack -= 70 * menu.ratio
+	vid.DrawImage(icon, *stack, float32(h)-79*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
+	*stack -= 32 * menu.ratio
+}
+
 func hintIcons() (arrows, upDown, leftRight, a, b, x, y, start, slct, guide uint32) {
-	if true || glfw.Joystick(0).Present() && input.HasBinding(glfw.Joystick(0)) {
+	if glfw.Joystick(0).Present() && input.HasBinding(glfw.Joystick(0)) {
 		return menu.icons["pad-arrows"],
 			menu.icons["pad-up-down"],
 			menu.icons["pad-left-right"],

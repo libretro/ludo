@@ -342,12 +342,13 @@ func (s sceneTabs) drawHintBar() {
 	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, video.Color{R: 1, G: 1, B: 1, A: 1})
 	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1})
 
-	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
+	arrows, _, _, a, _, _, _, _, _, guide := hintIcons()
 
-	stack := float32(75) * menu.ratio
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w-96) * menu.ratio
+	stackHintLeft(&lstack, arrows, "Navigate", h)
+	stackHintRight(&rstack, a, "Open", h)
 	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "Resume", h)
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
-	stackHint(&stack, leftRight, "Navigate", h)
-	stackHint(&stack, a, "Open", h)
 }

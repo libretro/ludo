@@ -238,11 +238,12 @@ func genericDrawHintBar() {
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
-	stack := float32(75) * menu.ratio
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w-96) * menu.ratio
+	stackHintLeft(&lstack, upDown, "Navigate", h)
+	stackHintRight(&rstack, a, "Ok", h)
+	stackHintRight(&rstack, b, "Back", h)
 	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "Resume", h)
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
-	stackHint(&stack, upDown, "Navigate", h)
-	stackHint(&stack, b, "Back", h)
-	stackHint(&stack, a, "Ok", h)
 }
