@@ -278,28 +278,41 @@ func (s sceneTabs) render() {
 	for j, ve := range s.children {
 		ve := ve
 
-		y := 272 + vst - s.yscroll
-
 		vid.BoldFont.SetColor(0.129, 0.443, 0.686, ve.labelAlpha*s.alpha)
 		vid.BoldFont.Printf(
 			96*menu.ratio,
 			230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
 			0.5*menu.ratio, ve.label)
 
+		y := 272 + vst - s.yscroll
+
+		vst += ve.height
+
+		if y < -400 || y > 1080 {
+			continue
+		}
+
 		stackWidth := float32(96)
 		for i, e := range ve.children {
+			x := -s.xscrolls[j] + stackWidth
+
+			stackWidth += 320*e.scale + e.margin + 32
+
+			if x < -400 || x > 1920 {
+				continue
+			}
+
 			blink := float32(1)
 			if j == s.yptr && i == s.xptrs[s.yptr] {
 				blink = float32(math.Cos(menu.t))
 			}
 
-			x := -s.xscrolls[j] + stackWidth
-
-			vid.DrawRect(
+			vid.DrawImage(
+				menu.icons["selection"],
 				x*menu.ratio-8*menu.ratio,
 				y*menu.ratio-8*menu.ratio,
 				320*e.scale*menu.ratio+16*menu.ratio, 240*e.scale*menu.ratio+16*menu.ratio,
-				0, video.Color{R: 1, G: 0.557, B: 0.220, A: e.borderAlpha*s.alpha - blink})
+				1, video.Color{R: 1, G: 1, B: 1, A: e.borderAlpha*s.alpha - blink})
 
 			drawThumbnail(
 				&ve, i,
@@ -320,10 +333,7 @@ func (s sceneTabs) render() {
 				(x+672+32)*menu.ratio,
 				(y+430)*menu.ratio,
 				0.5*menu.ratio, e.subLabel)
-
-			stackWidth += 320*e.scale + e.margin + 32
 		}
-		vst += ve.height
 	}
 }
 
