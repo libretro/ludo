@@ -47,12 +47,7 @@ func buildTabs() Scene {
 				subLabel: game.System,
 				system:   game.System,
 				callbackOK: func() {
-					// menu.Push(buildGamePage(
-					// 	game.CorePath,
-					// 	game.Path,
-					// 	game.Name,
-					// 	"roms/"+baseName,
-					// ))
+					loadHistoryEntry(&list, game)
 				},
 			})
 		}
@@ -82,14 +77,14 @@ func buildTabs() Scene {
 			game := game
 			strippedName, tags := extractTags(game.Name)
 			list.children[cat].children = append(list.children[cat].children, entry{
-				label:    strippedName,
-				gameName: game.Name,
-				path:     game.Path,
-				tags:     tags,
-				icon:     utils.FileName(path) + "-content",
-				subLabel: filename,
-				system:   filename,
-				//callbackOK: func() { loadPlaylistEntry(&list, list.label, game) },
+				label:      strippedName,
+				gameName:   game.Name,
+				path:       game.Path,
+				tags:       tags,
+				icon:       utils.FileName(path) + "-content",
+				subLabel:   filename,
+				system:     filename,
+				callbackOK: func() { loadPlaylistEntry(&list, filename, game) },
 			})
 		}
 		cat++
@@ -149,8 +144,6 @@ func (s *sceneTabs) segueBack() {
 }
 
 func (s *sceneTabs) animate() {
-	alpha := float32(1)
-
 	for j := range s.children {
 		ve := &s.children[j]
 
@@ -206,7 +199,7 @@ func (s *sceneTabs) animate() {
 	}
 
 	menu.tweens[&s.yscroll] = gween.New(s.yscroll, vst, 0.15, ease.OutSine)
-	menu.tweens[&s.alpha] = gween.New(s.alpha, alpha, 0.15, ease.OutSine)
+	menu.tweens[&s.alpha] = gween.New(s.alpha, 1, 0.15, ease.OutSine)
 }
 
 func (s *sceneTabs) segueNext() {
@@ -312,7 +305,7 @@ func (s sceneTabs) render() {
 				x*menu.ratio-8*menu.ratio,
 				y*menu.ratio-8*menu.ratio,
 				320*e.scale*menu.ratio+16*menu.ratio, 240*e.scale*menu.ratio+16*menu.ratio,
-				1, video.Color{R: 1, G: 1, B: 1, A: e.borderAlpha*s.alpha - blink})
+				1, video.Color{R: 1, G: 1, B: 1, A: (e.borderAlpha - blink) * s.alpha})
 
 			drawThumbnail(
 				&ve, i,
@@ -321,6 +314,13 @@ func (s sceneTabs) render() {
 				y*menu.ratio,
 				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
 				1, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha * s.alpha})
+
+			vid.DrawImage(
+				menu.icons["border"],
+				x*menu.ratio,
+				y*menu.ratio,
+				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
+				1, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha * s.alpha * 0.25})
 
 			vid.BoldFont.SetColor(0, 0, 0, e.labelAlpha*s.alpha)
 			vid.BoldFont.Printf(
@@ -344,7 +344,7 @@ func (s sceneTabs) drawHintBar() {
 
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 
-	stack := float32(96) * menu.ratio
+	stack := float32(75) * menu.ratio
 	if state.Global.CoreRunning {
 		stackHint(&stack, guide, "Resume", h)
 	}

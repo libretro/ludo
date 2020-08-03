@@ -65,7 +65,7 @@ func (m *Menu) Render(dt float32) {
 	m.ratio = float32(w) / 1920
 
 	if state.Global.CoreRunning {
-		vid.DrawRect(0, 0, float32(w), float32(h), 0, video.Color{R: 0, G: 0, B: 0, A: 0.85})
+		vid.DrawImage(menu.icons["bg"], 0, 0, float32(w), float32(h), 1, video.Color{1, 1, 1, 0.85})
 	} else {
 		vid.DrawImage(menu.icons["bg"], 0, 0, float32(w), float32(h), 1, video.Color{1, 1, 1, 1})
 	}

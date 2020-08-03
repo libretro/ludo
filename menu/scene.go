@@ -155,9 +155,9 @@ func genericSegueNext(list *entry) {
 func genericDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
 	c := video.Color{R: 0.8784, G: 1, B: 1, A: list.cursor.alpha}
-	if state.Global.CoreRunning {
-		c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
-	}
+	// if state.Global.CoreRunning {
+	// 	c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
+	// }
 	vid.DrawImage(menu.icons["arrow"],
 		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
 		70*menu.ratio, 70*menu.ratio, 1, c)
@@ -171,9 +171,9 @@ func genericDrawCursor(list *entry) {
 func thumbnailDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
 	c := video.Color{R: 0.8784, G: 1, B: 1, A: list.cursor.alpha}
-	if state.Global.CoreRunning {
-		c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
-	}
+	// if state.Global.CoreRunning {
+	// 	c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
+	// }
 	vid.DrawImage(menu.icons["arrow"],
 		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		100*menu.ratio, 100*menu.ratio, 1, c)
@@ -199,9 +199,9 @@ func genericRender(list *entry) {
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
 		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		if state.Global.CoreRunning {
-			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		}
+		// if state.Global.CoreRunning {
+		// 	color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
+		// }
 
 		vid.DrawImage(menu.icons[e.icon],
 			610*menu.ratio-64*0.5*menu.ratio,
@@ -238,7 +238,7 @@ func genericDrawHintBar() {
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
-	stack := float32(96) * menu.ratio
+	stack := float32(75) * menu.ratio
 	if state.Global.CoreRunning {
 		stackHint(&stack, guide, "Resume", h)
 	}

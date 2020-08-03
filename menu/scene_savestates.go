@@ -105,9 +105,9 @@ func (s *sceneSavestates) render() {
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
 		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		if state.Global.CoreRunning {
-			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		}
+		// if state.Global.CoreRunning {
+		// 	color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
+		// }
 
 		if e.labelAlpha > 0 {
 			drawSavestateThumbnail(
@@ -149,7 +149,7 @@ func (s *sceneSavestates) drawHintBar() {
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
-	stack := float32(96) * menu.ratio
+	stack := float32(75) * menu.ratio
 	if state.Global.CoreRunning {
 		stackHint(&stack, guide, "Resume", h)
 	}

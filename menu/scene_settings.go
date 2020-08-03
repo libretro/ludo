@@ -136,9 +136,9 @@ var widgets = map[string]func(*entry){
 		}
 		w, h := vid.Window.GetFramebufferSize()
 		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		if state.Global.CoreRunning {
-			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		}
+		// if state.Global.CoreRunning {
+		// 	color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
+		// }
 		vid.DrawImage(menu.icons[icon],
 			float32(w)-128*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
@@ -154,9 +154,9 @@ var widgets = map[string]func(*entry){
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
 		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		if state.Global.CoreRunning {
-			c = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		}
+		// if state.Global.CoreRunning {
+		// 	c = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
+		// }
 		vid.DrawRect(x, y, w, h, 0.9, video.Color{R: c.R, G: c.G, B: c.B, A: e.iconAlpha / 4})
 		w = 175 * menu.ratio * e.value().(float32)
 		vid.DrawRect(x, y, w, h, 0.9, c)
@@ -275,7 +275,7 @@ func (s *sceneSettings) drawHintBar() {
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 
-	stack := float32(96) * menu.ratio
+	stack := float32(75) * menu.ratio
 	list := menu.stack[len(menu.stack)-1].Entry()
 	if state.Global.CoreRunning {
 		stackHint(&stack, guide, "Resume", h)
