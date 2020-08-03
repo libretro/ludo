@@ -110,14 +110,14 @@ func (s *sceneTabs) segueMount() {
 		ve := &s.children[j]
 		ve.labelAlpha = 0
 		ve.height = 504 + 136
-		if j == s.yptr {
-			ve.height = 240 + 136
-		}
+		//if j == s.yptr {
+		ve.height = 240 + 136
+		//}
 
 		for i := range ve.children {
 			e := &s.children[j].children[i]
 
-			if j == s.yptr && i == s.xptrs[j] {
+			if i == s.xptrs[j] {
 				e.labelAlpha = 0
 				e.iconAlpha = 0
 				e.scale = 2.1
@@ -153,16 +153,16 @@ func (s *sceneTabs) animate() {
 		}
 		menu.tweens[&ve.labelAlpha] = gween.New(ve.labelAlpha, labelAlpha, 0.15, ease.OutSine)
 		height := float32(240 + 136)
-		if j == s.yptr {
-			height = 504 + 136
-		}
+		//if j == s.yptr {
+		height = 504 + 136
+		//}
 		menu.tweens[&ve.height] = gween.New(ve.height, height, 0.15, ease.OutSine)
 
 		for i := range ve.children {
 			e := &s.children[j].children[i]
 
 			var labelAlpha, iconAlpha, scale, borderAlpha float32
-			if j == s.yptr && i == s.xptrs[j] {
+			if i == s.xptrs[j] {
 				labelAlpha = 1
 				iconAlpha = 1
 				scale = 2.1
@@ -195,7 +195,7 @@ func (s *sceneTabs) animate() {
 		if j == s.yptr {
 			break
 		}
-		vst += 240 + 136
+		vst += 504 + 136
 	}
 
 	menu.tweens[&s.yscroll] = gween.New(s.yscroll, vst, 0.15, ease.OutSine)
@@ -271,7 +271,7 @@ func (s sceneTabs) render() {
 	for j, ve := range s.children {
 		ve := ve
 
-		vid.BoldFont.SetColor(0.129, 0.443, 0.686, ve.labelAlpha*s.alpha)
+		vid.BoldFont.SetColor(0.129, 0.441, 0.684, ve.labelAlpha*s.alpha)
 		vid.BoldFont.Printf(
 			96*menu.ratio,
 			230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
