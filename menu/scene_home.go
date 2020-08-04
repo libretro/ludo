@@ -253,6 +253,11 @@ func (s *sceneHome) update(dt float32) {
 			audio.PlayEffect(audio.Effects["up"])
 			menu.t = 0
 			s.animate()
+		} else if s.yptr == 0 && len(menu.stack) > 1 {
+			audio.PlayEffect(audio.Effects["cancel"])
+			menu.stack[len(menu.stack)-2].segueBack()
+			menu.focus--
+			menu.t = 0
 		}
 	})
 
@@ -295,17 +300,15 @@ func (s sceneHome) render() {
 				continue
 			}
 
-			blink := float32(1)
-			if j == s.yptr && i == s.xptrs[s.yptr] {
-				blink = float32(math.Cos(menu.t))
+			if menu.focus == 2 && j == s.yptr && i == s.xptrs[s.yptr] {
+				blink := float32(math.Cos(menu.t))
+				vid.DrawImage(
+					menu.icons["selection"],
+					x*menu.ratio-8*menu.ratio,
+					y*menu.ratio-8*menu.ratio,
+					320*e.scale*menu.ratio+16*menu.ratio, 240*e.scale*menu.ratio+16*menu.ratio,
+					1, 0.1, video.Color{R: 1, G: 1, B: 1, A: (e.borderAlpha - blink) * s.alpha})
 			}
-
-			vid.DrawImage(
-				menu.icons["selection"],
-				x*menu.ratio-8*menu.ratio,
-				y*menu.ratio-8*menu.ratio,
-				320*e.scale*menu.ratio+16*menu.ratio, 240*e.scale*menu.ratio+16*menu.ratio,
-				1, 0.1, video.Color{R: 1, G: 1, B: 1, A: (e.borderAlpha - blink) * s.alpha})
 
 			drawThumbnail(
 				&ve, i,

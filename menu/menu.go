@@ -52,6 +52,7 @@ func Init(v *video.Video) *Menu {
 // OK on a menu entry.
 func (m *Menu) Push(s Scene) {
 	m.stack = append(m.stack, s)
+	m.focus++
 }
 
 // Render takes care of rendering the menu

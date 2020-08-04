@@ -1,12 +1,13 @@
 package menu
 
 import (
-	"github.com/tanema/gween"
-	"github.com/tanema/gween/ease"
+	"math"
+	"os/user"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 )
@@ -33,6 +34,21 @@ func buildTabs() Scene {
 		callbackOK: func() {
 			menu.stack = menu.stack[:len(menu.stack)-1]
 			menu.Push(buildSettings())
+			menu.focus--
+		},
+	})
+
+	list.children = append(list.children, entry{
+		icon: "tab-scan",
+		callbackOK: func() {
+			usr, _ := user.Current()
+			menu.stack = menu.stack[:len(menu.stack)-1]
+			menu.Push(buildExplorer(usr.HomeDir, nil,
+				func(path string) { scanner.ScanDir(path, nil) },
+				&entry{
+					label: "<Scan this directory>",
+					icon:  "scan",
+				}))
 			menu.focus--
 		},
 	})
@@ -80,71 +96,14 @@ func (s *sceneTabs) Entry() *entry {
 }
 
 func (s *sceneTabs) segueMount() {
-	for i := range s.children {
-		e := &s.children[i]
-
-		e.iconAlpha = 0.25
-		if i == s.ptr {
-			e.iconAlpha = 1
-		}
-	}
-
 	s.animate()
 }
 
 func (s *sceneTabs) segueBack() {
 	s.animate()
-	s.winFocus()
-}
-
-func (s *sceneTabs) winFocus() {
-	for i := range s.children {
-		e := &s.children[i]
-
-		labelAlpha := float32(0.5)
-		if i == s.ptr {
-			labelAlpha = 1
-		}
-
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
-	}
-
-	menu.tweens[&s.alpha] = gween.New(s.alpha, 1, 0.15, ease.OutSine)
-	menu.tweens[&s.width] = gween.New(s.width, 450, 0.15, ease.OutSine)
-}
-
-func (s *sceneTabs) loseFocus() {
-	for i := range s.children {
-		e := &s.children[i]
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, 0, 0.15, ease.OutSine)
-	}
-
-	menu.tweens[&s.alpha] = gween.New(s.alpha, 0, 0.15, ease.OutSine)
-	menu.tweens[&s.width] = gween.New(s.width, 150, 0.15, ease.OutSine)
 }
 
 func (s *sceneTabs) animate() {
-	for i := range s.children {
-		e := &s.children[i]
-
-		var iconAlpha, labelAlpha float32
-		if i == s.ptr {
-			iconAlpha = 1
-			labelAlpha = 1
-		} else if i < s.ptr {
-			iconAlpha = 0.5
-			labelAlpha = 0.5
-		} else if i > s.ptr {
-			iconAlpha = 0.5
-			labelAlpha = 0.5
-		}
-		if menu.focus != 1 {
-			labelAlpha = 0
-		}
-
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
-	}
 }
 
 // left tabs are never removed, we don't need to implement this callback
@@ -152,21 +111,8 @@ func (s *sceneTabs) segueNext() {
 }
 
 func (s *sceneTabs) update(dt float32) {
-	// Down
-	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown], func() {
-		s.ptr++
-		if s.ptr >= len(s.children) {
-			s.ptr = len(s.children) - 1
-		} else {
-			audio.PlayEffect(audio.Effects["down"])
-			menu.t = 0
-			s.animate()
-			s.children[s.ptr].callbackOK()
-		}
-	})
-
-	// Up
-	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp], func() {
+	// Left
+	repeatLeft(dt, input.NewState[0][libretro.DeviceIDJoypadLeft], func() {
 		s.ptr--
 		if s.ptr < 0 {
 			s.ptr = 0
@@ -174,24 +120,36 @@ func (s *sceneTabs) update(dt float32) {
 			audio.PlayEffect(audio.Effects["up"])
 			menu.t = 0
 			s.animate()
-			s.children[s.ptr].callbackOK()
 		}
 	})
 
 	// Right
 	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight], func() {
+		s.ptr++
+		if s.ptr >= len(s.children) {
+			s.ptr = len(s.children) - 1
+		} else {
+			audio.PlayEffect(audio.Effects["down"])
+			menu.t = 0
+			s.animate()
+		}
+	})
+
+	// Down
+	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown], func() {
 		audio.PlayEffect(audio.Effects["ok"])
 		menu.t = 0
 		menu.focus++
-		s.loseFocus()
+		s.animate()
 	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
 		audio.PlayEffect(audio.Effects["ok"])
+		s.children[s.ptr].callbackOK()
 		menu.t = 0
 		menu.focus++
-		s.loseFocus()
+		s.animate()
 	}
 }
 
@@ -201,13 +159,21 @@ func (s sceneTabs) render() {
 	spacing := float32(96 + 32)
 	totalWidth := spacing * float32(len(s.children)) * menu.ratio
 
-	for i, tab := range s.children {
-		c := video.Color{R: 1, G: 1, B: 1, A: tab.iconAlpha}
+	for i, e := range s.children {
+		if i == s.ptr && menu.focus == 1 {
+			blink := float32(math.Cos(menu.t))
+			vid.DrawImage(menu.icons["circle-selection"],
+				float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2-8*menu.ratio,
+				32*menu.ratio-8*menu.ratio,
+				96*menu.ratio+16*menu.ratio, 96*menu.ratio+16*menu.ratio, 1, 0,
+				video.Color{R: 1, G: 1, B: 1, A: 1 - blink})
+		}
+		c := video.Color{R: 1, G: 1, B: 1, A: 1}
 		vid.DrawImage(menu.icons["circle"],
 			float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2,
 			32*menu.ratio,
 			96*menu.ratio, 96*menu.ratio, 1, 0, c)
-		vid.DrawImage(menu.icons[tab.icon],
+		vid.DrawImage(menu.icons[e.icon],
 			float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2+24*menu.ratio,
 			56*menu.ratio,
 			48*menu.ratio, 48*menu.ratio, 1, 0, c)

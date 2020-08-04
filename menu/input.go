@@ -20,7 +20,7 @@ var (
 // Update takes care of calling the update method of the current scene.
 // Each scene has it's own input logic to allow a variety of navigation systems.
 func (m *Menu) Update(dt float32) {
-	currentScene := m.stack[len(m.stack)-1]
+	currentScene := m.stack[m.focus-1]
 	currentScene.update(dt)
 }
 
@@ -115,6 +115,7 @@ func genericInput(list *entry, dt float32) {
 			audio.PlayEffect(audio.Effects["cancel"])
 			menu.stack[len(menu.stack)-2].segueBack()
 			menu.stack = menu.stack[:len(menu.stack)-1]
+			menu.focus--
 		}
 	}
 

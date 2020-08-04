@@ -67,7 +67,9 @@ func ScanDir(dir string, doneCb func()) {
 			f.Close()
 			i++
 		}
-		doneCb()
+		if doneCb != nil {
+			doneCb()
+		}
 		n.Update(ntf.Success, "Done scanning. %d new games found.", i)
 	}()
 }
