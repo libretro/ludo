@@ -176,10 +176,20 @@ func genericDrawCursor(list *entry) {
 // menu entry when there is a thumbnail
 func thumbnailDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha}
+	if menu.focus > 1 {
+		blink := float32(math.Cos(menu.t))
+		vid.DrawImage(
+			menu.icons["selection"],
+			360*menu.ratio-8*menu.ratio,
+			float32(h)*list.cursor.yp-120*menu.ratio-8*menu.ratio,
+			float32(w)-720*menu.ratio+16*menu.ratio,
+			240*menu.ratio+16*menu.ratio,
+			1, 0.15, video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha - list.cursor.alpha*blink})
+	}
 	vid.DrawRect(
 		360*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
-		float32(w)-720*menu.ratio, 240*menu.ratio, 0.2, c)
+		float32(w)-720*menu.ratio, 240*menu.ratio, 0.1,
+		video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha})
 }
 
 // genericRender renders a vertical list of menu entries
@@ -199,10 +209,10 @@ func genericRender(list *entry) {
 		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
 
 		vid.DrawImage(menu.icons[e.icon],
-			420*menu.ratio-64*0.5*menu.ratio,
-			float32(h)*e.yp-14*menu.ratio-64*0.5*menu.ratio+fontOffset,
+			420*menu.ratio-64*0.35*menu.ratio,
+			float32(h)*e.yp-14*menu.ratio-64*0.35*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			0.5, 0, color)
+			0.35, 0, color)
 
 		if e.labelAlpha > 0 {
 			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)

@@ -104,36 +104,28 @@ func (s *sceneSavestates) render() {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		// if state.Global.CoreRunning {
-		// 	color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		// }
+		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
 
 		if e.labelAlpha > 0 {
 			drawSavestateThumbnail(
 				list, i,
 				filepath.Join(settings.Current.ScreenshotsDirectory, utils.FileName(e.path)+".png"),
-				680*menu.ratio-85*e.scale*menu.ratio,
+				510*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio, 128*menu.ratio,
 				e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
 			)
-			vid.DrawBorder(
-				680*menu.ratio-85*e.scale*menu.ratio,
-				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
-				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
 			if i == 0 {
 				vid.DrawImage(menu.icons["savestate"],
-					680*menu.ratio-25*e.scale*menu.ratio,
+					510*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
 					e.scale, 0, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
-			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
+			vid.Font.SetColor(c.R, c.G, c.B, e.labelAlpha)
 			vid.Font.Printf(
-				840*menu.ratio,
+				670*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.5*menu.ratio, e.label)
 		}

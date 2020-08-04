@@ -70,7 +70,7 @@ func buildTabs() Scene {
 		})
 
 		list.children = append(list.children, entry{
-			icon: "tab-quit",
+			icon: "tab-shutdown",
 			callbackOK: func() {
 				askConfirmation(func() { cleanShutdown() })
 			},
@@ -162,10 +162,10 @@ func (s sceneTabs) render() {
 	for i, e := range s.children {
 		if i == s.ptr && menu.focus == 1 {
 			blink := float32(math.Cos(menu.t))
-			vid.DrawImage(menu.icons["circle-selection"],
+			vid.DrawImage(menu.icons["selection"],
 				float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2-8*menu.ratio,
 				32*menu.ratio-8*menu.ratio,
-				96*menu.ratio+16*menu.ratio, 96*menu.ratio+16*menu.ratio, 1, 0,
+				96*menu.ratio+16*menu.ratio, 96*menu.ratio+16*menu.ratio, 1, 1,
 				video.Color{R: 1, G: 1, B: 1, A: 1 - blink})
 		}
 		c := video.Color{R: 1, G: 1, B: 1, A: 1}
