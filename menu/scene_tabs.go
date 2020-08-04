@@ -3,6 +3,7 @@ package menu
 import (
 	"math"
 	"os/user"
+	"time"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
@@ -158,6 +159,13 @@ func (s sceneTabs) render() {
 
 	spacing := float32(96 + 32)
 	totalWidth := spacing * float32(len(s.children)) * menu.ratio
+
+	now := time.Now().Format("3:04PM")
+	nowWidth := vid.BoldFont.Width(0.5*menu.ratio, now)
+	vid.BoldFont.SetColor(0, 0, 0, 1)
+	vid.BoldFont.Printf(
+		float32(w)-96*menu.ratio-nowWidth,
+		90*menu.ratio, 0.5*menu.ratio, now)
 
 	for i, e := range s.children {
 		if i == s.ptr && menu.focus == 1 {
