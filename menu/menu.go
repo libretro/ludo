@@ -17,6 +17,7 @@ var menu *Menu
 
 // Menu is a type holding the menu state, the stack of scenes, tweens, etc
 type Menu struct {
+	focus  int // this is a hack to switch focus between top tabs and the other scenes
 	stack  []Scene
 	icons  map[string]uint32
 	tweens Tweens
@@ -39,6 +40,7 @@ func Init(v *video.Video) *Menu {
 	menu.ratio = float32(w) / 1920
 	menu.icons = map[string]uint32{}
 
+	menu.Push(buildTabs())
 	menu.Push(buildHome())
 
 	menu.ContextReset()
