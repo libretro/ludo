@@ -17,7 +17,7 @@ import (
 	"github.com/tanema/gween/ease"
 )
 
-type sceneTabs struct {
+type sceneHome struct {
 	entry
 	yptr     int
 	yscroll  float32
@@ -25,8 +25,8 @@ type sceneTabs struct {
 	xptrs    []int
 }
 
-func buildTabs() Scene {
-	var list sceneTabs
+func buildHome() Scene {
+	var list sceneHome
 	list.label = "Home"
 
 	cat := 0
@@ -95,11 +95,11 @@ func buildTabs() Scene {
 	return &list
 }
 
-func (s *sceneTabs) Entry() *entry {
+func (s *sceneHome) Entry() *entry {
 	return &s.entry
 }
 
-func (s *sceneTabs) segueMount() {
+func (s *sceneHome) segueMount() {
 	s.alpha = 0
 	for j := range s.children {
 		s.xscrolls[j] = 0
@@ -139,11 +139,11 @@ func (s *sceneTabs) segueMount() {
 	s.animate()
 }
 
-func (s *sceneTabs) segueBack() {
+func (s *sceneHome) segueBack() {
 	s.animate()
 }
 
-func (s *sceneTabs) animate() {
+func (s *sceneHome) animate() {
 	for j := range s.children {
 		ve := &s.children[j]
 
@@ -202,7 +202,7 @@ func (s *sceneTabs) animate() {
 	menu.tweens[&s.alpha] = gween.New(s.alpha, 1, 0.15, ease.OutSine)
 }
 
-func (s *sceneTabs) segueNext() {
+func (s *sceneHome) segueNext() {
 	menu.tweens[&s.alpha] = gween.New(s.alpha, 0, 0.15, ease.OutSine)
 	menu.tweens[&s.yscroll] = gween.New(s.yscroll, s.yscroll+300, 0.15, ease.OutSine)
 
@@ -215,7 +215,7 @@ func (s *sceneTabs) segueNext() {
 	}
 }
 
-func (s *sceneTabs) update(dt float32) {
+func (s *sceneHome) update(dt float32) {
 	// Right
 	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight], func() {
 		if s.xptrs[s.yptr] < len(s.children[s.yptr].children)-1 {
@@ -266,7 +266,7 @@ func (s *sceneTabs) update(dt float32) {
 	}
 }
 
-func (s sceneTabs) render() {
+func (s sceneHome) render() {
 	vst := float32(0)
 	for j, ve := range s.children {
 		ve := ve
@@ -337,7 +337,7 @@ func (s sceneTabs) render() {
 	}
 }
 
-func (s sceneTabs) drawHintBar() {
+func (s sceneHome) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, video.Color{R: 1, G: 1, B: 1, A: 1})
 	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1})

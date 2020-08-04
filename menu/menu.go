@@ -39,7 +39,7 @@ func Init(v *video.Video) *Menu {
 	menu.ratio = float32(w) / 1920
 	menu.icons = map[string]uint32{}
 
-	menu.Push(buildTabs())
+	menu.Push(buildHome())
 
 	menu.ContextReset()
 
@@ -114,7 +114,7 @@ func (m *Menu) ContextReset() {
 func (m *Menu) WarpToQuickMenu() {
 	m.scroll = 0
 	m.stack = []Scene{}
-	m.Push(buildTabs())
+	m.Push(buildHome())
 	m.stack[0].segueNext()
 	m.Push(buildMainMenu())
 	m.stack[1].segueNext()
