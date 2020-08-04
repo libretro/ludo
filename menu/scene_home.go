@@ -117,9 +117,9 @@ func (s *sceneHome) segueMount() {
 		for i := range ve.children {
 			e := &s.children[j].children[i]
 
-			if i == s.xptrs[j] && j >= s.yptr {
-				e.labelAlpha = 0
-				e.iconAlpha = 0
+			if i == s.xptrs[j] {
+				e.labelAlpha = 1
+				e.iconAlpha = 1
 				e.scale = 2.1
 				e.borderAlpha = 0
 			} else if i < s.xptrs[j] {
@@ -129,7 +129,7 @@ func (s *sceneHome) segueMount() {
 				e.borderAlpha = 0
 			} else {
 				e.labelAlpha = 0
-				e.iconAlpha = 0
+				e.iconAlpha = 1
 				e.scale = 1
 				e.borderAlpha = 0
 			}
@@ -162,20 +162,20 @@ func (s *sceneHome) animate() {
 			e := &s.children[j].children[i]
 
 			var labelAlpha, iconAlpha, scale, borderAlpha float32
-			if i == s.xptrs[j] && j >= s.yptr {
+			if i == s.xptrs[j] {
 				labelAlpha = 1
 				iconAlpha = 1
 				scale = 2.1
 				borderAlpha = 1
-			} else if j < s.yptr {
-				labelAlpha = 0
-				iconAlpha = 0
-				scale = 1
-				borderAlpha = 0
 			} else {
 				labelAlpha = 0
 				iconAlpha = 1
 				scale = 1
+				borderAlpha = 0
+			}
+			if j < s.yptr {
+				labelAlpha = 0
+				iconAlpha = 0
 				borderAlpha = 0
 			}
 
