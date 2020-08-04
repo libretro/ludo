@@ -269,6 +269,16 @@ func (s *sceneHome) update(dt float32) {
 			s.children[s.yptr].children[s.xptrs[s.yptr]].callbackOK()
 		}
 	}
+
+	// Cancel
+	if input.Released[0][libretro.DeviceIDJoypadB] {
+		if len(menu.stack) > 1 {
+			audio.PlayEffect(audio.Effects["cancel"])
+			menu.stack[len(menu.stack)-2].segueBack()
+			menu.focus--
+			menu.t = 0
+		}
+	}
 }
 
 func (s sceneHome) render() {

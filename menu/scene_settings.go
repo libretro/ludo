@@ -135,28 +135,22 @@ var widgets = map[string]func(*entry){
 			icon = "on"
 		}
 		w, h := vid.Window.GetFramebufferSize()
-		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		// if state.Global.CoreRunning {
-		// 	color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		// }
+		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
 		vid.DrawImage(menu.icons[icon],
-			float32(w)-128*menu.ratio-128*menu.ratio,
+			float32(w)-400*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			1.25, 0, color)
+			1.25, 0, c)
 	},
 
 	// Range widget for audio volume and similat float settings
 	"range": func(e *entry) {
 		fbw, fbh := vid.Window.GetFramebufferSize()
-		x := float32(fbw) - 128*menu.ratio - 175*menu.ratio
+		x := float32(fbw) - 400*menu.ratio - 175*menu.ratio
 		y := float32(fbh)*e.yp - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
 		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		// if state.Global.CoreRunning {
-		// 	c = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		// }
 		vid.DrawRect(x, y, w, h, 0.9, video.Color{R: c.R, G: c.G, B: c.B, A: e.iconAlpha / 4})
 		w = 175 * menu.ratio * e.value().(float32)
 		vid.DrawRect(x, y, w, h, 0.9, c)

@@ -114,7 +114,9 @@ func genericInput(list *entry, dt float32) {
 		if len(menu.stack) > 1 {
 			audio.PlayEffect(audio.Effects["cancel"])
 			menu.stack[len(menu.stack)-2].segueBack()
-			menu.stack = menu.stack[:len(menu.stack)-1]
+			if len(menu.stack) > 2 {
+				menu.stack = menu.stack[:len(menu.stack)-1]
+			}
 			menu.focus--
 		}
 	}
