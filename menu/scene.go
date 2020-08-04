@@ -1,6 +1,8 @@
 package menu
 
 import (
+	"math"
+
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 	"github.com/tanema/gween"
@@ -154,10 +156,20 @@ func genericSegueNext(list *entry) {
 // menu entry
 func genericDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha}
+	if menu.focus > 1 {
+		blink := float32(math.Cos(menu.t))
+		vid.DrawImage(
+			menu.icons["selection"],
+			360*menu.ratio-8*menu.ratio,
+			float32(h)*list.cursor.yp-50*menu.ratio-8*menu.ratio,
+			float32(w)-720*menu.ratio+16*menu.ratio,
+			100*menu.ratio+16*menu.ratio,
+			1, 0.15, video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha - list.cursor.alpha*blink})
+	}
 	vid.DrawRect(
 		360*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-720*menu.ratio, 100*menu.ratio, 0.8, c)
+		float32(w)-720*menu.ratio, 100*menu.ratio, 0.1,
+		video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha})
 }
 
 // thumbnailDrawCursor draws the blinking rectangular background of the active
