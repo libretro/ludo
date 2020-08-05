@@ -34,7 +34,7 @@ func buildUpdater() Scene {
 
 		if len(*rels) > 0 {
 			rel := (*rels)[0]
-			list.children[0].label = "Upgrade to " + rel.Name
+			list.children[0].label = "Update to " + rel.Name
 			list.children[0].icon = "savestate"
 			list.children[0].callbackOK = func() {
 				asset := ludos.FilterAssets(rel.Assets)
@@ -79,7 +79,7 @@ func (s *sceneUpdater) update(dt float32) {
 		s.children[0].icon = "reset"
 		s.children[0].callbackOK = nil
 	} else if ludos.IsDone() {
-		s.children[0].label = "Reboot and upgrade"
+		s.children[0].label = "Reboot and update"
 		s.children[0].icon = "reset"
 		s.children[0].callbackOK = func() {
 			cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
