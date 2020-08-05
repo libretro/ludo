@@ -67,7 +67,10 @@ func (m *Menu) Render(dt float32) {
 	w, h := vid.Window.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
 
-	if state.Global.CoreRunning {
+	currentScreenIndex := len(m.stack) - 1
+	title := menu.stack[currentScreenIndex].Entry().label
+
+	if state.Global.CoreRunning && title == "Quick Menu" || title == "Savestates" || title == "Core Options" {
 		vid.DrawImage(menu.icons["bg"], 0, 0, float32(w), float32(h), 1, 0, video.Color{1, 1, 1, 0.85})
 	} else {
 		vid.DrawImage(menu.icons["bg"], 0, 0, float32(w), float32(h), 1, 0, video.Color{1, 1, 1, 1})
@@ -75,7 +78,6 @@ func (m *Menu) Render(dt float32) {
 
 	m.tweens.Update(dt)
 
-	currentScreenIndex := len(m.stack) - 1
 	for i := 0; i <= currentScreenIndex+1; i++ {
 		if i < 0 || i > currentScreenIndex {
 			continue
