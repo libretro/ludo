@@ -92,8 +92,25 @@ func (s *sceneSavestates) update(dt float32) {
 // Override rendering
 func (s *sceneSavestates) render() {
 	list := &s.entry
+	w, h := vid.Window.GetFramebufferSize()
 
-	_, h := vid.Window.GetFramebufferSize()
+	vid.BoldFont.SetColor(0.129, 0.441, 0.684, list.cursor.alpha)
+	vid.BoldFont.Printf(
+		360*menu.ratio,
+		230*menu.ratio,
+		0.5*menu.ratio, list.label)
+
+	vid.DrawRect(
+		360*menu.ratio,
+		270*menu.ratio,
+		float32(w)-720*menu.ratio,
+		2*menu.ratio,
+		0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1},
+	)
+
+	vid.ScissorStart(
+		int32(360*menu.ratio-8*menu.ratio), 0,
+		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(270*menu.ratio))
 
 	thumbnailDrawCursor(list)
 
@@ -130,6 +147,8 @@ func (s *sceneSavestates) render() {
 				0.5*menu.ratio, e.label)
 		}
 	}
+
+	vid.ScissorEnd()
 }
 
 func (s *sceneSavestates) drawHintBar() {
