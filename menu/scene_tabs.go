@@ -56,15 +56,16 @@ func buildTabs() Scene {
 
 	if state.Global.LudOS {
 		list.children = append(list.children, entry{
-			icon: "updater",
+			icon: "tab-updater",
 			callbackOK: func() {
-				list.segueNext()
+				menu.stack = menu.stack[:len(menu.stack)-1]
 				menu.Push(buildUpdater())
+				menu.focus--
 			},
 		})
 
 		list.children = append(list.children, entry{
-			icon: "reboot",
+			icon: "tab-reboot",
 			callbackOK: func() {
 				askConfirmation(func() { cleanReboot() })
 			},

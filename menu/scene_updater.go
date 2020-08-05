@@ -16,11 +16,11 @@ type sceneUpdater struct {
 
 func buildUpdater() Scene {
 	var list sceneUpdater
-	list.label = "Updater Menu"
+	list.label = "Update LudOS"
 
 	list.children = append(list.children, entry{
 		label: "Checking updates",
-		icon:  "reload",
+		icon:  "reset",
 	})
 
 	list.segueMount()
@@ -35,7 +35,7 @@ func buildUpdater() Scene {
 		if len(*rels) > 0 {
 			rel := (*rels)[0]
 			list.children[0].label = "Upgrade to " + rel.Name
-			list.children[0].icon = "menu_saving"
+			list.children[0].icon = "savestate"
 			list.children[0].callbackOK = func() {
 				asset := ludos.FilterAssets(rel.Assets)
 				if asset == nil {
@@ -76,11 +76,11 @@ func (s *sceneUpdater) update(dt float32) {
 	if ludos.IsDownloading() {
 		s.children[0].label = fmt.Sprintf(
 			"Downloading update %.0f%%%%", ludos.GetProgress()*100)
-		s.children[0].icon = "reload"
+		s.children[0].icon = "reset"
 		s.children[0].callbackOK = nil
 	} else if ludos.IsDone() {
 		s.children[0].label = "Reboot and upgrade"
-		s.children[0].icon = "reload"
+		s.children[0].icon = "reset"
 		s.children[0].callbackOK = func() {
 			cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
 			core.UnloadGame()
