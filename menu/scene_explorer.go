@@ -100,7 +100,7 @@ func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo
 
 func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
 	var list sceneExplorer
-	list.label = "Explorer"
+	list.label = path
 
 	// Display the special directory action entry.
 	if dirAction != nil && dirAction.label != "" {
