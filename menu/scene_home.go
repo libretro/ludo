@@ -40,10 +40,11 @@ func buildHome() Scene {
 
 		for _, game := range history.List {
 			game := game
-			strippedName, _ := extractTags(game.Name)
+			strippedName, tags := extractTags(game.Name)
 			list.children[cat].children = append(list.children[cat].children, entry{
 				label:    strippedName,
 				gameName: game.Name,
+				tags:     tags,
 				subLabel: game.System,
 				system:   game.System,
 				callbackOK: func() {
@@ -346,6 +347,22 @@ func (s sceneHome) render() {
 				(x+672+32)*menu.ratio,
 				(y+430)*menu.ratio,
 				0.5*menu.ratio, e.subLabel)
+
+			stack := (x + 672 + 32) * menu.ratio
+			for _, tag := range e.tags {
+				if _, ok := menu.icons[tag]; ok {
+					vid.DrawRect(stack-1*menu.ratio, (y+500-35)*menu.ratio-1*menu.ratio,
+						48*menu.ratio+2*menu.ratio, 35*menu.ratio+2*menu.ratio, 0.22,
+						video.Color{R: 0, G: 0, B: 0, A: e.labelAlpha * s.alpha * 0.5})
+					vid.DrawImage(
+						menu.icons[tag],
+						stack, (y+500-35)*menu.ratio,
+						48*menu.ratio, 35*menu.ratio, 1.0, 0.2,
+						video.Color{R: 1, G: 1, B: 1, A: e.labelAlpha * s.alpha})
+					stack += 48 * menu.ratio
+					stack += 24 * menu.ratio
+				}
+			}
 		}
 	}
 }
