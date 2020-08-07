@@ -76,9 +76,9 @@ func (m *Menu) Render(dt float32) {
 	w, h := vid.Window.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
 
-	c := video.Color{R: 1, G: 1, B: 1, A: 1}
+	c := white
 	if haveTransparentBackground() {
-		c = video.Color{R: 1, G: 1, B: 1, A: 0.85}
+		c = white.Alpha(0.85)
 	}
 	vid.DrawImage(menu.icons["bg"], 0, 0, float32(w), float32(h), 1, 0, c)
 

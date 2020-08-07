@@ -10,7 +10,6 @@ import (
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/state"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneTabs struct {
@@ -160,7 +159,7 @@ func (s sceneTabs) render() {
 
 	now := time.Now().Format("3:04PM")
 	nowWidth := vid.BoldFont.Width(0.5*menu.ratio, now)
-	vid.BoldFont.SetColor(0, 0, 0, 1)
+	vid.BoldFont.SetColor(black)
 	vid.BoldFont.Printf(
 		float32(w)-96*menu.ratio-nowWidth,
 		90*menu.ratio, 0.5*menu.ratio, now)
@@ -179,17 +178,16 @@ func (s sceneTabs) render() {
 				float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2-8*menu.ratio,
 				32*menu.ratio-8*menu.ratio,
 				96*menu.ratio+16*menu.ratio, 96*menu.ratio+16*menu.ratio, 1, 1,
-				video.Color{R: 1, G: 1, B: 1, A: 1 - blink})
+				white.Alpha(1-blink))
 		}
-		c := video.Color{R: 1, G: 1, B: 1, A: 1}
 		vid.DrawImage(menu.icons["circle"],
 			float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2,
 			32*menu.ratio,
-			96*menu.ratio, 96*menu.ratio, 1, 0, c)
+			96*menu.ratio, 96*menu.ratio, 1, 0, white)
 		vid.DrawImage(menu.icons[e.icon],
 			float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2+24*menu.ratio,
 			56*menu.ratio,
-			48*menu.ratio, 48*menu.ratio, 1, 0, c)
+			48*menu.ratio, 48*menu.ratio, 1, 0, white)
 	}
 }
 

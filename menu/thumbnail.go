@@ -64,7 +64,7 @@ func scrubIllegalChars(str string) string {
 }
 
 // Draws a thumbnail in the playlist scene.
-func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, color video.Color) {
+func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, c video.Color) {
 	folderPath := filepath.Join(settings.Current.ThumbnailsDirectory, system, "Named_Snaps")
 	legalName := scrubIllegalChars(gameName)
 	path := filepath.Join(folderPath, legalName+".png")
@@ -79,26 +79,18 @@ func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scal
 		}
 	}
 
-	vid.DrawThumbnail(
-		list.children[i].thumbnail,
-		x, y, w, h, scale, 0.07,
-		color,
-	)
+	vid.DrawThumbnail(list.children[i].thumbnail, x, y, w, h, scale, 0.07, c)
 }
 
 // Draws a thumbnail in the savestates scene.
-func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale float32, color video.Color) {
+func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale float32, c video.Color) {
 	if list.children[i].thumbnail == 0 {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
 			list.children[i].thumbnail = video.NewImage(path)
 		}
 	}
 
-	vid.DrawThumbnail(
-		list.children[i].thumbnail,
-		x, y, w, h, scale, 0,
-		color,
-	)
+	vid.DrawThumbnail(list.children[i].thumbnail, x, y, w, h, scale, 0, c)
 }
 
 func freeThumbnail(list *entry, i int) {

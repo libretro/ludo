@@ -14,7 +14,6 @@ import (
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneSettings struct {
@@ -135,12 +134,11 @@ var widgets = map[string]func(*entry, *entry, int){
 			icon = "on"
 		}
 		fbw, _ := vid.Window.GetFramebufferSize()
-		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
 		vid.DrawImage(menu.icons[icon],
 			float32(fbw)-400*menu.ratio-128*menu.ratio,
 			(270+32)*menu.ratio+list.scroll*menu.ratio+100*float32(i)*menu.ratio+50*menu.ratio-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			1.25, 0, c)
+			1.25, 0, black.Alpha(e.iconAlpha))
 	},
 
 	// Range widget for audio volume and similat float settings
@@ -150,11 +148,10 @@ var widgets = map[string]func(*entry, *entry, int){
 		y := (270+32)*menu.ratio + list.scroll*menu.ratio + 100*float32(i)*menu.ratio + 50*menu.ratio - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
-		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		vid.DrawRect(x, y, w, h, 0.9, video.Color{R: c.R, G: c.G, B: c.B, A: e.iconAlpha / 4})
+		vid.DrawRect(x, y, w, h, 0.9, black.Alpha(e.iconAlpha/4))
 		w = 175 * menu.ratio * e.value().(float32)
-		vid.DrawRect(x, y, w, h, 0.9, c)
-		vid.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, c)
+		vid.DrawRect(x, y, w, h, 0.9, black.Alpha(e.iconAlpha))
+		vid.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, black.Alpha(e.iconAlpha))
 	},
 }
 
@@ -264,8 +261,8 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, video.Color{R: 1, G: 1, B: 1, A: 1})
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 

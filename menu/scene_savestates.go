@@ -10,7 +10,6 @@ import (
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneSavestates struct {
@@ -95,7 +94,7 @@ func (s *sceneSavestates) render() {
 	list := &s.entry
 	w, h := vid.Window.GetFramebufferSize()
 
-	vid.BoldFont.SetColor(0.129, 0.441, 0.684, list.cursor.alpha)
+	vid.BoldFont.SetColor(blue.Alpha(list.cursor.alpha))
 	vid.BoldFont.Printf(
 		360*menu.ratio,
 		230*menu.ratio,
@@ -106,7 +105,7 @@ func (s *sceneSavestates) render() {
 		270*menu.ratio,
 		float32(w)-720*menu.ratio,
 		2*menu.ratio,
-		0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1},
+		0, lightGrey,
 	)
 
 	vid.ScissorStart(
@@ -116,14 +115,12 @@ func (s *sceneSavestates) render() {
 	fontOffset := 12 * menu.ratio
 
 	for i, e := range list.children {
-		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-
 		vid.DrawRect(
 			360*menu.ratio,
 			(270+32-1)*menu.ratio+list.scroll*menu.ratio+list.entryHeight*float32(i)*menu.ratio+list.entryHeight*menu.ratio,
 			float32(w)-720*menu.ratio,
 			2*menu.ratio,
-			0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1},
+			0, lightGrey,
 		)
 
 		if i == list.ptr {
@@ -142,17 +139,17 @@ func (s *sceneSavestates) render() {
 				480*menu.ratio-85*1*menu.ratio,
 				y-64*menu.ratio,
 				170*menu.ratio, 128*menu.ratio,
-				1, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
+				1, white.Alpha(e.iconAlpha),
 			)
 			if i == 0 {
 				vid.DrawImage(menu.icons["savestate"],
 					480*menu.ratio-25*1*menu.ratio,
 					y-64*menu.ratio,
 					50*menu.ratio, 50*menu.ratio,
-					1, 0, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+					1, 0, white.Alpha(e.iconAlpha))
 			}
 
-			vid.Font.SetColor(c.R, c.G, c.B, e.labelAlpha)
+			vid.Font.SetColor(black.Alpha(e.labelAlpha))
 			vid.Font.Printf(
 				600*menu.ratio,
 				y+fontOffset,
@@ -165,8 +162,8 @@ func (s *sceneSavestates) render() {
 
 func (s *sceneSavestates) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, video.Color{R: 1, G: 1, B: 1, A: 1})
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 

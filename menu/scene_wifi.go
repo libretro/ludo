@@ -3,7 +3,6 @@ package menu
 import (
 	"github.com/libretro/ludo/ludos"
 	ntf "github.com/libretro/ludo/notifications"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneWiFi struct {
@@ -87,8 +86,8 @@ func (s *sceneWiFi) render() {
 
 func (s *sceneWiFi) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, video.Color{R: 1, G: 1, B: 1, A: 1})
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
 
 	_, upDown, _, a, b, _, _, _, _, _ := hintIcons()
 

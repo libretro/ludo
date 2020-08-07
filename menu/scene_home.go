@@ -11,7 +11,6 @@ import (
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"github.com/libretro/ludo/video"
 
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -286,7 +285,7 @@ func (s sceneHome) render() {
 	for j, ve := range s.children {
 		ve := ve
 
-		vid.BoldFont.SetColor(0.129, 0.441, 0.684, ve.labelAlpha*s.alpha)
+		vid.BoldFont.SetColor(blue.Alpha(ve.labelAlpha * s.alpha))
 		vid.BoldFont.Printf(
 			96*menu.ratio,
 			230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
@@ -317,7 +316,7 @@ func (s sceneHome) render() {
 					x*menu.ratio-8*menu.ratio,
 					y*menu.ratio-8*menu.ratio,
 					320*e.scale*menu.ratio+16*menu.ratio, 240*e.scale*menu.ratio+16*menu.ratio,
-					1, 0.1, video.Color{R: 1, G: 1, B: 1, A: (e.borderAlpha - blink) * s.alpha})
+					1, 0.1, white.Alpha((e.borderAlpha-blink)*s.alpha))
 			}
 
 			drawThumbnail(
@@ -326,22 +325,22 @@ func (s sceneHome) render() {
 				x*menu.ratio,
 				y*menu.ratio,
 				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
-				1, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha * s.alpha})
+				1, white.Alpha(e.iconAlpha*s.alpha))
 
 			vid.DrawImage(
 				menu.icons["border"],
 				x*menu.ratio,
 				y*menu.ratio,
 				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
-				1, 0.07, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha * s.alpha})
+				1, 0.07, white.Alpha(e.iconAlpha*s.alpha))
 
-			vid.BoldFont.SetColor(0, 0, 0, e.labelAlpha*s.alpha)
+			vid.BoldFont.SetColor(black.Alpha(e.labelAlpha * s.alpha))
 			vid.BoldFont.Printf(
 				(x+672+32)*menu.ratio,
 				(y+360)*menu.ratio,
 				0.7*menu.ratio, e.label)
 
-			vid.BoldFont.SetColor(0.56, 0.56, 0.56, e.labelAlpha*s.alpha)
+			vid.BoldFont.SetColor(mediumGrey.Alpha(e.labelAlpha * s.alpha))
 			vid.BoldFont.Printf(
 				(x+672+32)*menu.ratio,
 				(y+430)*menu.ratio,
@@ -352,12 +351,12 @@ func (s sceneHome) render() {
 				if _, ok := menu.icons[tag]; ok {
 					vid.DrawRect(stack-1*menu.ratio, (y+500-35)*menu.ratio-1*menu.ratio,
 						48*menu.ratio+2*menu.ratio, 35*menu.ratio+2*menu.ratio, 0.22,
-						video.Color{R: 0, G: 0, B: 0, A: e.labelAlpha * s.alpha * 0.5})
+						black.Alpha(e.labelAlpha*s.alpha*0.5))
 					vid.DrawImage(
 						menu.icons[tag],
 						stack, (y+500-35)*menu.ratio,
 						48*menu.ratio, 35*menu.ratio, 1.0, 0.2,
-						video.Color{R: 1, G: 1, B: 1, A: e.labelAlpha * s.alpha})
+						white.Alpha(e.labelAlpha*s.alpha))
 					stack += 48 * menu.ratio
 					stack += 24 * menu.ratio
 				}
@@ -368,8 +367,8 @@ func (s sceneHome) render() {
 
 func (s sceneHome) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, video.Color{R: 1, G: 1, B: 1, A: 1})
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1})
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
 
 	arrows, _, _, a, _, _, _, _, _, guide := hintIcons()
 
