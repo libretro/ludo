@@ -295,7 +295,8 @@ func (s sceneHome) render() {
 
 		vst += ve.height
 
-		if y < -400 || y > 1080 {
+		// performance improvement
+		if math.Abs(float64(j-s.yptr)) > 1 {
 			continue
 		}
 
@@ -305,7 +306,8 @@ func (s sceneHome) render() {
 
 			stackWidth += 320*e.scale + e.margin + 32
 
-			if x < -400 || x > 1920 {
+			// performance improvement
+			if math.Abs(float64(i-s.xptrs[j])) > 4 {
 				continue
 			}
 

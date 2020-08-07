@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"math"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -115,6 +116,11 @@ func (s *sceneSavestates) render() {
 	fontOffset := 12 * menu.ratio
 
 	for i, e := range list.children {
+		// performance improvement
+		if math.Abs(float64(i-list.ptr)) > 8 {
+			continue
+		}
+
 		vid.DrawRect(
 			360*menu.ratio,
 			(270+32-1)*menu.ratio+list.scroll*menu.ratio+list.entryHeight*float32(i)*menu.ratio+list.entryHeight*menu.ratio,

@@ -65,6 +65,11 @@ func genericSegueMount(list *entry) {
 	}
 
 	for i := range list.children {
+		// performance improvement
+		if math.Abs(float64(i-list.ptr)) > 8 {
+			continue
+		}
+
 		e := &list.children[i]
 		e.labelAlpha = 0
 		e.iconAlpha = 0
@@ -83,9 +88,9 @@ func genericAnimate(list *entry) {
 		e := &list.children[i]
 
 		// performance improvement
-		// if math.Abs(float64(i-list.ptr)) > 6 && i > 6 && i < len(list.children)-6 {
-		// 	continue
-		// }
+		if math.Abs(float64(i-list.ptr)) > 8 {
+			continue
+		}
 
 		var tagAlpha, subLabelAlpha float32
 		if i == list.ptr {
@@ -130,6 +135,11 @@ func genericAnimate(list *entry) {
 // to leave room for the next list to appear
 func genericSegueNext(list *entry) {
 	for i := range list.children {
+		// performance improvement
+		if math.Abs(float64(i-list.ptr)) > 8 {
+			continue
+		}
+
 		e := &list.children[i]
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, 0, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 0, 0.15, ease.OutSine)
@@ -188,6 +198,11 @@ func genericRender(list *entry) {
 	fontOffset := 12 * menu.ratio
 
 	for i, e := range list.children {
+		// performance improvement
+		if math.Abs(float64(i-list.ptr)) > 8 {
+			continue
+		}
+
 		vid.DrawRect(
 			360*menu.ratio,
 			(270+32-1)*menu.ratio+list.scroll*menu.ratio+list.entryHeight*float32(i)*menu.ratio+list.entryHeight*menu.ratio,
