@@ -126,28 +126,28 @@ func dirExplorerCb(path string, f *structs.Field) {
 }
 
 // Widgets to display settings values
-var widgets = map[string]func(*entry){
+var widgets = map[string]func(*entry, *entry, int){
 
 	// On/Off switch for boolean settings
-	"switch": func(e *entry) {
+	"switch": func(list, e *entry, i int) {
 		icon := "off"
 		if e.value().(bool) {
 			icon = "on"
 		}
-		w, h := vid.Window.GetFramebufferSize()
+		fbw, _ := vid.Window.GetFramebufferSize()
 		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
 		vid.DrawImage(menu.icons[icon],
-			float32(w)-400*menu.ratio-128*menu.ratio,
-			float32(h)*e.yp-64*1.25*menu.ratio,
+			float32(fbw)-400*menu.ratio-128*menu.ratio,
+			(270+32)*menu.ratio+list.scroll*menu.ratio+100*float32(i)*menu.ratio+50*menu.ratio-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
 			1.25, 0, c)
 	},
 
 	// Range widget for audio volume and similat float settings
-	"range": func(e *entry) {
-		fbw, fbh := vid.Window.GetFramebufferSize()
+	"range": func(list, e *entry, i int) {
+		fbw, _ := vid.Window.GetFramebufferSize()
 		x := float32(fbw) - 400*menu.ratio - 175*menu.ratio
-		y := float32(fbh)*e.yp - 4*menu.ratio
+		y := (270+32)*menu.ratio + list.scroll*menu.ratio + 100*float32(i)*menu.ratio + 50*menu.ratio - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
 		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}

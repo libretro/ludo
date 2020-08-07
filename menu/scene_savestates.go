@@ -20,6 +20,7 @@ type sceneSavestates struct {
 func buildSavestates() Scene {
 	var list sceneSavestates
 	list.label = "Savestates"
+	list.entryHeight = 160
 
 	list.children = append(list.children, entry{
 		label: "Save State",
@@ -110,40 +111,51 @@ func (s *sceneSavestates) render() {
 
 	vid.ScissorStart(
 		int32(360*menu.ratio-8*menu.ratio), 0,
-		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(270*menu.ratio))
+		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(272*menu.ratio))
 
-	thumbnailDrawCursor(list)
+	fontOffset := 12 * menu.ratio
 
 	for i, e := range list.children {
-		if e.yp < -0.1 || e.yp > 1.1 {
-			continue
+		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+
+		vid.DrawRect(
+			360*menu.ratio,
+			(270+32-1)*menu.ratio+list.scroll*menu.ratio+list.entryHeight*float32(i)*menu.ratio+list.entryHeight*menu.ratio,
+			float32(w)-720*menu.ratio,
+			2*menu.ratio,
+			0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: 1},
+		)
+
+		if i == list.ptr {
+			genericDrawCursor(list, i)
 		}
 
-		fontOffset := 64 * 0.7 * menu.ratio * 0.3
-
-		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+		y := (270+32)*menu.ratio +
+			list.scroll*menu.ratio +
+			list.entryHeight*float32(i)*menu.ratio +
+			list.entryHeight/2*menu.ratio
 
 		if e.labelAlpha > 0 {
 			drawSavestateThumbnail(
 				list, i,
 				filepath.Join(settings.Current.ScreenshotsDirectory, utils.FileName(e.path)+".png"),
-				510*menu.ratio-85*e.scale*menu.ratio,
-				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+				480*menu.ratio-85*1*menu.ratio,
+				y-64*menu.ratio,
 				170*menu.ratio, 128*menu.ratio,
-				e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
+				1, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
 			)
 			if i == 0 {
 				vid.DrawImage(menu.icons["savestate"],
-					510*menu.ratio-25*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
+					480*menu.ratio-25*1*menu.ratio,
+					y-64*menu.ratio,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, 0, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+					1, 0, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
 			vid.Font.SetColor(c.R, c.G, c.B, e.labelAlpha)
 			vid.Font.Printf(
-				670*menu.ratio,
-				float32(h)*e.yp+fontOffset,
+				600*menu.ratio,
+				y+fontOffset,
 				0.5*menu.ratio, e.label)
 		}
 	}

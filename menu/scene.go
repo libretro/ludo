@@ -14,6 +14,8 @@ import (
 type entry struct {
 	alpha           float32
 	yp, scale       float32
+	scroll          float32
+	entryHeight     float32
 	width, height   float32
 	margin          float32
 	label, subLabel string
@@ -28,14 +30,13 @@ type entry struct {
 	callbackOK      func() // callback executed when user presses OK
 	value           func() interface{}
 	stringValue     func() string
-	widget          func(*entry) // widget draw callback used in settings
-	incr            func(int)    // increment callback used in settings
-	tags            []string     // flags extracted from game title
-	thumbnail       uint32       // thumbnail texture id
-	gameName        string       // title of the game in db, used for thumbnails
+	widget          func(*entry, *entry, int) // widget draw callback used in settings
+	incr            func(int)                 // increment callback used in settings
+	tags            []string                  // flags extracted from game title
+	thumbnail       uint32                    // thumbnail texture id
+	gameName        string                    // title of the game in db, used for thumbnails
 	cursor          struct {
 		alpha float32
-		yp    float32
 	}
 	children []entry // children entries
 	ptr      int     // index of the active child
@@ -60,26 +61,19 @@ type Scene interface {
 
 // genericSegueMount is the smooth transition of the menu entries first appearance
 func genericSegueMount(list *entry) {
+	if list.entryHeight == 0 {
+		list.entryHeight = 100
+	}
+
 	for i := range list.children {
 		e := &list.children[i]
-
-		if i == list.ptr {
-			e.yp = 0.5 + 0.3
-			e.scale = 1.5
-		} else if i < list.ptr {
-			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
-			e.scale = 0.5
-		} else if i > list.ptr {
-			e.yp = 0.6 + 0.3 + 0.08*float32(i-list.ptr)
-			e.scale = 0.5
-		}
 		e.labelAlpha = 0
 		e.iconAlpha = 0
 		e.tagAlpha = 0
 		e.subLabelAlpha = 0
 	}
 	list.cursor.alpha = 0
-	list.cursor.yp = 0.5 + 0.3
+	list.scroll = -float32(list.ptr) * list.entryHeight
 
 	genericAnimate(list)
 }
@@ -96,20 +90,14 @@ func genericAnimate(list *entry) {
 
 		var yp, tagAlpha, subLabelAlpha, scale float32
 		if i == list.ptr {
-			yp = 0.5
 			tagAlpha = 1
 			subLabelAlpha = 1
-			scale = 1.5
 		} else if i < list.ptr {
-			yp = 0.4 + 0.08*float32(i-list.ptr)
 			tagAlpha = 0
 			subLabelAlpha = 0
-			scale = 0.5
 		} else if i > list.ptr {
-			yp = 0.6 + 0.08*float32(i-list.ptr)
 			tagAlpha = 0
 			subLabelAlpha = 0
-			scale = 0.5
 		}
 
 		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
@@ -120,7 +108,24 @@ func genericAnimate(list *entry) {
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
 	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 1, 0.15, ease.OutSine)
-	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5, 0.15, ease.OutSine)
+
+	containerHeight := float32(1080 - 88 - 270 - 32 - 32)
+	contentHeight := float32(len(list.children)) * list.entryHeight
+
+	scroll := float32(0)
+	if list.ptr >= 3 {
+		scroll = -float32(list.ptr-3) * list.entryHeight
+	}
+
+	if -scroll > contentHeight-containerHeight {
+		scroll = -(contentHeight - containerHeight)
+	}
+
+	if contentHeight < containerHeight {
+		scroll = 0
+	}
+
+	menu.tweens[&list.scroll] = gween.New(list.scroll, scroll, 0.15, ease.OutSine)
 }
 
 // genericSegueNext is a smooth transition that fades out the current list
@@ -128,67 +133,34 @@ func genericAnimate(list *entry) {
 func genericSegueNext(list *entry) {
 	for i := range list.children {
 		e := &list.children[i]
-
-		var yp, scale float32
-		if i == list.ptr {
-			yp = 0.5 - 0.3
-			scale = 1.5
-		} else if i < list.ptr {
-			yp = 0.4 - 0.3 + 0.08*float32(i-list.ptr)
-			scale = 0.5
-		} else if i > list.ptr {
-			yp = 0.6 - 0.3 + 0.08*float32(i-list.ptr)
-			scale = 0.5
-		}
-
-		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, 0, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 0, 0.15, ease.OutSine)
 		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, 0, 0.15, ease.OutSine)
 		menu.tweens[&e.subLabelAlpha] = gween.New(e.subLabelAlpha, 0, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
 	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 0.15, ease.OutSine)
-	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5-0.3, 0.15, ease.OutSine)
 }
 
 // genericDrawCursor draws the blinking rectangular background of the active
 // menu entry
-func genericDrawCursor(list *entry) {
-	w, h := vid.Window.GetFramebufferSize()
+func genericDrawCursor(list *entry, i int) {
+	w, _ := vid.Window.GetFramebufferSize()
+	y := (270+32)*menu.ratio + list.scroll*menu.ratio + list.entryHeight*float32(i)*menu.ratio
 	if menu.focus > 1 {
 		blink := float32(math.Cos(menu.t))
 		vid.DrawImage(
 			menu.icons["selection"],
 			360*menu.ratio-8*menu.ratio,
-			float32(h)*list.cursor.yp-50*menu.ratio-8*menu.ratio,
+			y-8*menu.ratio,
 			float32(w)-720*menu.ratio+16*menu.ratio,
-			100*menu.ratio+16*menu.ratio,
+			list.entryHeight*menu.ratio+16*menu.ratio,
 			1, 0.15, video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha - list.cursor.alpha*blink})
 	}
 	vid.DrawRect(
-		360*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-720*menu.ratio, 100*menu.ratio, 0.1,
-		video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha})
-}
-
-// thumbnailDrawCursor draws the blinking rectangular background of the active
-// menu entry when there is a thumbnail
-func thumbnailDrawCursor(list *entry) {
-	w, h := vid.Window.GetFramebufferSize()
-	if menu.focus > 1 {
-		blink := float32(math.Cos(menu.t))
-		vid.DrawImage(
-			menu.icons["selection"],
-			360*menu.ratio-8*menu.ratio,
-			float32(h)*list.cursor.yp-120*menu.ratio-8*menu.ratio,
-			float32(w)-720*menu.ratio+16*menu.ratio,
-			240*menu.ratio+16*menu.ratio,
-			1, 0.15, video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha - list.cursor.alpha*blink})
-	}
-	vid.DrawRect(
-		360*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
-		float32(w)-720*menu.ratio, 240*menu.ratio, 0.1,
+		360*menu.ratio,
+		y,
+		float32(w)-720*menu.ratio,
+		list.entryHeight*menu.ratio, 0.1,
 		video.Color{R: 1, G: 1, B: 1, A: list.cursor.alpha})
 }
 
@@ -213,39 +185,50 @@ func genericRender(list *entry) {
 
 	vid.ScissorStart(
 		int32(360*menu.ratio-8*menu.ratio), 0,
-		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(270*menu.ratio))
+		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(272*menu.ratio))
 
-	genericDrawCursor(list)
+	fontOffset := 12 * menu.ratio
 
-	for _, e := range list.children {
-		if e.yp < -0.1 || e.yp > 1.1 {
-			continue
+	for i, e := range list.children {
+		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+
+		vid.DrawRect(
+			360*menu.ratio,
+			(270+32-1)*menu.ratio+list.scroll*menu.ratio+list.entryHeight*float32(i)*menu.ratio+list.entryHeight*menu.ratio,
+			float32(w)-720*menu.ratio,
+			2*menu.ratio,
+			0, video.Color{R: 0.85, G: 0.85, B: 0.85, A: e.iconAlpha},
+		)
+
+		if i == list.ptr {
+			genericDrawCursor(list, i)
 		}
 
-		fontOffset := 64 * 0.7 * menu.ratio * 0.3
-
-		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+		y := (270+32)*menu.ratio +
+			list.scroll*menu.ratio +
+			list.entryHeight*float32(i)*menu.ratio +
+			list.entryHeight/2*menu.ratio
 
 		vid.DrawImage(menu.icons[e.icon],
 			420*menu.ratio-64*0.35*menu.ratio,
-			float32(h)*e.yp-14*menu.ratio-64*0.35*menu.ratio+fontOffset,
+			y-64*0.35*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			0.35, 0, color)
+			0.35, 0, c)
 
 		if e.labelAlpha > 0 {
-			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
+			vid.Font.SetColor(c.R, c.G, c.B, e.labelAlpha)
 			vid.Font.Printf(
 				480*menu.ratio,
-				float32(h)*e.yp+fontOffset,
+				y+fontOffset,
 				0.5*menu.ratio, e.label)
 
 			if e.widget != nil {
-				e.widget(&e)
+				e.widget(list, &e, i)
 			} else if e.stringValue != nil {
 				lw := vid.Font.Width(0.5*menu.ratio, e.stringValue())
 				vid.Font.Printf(
 					float32(w)-lw-400*menu.ratio,
-					float32(h)*e.yp+fontOffset,
+					y+fontOffset,
 					0.5*menu.ratio, e.stringValue())
 			}
 		}

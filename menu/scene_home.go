@@ -277,7 +277,6 @@ func (s *sceneHome) update(dt float32) {
 			audio.PlayEffect(audio.Effects["cancel"])
 			menu.stack[len(menu.stack)-2].segueBack()
 			menu.focus--
-			menu.t = 0
 		}
 	}
 }

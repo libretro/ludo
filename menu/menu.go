@@ -55,6 +55,15 @@ func (m *Menu) Push(s Scene) {
 	m.focus++
 }
 
+func haveTransparentBackground() bool {
+	for i := 0; i <= len(menu.stack)-1; i++ {
+		if menu.stack[i].Entry().label == "Quick Menu" {
+			return true
+		}
+	}
+	return false
+}
+
 // Render takes care of rendering the menu
 func (m *Menu) Render(dt float32) {
 	// Early return to not render the menu, in case MenuActive is set to false
@@ -67,17 +76,15 @@ func (m *Menu) Render(dt float32) {
 	w, h := vid.Window.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
 
-	currentScreenIndex := len(m.stack) - 1
-	title := menu.stack[currentScreenIndex].Entry().label
-
-	if state.Global.CoreRunning && title == "Quick Menu" || title == "Savestates" || title == "Core Options" {
-		vid.DrawImage(menu.icons["bg"], 0, 0, float32(w), float32(h), 1, 0, video.Color{1, 1, 1, 0.85})
-	} else {
-		vid.DrawImage(menu.icons["bg"], 0, 0, float32(w), float32(h), 1, 0, video.Color{1, 1, 1, 1})
+	c := video.Color{R: 1, G: 1, B: 1, A: 1}
+	if haveTransparentBackground() {
+		c = video.Color{R: 1, G: 1, B: 1, A: 0.85}
 	}
+	vid.DrawImage(menu.icons["bg"], 0, 0, float32(w), float32(h), 1, 0, c)
 
 	m.tweens.Update(dt)
 
+	currentScreenIndex := len(m.stack) - 1
 	for i := 0; i <= currentScreenIndex+1; i++ {
 		if i < 0 || i > currentScreenIndex {
 			continue
