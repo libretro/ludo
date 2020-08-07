@@ -144,7 +144,7 @@ func (s *sceneSavestates) render() {
 			if i == 0 {
 				vid.DrawImage(menu.icons["savestate"],
 					480*menu.ratio-25*1*menu.ratio,
-					y-64*menu.ratio,
+					y-50/2*menu.ratio,
 					50*menu.ratio, 50*menu.ratio,
 					1, 0, white.Alpha(e.iconAlpha))
 			}

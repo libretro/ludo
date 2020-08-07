@@ -192,4 +192,17 @@ func (s sceneTabs) render() {
 }
 
 func (s *sceneTabs) drawHintBar() {
+	w, h := vid.Window.GetFramebufferSize()
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
+	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+
+	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
+
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, leftRight, "Navigate", h)
+	stackHintRight(&rstack, a, "Ok", h)
+	if state.Global.CoreRunning {
+		stackHintRight(&rstack, guide, "Resume", h)
+	}
 }

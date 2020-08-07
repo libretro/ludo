@@ -12,7 +12,7 @@ import (
 // The menu data is a tree of entries.
 type entry struct {
 	alpha           float32
-	yp, scale       float32
+	scale           float32
 	scroll          float32
 	entryHeight     float32
 	width, height   float32
@@ -87,7 +87,7 @@ func genericAnimate(list *entry) {
 		// 	continue
 		// }
 
-		var yp, tagAlpha, subLabelAlpha, scale float32
+		var tagAlpha, subLabelAlpha float32
 		if i == list.ptr {
 			tagAlpha = 1
 			subLabelAlpha = 1
@@ -99,16 +99,15 @@ func genericAnimate(list *entry) {
 			subLabelAlpha = 0
 		}
 
-		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, 1, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 1, 0.15, ease.OutSine)
 		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.subLabelAlpha] = gween.New(e.subLabelAlpha, subLabelAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
 	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 1, 0.15, ease.OutSine)
 
-	containerHeight := float32(1080 - 88 - 270 - 32 - 32)
+	margin := 32
+	containerHeight := float32(1080 - 88 - 270 - margin*2)
 	contentHeight := float32(len(list.children)) * list.entryHeight
 
 	scroll := float32(0)

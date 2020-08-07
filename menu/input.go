@@ -67,22 +67,20 @@ func withRepeat() func(dt float32, pressed bool, f func()) {
 func genericInput(list *entry, dt float32) {
 	// Down
 	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown], func() {
-		list.ptr++
-		if list.ptr >= len(list.children) {
-			list.ptr = 0
+		if list.ptr < len(list.children)-1 {
+			list.ptr++
+			audio.PlayEffect(audio.Effects["down"])
+			genericAnimate(list)
 		}
-		audio.PlayEffect(audio.Effects["down"])
-		genericAnimate(list)
 	})
 
 	// Up
 	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp], func() {
-		list.ptr--
-		if list.ptr < 0 {
-			list.ptr = len(list.children) - 1
+		if list.ptr > 0 {
+			list.ptr--
+			audio.PlayEffect(audio.Effects["up"])
+			genericAnimate(list)
 		}
-		audio.PlayEffect(audio.Effects["up"])
-		genericAnimate(list)
 	})
 
 	// OK

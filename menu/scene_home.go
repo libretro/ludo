@@ -351,7 +351,7 @@ func (s sceneHome) render() {
 				if _, ok := menu.icons[tag]; ok {
 					vid.DrawRect(stack-1*menu.ratio, (y+500-35)*menu.ratio-1*menu.ratio,
 						48*menu.ratio+2*menu.ratio, 35*menu.ratio+2*menu.ratio, 0.22,
-						black.Alpha(e.labelAlpha*s.alpha*0.5))
+						mediumGrey.Alpha(e.labelAlpha*s.alpha))
 					vid.DrawImage(
 						menu.icons[tag],
 						stack, (y+500-35)*menu.ratio,
@@ -370,12 +370,13 @@ func (s sceneHome) drawHintBar() {
 	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
 	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
 
-	arrows, _, _, a, _, _, _, _, _, guide := hintIcons()
+	arrows, _, _, a, b, _, _, _, _, guide := hintIcons()
 
 	lstack := float32(75) * menu.ratio
 	rstack := float32(w) - 96*menu.ratio
 	stackHintLeft(&lstack, arrows, "Navigate", h)
-	stackHintRight(&rstack, a, "Open", h)
+	stackHintRight(&rstack, a, "Run", h)
+	stackHintRight(&rstack, b, "Back", h)
 	if state.Global.CoreRunning {
 		stackHintRight(&rstack, guide, "Resume", h)
 	}

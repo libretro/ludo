@@ -92,7 +92,7 @@ func (m *Menu) Render(dt float32) {
 
 		m.stack[i].render()
 	}
-	m.stack[currentScreenIndex].drawHintBar()
+	m.stack[m.focus-1].drawHintBar()
 }
 
 // ContextReset uploads the UI images to the GPU.

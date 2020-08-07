@@ -273,7 +273,7 @@ func (s *sceneSettings) drawHintBar() {
 	if list.children[list.ptr].callbackOK != nil {
 		stackHintRight(&rstack, a, "Set", h)
 	} else {
-		stackHintRight(&rstack, leftRight, "Set", h)
+		stackHintLeft(&lstack, leftRight, "Set", h)
 	}
 	stackHintRight(&rstack, b, "Back", h)
 	if state.Global.CoreRunning {
