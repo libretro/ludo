@@ -187,7 +187,7 @@ func (s sceneTabs) render() {
 		vid.DrawImage(menu.icons[e.icon],
 			float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2+24*menu.ratio,
 			56*menu.ratio,
-			48*menu.ratio, 48*menu.ratio, 1, 0, white)
+			48*menu.ratio, 48*menu.ratio, 1, 0, blue)
 	}
 }
 
