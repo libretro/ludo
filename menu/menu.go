@@ -126,10 +126,11 @@ func (m *Menu) ContextReset() {
 func (m *Menu) WarpToQuickMenu() {
 	m.scroll = 0
 	m.stack = []Scene{}
-	m.Push(buildHome())
+	m.Push(buildTabs())
 	m.stack[0].segueNext()
-	m.Push(buildMainMenu())
+	m.Push(buildHome())
 	m.stack[1].segueNext()
 	m.Push(buildQuickMenu())
 	m.tweens.FastForward()
+	menu.focus = len(menu.stack)
 }

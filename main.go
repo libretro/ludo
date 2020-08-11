@@ -15,9 +15,11 @@ import (
 	"github.com/libretro/ludo/menu"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
+	"github.com/libretro/ludo/rdb"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 )
 
@@ -121,7 +123,24 @@ func main() {
 		if err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 		} else {
-			m.WarpToQuickMenu()
+			scanner.ScanFile(gamePath, func(game rdb.Game) {
+				if game.Name == "" {
+					history.Push(history.Game{
+						Path:     gamePath,
+						Name:     utils.FileName(gamePath),
+						CorePath: state.Global.CorePath,
+					})
+				} else {
+					history.Push(history.Game{
+						Path:     gamePath,
+						Name:     game.Name,
+						System:   game.System,
+						CorePath: state.Global.CorePath,
+					})
+				}
+				history.Load()
+				m.WarpToQuickMenu()
+			})
 		}
 	}
 

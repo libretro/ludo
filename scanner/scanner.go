@@ -74,6 +74,20 @@ func ScanDir(dir string, doneCb func()) {
 	}()
 }
 
+// ScanFile scans a single file
+func ScanFile(path string, doneCb func(rdb.Game)) {
+	dir := filepath.Dir(path)
+	roms := []string{path}
+	games := make(chan (rdb.Game))
+	go Scan(dir, roms, games, nil)
+	go func() {
+		game := <-games
+		if doneCb != nil {
+			doneCb(game)
+		}
+	}()
+}
+
 // Scan scans a list of roms against the database
 func Scan(dir string, roms []string, games chan (rdb.Game), n *ntf.Notification) {
 	for i, f := range roms {
@@ -83,21 +97,27 @@ func Scan(dir string, roms []string, games chan (rdb.Game), n *ntf.Notification)
 			// Open the ZIP archive
 			z, err := zip.OpenReader(f)
 			if err != nil {
-				n.Update(ntf.Error, err.Error())
+				if n != nil {
+					n.Update(ntf.Error, err.Error())
+				}
 				continue
 			}
 			for _, rom := range z.File {
 				if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
 					state.Global.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
-					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					if n != nil {
+						n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					}
 				}
 			}
 			z.Close()
 		case ".cue":
 			// Look for a matching game entry in the database
 			state.Global.DB.FindByROMName(f, filepath.Base(f), 0, games)
-			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			if n != nil {
+				n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			}
 		case ".32x", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc":
 			bytes, err := ioutil.ReadFile(f)
 			if err != nil {
@@ -106,7 +126,9 @@ func Scan(dir string, roms []string, games chan (rdb.Game), n *ntf.Notification)
 			}
 			CRC32 := crc32.ChecksumIEEE(bytes)
 			state.Global.DB.FindByCRC(f, utils.FileName(f), CRC32, games)
-			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			if n != nil {
+				n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			}
 		}
 	}
 	close(games)
