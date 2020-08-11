@@ -124,20 +124,16 @@ func main() {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 		} else {
 			scanner.ScanFile(gamePath, func(game rdb.Game) {
-				if game.Name == "" {
-					history.Push(history.Game{
-						Path:     gamePath,
-						Name:     utils.FileName(gamePath),
-						CorePath: state.Global.CorePath,
-					})
-				} else {
-					history.Push(history.Game{
-						Path:     gamePath,
-						Name:     game.Name,
-						System:   game.System,
-						CorePath: state.Global.CorePath,
-					})
+				name := game.Name
+				if name == "" {
+					name = utils.FileName(gamePath)
 				}
+				history.Push(history.Game{
+					Path:     gamePath,
+					Name:     name,
+					System:   game.System,
+					CorePath: state.Global.CorePath,
+				})
 				history.Load()
 				m.WarpToQuickMenu()
 			})

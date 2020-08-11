@@ -136,7 +136,7 @@ var widgets = map[string]func(*entry, *entry, int){
 		fbw, _ := vid.Window.GetFramebufferSize()
 		vid.DrawImage(menu.icons[icon],
 			float32(fbw)-400*menu.ratio-128*menu.ratio,
-			(270+32)*menu.ratio+list.scroll*menu.ratio+100*float32(i)*menu.ratio+50*menu.ratio-64*1.25*menu.ratio,
+			list.y+(270+32)*menu.ratio+list.scroll*menu.ratio+100*float32(i)*menu.ratio+50*menu.ratio-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
 			1.25, 0, black.Alpha(e.iconAlpha))
 	},
@@ -145,7 +145,7 @@ var widgets = map[string]func(*entry, *entry, int){
 	"range": func(list, e *entry, i int) {
 		fbw, _ := vid.Window.GetFramebufferSize()
 		x := float32(fbw) - 400*menu.ratio - 175*menu.ratio
-		y := (270+32)*menu.ratio + list.scroll*menu.ratio + 100*float32(i)*menu.ratio + 50*menu.ratio - 4*menu.ratio
+		y := list.y + (270+32)*menu.ratio + list.scroll*menu.ratio + 100*float32(i)*menu.ratio + 50*menu.ratio - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
 		vid.DrawRect(x, y, w, h, 0.9, black.Alpha(e.iconAlpha/4))

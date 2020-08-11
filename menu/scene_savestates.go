@@ -95,15 +95,15 @@ func (s *sceneSavestates) render() {
 	list := &s.entry
 	w, h := vid.Window.GetFramebufferSize()
 
-	vid.BoldFont.SetColor(blue.Alpha(list.cursor.alpha))
+	vid.BoldFont.SetColor(blue.Alpha(list.alpha))
 	vid.BoldFont.Printf(
 		360*menu.ratio,
-		230*menu.ratio,
+		list.y*menu.ratio+230*menu.ratio,
 		0.5*menu.ratio, list.label)
 
 	vid.DrawRect(
 		360*menu.ratio,
-		270*menu.ratio,
+		list.y*menu.ratio+270*menu.ratio,
 		float32(w)-720*menu.ratio,
 		2*menu.ratio,
 		0, lightGrey,
@@ -111,7 +111,7 @@ func (s *sceneSavestates) render() {
 
 	vid.ScissorStart(
 		int32(360*menu.ratio-8*menu.ratio), 0,
-		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(272*menu.ratio))
+		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(272*menu.ratio+list.y*menu.ratio))
 
 	fontOffset := 12 * menu.ratio
 
@@ -121,9 +121,15 @@ func (s *sceneSavestates) render() {
 			continue
 		}
 
+		y := list.y*menu.ratio +
+			(270+32)*menu.ratio +
+			list.scroll*menu.ratio +
+			list.entryHeight*float32(i)*menu.ratio +
+			list.entryHeight/2*menu.ratio
+
 		vid.DrawRect(
 			360*menu.ratio,
-			(270+32-1)*menu.ratio+list.scroll*menu.ratio+list.entryHeight*float32(i)*menu.ratio+list.entryHeight*menu.ratio,
+			y-1*menu.ratio+list.entryHeight/2*menu.ratio,
 			float32(w)-720*menu.ratio,
 			2*menu.ratio,
 			0, lightGrey,
@@ -132,11 +138,6 @@ func (s *sceneSavestates) render() {
 		if i == list.ptr {
 			genericDrawCursor(list, i)
 		}
-
-		y := (270+32)*menu.ratio +
-			list.scroll*menu.ratio +
-			list.entryHeight*float32(i)*menu.ratio +
-			list.entryHeight/2*menu.ratio
 
 		if e.labelAlpha > 0 {
 			drawSavestateThumbnail(

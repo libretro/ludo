@@ -104,15 +104,12 @@ func (s *sceneHome) segueMount() {
 	for j := range s.children {
 		s.xscrolls[j] = 0
 	}
-	s.yscroll = -500
+	s.y = 300
 
 	for j := range s.children {
 		ve := &s.children[j]
 		ve.labelAlpha = 0
 		ve.height = 504 + 136
-		//if j == s.yptr {
-		ve.height = 240 + 136
-		//}
 
 		for i := range ve.children {
 			e := &s.children[j].children[i]
@@ -152,11 +149,7 @@ func (s *sceneHome) animate() {
 			labelAlpha = 0
 		}
 		menu.tweens[&ve.labelAlpha] = gween.New(ve.labelAlpha, labelAlpha, 0.15, ease.OutSine)
-		height := float32(240 + 136)
-		//if j == s.yptr {
-		height = 504 + 136
-		//}
-		menu.tweens[&ve.height] = gween.New(ve.height, height, 0.15, ease.OutSine)
+		menu.tweens[&ve.height] = gween.New(ve.height, 504+136, 0.15, ease.OutSine)
 
 		for i := range ve.children {
 			e := &s.children[j].children[i]
@@ -200,11 +193,12 @@ func (s *sceneHome) animate() {
 
 	menu.tweens[&s.yscroll] = gween.New(s.yscroll, vst, 0.15, ease.OutSine)
 	menu.tweens[&s.alpha] = gween.New(s.alpha, 1, 0.15, ease.OutSine)
+	menu.tweens[&s.y] = gween.New(s.y, 0, 0.15, ease.OutSine)
 }
 
 func (s *sceneHome) segueNext() {
 	menu.tweens[&s.alpha] = gween.New(s.alpha, 0, 0.15, ease.OutSine)
-	menu.tweens[&s.yscroll] = gween.New(s.yscroll, s.yscroll+300, 0.15, ease.OutSine)
+	menu.tweens[&s.y] = gween.New(s.y, -300, 0.15, ease.OutSine)
 
 	for j := range s.children {
 		ve := &s.children[j]
@@ -288,10 +282,10 @@ func (s sceneHome) render() {
 		vid.BoldFont.SetColor(blue.Alpha(ve.labelAlpha * s.alpha))
 		vid.BoldFont.Printf(
 			96*menu.ratio,
-			230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
+			s.y*menu.ratio+230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
 			0.5*menu.ratio, ve.label)
 
-		y := 272 + vst - s.yscroll
+		y := s.y + 272 + vst - s.yscroll
 
 		vst += ve.height
 
