@@ -302,6 +302,7 @@ func (s sceneHome) render() {
 
 			// performance improvement
 			if math.Abs(float64(i-s.xptrs[j])) > 4 {
+				freeThumbnail(&ve, i)
 				continue
 			}
 

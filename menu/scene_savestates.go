@@ -118,6 +118,7 @@ func (s *sceneSavestates) render() {
 	for i, e := range list.children {
 		// performance improvement
 		if math.Abs(float64(i-list.ptr)) > 8 {
+			freeThumbnail(list, i)
 			continue
 		}
 
