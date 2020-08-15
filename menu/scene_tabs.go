@@ -30,6 +30,15 @@ func buildTabs() Scene {
 	})
 
 	list.children = append(list.children, entry{
+		icon: "file",
+		callbackOK: func() {
+			menu.stack = menu.stack[:len(menu.stack)-1]
+			menu.Push(buildMainMenu())
+			menu.focus--
+		},
+	})
+
+	list.children = append(list.children, entry{
 		icon: "tab-settings",
 		callbackOK: func() {
 			menu.stack = menu.stack[:len(menu.stack)-1]
