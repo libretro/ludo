@@ -14,9 +14,9 @@ type entry struct {
 	alpha           float32
 	scale           float32
 	scroll          float32
+	y               float32
 	entryHeight     float32
-	x, y            float32
-	width, height   float32
+	height          float32
 	margin          float32
 	label, subLabel string
 	path            string // full path of the rom linked to the entry
