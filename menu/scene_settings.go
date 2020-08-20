@@ -135,7 +135,7 @@ var widgets = map[string]func(*entry){
 			icon = "on"
 		}
 		w, h := vid.Window.GetFramebufferSize()
-		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+		color := video.GetThemeColor("main-inverted", e.iconAlpha)
 		if state.Global.CoreRunning {
 			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
 		}
@@ -153,7 +153,7 @@ var widgets = map[string]func(*entry){
 		y := float32(fbh)*e.yp - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
-		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+		c := video.GetThemeColor("main-inverted", e.iconAlpha)
 		if state.Global.CoreRunning {
 			c = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
 		}
@@ -173,6 +173,13 @@ var incrCallbacks = map[string]callbackIncrement{
 		v = !v
 		f.Set(v)
 		vid.Reconfigure(settings.Current.VideoFullscreen)
+		menu.ContextReset()
+		settings.Save()
+	},
+	"VideoDarkMode": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
 		menu.ContextReset()
 		settings.Save()
 	},
@@ -270,7 +277,7 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.GetThemeColor("light-grey", 1))
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 

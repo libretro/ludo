@@ -155,13 +155,13 @@ func (s *sceneKeyboard) render() {
 	ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
 	ksz := ksp * 0.9
 	ttw := 10 * ksp
-
+	color := video.GetThemeColor("main", s.alpha)
 	// Background
 	vid.DrawRect(0, 0, float32(w), float32(h), 0,
-		video.Color{R: 1, G: 1, B: 1, A: s.alpha})
+		color)
 
 	// Label
-	vid.Font.SetColor(0, 0, 0, 1)
+	vid.Font.SetColor(color.R, color.G, color.B, 1)
 	vid.Font.Printf(
 		float32(w)/2-ttw/2,
 		s.y+float32(h)*0.15-ksz/2+ksz*0.6,
@@ -178,9 +178,9 @@ func (s *sceneKeyboard) render() {
 	// Keyboard
 
 	vid.DrawRect(0, s.y+float32(h)-kbh, float32(w), kbh, 0,
-		video.Color{R: 0, G: 0, B: 0, A: 1})
+		video.GetThemeColor("main", 1))
 
-	vid.Font.SetColor(1, 1, 1, 1)
+	vid.Font.SetColor(color.R, color.G, color.B, 1)
 
 	for i, key := range layouts[s.layout] {
 		x := float32(i%10)*ksp - ttw/2 + float32(w)/2

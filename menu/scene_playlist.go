@@ -156,7 +156,7 @@ func (s *scenePlaylist) render() {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
+		color := video.GetThemeColor("main-inverted", e.iconAlpha)
 		if state.Global.CoreRunning {
 			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
 		}
@@ -217,7 +217,7 @@ func (s *scenePlaylist) render() {
 
 func (s *scenePlaylist) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.GetThemeColor("light-grey", 1))
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 

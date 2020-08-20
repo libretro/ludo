@@ -22,6 +22,7 @@ import (
 // Widget sets the graphical representation of the value.
 type Settings struct {
 	VideoFullscreen   bool   `hide:"ludos" toml:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
+	VideoDarkMode     bool   `toml:"video_darkmode" label:"Dark mode" fmt:"%t" widget:"switch"`
 	VideoMonitorIndex int    `toml:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	VideoFilter       string `toml:"video_filter" label:"Video Filter" fmt:"<%s>"`
 
