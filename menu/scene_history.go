@@ -196,7 +196,7 @@ func (s *sceneHistory) render() {
 
 func (s *sceneHistory) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.GetThemeColor("light-grey", 1))
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.GetThemeColor("hintbar", 1))
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 

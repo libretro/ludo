@@ -51,7 +51,7 @@ func (s *sceneDialog) render() {
 	w, h := vid.Window.GetFramebufferSize()
 	fw := float32(w)
 	fh := float32(h)
-	fontColor := video.GetThemeColor("light-grey", 1)
+	fontColor := video.GetThemeColor("hintbar", 1)
 	vid.DrawRect(0, 0, fw, fh, 0, video.GetThemeColor("main", 0.85))
 
 	var width float32 = 1000
@@ -78,7 +78,7 @@ func (s *sceneDialog) render() {
 	lw3 := vid.Font.Width(0.5*menu.ratio, msg3)
 	vid.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg3)
 
-	c := video.GetThemeColor("deep-grey", 1)
+	c := video.GetThemeColor("hintbar-secondary", 1)
 	vid.Font.SetColor(c.R, c.G, c.B, c.A)
 
 	var margin float32 = 15
