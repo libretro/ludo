@@ -53,6 +53,8 @@ type Video struct {
 	bpp           int32
 	width, height int32 // dimensions set by the refresh callback
 	rot           uint
+
+	Theme Theme
 }
 
 // Init instanciates the video package

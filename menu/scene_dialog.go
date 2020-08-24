@@ -4,7 +4,6 @@ import (
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneDialog struct {
@@ -51,8 +50,8 @@ func (s *sceneDialog) render() {
 	w, h := vid.Window.GetFramebufferSize()
 	fw := float32(w)
 	fh := float32(h)
-	fontColor := video.GetThemeColor("hintbar", 1)
-	vid.DrawRect(0, 0, fw, fh, 0, video.GetThemeColor("main", 0.85))
+	fontColor := vid.Theme.GetLightGrey()
+	vid.DrawRect(0, 0, fw, fh, 0, vid.Theme.GetMain())
 
 	var width float32 = 1000
 	var height float32 = 400
@@ -63,7 +62,7 @@ func (s *sceneDialog) render() {
 		width*menu.ratio,
 		height*menu.ratio,
 		0.05,
-		video.GetThemeColor("main", 1),
+		vid.Theme.GetMain(),
 	)
 
 	vid.Font.SetColor(0.8, 0.4, 0.1, 1)
@@ -78,7 +77,7 @@ func (s *sceneDialog) render() {
 	lw3 := vid.Font.Width(0.5*menu.ratio, msg3)
 	vid.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg3)
 
-	c := video.GetThemeColor("hintbar-secondary", 1)
+	c := vid.Theme.GetDeepGrey()
 	vid.Font.SetColor(c.R, c.G, c.B, c.A)
 
 	var margin float32 = 15

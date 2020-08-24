@@ -14,6 +14,8 @@ import (
 
 var vid *video.Video
 var menu *Menu
+var lightTheme = video.NewLightTheme()
+var darkTheme = video.NewDarkTheme()
 
 // Menu is a type holding the menu state, the stack of scenes, tweens, etc
 type Menu struct {
@@ -67,7 +69,7 @@ func (m *Menu) Render(dt float32) {
 	if state.Global.CoreRunning {
 		vid.DrawRect(0, 0, float32(w), float32(h), 0, video.Color{R: 0, G: 0, B: 0, A: 0.85})
 	} else {
-		vid.DrawRect(0, 0, float32(w), float32(h), 0, video.GetThemeColor("main", 0.85))
+		vid.DrawRect(0, 0, float32(w), float32(h), 0, vid.Theme.GetMain())
 	}
 
 	m.tweens.Update(dt)
@@ -86,6 +88,12 @@ func (m *Menu) Render(dt float32) {
 // ContextReset uploads the UI images to the GPU.
 // It should be called after each time the window is recreated.
 func (m *Menu) ContextReset() {
+	if settings.Current.VideoDarkMode {
+		vid.Theme = darkTheme
+	} else {
+		vid.Theme = lightTheme
+	}
+
 	assets := settings.Current.AssetsDirectory
 
 	paths, _ := filepath.Glob(assets + "/*.png")

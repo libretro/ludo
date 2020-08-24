@@ -104,7 +104,7 @@ func (s *sceneSavestates) render() {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		color := video.GetThemeColor("main-inverted", e.iconAlpha)
+		color := vid.Theme.GetMainInverted()
 		if state.Global.CoreRunning {
 			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
 		}
@@ -142,7 +142,7 @@ func (s *sceneSavestates) render() {
 
 func (s *sceneSavestates) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.GetThemeColor("hintbar", 1))
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetLightGrey())
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 

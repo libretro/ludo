@@ -155,7 +155,7 @@ func (s *sceneKeyboard) render() {
 	ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
 	ksz := ksp * 0.9
 	ttw := 10 * ksp
-	color := video.GetThemeColor("main", s.alpha)
+	color := vid.Theme.GetMain()
 	// Background
 	vid.DrawRect(0, 0, float32(w), float32(h), 0,
 		color)
@@ -178,7 +178,7 @@ func (s *sceneKeyboard) render() {
 	// Keyboard
 
 	vid.DrawRect(0, s.y+float32(h)-kbh, float32(w), kbh, 0,
-		video.GetThemeColor("main", 1))
+		vid.Theme.GetMain())
 
 	vid.Font.SetColor(color.R, color.G, color.B, 1)
 
@@ -206,7 +206,7 @@ func (s *sceneKeyboard) render() {
 
 func (s *sceneKeyboard) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.GetThemeColor("hintbar", 1))
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetLightGrey())
 
 	arrows, _, _, a, b, x, y, start, _, _ := hintIcons()
 

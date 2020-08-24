@@ -262,7 +262,7 @@ func (tabs sceneTabs) render() {
 	stackWidth := 710 * menu.ratio
 	for i, e := range tabs.children {
 
-		c := colorful.Hcl(video.GetHclColor()+float64(i)*20, 0.5, 0.5)
+		c := colorful.Hcl(vid.Theme.GetHCLHexagon()+float64(i)*20, 0.5, 0.5)
 
 		x := -menu.scroll*menu.ratio + stackWidth + e.width/2*menu.ratio
 
@@ -282,13 +282,13 @@ func (tabs sceneTabs) render() {
 
 		vid.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, video.GetThemeColor("main", e.iconAlpha))
+			256*menu.ratio, 256*menu.ratio, e.scale, vid.Theme.GetMain())
 	}
 }
 
 func (tabs sceneTabs) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.GetThemeColor("hintbar", 1))
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetLightGrey())
 
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 

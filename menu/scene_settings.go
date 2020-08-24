@@ -135,7 +135,7 @@ var widgets = map[string]func(*entry){
 			icon = "on"
 		}
 		w, h := vid.Window.GetFramebufferSize()
-		color := video.GetThemeColor("main-inverted", e.iconAlpha)
+		color := vid.Theme.GetMainInverted()
 		if state.Global.CoreRunning {
 			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
 		}
@@ -153,7 +153,7 @@ var widgets = map[string]func(*entry){
 		y := float32(fbh)*e.yp - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
-		c := video.GetThemeColor("main-inverted", e.iconAlpha)
+		c := vid.Theme.GetMainInverted()
 		if state.Global.CoreRunning {
 			c = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
 		}
@@ -277,7 +277,7 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.GetThemeColor("hintbar", 1))
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetLightGrey())
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 
