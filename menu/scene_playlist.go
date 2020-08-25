@@ -217,7 +217,7 @@ func (s *scenePlaylist) render() {
 
 func (s *scenePlaylist) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetLightGrey())
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetHintbarPrimary())
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 

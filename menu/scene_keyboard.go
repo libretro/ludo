@@ -206,7 +206,7 @@ func (s *sceneKeyboard) render() {
 
 func (s *sceneKeyboard) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetLightGrey())
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetHintbarPrimary())
 
 	arrows, _, _, a, b, x, y, start, _, _ := hintIcons()
 

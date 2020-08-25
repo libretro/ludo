@@ -5,127 +5,97 @@ type Color struct {
 	R, G, B, A float32
 }
 
+var white = Color{R: 1, G: 1, B: 1, A: 1}
+var black = Color{R: 0, G: 0, B: 0, A: 1}
+var deepGrey = Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
+var grey = Color{R: 0.5, G: 0.5, B: 0.5, A: 1}
+var lightGrey = Color{R: 0.75, G: 0.75, B: 0.75, A: 1}
+var lightBlue = Color{R: 0.8784, G: 1, B: 1, A: 1}
+var deepBlue = Color{R: 0.1, G: 0.1, B: 0.4, A: 0.85}
+
 // Theme interface used by video Struct to defined theme
 type Theme interface {
 	GetMain() Color
 	GetMainInverted() Color
-	GetDeepGrey() Color
+	GetHintbarSecondary() Color
 	GetGrey() Color
-	GetLightGrey() Color
+	GetHintbarPrimary() Color
 	GetHightlightCursor() Color
 	GetHCLHexagon() float64
 }
 
 // LightTheme defined the lightTheme struct
-type LightTheme struct {
-	main             Color
-	mainInverted     Color
-	deepGrey         Color
-	grey             Color
-	lightGrey        Color
-	hightlightCursor Color
-}
+type LightTheme struct{}
 
 // DarkTheme defined the lightTheme struct
-type DarkTheme struct {
-	main             Color
-	mainInverted     Color
-	deepGrey         Color
-	grey             Color
-	lightGrey        Color
-	hightlightCursor Color
-}
+type DarkTheme struct{}
 
-// NewLightTheme create the lightTheme
-func NewLightTheme() *LightTheme {
-	theme := LightTheme{}
-	theme.main = Color{R: 1, G: 1, B: 1, A: 1}
-	theme.mainInverted = Color{R: 0, G: 0, B: 0, A: 1}
-	theme.deepGrey = Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
-	theme.grey = Color{R: 0.5, G: 0.5, B: 0.5, A: 1}
-	theme.lightGrey = Color{R: 0.75, G: 0.75, B: 0.75, A: 1}
-	theme.hightlightCursor = Color{R: 0.8784, G: 1, B: 1, A: 1}
-	return &theme
-}
-
-// NewDarkTheme create the darkTheme
-func NewDarkTheme() *DarkTheme {
-	theme := DarkTheme{}
-	theme.main = Color{R: 0, G: 0, B: 0, A: 1}
-	theme.mainInverted = Color{R: 1, G: 1, B: 1, A: 1}
-	theme.deepGrey = Color{R: 0.75, G: 0.75, B: 0.75, A: 1}
-	theme.grey = Color{R: 0.5, G: 0.5, B: 0.5, A: 1}
-	theme.lightGrey = Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
-	theme.hightlightCursor = Color{R: 0.1, G: 0.1, B: 0.4, A: 0.85}
-	return &theme
-}
-
-// GetMain return main color of the theme
+// GetMain return color of the theme
 func (theme *LightTheme) GetMain() Color {
-	return theme.main
+	return white
 }
 
-// GetMainInverted return main color of the theme
+// GetMainInverted return color of the theme
 func (theme *LightTheme) GetMainInverted() Color {
-	return theme.mainInverted
+	return black
 }
 
-// GetDeepGrey return main color of the theme
-func (theme *LightTheme) GetDeepGrey() Color {
-	return theme.deepGrey
+// GetHintbarSecondary return color of the theme
+func (theme *LightTheme) GetHintbarSecondary() Color {
+	return deepGrey
 }
 
-// GetGrey return main color of the theme
+// GetGrey return color of the theme
 func (theme *LightTheme) GetGrey() Color {
-	return theme.grey
+	return grey
 }
 
-// GetLightGrey return main color of the theme
-func (theme *LightTheme) GetLightGrey() Color {
-	return theme.lightGrey
+// GetHintbarPrimary return hintBar color theme
+func (theme *LightTheme) GetHintbarPrimary() Color {
+	return lightGrey
 }
 
-// GetHightlightCursor return main color of the theme
+// GetHightlightCursor return color of the cursor
 func (theme *LightTheme) GetHightlightCursor() Color {
-	return theme.hightlightCursor
+	return lightBlue
 }
 
-// GetHCLHexagon return main color of the theme
+// GetHCLHexagon return color of the theme
 func (theme *LightTheme) GetHCLHexagon() float64 {
 	return 0
 }
 
-// GetMain return main color of the theme
+// GetMain return color of the theme
 func (theme *DarkTheme) GetMain() Color {
-	return theme.main
+	return black
 }
 
-// GetMainInverted return main color of the theme
+// GetMainInverted return color of the theme
 func (theme *DarkTheme) GetMainInverted() Color {
-	return theme.mainInverted
+	return white
 }
 
-// GetDeepGrey return main color of the theme
-func (theme *DarkTheme) GetDeepGrey() Color {
-	return theme.deepGrey
+// GetHintbarSecondary return color of the theme
+func (theme *DarkTheme) GetHintbarSecondary() Color {
+	return lightGrey
 }
 
-// GetGrey return main color of the theme
+// GetGrey return color of the theme
 func (theme *DarkTheme) GetGrey() Color {
-	return theme.grey
+	return grey
 }
 
-// GetLightGrey return main color of the theme
-func (theme *DarkTheme) GetLightGrey() Color {
-	return theme.lightGrey
+// GetHintbarPrimary return hintBar color theme
+func (theme *DarkTheme) GetHintbarPrimary() Color {
+	return deepGrey
 }
 
-// GetHightlightCursor return main color of the theme
+// GetHightlightCursor return color of the cursor
 func (theme *DarkTheme) GetHightlightCursor() Color {
-	return theme.hightlightCursor
+	return deepBlue
 }
 
-// GetHCLHexagon return main color of the theme
+// GetHCLHexagon return color of the theme
 func (theme *DarkTheme) GetHCLHexagon() float64 {
 	return 180
 }

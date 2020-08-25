@@ -14,8 +14,8 @@ import (
 
 var vid *video.Video
 var menu *Menu
-var lightTheme = video.NewLightTheme()
-var darkTheme = video.NewDarkTheme()
+var lightTheme = &video.LightTheme{}
+var darkTheme = &video.DarkTheme{}
 
 // Menu is a type holding the menu state, the stack of scenes, tweens, etc
 type Menu struct {
@@ -88,14 +88,9 @@ func (m *Menu) Render(dt float32) {
 // ContextReset uploads the UI images to the GPU.
 // It should be called after each time the window is recreated.
 func (m *Menu) ContextReset() {
-	if settings.Current.VideoDarkMode {
-		vid.Theme = darkTheme
-	} else {
-		vid.Theme = lightTheme
-	}
-
 	assets := settings.Current.AssetsDirectory
 
+	m.UpdateThemeColor()
 	paths, _ := filepath.Glob(assets + "/*.png")
 	for _, path := range paths {
 		path := path
@@ -115,6 +110,17 @@ func (m *Menu) ContextReset() {
 	for i := range curList.children {
 		curList.children[i].thumbnail = 0
 	}
+}
+
+// UpdateThemeColor from the settings VideoDarkMode, switch to light or dark theme
+// see color.go
+func (m *Menu) UpdateThemeColor() {
+	if settings.Current.VideoDarkMode {
+		vid.Theme = darkTheme
+	} else {
+		vid.Theme = lightTheme
+	}
+
 }
 
 // WarpToQuickMenu loads the contextual menu for games that are launched from

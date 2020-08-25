@@ -142,7 +142,7 @@ func (s *sceneSavestates) render() {
 
 func (s *sceneSavestates) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetLightGrey())
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetHintbarPrimary())
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 

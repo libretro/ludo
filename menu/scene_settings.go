@@ -180,7 +180,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
-		menu.ContextReset()
+		menu.UpdateThemeColor()
 		settings.Save()
 	},
 	"VideoMonitorIndex": func(f *structs.Field, direction int) {
@@ -277,7 +277,7 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetLightGrey())
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, vid.Theme.GetHintbarPrimary())
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 

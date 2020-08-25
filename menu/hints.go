@@ -8,7 +8,7 @@ import (
 // Used to easily compose different hint bars based on the context.
 func stackHint(stack *float32, icon uint32, label string, h int) {
 
-	c := vid.Theme.GetDeepGrey()
+	c := vid.Theme.GetHintbarSecondary()
 	vid.Font.SetColor(c.R, c.G, c.B, c.A)
 	*stack += 30 * menu.ratio
 	vid.DrawImage(icon, *stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, c)
