@@ -282,7 +282,7 @@ func (tabs sceneTabs) render() {
 
 		vid.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, vid.Theme.GetMain())
+			256*menu.ratio, 256*menu.ratio, e.scale, vid.Theme.GetHexagonIconColor())
 	}
 }
 

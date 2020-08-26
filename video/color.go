@@ -22,6 +22,7 @@ type Theme interface {
 	GetHintbarPrimary() Color
 	GetHightlightCursor() Color
 	GetHCLHexagon() float64
+	GetHexagonIconColor() Color
 }
 
 // LightTheme defined the lightTheme struct
@@ -65,6 +66,11 @@ func (theme *LightTheme) GetHCLHexagon() float64 {
 	return 0
 }
 
+// GetHexagonIconColor return color of the theme
+func (theme *LightTheme) GetHexagonIconColor() Color {
+	return white
+}
+
 // GetMain return color of the theme
 func (theme *DarkTheme) GetMain() Color {
 	return black
@@ -98,4 +104,9 @@ func (theme *DarkTheme) GetHightlightCursor() Color {
 // GetHCLHexagon return color of the theme
 func (theme *DarkTheme) GetHCLHexagon() float64 {
 	return 180
+}
+
+// GetHexagonIconColor return color of the theme
+func (theme *DarkTheme) GetHexagonIconColor() Color {
+	return white
 }
