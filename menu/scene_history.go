@@ -122,11 +122,6 @@ func (s *sceneHistory) render() {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		c := white.Alpha(e.iconAlpha)
-		if state.Global.CoreRunning {
-			c = black.Alpha(e.iconAlpha)
-		}
-
 		if e.labelAlpha > 0 {
 			drawThumbnail(
 				list, i,
@@ -140,7 +135,7 @@ func (s *sceneHistory) render() {
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
-				c)
+				textColor.Alpha(e.iconAlpha))
 			if e.path == state.Global.GamePath && e.path != "" {
 				vid.DrawCircle(
 					680*menu.ratio,
@@ -160,7 +155,7 @@ func (s *sceneHistory) render() {
 				slOffset = 30 * menu.ratio * e.subLabelAlpha
 			}
 
-			vid.Font.SetColor(c.Alpha(e.labelAlpha))
+			vid.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			stack := 840 * menu.ratio
 			vid.Font.Printf(
 				840*menu.ratio,

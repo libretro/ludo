@@ -35,6 +35,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		m.ProcessHotkeys()
 		ntf.Process(dt)
 		vid.ResizeViewport()
+		m.UpdatePalette()
 		if !state.Global.MenuActive {
 			if state.Global.CoreRunning {
 				state.Global.Core.Run()

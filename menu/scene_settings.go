@@ -134,15 +134,11 @@ var widgets = map[string]func(*entry){
 			icon = "on"
 		}
 		w, h := vid.Window.GetFramebufferSize()
-		c := black.Alpha(e.iconAlpha)
-		if state.Global.CoreRunning {
-			c = white.Alpha(e.iconAlpha)
-		}
 		vid.DrawImage(menu.icons[icon],
 			float32(w)-128*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			1.25, c)
+			1.25, textColor.Alpha(e.iconAlpha))
 	},
 
 	// Range widget for audio volume and similat float settings
@@ -152,14 +148,10 @@ var widgets = map[string]func(*entry){
 		y := float32(fbh)*e.yp - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
-		c := black.Alpha(e.iconAlpha)
-		if state.Global.CoreRunning {
-			c = white.Alpha(e.iconAlpha)
-		}
-		vid.DrawRect(x, y, w, h, 0.9, c.Alpha(e.iconAlpha/4))
+		vid.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha/4))
 		w = 175 * menu.ratio * e.value().(float32)
-		vid.DrawRect(x, y, w, h, 0.9, c)
-		vid.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, c)
+		vid.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha))
+		vid.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, textColor.Alpha(e.iconAlpha))
 	},
 }
 
