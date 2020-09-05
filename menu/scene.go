@@ -2,7 +2,6 @@ package menu
 
 import (
 	"github.com/libretro/ludo/state"
-	"github.com/libretro/ludo/video"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
@@ -151,32 +150,24 @@ func genericSegueNext(list *entry) {
 // menu entry
 func genericDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 0.8784, G: 1, B: 1, A: list.cursor.alpha}
-	if state.Global.CoreRunning {
-		c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
-	}
 	vid.DrawImage(menu.icons["arrow"],
 		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1, c)
+		70*menu.ratio, 70*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
 	vid.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-630*menu.ratio, 100*menu.ratio, 1, c)
+		float32(w)-630*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
 }
 
 // thumbnailDrawCursor draws the blinking rectangular background of the active
 // menu entry when there is a thumbnail
 func thumbnailDrawCursor(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
-	c := video.Color{R: 0.8784, G: 1, B: 1, A: list.cursor.alpha}
-	if state.Global.CoreRunning {
-		c = video.Color{R: 0.1, G: 0.1, B: 0.4, A: list.cursor.alpha}
-	}
 	vid.DrawImage(menu.icons["arrow"],
 		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		100*menu.ratio, 100*menu.ratio, 1, c)
+		100*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
 	vid.DrawRect(
 		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
-		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, c)
+		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, cursorBg.Alpha(list.cursor.alpha))
 }
 
 // genericRender renders a vertical list of menu entries
@@ -195,19 +186,14 @@ func genericRender(list *entry) {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		if state.Global.CoreRunning {
-			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		}
-
 		vid.DrawImage(menu.icons[e.icon],
 			610*menu.ratio-64*0.5*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*0.5*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			0.5, color)
+			0.5, textColor.Alpha(e.iconAlpha))
 
 		if e.labelAlpha > 0 {
-			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
+			vid.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			vid.Font.Printf(
 				670*menu.ratio,
 				float32(h)*e.yp+fontOffset,
@@ -230,7 +216,7 @@ func genericRender(list *entry) {
 
 func genericDrawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 

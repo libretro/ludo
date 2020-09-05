@@ -71,8 +71,8 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	// Make Font stuct type
 	f := new(Font)
 	f.fontChar = make([]*character, 0, high-low+1)
-	f.program = program    // Set shader program
-	f.SetColor(1, 1, 1, 1) // Set default white
+	f.program = program                       // Set shader program
+	f.SetColor(Color{R: 1, G: 1, B: 1, A: 1}) // Set default white
 
 	// Create new face
 	ttfFace := truetype.NewFace(ttf, &truetype.Options{
@@ -231,11 +231,8 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Fon
 }
 
 // SetColor allows you to set the text color to be used when you draw the text
-func (f *Font) SetColor(red float32, green float32, blue float32, alpha float32) {
-	f.color.R = red
-	f.color.G = green
-	f.color.B = blue
-	f.color.A = alpha
+func (f *Font) SetColor(color Color) {
+	f.color = color
 }
 
 // UpdateResolution passes the new framebuffer size to the font shader

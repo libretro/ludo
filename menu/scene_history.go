@@ -8,7 +8,6 @@ import (
 	"github.com/libretro/ludo/history"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneHistory struct {
@@ -123,11 +122,6 @@ func (s *sceneHistory) render() {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		if state.Global.CoreRunning {
-			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		}
-
 		if e.labelAlpha > 0 {
 			drawThumbnail(
 				list, i,
@@ -135,24 +129,24 @@ func (s *sceneHistory) render() {
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio, 128*menu.ratio,
-				e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
+				e.scale, white.Alpha(e.iconAlpha),
 			)
 			vid.DrawBorder(
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
-				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
+				textColor.Alpha(e.iconAlpha))
 			if e.path == state.Global.GamePath && e.path != "" {
 				vid.DrawCircle(
 					680*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio+fontOffset,
 					90*menu.ratio*e.scale,
-					video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha})
+					black.Alpha(e.iconAlpha))
 				vid.DrawImage(menu.icons["resume"],
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+					e.scale, white.Alpha(e.iconAlpha))
 			}
 
 			// Offset on Y to vertically center label + sublabel if there is a sublabel
@@ -161,7 +155,7 @@ func (s *sceneHistory) render() {
 				slOffset = 30 * menu.ratio * e.subLabelAlpha
 			}
 
-			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
+			vid.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			stack := 840 * menu.ratio
 			vid.Font.Printf(
 				840*menu.ratio,
@@ -176,14 +170,14 @@ func (s *sceneHistory) render() {
 					vid.DrawImage(
 						menu.icons[tag],
 						stack, float32(h)*e.yp-22*menu.ratio-slOffset,
-						60*menu.ratio, 44*menu.ratio, 1.0, video.Color{R: 1, G: 1, B: 1, A: e.tagAlpha})
+						60*menu.ratio, 44*menu.ratio, 1.0, white.Alpha(e.tagAlpha))
 					vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio-slOffset,
-						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, video.Color{R: 0, G: 0, B: 0, A: e.tagAlpha / 4})
+						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, black.Alpha(e.tagAlpha/4))
 					stack += 60 * menu.ratio
 				}
 			}
 
-			vid.Font.SetColor(0.5, 0.5, 0.5, e.subLabelAlpha)
+			vid.Font.SetColor(mediumGrey.Alpha(e.subLabelAlpha))
 			vid.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset+60*menu.ratio-slOffset,
@@ -196,7 +190,7 @@ func (s *sceneHistory) render() {
 
 func (s *sceneHistory) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
