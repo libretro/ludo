@@ -135,7 +135,7 @@ func Label(props *Props, msg string) func() {
 		self := wStack.Push(props).Last()
 		tsum := tStack.Push(&Props{}).Sum()
 		sum := wStack.Sum()
-		vid.Font.SetColor(props.Color.R, props.Color.G, props.Color.B, props.Color.A)
+		vid.Font.SetColor(props.Color)
 		textWidth := vid.Font.Width(props.Scale, msg)
 		switch props.TextAlign {
 		case "center":

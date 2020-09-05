@@ -4,7 +4,6 @@ import (
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneDialog struct {
@@ -55,14 +54,10 @@ func (s *sceneDialog) render() {
 	width := 1000 * menu.ratio
 	height := 400 * menu.ratio
 
-	white := video.Color{R: 1, G: 1, B: 1, A: 1}
-	black := video.Color{R: 0, G: 0, B: 0, A: 1}
-	warningTitle := video.Color{R: 0.8, G: 0.4, B: 0.1, A: 1}
-
 	_, _, _, a, b, _, _, _, _, _ := hintIcons()
 
 	// Background
-	Box(&Props{Width: fw, Height: fh, Color: video.Color{R: 0, G: 0, B: 0, A: 0.85}},
+	Box(&Props{Width: fw, Height: fh, Color: black.Alpha(0.85)},
 		// Dialog
 		VBox(&Props{
 			X:            fw/2 - width/2,
@@ -76,7 +71,7 @@ func (s *sceneDialog) render() {
 			Label(&Props{
 				TextAlign: "center",
 				Scale:     0.7 * menu.ratio,
-				Color:     warningTitle,
+				Color:     orange,
 				Height:    150 * menu.ratio,
 			}, "A game is currently running"),
 			// Messages

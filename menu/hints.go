@@ -3,7 +3,6 @@ package menu
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/input"
-	"github.com/libretro/ludo/video"
 )
 
 // HintBar is the bar showing at the bottom of the screen
@@ -13,7 +12,7 @@ func HintBar(props *Props, children ...func()) func() {
 		Y:      float32(h) - 70*menu.ratio,
 		Width:  float32(w),
 		Height: 70 * menu.ratio,
-		Color:  video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1},
+		Color:  lightGrey,
 		Hidden: props.Hidden,
 	},
 		children...,
@@ -22,7 +21,7 @@ func HintBar(props *Props, children ...func()) func() {
 
 // Hint is a widget combining an icon and a label
 func Hint(props *Props, icon uint32, title string) func() {
-	darkGrey := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
+	darkGrey := darkGrey
 	return HBox(props,
 		Box(&Props{Width: 15}),
 		Image(&Props{
