@@ -27,29 +27,39 @@ func (m *Menu) RenderNotifications() {
 	var h float32 = 75
 	stack := h
 	for _, n := range ntf.List() {
-		fading := n.Duration * 4
-		if fading > 1 {
-			fading = 1
-		}
-		offset := fading*h - h
-		lw := vid.Font.Width(0.5*m.ratio, n.Message)
-		fg := severityFgColor[n.Severity]
-		bg := severityBgColor[n.Severity]
-		vid.DrawRect(
-			25*m.ratio,
-			(stack+offset-46)*m.ratio,
-			lw+40*m.ratio,
-			70*m.ratio,
-			0.25,
-			video.Color{R: float32(bg.R), G: float32(bg.G), B: float32(bg.B), A: fading},
-		)
-		vid.Font.SetColor(float32(fg.R), float32(fg.G), float32(fg.B), fading)
-		vid.Font.Printf(
-			45*m.ratio,
-			(stack+offset)*m.ratio,
-			0.5*m.ratio,
-			n.Message,
-		)
+		offset := minf32(n.Duration*4, 1)*h - h
+		lw := vid.Font.Width(0.4*menu.ratio, n.Message)
+
+		Toast(&Props{
+			X:            25 * menu.ratio,
+			Y:            (stack + offset - 46) * menu.ratio,
+			Width:        lw + 70*menu.ratio + 20*menu.ratio,
+			Height:       70 * menu.ratio,
+			BorderRadius: 0.25,
+		}, n)()
+
 		stack += h + offset
 	}
+}
+
+// Toast can render a notification
+func Toast(props *Props, n *ntf.Notification) func() {
+	fg := severityFgColor[n.Severity]
+	bg := severityBgColor[n.Severity]
+	alpha := minf32(n.Duration*4, 1)
+	props.Color = video.Color{R: float32(bg.R), G: float32(bg.G), B: float32(bg.B), A: alpha}
+
+	return HBox(props,
+		Image(&Props{
+			Width:  props.Height,
+			Height: props.Height,
+			Scale:  1,
+			Color:  video.Color{R: float32(fg.R), G: float32(fg.G), B: float32(fg.B), A: alpha},
+		}, menu.icons["core-infos"]),
+		Label(&Props{
+			Height: props.Height,
+			Scale:  0.4 * menu.ratio,
+			Color:  video.Color{R: float32(fg.R), G: float32(fg.G), B: float32(fg.B), A: alpha},
+		}, n.Message),
+	)
 }

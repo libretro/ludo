@@ -182,3 +182,10 @@ func maxf32(a, b float32) float32 {
 	}
 	return a
 }
+
+func minf32(a, b float32) float32 {
+	if b < a {
+		return b
+	}
+	return a
+}
