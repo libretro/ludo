@@ -24,21 +24,20 @@ var severityBgColor = map[ntf.Severity]colorful.Color{
 func (m *Menu) RenderNotifications() {
 	fbw, fbh := vid.Window.GetFramebufferSize()
 	vid.Font.UpdateResolution(fbw, fbh)
-	var h float32 = 75
-	stack := h
+	stack := float32(0)
 	for _, n := range ntf.List() {
-		offset := minf32(n.Duration*4, 1)*h - h
+		offset := minf32(n.Duration*4, 1) * 80
 		lw := vid.Font.Width(0.4*menu.ratio, n.Message)
 
 		Toast(&Props{
 			X:            25 * menu.ratio,
-			Y:            (stack + offset - 46) * menu.ratio,
+			Y:            (stack + offset - 80 + 25) * menu.ratio,
 			Width:        lw + 70*menu.ratio + 20*menu.ratio,
 			Height:       70 * menu.ratio,
 			BorderRadius: 0.25,
 		}, n)()
 
-		stack += h + offset
+		stack += offset
 	}
 }
 
