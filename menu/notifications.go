@@ -1,7 +1,6 @@
 package menu
 
 import (
-	"github.com/libretro/ludo/notifications"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/video"
 	colorful "github.com/lucasb-eyer/go-colorful"
@@ -27,8 +26,8 @@ func (m *Menu) RenderNotifications() {
 	vid.Font.UpdateResolution(fbw, fbh)
 	var h float32 = 75
 	stack := h
-	for _, n := range notifications.List() {
-		fading := float32(n.Duration) * 4
+	for _, n := range ntf.List() {
+		fading := n.Duration * 4
 		if fading > 1 {
 			fading = 1
 		}

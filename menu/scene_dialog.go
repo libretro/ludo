@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/video"
@@ -14,6 +15,7 @@ func buildDialog(callbackOK func()) Scene {
 	var list sceneDialog
 	list.label = "Exit Dialog"
 	list.callbackOK = callbackOK
+	audio.PlayEffect(audio.Effects["notice"])
 	return &list
 }
 
@@ -33,11 +35,13 @@ func (s *sceneDialog) segueBack() {
 func (s *sceneDialog) update(dt float32) {
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
+		audio.PlayEffect(audio.Effects["ok"])
 		s.callbackOK()
 	}
 
 	// Cancel
 	if input.Released[0][libretro.DeviceIDJoypadB] {
+		audio.PlayEffect(audio.Effects["cancel"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
 	}
@@ -54,6 +58,8 @@ func (s *sceneDialog) render() {
 	white := video.Color{R: 1, G: 1, B: 1, A: 1}
 	black := video.Color{R: 0, G: 0, B: 0, A: 1}
 	warningTitle := video.Color{R: 0.8, G: 0.4, B: 0.1, A: 1}
+
+	_, _, _, a, b, _, _, _, _, _ := hintIcons()
 
 	// Background
 	Box(&Props{Width: fw, Height: fh, Color: video.Color{R: 0, G: 0, B: 0, A: 0.85}},
@@ -89,9 +95,9 @@ func (s *sceneDialog) render() {
 			Box(&Props{Height: 40 * menu.ratio}),
 			Box(&Props{},
 				// The NO Hint
-				Hint(&Props{}, "key-z", "NO"),
+				Hint(&Props{}, b, "NO"),
 				// The YES Hint
-				Hint(&Props{X: width - 175*menu.ratio}, "key-x", "YES"),
+				Hint(&Props{X: width - 175*menu.ratio}, a, "YES"),
 			),
 		),
 	)()

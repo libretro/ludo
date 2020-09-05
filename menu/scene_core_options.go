@@ -16,22 +16,30 @@ func buildCoreOptions() Scene {
 	var list sceneCoreOptions
 	list.label = "Core Options"
 
-	for i, v := range core.Options.Vars {
-		i := i
+	if core.Options == nil {
+		list.children = append(list.children, entry{
+			label: "No options",
+			icon:  "subsetting",
+		})
+		list.segueMount()
+		return &list
+	}
+
+	for _, v := range core.Options.Vars {
 		v := v
 		list.children = append(list.children, entry{
-			label: strings.Replace(v.Desc(), "%", "%%", -1),
+			label: strings.Replace(v.Desc, "%", "%%", -1),
 			icon:  "subsetting",
 			stringValue: func() string {
-				val := v.Choices()[core.Options.Choices[i]]
+				val := v.Choices[v.Choice]
 				return strings.Replace(val, "%", "%%", -1)
 			},
 			incr: func(direction int) {
-				core.Options.Choices[i] += direction
-				if core.Options.Choices[i] < 0 {
-					core.Options.Choices[i] = core.Options.NumChoices(i) - 1
-				} else if core.Options.Choices[i] > core.Options.NumChoices(i)-1 {
-					core.Options.Choices[i] = 0
+				v.Choice += direction
+				if v.Choice < 0 {
+					v.Choice = len(v.Choices) - 1
+				} else if v.Choice > len(v.Choices)-1 {
+					v.Choice = 0
 				}
 				core.Options.Updated = true
 				err := core.Options.Save()
@@ -72,10 +80,11 @@ func (s *sceneCoreOptions) render() {
 }
 
 func (s *sceneCoreOptions) drawHintBar() {
+	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()
 	HintBar(&Props{},
-		Hint(&Props{Hidden: !state.Global.CoreRunning}, "key-p", "RESUME"),
-		Hint(&Props{}, "key-up-down", "NAVIGATE"),
-		Hint(&Props{}, "key-z", "BACK"),
-		Hint(&Props{}, "key-left-right", "SET"),
+		Hint(&Props{Hidden: !state.Global.CoreRunning}, guide, "RESUME"),
+		Hint(&Props{}, upDown, "NAVIGATE"),
+		Hint(&Props{}, b, "BACK"),
+		Hint(&Props{}, leftRight, "SET"),
 	)()
 }

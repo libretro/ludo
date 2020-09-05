@@ -2,10 +2,11 @@ package menu
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/fatih/structs"
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/ludos"
@@ -106,6 +107,15 @@ func dirExplorerCb(path string, f *structs.Field) {
 		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
 		return
 	}
+	info, err := os.Stat(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
+	if !info.IsDir() {
+		ntf.DisplayAndLog(ntf.Error, "Settings", "Not a directory")
+		return
+	}
 	f.Set(path)
 	ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
 	err = settings.Save()
@@ -181,7 +191,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		settings.Save()
 	},
 	"VideoFilter": func(f *structs.Field, direction int) {
-		filters := []string{"nearest", "linear", "sharp-bilinear", "zfast-crt"}
+		filters := []string{"Raw", "Smooth", "Pixel Perfect", "CRT"}
 		v := f.Value().(string)
 		i := utils.IndexOfString(v, filters)
 		i += direction
@@ -206,6 +216,19 @@ var incrCallbacks = map[string]callbackIncrement{
 		}
 		f.Set(v)
 		audio.SetVolume(v)
+		settings.Save()
+	},
+	"MenuAudioVolume": func(f *structs.Field, direction int) {
+		v := f.Value().(float32)
+		v += 0.1 * float32(direction)
+		if v < 0 {
+			v = 0
+		}
+		if v > 1 {
+			v = 1
+		}
+		f.Set(v)
+		audio.SetEffectsVolume(v)
 		settings.Save()
 	},
 	"ShowHiddenFiles": func(f *structs.Field, direction int) {
@@ -247,11 +270,12 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	cb := s.children[s.ptr].callbackOK
+	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 	HintBar(&Props{},
-		Hint(&Props{Hidden: !state.Global.CoreRunning}, "key-p", "RESUME"),
-		Hint(&Props{}, "key-up-down", "NAVIGATE"),
-		Hint(&Props{}, "key-z", "BACK"),
-		Hint(&Props{Hidden: cb == nil}, "key-x", "SET"),
-		Hint(&Props{Hidden: cb != nil}, "key-left-right", "SET"),
+		Hint(&Props{Hidden: !state.Global.CoreRunning}, guide, "RESUME"),
+		Hint(&Props{}, upDown, "NAVIGATE"),
+		Hint(&Props{}, b, "BACK"),
+		Hint(&Props{Hidden: cb == nil}, a, "SET"),
+		Hint(&Props{Hidden: cb != nil}, leftRight, "SET"),
 	)()
 }

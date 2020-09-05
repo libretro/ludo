@@ -2,12 +2,27 @@ package settings
 
 import (
 	"log"
-	"os/user"
+	"os"
 	"path/filepath"
+	"runtime"
 )
 
+func coresDir() string {
+	coresDir := "./cores"
+	// with hardened runtime enabled, dylibs can't be loaded from a relative path
+	if runtime.GOOS == "darwin" {
+		exe, err := os.Executable()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		exeDir := filepath.Dir(exe)
+		coresDir = filepath.Join(exeDir, "..", "Frameworks")
+	}
+	return coresDir
+}
+
 func defaultSettings() Settings {
-	usr, err := user.Current()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -15,10 +30,10 @@ func defaultSettings() Settings {
 	return Settings{
 		VideoFullscreen:   false,
 		VideoMonitorIndex: 0,
-		VideoFilter:       "sharp-bilinear",
+		VideoFilter:       "Pixel Perfect",
 		AudioVolume:       0.5,
-		ShowHiddenFiles:   true,
-		GLVersion:         "3.2",
+		MenuAudioVolume:   0.25,
+		ShowHiddenFiles:   false,
 		CoreForPlaylist: map[string]string{
 			"Atari - 2600":                                   "stella_libretro",
 			"Atari - 5200":                                   "atari800_libretro",
@@ -31,8 +46,9 @@ func defaultSettings() Settings {
 			"Cave Story":                                     "nxengine_libretro",
 			"ChaiLove":                                       "chailove_libretro",
 			"Coleco - ColecoVision":                          "bluemsx_libretro",
-			"FB Alpha - Arcade Games":                        "fbalpha_libretro",
+			"FBNeo - Arcade Games":                           "fbneo_libretro",
 			"GCE - Vectrex":                                  "vecx_libretro",
+			"Magnavox - Odyssey2":                            "o2em_libretro",
 			"Microsoft - MSX":                                "bluemsx_libretro",
 			"Microsoft - MSX2":                               "bluemsx_libretro",
 			"NEC - PC Engine SuperGrafx":                     "mednafen_supergrafx_libretro",
@@ -42,6 +58,7 @@ func defaultSettings() Settings {
 			"Nintendo - Game Boy Color":                      "gambatte_libretro",
 			"Nintendo - Game Boy":                            "gambatte_libretro",
 			"Nintendo - Nintendo Entertainment System":       "fceumm_libretro",
+			"Nintendo - Pokemon Mini":                        "pokemini_libretro",
 			"Nintendo - Super Nintendo Entertainment System": "snes9x_libretro",
 			"Nintendo - Virtual Boy":                         "mednafen_vb_libretro",
 			"Sega - 32X":                                     "picodrive_libretro",
@@ -55,14 +72,14 @@ func defaultSettings() Settings {
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 			"Sony - PlayStation":                             playstationCore,
 		},
-		CoresDirectory:       "./cores",
+		CoresDirectory:       coresDir(),
 		AssetsDirectory:      "./assets",
 		DatabaseDirectory:    "./database",
-		SavestatesDirectory:  filepath.Join(usr.HomeDir, ".ludo", "savestates"),
-		SavefilesDirectory:   filepath.Join(usr.HomeDir, ".ludo", "savefiles"),
-		ScreenshotsDirectory: filepath.Join(usr.HomeDir, ".ludo", "screenshots"),
-		SystemDirectory:      filepath.Join(usr.HomeDir, ".ludo", "system"),
-		PlaylistsDirectory:   filepath.Join(usr.HomeDir, ".ludo", "playlists"),
-		ThumbnailsDirectory:  filepath.Join(usr.HomeDir, ".ludo", "thumbnails"),
+		SavestatesDirectory:  filepath.Join(home, ".ludo", "savestates"),
+		SavefilesDirectory:   filepath.Join(home, ".ludo", "savefiles"),
+		ScreenshotsDirectory: filepath.Join(home, ".ludo", "screenshots"),
+		SystemDirectory:      filepath.Join(home, ".ludo", "system"),
+		PlaylistsDirectory:   filepath.Join(home, ".ludo", "playlists"),
+		ThumbnailsDirectory:  filepath.Join(home, ".ludo", "thumbnails"),
 	}
 }

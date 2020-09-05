@@ -3,11 +3,14 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"runtime"
 	"time"
 
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/history"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/menu"
 	ntf "github.com/libretro/ludo/notifications"
@@ -50,7 +53,11 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			m.Render(dt)
 		}
 		m.RenderNotifications()
-		glfw.SwapInterval(1)
+		if state.Global.FastForward {
+			glfw.SwapInterval(0)
+		} else {
+			glfw.SwapInterval(1)
+		}
 		vid.Window.SwapBuffers()
 		prevTime = currTime
 	}
@@ -63,20 +70,12 @@ func main() {
 		log.Println("[Settings]: Using default settings")
 	}
 
-	var GLVersion string
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
-	flag.StringVar(&GLVersion, "glver", settings.Defaults.GLVersion, "OpenGL version, possible values are 2.0, 2.1, 3.0, 3.1, 3.2, 4.1, 4.2")
 	flag.BoolVar(&state.Global.LudOS, "ludos", false, "Expose the features related to LudOS")
 	flag.Parse()
 	args := flag.Args()
-
-	if GLVersion != settings.Defaults.GLVersion {
-		settings.Current.GLVersion = GLVersion
-		if err := settings.Save(); err != nil {
-			log.Fatalln("Failed to save settings:", err)
-		}
-	}
 
 	var gamePath string
 	if len(args) > 0 {
@@ -84,7 +83,7 @@ func main() {
 	}
 
 	if err := glfw.Init(); err != nil {
-		log.Fatalln("Failed to initialize glfw:", err)
+		log.Fatalln("Failed to initialize glfw", err)
 	}
 	defer glfw.Terminate()
 
@@ -95,10 +94,13 @@ func main() {
 
 	playlists.Load()
 
-	vid := video.Init(settings.Current.VideoFullscreen, settings.Current.GLVersion)
+	history.Load()
+
+	vid := video.Init(settings.Current.VideoFullscreen)
+
+	audio.Init()
 
 	m := menu.Init(vid)
-	m.ContextReset()
 
 	core.Init(vid)
 

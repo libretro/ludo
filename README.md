@@ -10,7 +10,7 @@ It works on OSX, Linux, Linux ARM and Windows. You can download releases [here](
 
 ## Dependencies
 
- * GLFW 3.2
+ * GLFW 3.3
  * OpenGL >= 2.1
  * OpenAL
 
@@ -18,17 +18,17 @@ It works on OSX, Linux, Linux ARM and Windows. You can download releases [here](
 
 You can execute the following command and follow the instructions about exporting PKG_CONFIG
 
-    brew install glfw openal-soft
+    brew install openal-soft
 
 #### On Debian or Ubuntu
 
-    sudo apt-get install libglfw3-dev libopenal-dev xorg-dev
+    sudo apt-get install libopenal-dev xorg-dev golang
 
 #### On Raspbian
 
 You need to enable the experimental VC4 OpenGL support (Full KMS) in raspi-config.
 
-    sudo apt-get install libglfw3-dev libopenal-dev xorg-dev
+    sudo apt-get install libopenal-dev xorg-dev
 
 #### On Windows
 
@@ -44,6 +44,3 @@ Setup openal headers and dll in mingw-w64 `include` and `lib` folders.
 
     ./ludo
 
-If on a RaspberryPi:
-
-    ./ludo -glver=2.1

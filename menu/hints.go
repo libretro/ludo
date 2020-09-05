@@ -1,6 +1,10 @@
 package menu
 
-import "github.com/libretro/ludo/video"
+import (
+	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/libretro/ludo/input"
+	"github.com/libretro/ludo/video"
+)
 
 // HintBar is the bar showing at the bottom of the screen
 func HintBar(props *Props, children ...func()) func() {
@@ -17,7 +21,7 @@ func HintBar(props *Props, children ...func()) func() {
 }
 
 // Hint is a widget combining an icon and a label
-func Hint(props *Props, icon string, title string) func() {
+func Hint(props *Props, icon uint32, title string) func() {
 	darkGrey := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
 	return HBox(props,
 		Box(&Props{Width: 15}),
@@ -26,12 +30,37 @@ func Hint(props *Props, icon string, title string) func() {
 			Height: 70 * menu.ratio,
 			Scale:  1,
 			Color:  darkGrey,
-		}, menu.icons[icon]),
+		}, icon),
 		Label(&Props{
 			Height: 70 * menu.ratio,
-			Scale:  0.5 * menu.ratio,
+			Scale:  0.4 * menu.ratio,
 			Color:  darkGrey,
 		}, title),
 		Box(&Props{Width: 15}),
 	)
+}
+
+func hintIcons() (arrows, upDown, leftRight, a, b, x, y, start, slct, guide uint32) {
+	if glfw.Joystick(0).Present() && input.HasBinding(glfw.Joystick(0)) {
+		return menu.icons["pad-arrows"],
+			menu.icons["pad-up-down"],
+			menu.icons["pad-left-right"],
+			menu.icons["pad-a"],
+			menu.icons["pad-b"],
+			menu.icons["pad-x"],
+			menu.icons["pad-y"],
+			menu.icons["pad-start"],
+			menu.icons["pad-select"],
+			menu.icons["pad-guide"]
+	}
+	return menu.icons["key-arrows"],
+		menu.icons["key-up-down"],
+		menu.icons["key-left-right"],
+		menu.icons["key-x"],
+		menu.icons["key-z"],
+		menu.icons["key-s"],
+		menu.icons["key-a"],
+		menu.icons["key-return"],
+		menu.icons["key-shift"],
+		menu.icons["key-p"]
 }

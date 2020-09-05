@@ -21,14 +21,11 @@ uniform sampler2D Texture;
 COMPAT_VARYING vec2 fragTexCoord;
 
 // fragment compatibility #defines
-#define Source Texture
-#define vTexCoord fragTexCoord.xy
-#define texture(c, d) COMPAT_TEXTURE(c, d)
 #define SourceSize vec4(TextureSize, 1.0 / TextureSize) //either TextureSize or InputSize
 #define outsize vec4(OutputSize, 1.0 / OutputSize)
 
 void main() {
-  vec2 texel = vTexCoord * SourceSize.xy;
+  vec2 texel = fragTexCoord * SourceSize.xy;
   vec2 scale = max(floor(outsize.xy / InputSize.xy), vec2(1.0, 1.0));
 
   vec2 texel_floored = floor(texel);
@@ -40,6 +37,6 @@ void main() {
 
   vec2 mod_texel = texel_floored + f;
 
-  COMPAT_FRAGCOLOR = vec4(COMPAT_TEXTURE(Source, mod_texel / SourceSize.xy).rgb, 1.0);
+  COMPAT_FRAGCOLOR = vec4(COMPAT_TEXTURE(Texture, mod_texel / SourceSize.xy).rgb, 1.0);
 }
 ` + "\x00"

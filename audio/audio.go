@@ -4,13 +4,16 @@ package audio
 
 import (
 	"log"
+	"path/filepath"
 	"time"
 
 	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 	"golang.org/x/mobile/exp/audio/al"
 )
 
-const bufSize = 1024 * 4
+const bufSize = 1024 * 8
 
 var audio struct {
 	source     al.Source
@@ -23,19 +26,35 @@ var audio struct {
 	resPtr     int32
 }
 
+// Effects are sound effects
+var Effects map[string]*Effect
+
 // SetVolume sets the audio volume
 func SetVolume(vol float32) {
 	audio.source.SetGain(vol)
 }
 
-// Init initializes the audio package. It opens the AL devices, sets the number of buffers, the
-// volume and the source.
-func Init(rate int32) {
+// Init initializes the audio device
+func Init() {
 	err := al.OpenDevice()
 	if err != nil {
 		log.Println(err)
 	}
 
+	Effects = map[string]*Effect{}
+
+	assets := settings.Current.AssetsDirectory
+	paths, _ := filepath.Glob(assets + "/sounds/*.wav")
+	for _, path := range paths {
+		path := path
+		filename := utils.FileName(path)
+		Effects[filename], _ = LoadEffect(path)
+	}
+}
+
+// Reconfigure initializes the audio package. It sets the number of buffers, the
+// volume and the source for the games.
+func Reconfigure(rate int32) {
 	audio.rate = rate
 	audio.numBuffers = 4
 
@@ -85,10 +104,6 @@ func alGetBuffer() al.Buffer {
 }
 
 func fillInternalBuf(buf []byte, size int32) int32 {
-	// This is a workaround for mednafen-psx
-	if size > bufSize {
-		return size
-	}
 	readSize := min(bufSize-audio.tmpBufPtr, size)
 	if readSize > int32(len(buf)) {
 		return size
@@ -100,6 +115,10 @@ func fillInternalBuf(buf []byte, size int32) int32 {
 
 func write(buf []byte, size int32) int32 {
 	written := int32(0)
+
+	if state.Global.FastForward {
+		return written
+	}
 
 	for size > 0 {
 
@@ -115,7 +134,7 @@ func write(buf []byte, size int32) int32 {
 
 		buffer := alGetBuffer()
 
-		buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], int32(audio.rate))
+		buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], audio.rate)
 		audio.tmpBufPtr = 0
 		audio.source.QueueBuffers(buffer)
 

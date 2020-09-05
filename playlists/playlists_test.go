@@ -97,32 +97,32 @@ func TestShortName(t *testing.T) {
 		want string
 	}{
 		{
-			name: "Should change nothing",
+			name: "Should remove vendor",
 			args: args{
 				in: "Sega - 32X",
 			},
-			want: "Sega - 32X",
+			want: "32X",
 		},
 		{
-			name: "Should skip the vendor",
+			name: "Should specify vendor as additional information",
 			args: args{
-				in: "FB Alpha - Arcade Games",
+				in: "FBNeo - Arcade Games",
 			},
-			want: "Arcade Games",
+			want: "Arcade (FBNeo)",
 		},
 		{
-			name: "Should replace with acronym",
+			name: "Should remove vendor and alternative name",
 			args: args{
 				in: "NEC - PC Engine - TurboGrafx 16",
 			},
-			want: "PCE - TurboGrafx 16",
+			want: "TurboGrafx-16",
 		},
 		{
-			name: "Should replace with acronym",
+			name: "Should replace with prefered name",
 			args: args{
 				in: "Nintendo - Super Nintendo Entertainment System",
 			},
-			want: "Super NES",
+			want: "Super Nintendo",
 		},
 	}
 	for _, tt := range tests {

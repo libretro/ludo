@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/disintegration/imaging"
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -21,9 +21,7 @@ func (video *Video) renderScreenshot() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
-	gl.UseProgram(video.program)
-
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
@@ -36,6 +34,8 @@ func (video *Video) TakeScreenshot(name string) error {
 	state.Global.MenuActive = false
 	defer func() { state.Global.MenuActive = true }()
 
+	gl.UseProgram(video.defaultProgram)
+
 	video.renderScreenshot()
 
 	img := image.NewRGBA(image.Rect(0, 0, video.Geom.BaseWidth, video.Geom.BaseHeight))
@@ -46,6 +46,8 @@ func (video *Video) TakeScreenshot(name string) error {
 		0, int32(fbh-video.Geom.BaseHeight),
 		int32(video.Geom.BaseWidth), int32(video.Geom.BaseHeight),
 		gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+
+	gl.UseProgram(video.program)
 
 	err := os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
 	if err != nil {

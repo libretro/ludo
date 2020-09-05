@@ -5,6 +5,7 @@ import (
 	"os/user"
 	"sort"
 
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/playlists"
@@ -44,6 +45,15 @@ func buildTabs() Scene {
 		},
 	})
 
+	list.children = append(list.children, entry{
+		label:    "History",
+		subLabel: "Play again",
+		icon:     "history",
+		callbackOK: func() {
+			menu.Push(buildHistory())
+		},
+	})
+
 	list.children = append(list.children, getPlaylists()...)
 
 	list.children = append(list.children, entry{
@@ -76,13 +86,13 @@ func refreshTabs() {
 	l := len(e.children)
 	pls := getPlaylists()
 
-	// This assumes that the two first tabs are not playlists, and that the last
+	// This assumes that the 3 first tabs are not playlists, and that the last
 	// tab is the scanner.
-	e.children = append(e.children[:2], append(pls, e.children[l-1:]...)...)
+	e.children = append(e.children[:3], append(pls, e.children[l-1:]...)...)
 
 	// Update which tab is the active tab after the refresh
-	if e.ptr >= 2 {
-		e.ptr += len(pls) - (l - 3)
+	if e.ptr >= 3 {
+		e.ptr += len(pls) - (l - 4)
 	}
 
 	// Ensure new icons are styled properly
@@ -129,8 +139,9 @@ func getPlaylists() []entry {
 		path := path
 		filename := utils.FileName(path)
 		count := playlists.Count(path)
+		label := playlists.ShortName(filename)
 		pls = append(pls, entry{
-			label:    playlists.ShortName(filename),
+			label:    label,
 			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
 			icon:     filename,
 			callbackOK: func() {
@@ -178,26 +189,23 @@ func (tabs *sceneTabs) animate() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
-		var labelAlpha, iconAlpha, scale, width float32
+		var labelAlpha, scale, width float32
 		if i == tabs.ptr {
 			labelAlpha = 1
-			iconAlpha = 1
 			scale = 0.75
 			width = 500
 		} else if i < tabs.ptr {
 			labelAlpha = 0
-			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		} else if i > tabs.ptr {
 			labelAlpha = 0
-			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		}
 
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 1, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 		menu.tweens[&e.width] = gween.New(e.width, width, 0.15, ease.OutSine)
 		menu.tweens[&e.margin] = gween.New(e.margin, 0, 0.15, ease.OutSine)
@@ -224,6 +232,7 @@ func (tabs *sceneTabs) update(dt float32) {
 		if tabs.ptr >= len(tabs.children) {
 			tabs.ptr = 0
 		}
+		audio.PlayEffect(audio.Effects["down"])
 		tabs.animate()
 	})
 
@@ -233,12 +242,14 @@ func (tabs *sceneTabs) update(dt float32) {
 		if tabs.ptr < 0 {
 			tabs.ptr = len(tabs.children) - 1
 		}
+		audio.PlayEffect(audio.Effects["up"])
 		tabs.animate()
 	})
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] {
 		if tabs.children[tabs.ptr].callbackOK != nil {
+			audio.PlayEffect(audio.Effects["ok"])
 			tabs.segueNext()
 			tabs.children[tabs.ptr].callbackOK()
 		}
@@ -299,9 +310,10 @@ func (tabs sceneTabs) render() {
 }
 
 func (tabs sceneTabs) drawHintBar() {
+	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 	HintBar(&Props{},
-		Hint(&Props{Hidden: !state.Global.CoreRunning}, "key-p", "RESUME"),
-		Hint(&Props{}, "key-left-right", "NAVIGATE"),
-		Hint(&Props{}, "key-x", "OPEN"),
+		Hint(&Props{Hidden: !state.Global.CoreRunning}, guide, "RESUME"),
+		Hint(&Props{}, leftRight, "NAVIGATE"),
+		Hint(&Props{}, a, "OPEN"),
 	)()
 }

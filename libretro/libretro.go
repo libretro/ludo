@@ -113,7 +113,7 @@ func (v *Variable) Choices() []string {
 
 // SetValue sets the value of a Variable
 func (v *Variable) SetValue(val string) {
-	s := (**C.char)(&v.value)
+	s := &v.value
 	*s = C.CString(val)
 }
 
@@ -211,6 +211,7 @@ const (
 
 // Environment callback API. See libretro.h for details
 const (
+	EnvironmentSetRotation          = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
 	EnvironmentGetUsername          = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
 	EnvironmentGetLogInterface      = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
 	EnvironmentGetCanDupe           = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
@@ -317,6 +318,14 @@ func (core *Core) APIVersion() uint {
 // Deinit takes care of the library global deinitialization
 func (core *Core) Deinit() {
 	C.bridge_retro_deinit(core.symRetroDeinit)
+	environment = nil
+	videoRefresh = nil
+	audioSample = nil
+	audioSampleBatch = nil
+	inputPoll = nil
+	inputState = nil
+	log = nil
+	getTimeUsec = nil
 }
 
 // Run runs the game for one video frame.
@@ -520,16 +529,22 @@ func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
 	if audioSampleBatch == nil {
 		return 0
 	}
-	return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4096)), int32(frames)))
+	return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4*int(frames))), int32(frames))) / 4
 }
 
 //export coreLog
 func coreLog(level C.enum_retro_log_level, msg *C.char) {
-	log(uint32(level), C.GoString(msg))
+	if log == nil {
+		return
+	}
+	log(level, C.GoString(msg))
 }
 
 //export coreGetTimeUsec
 func coreGetTimeUsec() C.uint64_t {
+	if getTimeUsec == nil {
+		return 0
+	}
 	return C.uint64_t(getTimeUsec())
 }
 

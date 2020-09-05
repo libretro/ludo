@@ -37,11 +37,10 @@ func buildWiFi() Scene {
 					callbackOK: func() {
 						list.segueNext()
 						menu.Push(buildKeyboard(
-							"Passpharse for "+network.SSID,
+							"Passphrase for "+network.SSID,
 							func(pass string) {
 								go func() {
-									err := ludos.ConnectNetwork(network, pass)
-									if err != nil {
+									if err := ludos.ConnectNetwork(network, pass); err != nil {
 										ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 									}
 								}()
@@ -86,9 +85,10 @@ func (s *sceneWiFi) render() {
 }
 
 func (s *sceneWiFi) drawHintBar() {
+	_, upDown, _, a, b, _, _, _, _, _ := hintIcons()
 	HintBar(&Props{},
-		Hint(&Props{}, "key-up-down", "NAVIGATE"),
-		Hint(&Props{}, "key-x", "BACK"),
-		Hint(&Props{Hidden: s.children[0].callbackOK == nil}, "key-x", "CONNECT"),
+		Hint(&Props{}, upDown, "NAVIGATE"),
+		Hint(&Props{}, b, "BACK"),
+		Hint(&Props{Hidden: s.children[0].callbackOK == nil}, a, "CONNECT"),
 	)()
 }

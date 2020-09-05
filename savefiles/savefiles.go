@@ -13,20 +13,16 @@ import (
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 )
 
 var mutex sync.Mutex
 
-func name() string {
-	name := filepath.Base(state.Global.GamePath)
-	ext := filepath.Ext(name)
-	name = name[0 : len(name)-len(ext)]
-	return name + ".srm"
-}
-
 // path returns the path of the SRAM file for the current core
 func path() string {
-	return filepath.Join(settings.Current.SavefilesDirectory, name())
+	return filepath.Join(
+		settings.Current.SavefilesDirectory,
+		utils.FileName(state.Global.GamePath) + ".srm")
 }
 
 // SaveSRAM saves the game SRAM to the filesystem
@@ -79,12 +75,6 @@ func LoadSRAM() error {
 		return errors.New("core not running")
 	}
 
-	fd, err := os.Open(path())
-	if err != nil {
-		return err
-	}
-	defer fd.Close()
-
 	len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
 	ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
 	if ptr == nil || len == 0 {
@@ -94,7 +84,7 @@ func LoadSRAM() error {
 	// this *[1 << 30]byte points to the same memory as ptr, allowing to
 	// overwrite this memory
 	destination := (*[1 << 30]byte)(unsafe.Pointer(ptr))[:len:len]
-	source, err := ioutil.ReadAll(fd)
+	source, err := ioutil.ReadFile(path())
 	if err != nil {
 		return err
 	}

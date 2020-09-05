@@ -41,6 +41,8 @@ func Init(v *video.Video) *Menu {
 
 	menu.Push(buildTabs())
 
+	menu.ContextReset()
+
 	return menu
 }
 
@@ -52,6 +54,12 @@ func (m *Menu) Push(s Scene) {
 
 // Render takes care of rendering the menu
 func (m *Menu) Render(dt float32) {
+	// Early return to not render the menu, in case MenuActive is set to false
+	// during the same mainloop iteration
+	if !state.Global.MenuActive {
+		return
+	}
+
 	m.t += float64(dt * 8)
 	w, h := vid.Window.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
@@ -82,14 +90,14 @@ func (m *Menu) ContextReset() {
 	for _, path := range paths {
 		path := path
 		filename := utils.FileName(path)
-		m.icons[filename] = video.NewImage(assets + "/" + filename + ".png")
+		m.icons[filename] = video.NewImage(path)
 	}
 
 	paths, _ = filepath.Glob(assets + "/flags/*.png")
 	for _, path := range paths {
 		path := path
 		filename := utils.FileName(path)
-		m.icons[filename] = video.NewImage(assets + "/flags/" + filename + ".png")
+		m.icons[filename] = video.NewImage(path)
 	}
 
 	currentScreenIndex := len(m.stack) - 1

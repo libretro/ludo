@@ -57,7 +57,7 @@ func (writer logWriter) Write(bytes []byte) (int, error) {
 	return fmt.Print(string(bytes))
 }
 
-// CaptureOutput executes a function and capture all the text outputed to logs.
+// CaptureOutput executes a function and capture all the text outputted to logs.
 // Used in unit tests.
 func CaptureOutput(f func()) string {
 	var buf bytes.Buffer
@@ -70,15 +70,15 @@ func CaptureOutput(f func()) string {
 }
 
 // AllFilesIn recursively builds a list of the files in a given directory
-func AllFilesIn(dir string) []string {
+func AllFilesIn(dir string) ([]string, error) {
 	file := []string{}
-	filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		if !f.IsDir() && !strings.HasPrefix(f.Name(), ".") {
 			file = append(file, path)
 		}
 		return nil
 	})
-	return file
+	return file, err
 }
 
 // CoreExt returns the libretro core extension for the current OS

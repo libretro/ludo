@@ -37,12 +37,10 @@ func SystemdServiceToggle(path string, serviceName string, enable bool) error {
 			}
 			file.Close()
 		}
-	} else {
-		if exists(path) {
-			err := os.Remove(path)
-			if err != nil {
-				return err
-			}
+	} else if exists(path) {
+		err := os.Remove(path)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -69,9 +67,9 @@ func ServiceSettingIncrCallback(f *structs.Field, direction int) {
 	}
 }
 
-// InitializeServiceSettingsValues is called after settings.json is loaded.
+// InitializeServiceSettingsValues is called after settings.yml is loaded.
 // It sets the values of SSHService, SambaService and BluetoothService that
-// don't depend on settings.json but on the presence of files in the system.
+// don't depend on settings.yml but on the presence of files in the system.
 func InitializeServiceSettingsValues(fields []*structs.Field) {
 	for _, f := range fields {
 		switch f.Name() {

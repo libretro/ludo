@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
 )
@@ -32,14 +32,17 @@ func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 		return
 	}
 
-	out, err := os.Create(path)
+	imgFile, err := os.Create(path)
 	if err != nil {
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
-	defer out.Close()
+	defer imgFile.Close()
 
-	io.Copy(out, resp.Body)
+	_, err = io.Copy(imgFile, resp.Body)
+	if err != nil {
+		list.children[i].thumbnail = menu.icons["img-broken"]
+	}
 }
 
 // Scrub characters that are not cross-platform and/or violate the
@@ -60,8 +63,8 @@ func scrubIllegalChars(str string) string {
 // Draws a thumbnail in the playlist scene.
 func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, color video.Color) {
 	folderPath := filepath.Join(settings.Current.ThumbnailsDirectory, system, "Named_Snaps")
-	path := filepath.Join(folderPath, gameName+".png")
 	legalName := scrubIllegalChars(gameName)
+	path := filepath.Join(folderPath, legalName+".png")
 	url := "http://thumbnails.libretro.com/" + system + "/Named_Snaps/" + legalName + ".png"
 
 	if list.children[i].thumbnail == 0 || list.children[i].thumbnail == menu.icons["img-dl"] {

@@ -57,6 +57,7 @@ func buildSavestates() Scene {
 					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 				} else {
 					state.Global.MenuActive = false
+
 					ntf.DisplayAndLog(ntf.Success, "Menu", "State loaded.")
 				}
 			},
@@ -94,6 +95,8 @@ func (s *sceneSavestates) render() {
 
 	_, h := vid.Window.GetFramebufferSize()
 
+	thumbnailDrawCursor(list)
+
 	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			continue
@@ -122,9 +125,9 @@ func (s *sceneSavestates) render() {
 				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
 			if i == 0 {
 				vid.DrawImage(menu.icons["savestate"],
-					680*menu.ratio-64*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-					128*menu.ratio, 128*menu.ratio,
+					680*menu.ratio-25*e.scale*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
+					50*menu.ratio, 50*menu.ratio,
 					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
@@ -132,18 +135,19 @@ func (s *sceneSavestates) render() {
 			vid.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.6*menu.ratio, e.label)
+				0.5*menu.ratio, e.label)
 		}
 	}
 }
 
 func (s *sceneSavestates) drawHintBar() {
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
+	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 	HintBar(&Props{},
-		Hint(&Props{Hidden: !state.Global.CoreRunning}, "key-p", "RESUME"),
-		Hint(&Props{}, "key-up-down", "NAVIGATE"),
-		Hint(&Props{}, "key-z", "BACK"),
-		Hint(&Props{Hidden: ptr != 0}, "key-x", "SAVE"),
-		Hint(&Props{Hidden: ptr == 0}, "key-x", "LOAD"),
+		Hint(&Props{Hidden: !state.Global.CoreRunning}, guide, "RESUME"),
+		Hint(&Props{}, upDown, "NAVIGATE"),
+		Hint(&Props{}, b, "BACK"),
+		Hint(&Props{Hidden: ptr != 0}, a, "SAVE"),
+		Hint(&Props{Hidden: ptr == 0}, a, "LOAD"),
 	)()
 }
