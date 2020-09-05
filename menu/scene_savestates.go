@@ -131,7 +131,7 @@ func (s *sceneSavestates) render() {
 					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
-			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
+			vid.Font.SetColor(color.Alpha(e.labelAlpha))
 			vid.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,

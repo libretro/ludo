@@ -269,7 +269,7 @@ func (tabs sceneTabs) render() {
 		stackWidth += e.width*menu.ratio + e.margin*menu.ratio
 
 		if e.labelAlpha > 0 {
-			vid.Font.SetColor(float32(c.R), float32(c.B), float32(c.G), e.labelAlpha)
+			vid.Font.SetColor(video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.labelAlpha})
 			lw := vid.Font.Width(0.5*menu.ratio, e.label)
 			vid.Font.Printf(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), 0.5*menu.ratio, e.label)
 			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)

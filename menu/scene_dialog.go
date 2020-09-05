@@ -65,11 +65,11 @@ func (s *sceneDialog) render() {
 		video.Color{R: 1, G: 1, B: 1, A: 1},
 	)
 
-	vid.Font.SetColor(0.8, 0.4, 0.1, 1)
+	vid.Font.SetColor(video.Color{R: 0.8, G: 0.4, B: 0.1, A: 1})
 	msg1 := "A game is currently running."
 	lw1 := vid.Font.Width(0.7*menu.ratio, msg1)
 	vid.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 0.7*menu.ratio, msg1)
-	vid.Font.SetColor(0, 0, 0, 1)
+	vid.Font.SetColor(video.Color{R: 0, G: 0, B: 0, A: 1})
 	msg2 := "If you have not saved yet, your progress will be lost."
 	lw2 := vid.Font.Width(0.5*menu.ratio, msg2)
 	vid.Font.Printf(fw/2-lw2/2, fh/2-30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg2)
@@ -78,7 +78,7 @@ func (s *sceneDialog) render() {
 	vid.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg3)
 
 	c := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
-	vid.Font.SetColor(0.25, 0.25, 0.25, 1.0)
+	vid.Font.SetColor(c)
 
 	var margin float32 = 15
 

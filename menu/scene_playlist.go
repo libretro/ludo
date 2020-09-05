@@ -188,7 +188,7 @@ func (s *scenePlaylist) render() {
 					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
 			}
 
-			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
+			vid.Font.SetColor(color.Alpha(e.labelAlpha))
 			stack := 840 * menu.ratio
 			vid.Font.Printf(
 				840*menu.ratio,

@@ -20,19 +20,19 @@ type sceneKeyboard struct {
 }
 
 var layouts = [][]string{
-	[]string{
+	{
 		"1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
 		"q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
 		"a", "s", "d", "f", "g", "h", "j", "k", "l", "@",
 		"z", "x", "c", "v", "b", "n", "m", " ", "-", ".",
 	},
-	[]string{
+	{
 		"1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
 		"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
 		"A", "S", "D", "F", "G", "H", "J", "K", "L", "+",
 		"Z", "X", "C", "V", "B", "N", "M", " ", "_", "/",
 	},
-	[]string{
+	{
 		"1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
 		"!", "\"", "#", "$", "%%", "&", "'", "*", "(", ")",
 		"+", ",", "-", "~", "/", ":", ";", "=", "<", ">",
@@ -161,7 +161,7 @@ func (s *sceneKeyboard) render() {
 		video.Color{R: 1, G: 1, B: 1, A: s.alpha})
 
 	// Label
-	vid.Font.SetColor(0, 0, 0, 1)
+	vid.Font.SetColor(video.Color{R: 0, G: 0, B: 0, A: 1})
 	vid.Font.Printf(
 		float32(w)/2-ttw/2,
 		s.y+float32(h)*0.15-ksz/2+ksz*0.6,
@@ -180,7 +180,7 @@ func (s *sceneKeyboard) render() {
 	vid.DrawRect(0, s.y+float32(h)-kbh, float32(w), kbh, 0,
 		video.Color{R: 0, G: 0, B: 0, A: 1})
 
-	vid.Font.SetColor(1, 1, 1, 1)
+	vid.Font.SetColor(video.Color{R: 1, G: 1, B: 1, A: 1})
 
 	for i, key := range layouts[s.layout] {
 		x := float32(i%10)*ksp - ttw/2 + float32(w)/2

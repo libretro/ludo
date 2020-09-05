@@ -43,7 +43,7 @@ func (m *Menu) RenderNotifications() {
 			0.25,
 			video.Color{R: float32(bg.R), G: float32(bg.G), B: float32(bg.B), A: fading},
 		)
-		vid.Font.SetColor(float32(fg.R), float32(fg.G), float32(fg.B), fading)
+		vid.Font.SetColor(video.Color{R: float32(fg.R), G: float32(fg.G), B: float32(fg.B), A: fading})
 		vid.Font.Printf(
 			45*m.ratio,
 			(stack+offset)*m.ratio,

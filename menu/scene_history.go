@@ -161,7 +161,7 @@ func (s *sceneHistory) render() {
 				slOffset = 30 * menu.ratio * e.subLabelAlpha
 			}
 
-			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
+			vid.Font.SetColor(color.Alpha(e.labelAlpha))
 			stack := 840 * menu.ratio
 			vid.Font.Printf(
 				840*menu.ratio,
@@ -183,7 +183,7 @@ func (s *sceneHistory) render() {
 				}
 			}
 
-			vid.Font.SetColor(0.5, 0.5, 0.5, e.subLabelAlpha)
+			vid.Font.SetColor(video.Color{R: 0.5, G: 0.5, B: 0.5, A: e.subLabelAlpha})
 			vid.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset+60*menu.ratio-slOffset,
