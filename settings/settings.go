@@ -24,6 +24,7 @@ type Settings struct {
 	VideoFullscreen   bool   `hide:"ludos" toml:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
 	VideoMonitorIndex int    `toml:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	VideoFilter       string `toml:"video_filter" label:"Video Filter" fmt:"<%s>"`
+	VideoDarkMode     bool   `toml:"video_dark_mode" label:"Video Dark Mode" fmt:"%t" widget:"switch"`
 
 	AudioVolume     float32           `toml:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
 	MenuAudioVolume float32           `toml:"menu_audio_volume" label:"Menu Audio Volume" fmt:"%.1f" widget:"range"`
