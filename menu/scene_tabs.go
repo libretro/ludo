@@ -316,4 +316,45 @@ func (tabs sceneTabs) drawHintBar() {
 		Hint(&Props{}, leftRight, "NAVIGATE"),
 		Hint(&Props{}, a, "OPEN"),
 	)()
+
+	mkVBox(wProps{
+		Color:        video.Color{0, 0, 0, 0.9},
+		BorderRadius: 0.1,
+		Padding:      Dirs(40),
+		Margin:       Dirs(40),
+	},
+		mkLabel(wProps{
+			Scale:   0.8 * menu.ratio,
+			Height:  50,
+			Padding: Dirs(20, 0),
+			Color:   video.Color{1, 1, 1, 1},
+		}, "Hello world"),
+		mkLabel(wProps{
+			Scale:   0.6 * menu.ratio,
+			Height:  50,
+			Padding: Dirs(20, 0),
+			Color:   video.Color{1, 1, 1, 0.75},
+		}, "Here is a nice screenshot:"),
+		mkImage(wProps{
+			Width:   640,
+			Height:  480,
+			Color:   video.Color{1, 1, 1, 1},
+			Scale:   1,
+			Padding: Dirs(20, 0),
+		}, menu.icons["img-dl"]),
+		mkHBox(wProps{},
+			mkButton(wProps{
+				Color:        video.Color{1, 1, 1, 0.25},
+				BorderRadius: 1,
+				Margin:       Dirs(20, 0, 0, 20),
+				Padding:      Dirs(0, 0, 20, 40),
+			}, "key-z", "Cancel"),
+			mkButton(wProps{
+				Color:        video.Color{0, 0.5, 0, 1},
+				BorderRadius: 1,
+				Margin:       Dirs(20, 0, 0, 20),
+				Padding:      Dirs(0, 0, 20, 40),
+			}, "key-x", "Ok do this"),
+		),
+	).Draw(0, 0)
 }
