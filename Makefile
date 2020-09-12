@@ -1,12 +1,11 @@
 APP = Ludo
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 
-CORES = bluemsx chailove fbneo fceumm gambatte genesis_plus_gx handy lutro mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba np2kai o2em pcsx_rearmed picodrive prosystem snes9x stella vecx virtualjaguar
+CORES = bluemsx chailove fbneo fceumm gambatte genesis_plus_gx handy lutro mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella vecx virtualjaguar
 
 ifeq ($(ARCH), arm)
 	CORES := $(filter-out mednafen_saturn,$(CORES))
 	CORES := $(filter-out lutro,$(CORES))
-	CORES := $(filter-out o2em,$(CORES))
 endif
 
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
