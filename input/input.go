@@ -19,7 +19,7 @@ type joybinds map[bind]uint32
 const btn = 0
 const axis = 1
 
-const default_threshhold float32 = 0.5
+const defaultThreshold float32 = 0.5
 
 type bind struct {
 	kind      uint32
@@ -101,7 +101,7 @@ func pollJoypads(state inputstate) inputstate {
 				if !settings.Current.MapAxisToDPad {
 					break
 				}
-				threshold := default_threshhold
+				threshold := defaultThreshold
 				if k.threshold != 0 {
 					threshold = k.threshold
 				}
