@@ -95,52 +95,62 @@ func pollJoypads(state inputstate) inputstate {
 					}
 				case axis:
 					idx := k.index
-					if strings.HasPrefix(name, "Sony") {
-						if runtime.GOOS == "windows" {
-							idx -= 10
-						} else if runtime.GOOS == "linux" {
-							idx -= 11
-						} else if runtime.GOOS == "darwin" {
-							switch reflect.TypeOf(jb) {
-							case reflect.TypeOf(ds4JoyBinds):
-								idx -= 10
-							case reflect.TypeOf(ds3JoyBinds):
-								idx -= 1
-							}
-						}
-					}
+					idx = getJoystickIdx(&jb, name, idx)
 					if jb[k] == libretro.DeviceIDJoypadR3 {
 						idx += 2
 					}
+					processAxisState(idx, &axisState, &k, &state, p, v)
 
-					if int(idx+1) < len(axisState) &&
-						((k.direction*axisState[idx] > k.threshold*k.direction ||
-							k.direction*axisState[idx] < -k.threshold*k.direction) ||
-							(k.direction*axisState[idx+1] > k.threshold*k.direction ||
-								k.direction*axisState[idx+1] < -k.threshold*k.direction)) {
-						state[p][v] = true
-						if !settings.Current.MapAxisToDPad {
-							break
-						}
-						switch {
-						// idx == 0 for L3, idx == 3 for R3
-						case idx == 0 && axisState[idx] < -k.threshold:
-							state[p][libretro.DeviceIDJoypadLeft] = true
-						case idx == 0 && axisState[idx] > k.threshold:
-							state[p][libretro.DeviceIDJoypadRight] = true
-						}
-						switch {
-						case idx == 0 && axisState[idx+1] > k.threshold:
-							state[p][libretro.DeviceIDJoypadDown] = true
-						case idx == 0 && axisState[idx+1] < -k.threshold:
-							state[p][libretro.DeviceIDJoypadUp] = true
-						}
-					}
 				}
 			}
 		}
 	}
 	return state
+}
+
+func processAxisState(idx uint32, axisState *[]float32, k *bind, state *inputstate, p int, v uint32) {
+	if int(idx+1) < len(*axisState) &&
+		((k.direction*(*axisState)[idx] > k.threshold*k.direction ||
+			k.direction*(*axisState)[idx] < -k.threshold*k.direction) ||
+			(k.direction*(*axisState)[idx+1] > k.threshold*k.direction ||
+				k.direction*(*axisState)[idx+1] < -k.threshold*k.direction)) {
+		state[p][v] = true
+		if !settings.Current.MapAxisToDPad {
+			return
+		}
+		switch {
+		// idx == 0 for L3, idx == 3 for R3
+		case idx == 0 && (*axisState)[idx] < -k.threshold:
+			state[p][libretro.DeviceIDJoypadLeft] = true
+		case idx == 0 && (*axisState)[idx] > k.threshold:
+			state[p][libretro.DeviceIDJoypadRight] = true
+		}
+		switch {
+		case idx == 0 && (*axisState)[idx+1] > k.threshold:
+			state[p][libretro.DeviceIDJoypadDown] = true
+		case idx == 0 && (*axisState)[idx+1] < -k.threshold:
+			state[p][libretro.DeviceIDJoypadUp] = true
+		}
+	}
+}
+
+// getJoystickIndx returns X axis index for stick `idx` of joystick `name` in axisState
+func getJoystickIdx(jb *joybinds, name string, idx uint32) uint32 {
+	if strings.HasPrefix(name, "Sony") {
+		if runtime.GOOS == "windows" {
+			idx -= 10
+		} else if runtime.GOOS == "linux" {
+			idx -= 11
+		} else if runtime.GOOS == "darwin" {
+			switch reflect.TypeOf(jb) {
+			case reflect.TypeOf(ds4JoyBinds):
+				idx -= 10
+			case reflect.TypeOf(ds3JoyBinds):
+				idx--
+			}
+		}
+	}
+	return idx
 }
 
 // pollKeyboard processes keyboard keys
