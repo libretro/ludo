@@ -4,9 +4,14 @@
 package input
 
 import (
+	"reflect"
+	"runtime"
+	"strings"
+
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
 )
 
@@ -89,9 +94,47 @@ func pollJoypads(state inputstate) inputstate {
 						state[p][v] = true
 					}
 				case axis:
-					if int(k.index) < len(axisState) &&
-						k.direction*axisState[k.index] > k.threshold*k.direction {
+					idx := k.index
+					if strings.HasPrefix(name, "Sony") {
+						if runtime.GOOS == "windows" {
+							idx -= 10
+						} else if runtime.GOOS == "linux" {
+							idx -= 11
+						} else if runtime.GOOS == "darwin" {
+							switch reflect.TypeOf(jb) {
+							case reflect.TypeOf(ds4JoyBinds):
+								idx -= 10
+							case reflect.TypeOf(ds3JoyBinds):
+								idx -= 1
+							}
+						}
+					}
+					if jb[k] == libretro.DeviceIDJoypadR3 {
+						idx += 2
+					}
+
+					if int(idx+1) < len(axisState) &&
+						((k.direction*axisState[idx] > k.threshold*k.direction ||
+							k.direction*axisState[idx] < -k.threshold*k.direction) ||
+							(k.direction*axisState[idx+1] > k.threshold*k.direction ||
+								k.direction*axisState[idx+1] < -k.threshold*k.direction)) {
 						state[p][v] = true
+						if !settings.Current.MapAxisToDPad {
+							break
+						}
+						switch {
+						// idx == 0 for L3, idx == 3 for R3
+						case idx == 0 && axisState[idx] < -k.threshold:
+							state[p][libretro.DeviceIDJoypadLeft] = true
+						case idx == 0 && axisState[idx] > k.threshold:
+							state[p][libretro.DeviceIDJoypadRight] = true
+						}
+						switch {
+						case idx == 0 && axisState[idx+1] > k.threshold:
+							state[p][libretro.DeviceIDJoypadDown] = true
+						case idx == 0 && axisState[idx+1] < -k.threshold:
+							state[p][libretro.DeviceIDJoypadUp] = true
+						}
 					}
 				}
 			}
