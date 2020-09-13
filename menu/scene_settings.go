@@ -202,6 +202,12 @@ var incrCallbacks = map[string]callbackIncrement{
 		f.Set(v)
 		settings.Save()
 	},
+	"MapAxisToDPad": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+		settings.Save()
+	},
 	"AudioVolume": func(f *structs.Field, direction int) {
 		v := f.Value().(float32)
 		v += 0.1 * float32(direction)
