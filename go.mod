@@ -4,7 +4,6 @@ require (
 	github.com/cavaliercoder/grab v2.0.0+incompatible
 	github.com/disintegration/imaging v1.6.0
 	github.com/fatih/structs v1.1.0
-	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835 // indirect
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2
 	github.com/go-gl/mathgl v0.0.0-20190713194549-592312d8590a // indirect
@@ -16,10 +15,7 @@ require (
 	github.com/youpy/go-riff v0.0.0-20131220112943-557d78c11efb // indirect
 	github.com/youpy/go-wav v0.0.0-20160223082350-b63a9887d320
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
-	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/mobile v0.0.0-20190607214518-6fa95d984e88
-	golang.org/x/tools v0.0.0-20200913032122-97363e29fc9b // indirect
-	honnef.co/go/tools v0.0.1-2020.1.5 // indirect
 )
 
 go 1.13
