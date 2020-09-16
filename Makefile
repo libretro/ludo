@@ -5,7 +5,6 @@ CORES = bluemsx chailove fbneo fceumm gambatte genesis_plus_gx handy lutro medna
 
 ifeq ($(ARCH), arm)
 	CORES := $(filter-out mednafen_saturn,$(CORES))
-	CORES := $(filter-out lutro,$(CORES))
 endif
 
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
