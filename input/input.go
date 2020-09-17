@@ -92,7 +92,7 @@ func pollJoypads(state inputstate) inputstate {
 				case axis:
 					var idx uint32
 					if jb[k] == libretro.DeviceIDJoypadR3 {
-						idx += 2
+						idx += 3
 					}
 
 					if int(idx+1) < len(axisState) &&
