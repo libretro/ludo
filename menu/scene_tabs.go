@@ -142,7 +142,7 @@ func getPlaylists() []entry {
 		label := playlists.ShortName(filename)
 		pls = append(pls, entry{
 			label:    label,
-			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
+			subLabel: fmt.Sprintf("%d Games", count),
 			icon:     filename,
 			callbackOK: func() {
 				menu.Push(buildPlaylist(path))
