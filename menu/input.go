@@ -159,10 +159,10 @@ func (m *Menu) ProcessHotkeys() {
 	}
 
 	// Toggle the menu if ActionMenuToggle or the combo L3+R3 is pressed
-	menuToggleCombo := input.NewState[0][libretro.DeviceIDJoypadL3] && input.Pressed[0][libretro.DeviceIDJoypadR3]
-	menuToggleCombo = menuToggleCombo || input.Pressed[0][libretro.DeviceIDJoypadL3] && input.NewState[0][libretro.DeviceIDJoypadR3]
+	combo := input.NewState[0][libretro.DeviceIDJoypadL3] && input.Pressed[0][libretro.DeviceIDJoypadR3]
+	combo = combo || input.Pressed[0][libretro.DeviceIDJoypadL3] && input.NewState[0][libretro.DeviceIDJoypadR3]
 
-	if (input.Pressed[0][input.ActionMenuToggle] || menuToggleCombo) && state.Global.CoreRunning {
+	if (input.Pressed[0][input.ActionMenuToggle] || combo) && state.Global.CoreRunning {
 		state.Global.MenuActive = !state.Global.MenuActive
 		state.Global.FastForward = false
 		if state.Global.MenuActive {
