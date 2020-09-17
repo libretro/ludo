@@ -158,8 +158,11 @@ func (m *Menu) ProcessHotkeys() {
 		return
 	}
 
-	// Toggle the menu if ActionMenuToggle is pressed
-	if input.Released[0][input.ActionMenuToggle] && state.Global.CoreRunning {
+	// Toggle the menu if ActionMenuToggle or the combo L3+R3 is pressed
+	combo := input.NewState[0][libretro.DeviceIDJoypadL3] && input.Pressed[0][libretro.DeviceIDJoypadR3]
+	combo = combo || input.Pressed[0][libretro.DeviceIDJoypadL3] && input.NewState[0][libretro.DeviceIDJoypadR3]
+
+	if (input.Pressed[0][input.ActionMenuToggle] || combo) && state.Global.CoreRunning {
 		state.Global.MenuActive = !state.Global.MenuActive
 		state.Global.FastForward = false
 		if state.Global.MenuActive {
@@ -170,7 +173,7 @@ func (m *Menu) ProcessHotkeys() {
 	}
 
 	// Toggle fullscreen if ActionFullscreenToggle is pressed
-	if input.Released[0][input.ActionFullscreenToggle] {
+	if input.Pressed[0][input.ActionFullscreenToggle] {
 		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
 		vid.Reconfigure(settings.Current.VideoFullscreen)
 		m.ContextReset()
@@ -180,7 +183,7 @@ func (m *Menu) ProcessHotkeys() {
 		}
 	}
 
-	if input.Released[0][input.ActionFastForwardToggle] && !state.Global.MenuActive {
+	if input.Pressed[0][input.ActionFastForwardToggle] && !state.Global.MenuActive {
 		state.Global.FastForward = !state.Global.FastForward
 		if state.Global.FastForward {
 			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward ON")
