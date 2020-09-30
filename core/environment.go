@@ -124,7 +124,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetFastforwarding:
 		libretro.SetBool(data, state.Global.FastForward)
 	default:
-		log.Println("[Env]: Not implemented:", cmd)
+		//log.Println("[Env]: Not implemented:", cmd)
 		return false
 	}
 	return true
