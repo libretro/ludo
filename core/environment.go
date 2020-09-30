@@ -121,8 +121,10 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentSetSystemAVInfo:
 		avi := libretro.GetSystemAVInfo(data)
 		vid.Geom = avi.Geometry
+	case libretro.EnvironmentGetFastforwarding:
+		libretro.SetBool(data, state.Global.FastForward)
 	default:
-		//log.Println("[Env]: Not implemented:", cmd)
+		log.Println("[Env]: Not implemented:", cmd)
 		return false
 	}
 	return true
