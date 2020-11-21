@@ -11,16 +11,30 @@ defaults:
     shell: bash
 
 jobs:
-  build:
+  build_linux:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
-
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
-      - run: go test -v -race ./...
+      - run: xvfb-run -a go test -v -race ./...
+      - run: go vet ./...
       - run: staticcheck ./...
+      - run: go build -v
+
+  build_osx:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - run: go get golang.org/x/lint/golint
+      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: brew install openal-soft
+      - run: xvfb-run -a go test -v -race ./...
+      - run: go vet ./...
+      - run: staticcheck ./...
+      - run: go build -v
