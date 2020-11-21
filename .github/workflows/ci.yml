@@ -18,7 +18,7 @@ jobs:
         with:
           submodules: true
       - run: go get golang.org/x/lint/golint
-      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: go get -v honnef.co/go/tools/cmd/staticcheck
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: xvfb-run -a go test -v -race ./...
       - run: go vet ./...
@@ -32,7 +32,7 @@ jobs:
         with:
           submodules: true
       - run: go get golang.org/x/lint/golint
-      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: go get -v honnef.co/go/tools/cmd/staticcheck
       - run: brew install openal-soft
       - run: go test -v -race ./...
       - run: go vet ./...
