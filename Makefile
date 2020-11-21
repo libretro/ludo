@@ -51,7 +51,7 @@ $(APP).app: ludo $(DYLIBS)
 	cp -r assets $(APP).app/Contents/Resources
 	cp cores/* $(APP).app/Contents/Frameworks
 	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
-		--entitlements Ludo.entitlements $(APP).app/Contents/Frameworks/*.dylib
+		--entitlements entitlements.xml $(APP).app/Contents/Frameworks/*.dylib
 	rm -rf $(APP).app/Contents/Resources/database/.git
 	rm -rf $(APP).app/Contents/Resources/assets/.git
 	sips -z 16 16   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16.png
@@ -65,11 +65,11 @@ $(APP).app: ludo $(DYLIBS)
 	sips -z 512 512 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_512x512.png
 	cp ludo $(APP).app/Contents/MacOS
 	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
-		--entitlements Ludo.entitlements $(APP).app/Contents/MacOS/ludo
+		--entitlements entitlements.xml $(APP).app/Contents/MacOS/ludo
 	iconutil -c icns -o $(APP).app/Contents/Resources/$(APP).icns $(APP).app/Contents/Resources/$(APP).iconset
 	rm -rf $(APP).app/Contents/Resources/$(APP).iconset
 	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
-		--entitlements Ludo.entitlements $(APP).app
+		--entitlements entitlements.xml $(APP).app
 
 empty.dmg:
 	mkdir -p template
@@ -87,7 +87,7 @@ dmg: empty.dmg $(APP).app
 	rm -f $(BUNDLENAME)-*.dmg
 	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
 	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
-		--entitlements Ludo.entitlements $(BUNDLENAME).dmg
+		--entitlements entitlements.xml $(BUNDLENAME).dmg
 
 # For Windows
 zip: ludo.exe $(DLLS)
