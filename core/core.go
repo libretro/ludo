@@ -194,6 +194,8 @@ func LoadGame(gamePath string) error {
 	state.Global.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
 	state.Global.Core.SetControllerPortDevice(1, (1<<8)|libretro.DeviceJoypad)
 	state.Global.Core.SetControllerPortDevice(2, libretro.DeviceJoypad)
+	state.Global.Core.SetControllerPortDevice(3, libretro.DeviceJoypad)
+	state.Global.Core.SetControllerPortDevice(4, libretro.DeviceJoypad)
 
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
