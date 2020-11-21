@@ -17,13 +17,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - run: echo "${HOME}/goroot/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: xvfb-run -a go test -v -race ./...
       - run: go vet ./...
-      - run: staticcheck ./...
+      - run: ~/goroot/bin/staticcheck ./...
       - run: go build -v
 
   build_osx:
@@ -32,11 +31,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - run: echo "${HOME}/goroot/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: brew install openal-soft
       - run: go test -v -race ./...
       - run: go vet ./...
-      - run: staticcheck ./...
+      - run: ~/goroot/bin/staticcheck ./...
       - run: go build -v
