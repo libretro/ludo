@@ -36,6 +36,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+      - run: echo "GOPATH=/home/runner/go" >> $GITHUB_ENV
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev golang -y --allow-unauthenticated
       - run: go get golang.org/x/lint/golint
