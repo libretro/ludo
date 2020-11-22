@@ -19,12 +19,11 @@ jobs:
           submodules: true
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
-      - run: echo "$GOBIN" >> $GITHUB_PATH
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: go get .
       - run: xvfb-run -a go test -v -race ./...
       - run: go vet ./...
-      - run: staticcheck ./...
+      - run: /home/runner/go/bin/staticcheck ./...
       - run: go build -v
 
   build_osx:
@@ -35,12 +34,11 @@ jobs:
           submodules: true
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
-      - run: echo "$GOBIN" >> $GITHUB_PATH
       - run: brew install openal-soft
       - run: go get .
       - run: go test -v -race ./...
       - run: go vet ./...
-      - run: staticcheck ./...
+      - run: /Users/runner/go/bin/staticcheck ./...
       - run: go build -v
 
   build_windows:
@@ -51,7 +49,6 @@ jobs:
           submodules: true
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
-      - run: echo "$GOBIN" >> $GITHUB_PATH
       - run: choco install make wget --ignore-checksums
       - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
       - run: 7z x openal-soft-1.19.0-bin.zip -o/c/Users/runner/openal-soft-1.19.0-bin
@@ -60,5 +57,5 @@ jobs:
       - run: go get .
       #- run: go test -v -race ./...
       #- run: go vet ./...
-      - run: staticcheck ./...
+      - run: /c/Users/runner/go/bin/staticcheck ./...
       - run: go build  -v -ldflags '-H=windowsgui'
