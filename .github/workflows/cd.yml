@@ -32,4 +32,35 @@ jobs:
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
           asset_path: Ludo-Linux-x86_64-${{ github.event.release.tag_name }}.tar.gz
+          asset_name: Ludo-Linux-x86_64-${{ github.event.release.tag_name }}.tar.gz
           asset_content_type: application/gzip
+
+  build_windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-go@v2
+      - run: choco install wget make --ignore-checksums
+      - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
+      - run: 7z x openal-soft-1.19.0-bin.zip -o/c/openal-soft-1.19.0-bin
+      - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.19.0-bin/include/" >> $GITHUB_ENV
+      - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.19.0-bin/build/Release/" >> $GITHUB_ENV
+      - run: OS=Windows ARCH=x86_64 VERSION=${{ github.event.release.tag_name }} make zip
+
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: Ludo-Windows-x86_64-${{ github.event.release.tag_name }}.tar.gz
+          asset_name: Ludo-Windows-x86_64-${{ github.event.release.tag_name }}.tar.gz
+          asset_content_type: application/zip
