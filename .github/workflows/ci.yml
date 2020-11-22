@@ -39,12 +39,6 @@ jobs:
       - run: echo "GOPATH=/home/runner/go" >> $GITHUB_ENV
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev golang -y --allow-unauthenticated
-      - run: go get golang.org/x/lint/golint
-      - run: go get honnef.co/go/tools/cmd/staticcheck
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go get .
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go vet ./...
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc staticcheck ./...
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc golint -set_exit_status $(go list ./...)
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
 
   build_osx:
