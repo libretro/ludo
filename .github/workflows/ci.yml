@@ -47,7 +47,7 @@ jobs:
           submodules: true
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
-      - run: choco install make --ignore-checksums
+      - run: choco install make wget --ignore-checksums
       - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
       - run: 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
       - run: go test -v -race ./...
