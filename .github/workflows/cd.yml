@@ -46,6 +46,12 @@ jobs:
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: brew install openal-soft
+      - run: echo ${{ secrets.OSXCERT }} | base64 --decode > dev.p12
+      - run: security create-keychain -p github build.keychain
+      - run: security default-keychain -s build.keychain
+      - run: security unlock-keychain -p github build.keychain
+      - run: security import dev.p12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
+      - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
       - run: OS=OSX ARCH=x86_64 VERSION=${{ github.event.release.tag_name }} make dmg
 
       - name: Get release
@@ -80,6 +86,8 @@ jobs:
       - run: cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
       - run: cp /c/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
       - run: cp /c/Windows/System32/VCRUNTIME140.dll .
+      - run: mkdir -p ./Ludo-Windows-x86_64-${{ github.event.release.tag_name }}/
+      - run: cp *.dll ./Ludo-Windows-x86_64-${{ github.event.release.tag_name }}/
       - run: OS=Windows ARCH=x86_64 VERSION=${{ github.event.release.tag_name }} make zip
 
       - name: Get release
