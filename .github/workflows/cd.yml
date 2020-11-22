@@ -17,7 +17,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v2
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
-      - run: OS=Linux ARCH=x86_64 VERSION=${{ github.event.release.tag_name }} make tar
+      - run: OS=Linux ARCH=x86_64 VERSION=${{ github.event.release.tag_name:1 }} make tar
 
       - name: Get release
         id: get_release
@@ -31,9 +31,38 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-Linux-x86_64-${{ github.event.release.tag_name }}.tar.gz
-          asset_name: Ludo-Linux-x86_64-${{ github.event.release.tag_name }}.tar.gz
+          asset_path: Ludo-Linux-x86_64-${{ github.event.release.tag_name:1 }}.tar.gz
+          asset_name: Ludo-Linux-x86_64-${{ github.event.release.tag_name:1 }}.tar.gz
           asset_content_type: application/gzip
+
+  build_osx:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-go@v2
+      - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
+      - run: go get golang.org/x/lint/golint
+      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: brew install openal-soft
+      - run: OS=OSX ARCH=x86_64 VERSION=${{ github.event.release.tag_name:1 }} make dmg
+
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: Ludo-OSX-x86_64-${{ github.event.release.tag_name:1 }}.dmg
+          asset_name: Ludo-OSX-x86_64-${{ github.event.release.tag_name:1 }}.dmg
+          asset_content_type: application/apple-diskimage
 
   build_windows:
     runs-on: windows-latest
@@ -47,7 +76,7 @@ jobs:
       - run: 7z x openal-soft-1.19.0-bin.zip -o/c/openal-soft-1.19.0-bin
       - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.19.0-bin/include/" >> $GITHUB_ENV
       - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.19.0-bin/build/Release/" >> $GITHUB_ENV
-      - run: OS=Windows ARCH=x86_64 VERSION=${{ github.event.release.tag_name }} make zip
+      - run: OS=Windows ARCH=x86_64 VERSION=${{ github.event.release.tag_name:1 }} make zip
 
       - name: Get release
         id: get_release
@@ -61,6 +90,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-Windows-x86_64-${{ github.event.release.tag_name }}.zip
-          asset_name: Ludo-Windows-x86_64-${{ github.event.release.tag_name }}.zip
+          asset_path: Ludo-Windows-x86_64-${{ github.event.release.tag_name:1 }}.zip
+          asset_name: Ludo-Windows-x86_64-${{ github.event.release.tag_name:1 }}.zip
           asset_content_type: application/zip
