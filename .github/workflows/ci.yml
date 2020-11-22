@@ -31,7 +31,7 @@ jobs:
 
   build_linux_arm:
     runs-on: ubuntu-latest
-    container: dockcross/linux-armv7
+    container: docker.elastic.co/beats-dev/golang-crossbuild:1.14.7-arm
     steps:
       - uses: actions/checkout@v2
         with:
