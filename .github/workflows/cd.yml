@@ -73,9 +73,13 @@ jobs:
       - uses: actions/setup-go@v2
       - run: choco install wget make --ignore-checksums
       - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
+      - run: wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe
       - run: 7z x openal-soft-1.19.0-bin.zip -o/c/openal-soft-1.19.0-bin
       - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.19.0-bin/include/" >> $GITHUB_ENV
       - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.19.0-bin/build/Release/" >> $GITHUB_ENV
+      - run: cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
+      - run: cp /c/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
+      - run: cp /c/Windows/System32/VCRUNTIME140.dll .
       - run: OS=Windows ARCH=x86_64 VERSION=${{ github.event.release.tag_name:1 }} make zip
 
       - name: Get release
