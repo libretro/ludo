@@ -24,8 +24,8 @@ jobs:
       - run: go get .
       - run: xvfb-run -a go test -v -race ./...
       - run: go vet ./...
-      - run: staticcheck ./...
-      - run: golint -set_exit_status $(go list ./...)
+      - run: /home/runner/go/bin/staticcheck ./...
+      - run: /home/runner/go/bin/golint -set_exit_status $(go list ./...)
       - run: go build -v
 
   build_osx:
@@ -41,8 +41,8 @@ jobs:
       - run: go get .
       - run: go test -v -race ./...
       - run: go vet ./...
-      - run: staticcheck ./...
-      - run: golint -set_exit_status $(go list ./...)
+      - run: /Users/runner/go/bin/staticcheck ./...
+      - run: /Users/runner/go/bin/golint -set_exit_status $(go list ./...)
       - run: go build -v
 
   build_windows:
@@ -56,12 +56,12 @@ jobs:
       - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: choco install make wget --ignore-checksums
       - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
-      - run: 7z x openal-soft-1.19.0-bin.zip -o/c/Users/runner/openal-soft-1.19.0-bin
-      - run: echo "CGO_CFLAGS=-I/c/Users/runner/openal-soft-1.19.0-bin/include/" >> $GITHUB_ENV
-      - run: echo "CGO_LDFLAGS=-L/c/Users/runner/openal-soft-1.19.0-bin/build/Release/" >> $GITHUB_ENV
+      - run: 7z x openal-soft-1.19.0-bin.zip -o/c/Users/runneradmin/openal-soft-1.19.0-bin
+      - run: echo "CGO_CFLAGS=-I/c/Users/runneradmin/openal-soft-1.19.0-bin/include/" >> $GITHUB_ENV
+      - run: echo "CGO_LDFLAGS=-L/c/Users/runneradmin/openal-soft-1.19.0-bin/build/Release/" >> $GITHUB_ENV
       - run: go get .
       #- run: go test -v -race ./...
       #- run: go vet ./...
-      - run: staticcheck ./...
-      - run: golint -set_exit_status $(go list ./...)
+      - run: /c/Users/runneradmin/go/bin/staticcheck ./...
+      - run: /c/Users/runneradmin/go/bin/golint -set_exit_status $(go list ./...)
       - run: go build  -v -ldflags '-H=windowsgui'
