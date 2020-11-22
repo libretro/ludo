@@ -18,11 +18,11 @@ jobs:
         with:
           submodules: true
       - run: go get golang.org/x/lint/golint
-      - run: go get -v honnef.co/go/tools/cmd/staticcheck
+      - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: xvfb-run -a go test -v -race ./...
       - run: go vet ./...
-      - run: ~/goroot/bin/staticcheck ./...
+      #- run: staticcheck ./...
       - run: go build -v
 
   build_osx:
@@ -32,9 +32,25 @@ jobs:
         with:
           submodules: true
       - run: go get golang.org/x/lint/golint
-      - run: go get -v honnef.co/go/tools/cmd/staticcheck
+      - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: brew install openal-soft
       - run: go test -v -race ./...
       - run: go vet ./...
-      - run: ~/goroot/bin/staticcheck ./...
+      #- run: staticcheck ./...
       - run: go build -v
+
+  build_windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - run: go get golang.org/x/lint/golint
+      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: choco install make --ignore-checksums
+      - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
+      - run: 7z x openal-soft-1.19.0-bin.zip -o/c/Users/travis/openal-soft-1.19.0-bin
+      - run: go test -v -race ./...
+      - run: go vet ./...
+      #- run: staticcheck ./...
+      - run: go build  -v -ldflags '-H=windowsgui'
