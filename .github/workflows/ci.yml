@@ -18,14 +18,15 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
+      - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: go get .
       - run: xvfb-run -a go test -v -race ./...
       - run: go vet ./...
-      - run: /home/runner/go/bin/staticcheck ./...
-      - run: /home/runner/go/bin/golint -set_exit_status $(go list ./...)
+      - run: staticcheck ./...
+      - run: golint -set_exit_status $(go list ./...)
       - run: go build -v
 
   build_osx:
@@ -35,14 +36,15 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
+      - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: brew install openal-soft
       - run: go get .
       - run: go test -v -race ./...
       - run: go vet ./...
-      - run: /Users/runner/go/bin/staticcheck ./...
-      - run: /Users/runner/go/bin/golint -set_exit_status $(go list ./...)
+      - run: staticcheck ./...
+      - run: golint -set_exit_status $(go list ./...)
       - run: go build -v
 
   build_windows:
@@ -52,6 +54,7 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
+      - run: echo "/c/Users/runneradmin/go/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: choco install make wget --ignore-checksums
@@ -62,6 +65,6 @@ jobs:
       - run: go get .
       #- run: go test -v -race ./...
       #- run: go vet ./...
-      - run: /c/Users/runneradmin/go/bin/staticcheck ./...
-      - run: /c/Users/runneradmin/go/bin/golint -set_exit_status $(go list ./...)
-      - run: go build  -v -ldflags '-H=windowsgui'
+      - run: staticcheck ./...
+      - run: golint -set_exit_status $(go list ./...)
+      - run: go build -v -ldflags '-H=windowsgui'
