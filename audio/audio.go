@@ -117,7 +117,7 @@ func write(buf []byte, size int32) int32 {
 	written := int32(0)
 
 	if state.Global.FastForward {
-		return written
+		return size
 	}
 
 	for size > 0 {
