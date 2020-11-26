@@ -229,6 +229,7 @@ const (
 	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
 	EnvironmentSetGeometry          = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
 	EnvironmentSetSystemAVInfo      = uint32(C.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO)
+	EnvironmentGetFastforwarding    = uint32(C.RETRO_ENVIRONMENT_GET_FASTFORWARDING)
 )
 
 // Debug levels

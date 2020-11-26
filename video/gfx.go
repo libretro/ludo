@@ -5,12 +5,18 @@ import (
 	"image/draw"
 	"os"
 
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 )
 
 // Color is an RGBA type that we use in the menu
 type Color struct {
 	R, G, B, A float32
+}
+
+// Alpha sets the alpha channel of a color
+func (color Color) Alpha(alpha float32) Color {
+	color.A = alpha
+	return color
 }
 
 // XYWHTo4points converts coordinates from (x, y, width, height) to (x1, y1, x2, y2, x3, y3, x4, y4)
@@ -68,13 +74,13 @@ func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c
 	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, image)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 	gl.UseProgram(0)
 	gl.Disable(gl.BLEND)
@@ -121,11 +127,11 @@ func (video *Video) DrawBorder(x, y, w, h, borderWidth float32, c Color) {
 	gl.Uniform2f(gl.GetUniformLocation(video.borderProgram, gl.Str("size\x00")), w, h)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 	gl.UseProgram(0)
 	gl.Disable(gl.BLEND)
 }
@@ -141,11 +147,11 @@ func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
 	gl.Uniform2f(gl.GetUniformLocation(video.roundedProgram, gl.Str("size\x00")), w, h)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 	gl.UseProgram(0)
 	gl.Disable(gl.BLEND)
 }
@@ -160,11 +166,11 @@ func (video *Video) DrawCircle(x, y, r float32, c Color) {
 	gl.Uniform1f(gl.GetUniformLocation(video.circleProgram, gl.Str("radius\x00")), r)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 	gl.UseProgram(0)
 	gl.Disable(gl.BLEND)
 }

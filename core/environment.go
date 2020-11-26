@@ -26,7 +26,7 @@ func logCallback(level uint32, str string) {
 }
 
 func getTimeUsec() int64 {
-	return time.Now().UnixNano() * 1000
+	return time.Now().UnixNano() / 1000
 }
 
 func environmentGetVariable(data unsafe.Pointer) bool {
@@ -121,6 +121,8 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentSetSystemAVInfo:
 		avi := libretro.GetSystemAVInfo(data)
 		vid.Geom = avi.Geometry
+	case libretro.EnvironmentGetFastforwarding:
+		libretro.SetBool(data, state.Global.FastForward)
 	default:
 		//log.Println("[Env]: Not implemented:", cmd)
 		return false

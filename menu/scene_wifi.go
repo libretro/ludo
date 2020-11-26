@@ -3,7 +3,6 @@ package menu
 import (
 	"github.com/libretro/ludo/ludos"
 	ntf "github.com/libretro/ludo/notifications"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneWiFi struct {
@@ -38,7 +37,7 @@ func buildWiFi() Scene {
 					callbackOK: func() {
 						list.segueNext()
 						menu.Push(buildKeyboard(
-							"Passpharse for "+network.SSID,
+							"Passphrase for "+network.SSID,
 							func(pass string) {
 								go func() {
 									if err := ludos.ConnectNetwork(network, pass); err != nil {
@@ -87,7 +86,7 @@ func (s *sceneWiFi) render() {
 
 func (s *sceneWiFi) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, _, a, b, _, _, _, _, _ := hintIcons()
 

@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
@@ -71,8 +71,8 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	// Make Font stuct type
 	f := new(Font)
 	f.fontChar = make([]*character, 0, high-low+1)
-	f.program = program    // Set shader program
-	f.SetColor(1, 1, 1, 1) // Set default white
+	f.program = program                       // Set shader program
+	f.SetColor(Color{R: 1, G: 1, B: 1, A: 1}) // Set default white
 
 	// Create new face
 	ttfFace := truetype.NewFace(ttf, &truetype.Options{
@@ -99,7 +99,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	rgba := image.NewRGBA(rect)
 	draw.Draw(rgba, rgba.Bounds(), bg, image.Point{}, draw.Src)
 
-	margin := 2
+	margin := 4
 	x := margin
 	y := margin
 
@@ -187,9 +187,9 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 
 	// Configure VAO/VBO for texture quads
-	gl.GenVertexArrays(1, &f.vao)
+	genVertexArrays(1, &f.vao)
 	gl.GenBuffers(1, &f.vbo)
-	gl.BindVertexArray(f.vao)
+	bindVertexArray(f.vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, f.vbo)
 
 	vertAttrib := uint32(gl.GetAttribLocation(f.program, gl.Str("vert\x00")))
@@ -201,13 +201,13 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 
 	return f, nil
 }
 
 // LoadFont loads the specified font at the given scale.
-func LoadFont(file string, scale int32, windowWidth int, windowHeight int, GLSLVersion uint) (*Font, error) {
+func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Font, error) {
 	fd, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -215,7 +215,7 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int, GLSLV
 	defer fd.Close()
 
 	// Configure the default font vertex and fragment shaders
-	program, err := newProgram(GLSLVersion, fontVertexShader, fontFragmentShader)
+	program, err := newProgram(fontVertexShader, fontFragmentShader)
 	if err != nil {
 		panic(err)
 	}
@@ -231,11 +231,8 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int, GLSLV
 }
 
 // SetColor allows you to set the text color to be used when you draw the text
-func (f *Font) SetColor(red float32, green float32, blue float32, alpha float32) {
-	f.color.R = red
-	f.color.G = green
-	f.color.B = blue
-	f.color.A = alpha
+func (f *Font) SetColor(color Color) {
+	f.color = color
 }
 
 // UpdateResolution passes the new framebuffer size to the font shader
@@ -283,10 +280,10 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		}
 
 		// Calculate position and size for current rune
-		xpos := x + float32(ch.bearingH)*scale
-		ypos := y - float32(ch.height-ch.bearingV)*scale
-		w := float32(ch.width) * scale
-		h := float32(ch.height) * scale
+		xpos := x - 1 + float32(ch.bearingH)*scale
+		ypos := y - 2 - float32(ch.height-ch.bearingV)*scale
+		w := float32(ch.width+2) * scale
+		h := float32(ch.height+2) * scale
 
 		// Set quad positions
 		var x1 = xpos
@@ -294,24 +291,24 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		var y1 = ypos
 		var y2 = ypos + h
 
-		coords = append(coords, point{x1, y1, float32(ch.x) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
-		coords = append(coords, point{x2, y1, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
-		coords = append(coords, point{x1, y2, float32(ch.x) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
-		coords = append(coords, point{x2, y1, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
-		coords = append(coords, point{x1, y2, float32(ch.x) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
-		coords = append(coords, point{x2, y2, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
+		coords = append(coords, point{x1, y1, float32(ch.x-1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
+		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
+		coords = append(coords, point{x1, y2, float32(ch.x-1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
+		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
+		coords = append(coords, point{x1, y2, float32(ch.x-1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
+		coords = append(coords, point{x2, y2, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
 		x += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
 	}
 
-	gl.BindVertexArray(f.vao)
+	bindVertexArray(f.vao)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, f.textureID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, f.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(coords)*16, gl.Ptr(coords), gl.DYNAMIC_DRAW)
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(coords)))
-	gl.BindVertexArray(0)
+	bindVertexArray(0)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 	gl.UseProgram(0)
 	gl.Disable(gl.BLEND)

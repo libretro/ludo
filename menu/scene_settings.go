@@ -2,6 +2,7 @@ package menu
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/fatih/structs"
@@ -13,7 +14,6 @@ import (
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneSettings struct {
@@ -106,6 +106,15 @@ func dirExplorerCb(path string, f *structs.Field) {
 		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
 		return
 	}
+	info, err := os.Stat(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
+		return
+	}
+	if !info.IsDir() {
+		ntf.DisplayAndLog(ntf.Error, "Settings", "Not a directory")
+		return
+	}
 	f.Set(path)
 	ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
 	err = settings.Save()
@@ -125,15 +134,11 @@ var widgets = map[string]func(*entry){
 			icon = "on"
 		}
 		w, h := vid.Window.GetFramebufferSize()
-		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		if state.Global.CoreRunning {
-			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		}
 		vid.DrawImage(menu.icons[icon],
 			float32(w)-128*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			1.25, color)
+			1.25, textColor.Alpha(e.iconAlpha))
 	},
 
 	// Range widget for audio volume and similat float settings
@@ -143,14 +148,10 @@ var widgets = map[string]func(*entry){
 		y := float32(fbh)*e.yp - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
-		c := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		if state.Global.CoreRunning {
-			c = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		}
-		vid.DrawRect(x, y, w, h, 0.9, video.Color{R: c.R, G: c.G, B: c.B, A: e.iconAlpha / 4})
+		vid.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha/4))
 		w = 175 * menu.ratio * e.value().(float32)
-		vid.DrawRect(x, y, w, h, 0.9, c)
-		vid.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, c)
+		vid.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha))
+		vid.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, textColor.Alpha(e.iconAlpha))
 	},
 }
 
@@ -193,6 +194,12 @@ var incrCallbacks = map[string]callbackIncrement{
 		}
 		f.Set(filters[i])
 		vid.UpdateFilter(filters[i])
+		settings.Save()
+	},
+	"VideoDarkMode": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
 		settings.Save()
 	},
 	"AudioVolume": func(f *structs.Field, direction int) {
@@ -260,7 +267,7 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 

@@ -35,7 +35,7 @@ func defaultSettings() Settings {
 		MenuAudioVolume:   0.25,
 		ShowHiddenFiles:   false,
 		CoreForPlaylist: map[string]string{
-			"Atari - 2600":                                   "stella_libretro",
+			"Atari - 2600":                                   "stella2014_libretro",
 			"Atari - 5200":                                   "atari800_libretro",
 			"Atari - 7800":                                   "prosystem_libretro",
 			"Atari - Jaguar":                                 "virtualjaguar_libretro",

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/disintegration/imaging"
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -21,7 +21,7 @@ func (video *Video) renderScreenshot() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)

@@ -60,12 +60,12 @@ func Load(sofile string) error {
 		return err
 	}
 	state.Global.Core.SetEnvironment(environment)
+	state.Global.Core.Init()
 	state.Global.Core.SetVideoRefresh(vid.Refresh)
 	state.Global.Core.SetInputPoll(input.Poll)
 	state.Global.Core.SetInputState(input.State)
 	state.Global.Core.SetAudioSample(audio.Sample)
 	state.Global.Core.SetAudioSampleBatch(audio.SampleBatch)
-	state.Global.Core.Init()
 
 	// Append the library name to the window title.
 	si := state.Global.Core.GetSystemInfo()

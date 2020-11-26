@@ -10,7 +10,6 @@ import (
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"github.com/libretro/ludo/video"
 )
 
 type sceneSavestates struct {
@@ -104,11 +103,6 @@ func (s *sceneSavestates) render() {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		color := video.Color{R: 0, G: 0, B: 0, A: e.iconAlpha}
-		if state.Global.CoreRunning {
-			color = video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha}
-		}
-
 		if e.labelAlpha > 0 {
 			drawSavestateThumbnail(
 				list, i,
@@ -116,22 +110,22 @@ func (s *sceneSavestates) render() {
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio, 128*menu.ratio,
-				e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
+				e.scale, textColor.Alpha(e.iconAlpha),
 			)
 			vid.DrawBorder(
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
-				video.Color{R: color.R, G: color.G, B: color.B, A: e.iconAlpha})
+				textColor.Alpha(e.iconAlpha))
 			if i == 0 {
 				vid.DrawImage(menu.icons["savestate"],
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+					e.scale, textColor.Alpha(e.iconAlpha))
 			}
 
-			vid.Font.SetColor(color.R, color.G, color.B, e.labelAlpha)
+			vid.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			vid.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
@@ -142,7 +136,7 @@ func (s *sceneSavestates) render() {
 
 func (s *sceneSavestates) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 
