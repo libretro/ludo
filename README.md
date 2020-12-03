@@ -29,6 +29,10 @@ You can execute the following command and follow the instructions about exportin
 You need to enable the experimental VC4 OpenGL support (Full KMS) in raspi-config.
 
     sudo apt-get install libopenal-dev xorg-dev
+    
+#### On Alpine / postmarketOS
+
+    sudo apk add musl-dev gcc openal-soft-dev libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev mesa-dev
 
 #### On Windows
 
