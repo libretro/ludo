@@ -19,8 +19,6 @@ type joybinds map[bind]uint32
 const btn = 0
 const axis = 1
 
-const defaultThreshold float32 = 0.5
-
 type bind struct {
 	kind      uint32
 	index     uint32
@@ -99,23 +97,18 @@ func pollJoypads(state inputstate) inputstate {
 				}
 
 				if !settings.Current.MapAxisToDPad {
-					break
-				}
-				threshold := defaultThreshold
-				if k.threshold != 0 {
-					threshold = k.threshold
+					continue
 				}
 				switch {
-				// axisState indexes as returned for dualshock4 on linux
-				case axisState[0] < -threshold:
+				case axisState[0] < -0.5:
 					state[p][libretro.DeviceIDJoypadLeft] = true
-				case axisState[0] > threshold:
+				case axisState[0] > 0.5:
 					state[p][libretro.DeviceIDJoypadRight] = true
 				}
 				switch {
-				case axisState[1] > threshold:
+				case axisState[1] > 0.5:
 					state[p][libretro.DeviceIDJoypadDown] = true
-				case axisState[1] < -threshold:
+				case axisState[1] < -0.5:
 					state[p][libretro.DeviceIDJoypadUp] = true
 				}
 			}

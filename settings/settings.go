@@ -25,11 +25,14 @@ type Settings struct {
 	VideoMonitorIndex int    `toml:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	VideoFilter       string `toml:"video_filter" label:"Video Filter" fmt:"<%s>"`
 	VideoDarkMode     bool   `toml:"video_dark_mode" label:"Video Dark Mode" fmt:"%t" widget:"switch"`
-	MapAxisToDPad     bool   `toml:"map_axis_to_dpad" label:"Map Sticks To DPad" fmt:"%t" widget:"switch"`
 
-	AudioVolume     float32           `toml:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
-	MenuAudioVolume float32           `toml:"menu_audio_volume" label:"Menu Audio Volume" fmt:"%.1f" widget:"range"`
-	ShowHiddenFiles bool              `toml:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
+	AudioVolume float32 `toml:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
+
+	MenuAudioVolume float32 `toml:"menu_audio_volume" label:"Menu Audio Volume" fmt:"%.1f" widget:"range"`
+	ShowHiddenFiles bool    `toml:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
+
+	MapAxisToDPad bool `toml:"input_map_axis_to_dpad" label:"Map Sticks To DPad" fmt:"%t" widget:"switch"`
+
 	CoreForPlaylist map[string]string `hide:"always" toml:"core_for_playlist"`
 
 	CoresDirectory       string `hide:"ludos" toml:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
