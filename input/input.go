@@ -7,6 +7,7 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
 )
 
@@ -17,6 +18,8 @@ type joybinds map[bind]uint32
 
 const btn = 0
 const axis = 1
+
+const defaultThreshold float32 = 0.5
 
 type bind struct {
 	kind      uint32
@@ -93,6 +96,27 @@ func pollJoypads(state inputstate) inputstate {
 						k.direction*axisState[k.index] > k.threshold*k.direction {
 						state[p][v] = true
 					}
+				}
+
+				if !settings.Current.MapAxisToDPad {
+					break
+				}
+				threshold := defaultThreshold
+				if k.threshold != 0 {
+					threshold = k.threshold
+				}
+				switch {
+				// axisState indexes as returned for dualshock4 on linux
+				case axisState[0] < -threshold:
+					state[p][libretro.DeviceIDJoypadLeft] = true
+				case axisState[0] > threshold:
+					state[p][libretro.DeviceIDJoypadRight] = true
+				}
+				switch {
+				case axisState[1] > threshold:
+					state[p][libretro.DeviceIDJoypadDown] = true
+				case axisState[1] < -threshold:
+					state[p][libretro.DeviceIDJoypadUp] = true
 				}
 			}
 		}
