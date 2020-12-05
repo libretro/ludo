@@ -16,8 +16,9 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 1-)" >> $GITHUB_ENV
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
-      - run: OS=Linux ARCH=x86_64 VERSION=${{ github.event.release.tag_name }} make tar
+      - run: OS=Linux ARCH=x86_64 VERSION=$VERSION make tar
 
       - name: Get release
         id: get_release
@@ -31,8 +32,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-Linux-x86_64-${{ github.event.release.tag_name }}.tar.gz
-          asset_name: Ludo-Linux-x86_64-${{ github.event.release.tag_name }}.tar.gz
+          asset_path: Ludo-Linux-x86_64-${VERSION}.tar.gz
+          asset_name: Ludo-Linux-x86_64-${VERSION}.tar.gz
           asset_content_type: application/gzip
 
   build_linux_arm:
@@ -42,6 +43,7 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 1-)" >> $GITHUB_ENV
       - run: sudo apt-get install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
       - run: echo "" | sudo tee /etc/apt/sources.list
@@ -56,7 +58,7 @@ jobs:
       - run: sudo apt-get install libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
       - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
-      - run: OS=Linux ARCH=arm VERSION=${{ github.event.release.tag_name }} make tar
+      - run: OS=Linux ARCH=arm VERSION=$VERSION make tar
 
       - name: Get release
         id: get_release
@@ -70,8 +72,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-Linux-arm-${{ github.event.release.tag_name }}.tar.gz
-          asset_name: Ludo-Linux-arm-${{ github.event.release.tag_name }}.tar.gz
+          asset_path: Ludo-Linux-arm-${VERSION}.tar.gz
+          asset_name: Ludo-Linux-arm-${VERSION}.tar.gz
           asset_content_type: application/gzip
 
   build_osx:
@@ -81,6 +83,7 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 1-)" >> $GITHUB_ENV
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
@@ -91,7 +94,12 @@ jobs:
       - run: security unlock-keychain -p github build.keychain
       - run: security import dev.p12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
       - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
-      - run: OS=OSX ARCH=x86_64 VERSION=${{ github.event.release.tag_name }} make dmg
+      - run: OS=OSX ARCH=x86_64 VERSION=$VERSION make dmg
+      - run: echo "REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${VERSION}.dmg --primary-bundle-id org.libretro.ludo -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -itc_provider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }')" >> $GITHUB_ENV
+      - run: sleep 180
+      - run: xcrun altool --notarization-info $REQUESTUUID -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -ascprovider ZE9XE938Z2
+      - run: xcrun stapler staple Ludo-OSX-x86_64-${VERSION}.dmg
+      - run: xcrun stapler validate Ludo-OSX-x86_64-${VERSION}.dmg
 
       - name: Get release
         id: get_release
@@ -105,8 +113,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-OSX-x86_64-${{ github.event.release.tag_name }}.dmg
-          asset_name: Ludo-OSX-x86_64-${{ github.event.release.tag_name }}.dmg
+          asset_path: Ludo-OSX-x86_64-${VERSION}.dmg
+          asset_name: Ludo-OSX-x86_64-${VERSION}.dmg
           asset_content_type: application/apple-diskimage
 
   build_windows:
@@ -116,6 +124,7 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 1-)" >> $GITHUB_ENV
       - run: choco install wget make --ignore-checksums
       - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
       - run: wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe
@@ -125,9 +134,9 @@ jobs:
       - run: cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
       - run: cp /c/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
       - run: cp /c/Windows/System32/VCRUNTIME140.dll .
-      - run: mkdir -p ./Ludo-Windows-x86_64-${{ github.event.release.tag_name }}/
-      - run: cp *.dll ./Ludo-Windows-x86_64-${{ github.event.release.tag_name }}/
-      - run: OS=Windows ARCH=x86_64 VERSION=${{ github.event.release.tag_name }} make zip
+      - run: mkdir -p ./Ludo-Windows-x86_64-${VERSION}/
+      - run: cp *.dll ./Ludo-Windows-x86_64-${VERSION}/
+      - run: OS=Windows ARCH=x86_64 VERSION=$VERSION make zip
 
       - name: Get release
         id: get_release
@@ -141,6 +150,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-Windows-x86_64-${{ github.event.release.tag_name }}.zip
-          asset_name: Ludo-Windows-x86_64-${{ github.event.release.tag_name }}.zip
+          asset_path: Ludo-Windows-x86_64-${VERSION}.zip
+          asset_name: Ludo-Windows-x86_64-${VERSION}.zip
           asset_content_type: application/zip
