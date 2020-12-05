@@ -21,6 +21,7 @@ jobs:
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: go get .
       - run: xvfb-run -a go test -v -race ./...

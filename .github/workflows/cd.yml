@@ -16,25 +16,17 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
-      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 1-)" >> $GITHUB_ENV
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
+      - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: OS=Linux ARCH=x86_64 VERSION=$VERSION make tar
 
-      - name: Get release
-        id: get_release
-        uses: bruceadams/get-release@v1.2.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: alexellis/upload-assets@0.2.2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-Linux-x86_64-${VERSION}.tar.gz
-          asset_name: Ludo-Linux-x86_64-${VERSION}.tar.gz
-          asset_content_type: application/gzip
+          asset_paths: '["./Ludo-*.tar.gz"]'
 
   build_linux_arm:
     runs-on: ubuntu-latest
@@ -43,7 +35,7 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
-      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 1-)" >> $GITHUB_ENV
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
       - run: echo "" | sudo tee /etc/apt/sources.list
@@ -60,21 +52,12 @@ jobs:
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
       - run: OS=Linux ARCH=arm VERSION=$VERSION make tar
 
-      - name: Get release
-        id: get_release
-        uses: bruceadams/get-release@v1.2.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: alexellis/upload-assets@0.2.2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-Linux-arm-${VERSION}.tar.gz
-          asset_name: Ludo-Linux-arm-${VERSION}.tar.gz
-          asset_content_type: application/gzip
+          asset_paths: '["./Ludo-*.tar.gz"]'
 
   build_osx:
     runs-on: macos-latest
@@ -83,7 +66,7 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
-      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 1-)" >> $GITHUB_ENV
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
@@ -101,21 +84,12 @@ jobs:
       - run: xcrun stapler staple Ludo-OSX-x86_64-${VERSION}.dmg
       - run: xcrun stapler validate Ludo-OSX-x86_64-${VERSION}.dmg
 
-      - name: Get release
-        id: get_release
-        uses: bruceadams/get-release@v1.2.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: alexellis/upload-assets@0.2.2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-OSX-x86_64-${VERSION}.dmg
-          asset_name: Ludo-OSX-x86_64-${VERSION}.dmg
-          asset_content_type: application/apple-diskimage
+          asset_paths: '["./Ludo-*.dmg"]'
 
   build_windows:
     runs-on: windows-latest
@@ -124,7 +98,7 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
-      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 1-)" >> $GITHUB_ENV
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: choco install wget make --ignore-checksums
       - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
       - run: wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe
@@ -138,18 +112,9 @@ jobs:
       - run: cp *.dll ./Ludo-Windows-x86_64-${VERSION}/
       - run: OS=Windows ARCH=x86_64 VERSION=$VERSION make zip
 
-      - name: Get release
-        id: get_release
-        uses: bruceadams/get-release@v1.2.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: alexellis/upload-assets@0.2.2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: Ludo-Windows-x86_64-${VERSION}.zip
-          asset_name: Ludo-Windows-x86_64-${VERSION}.zip
-          asset_content_type: application/zip
+          asset_paths: '["./Ludo-*.zip"]'
