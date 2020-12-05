@@ -52,7 +52,7 @@ jobs:
       - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
       - run: OS=Linux ARCH=arm VERSION=$VERSION make tar
-      - run: sha256sum Ludo-Linux-x86_64-${VERSION}.tar.gz > Ludo-Linux-x86_64-${VERSION}.tar.gz.sha256
+      - run: sha256sum Ludo-Linux-arm-${VERSION}.tar.gz > Ludo-Linux-arm-${VERSION}.tar.gz.sha256
 
       - name: Upload Release Asset
         uses: alexellis/upload-assets@0.2.2
@@ -102,7 +102,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v2
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
-      - run: choco install wget make --ignore-checksums
+      - run: choco install wget make hashdeep --ignore-checksums
       - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
       - run: wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe
       - run: 7z x openal-soft-1.19.0-bin.zip -o/c/openal-soft-1.19.0-bin
