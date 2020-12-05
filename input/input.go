@@ -135,7 +135,7 @@ func Poll() {
 // State is a callback passed to core.SetInputState
 // It returns 1 if the button corresponding to the parameters is pressed
 func State(port uint, device uint32, index uint, id uint) int16 {
-	if id >= 255 || index > 0 || device != libretro.DeviceJoypad {
+	if id >= 255 || index > 0 || port >= MaxPlayers || device&libretro.DeviceJoypad != 1 {
 		return 0
 	}
 
