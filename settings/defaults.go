@@ -53,6 +53,7 @@ func defaultSettings() Settings {
 			"Microsoft - MSX2":                               "bluemsx_libretro",
 			"NEC - PC Engine SuperGrafx":                     "mednafen_supergrafx_libretro",
 			"NEC - PC Engine - TurboGrafx 16":                "mednafen_pce_fast_libretro",
+			"NEC - PC Engine CD - TurboGrafx-CD":             "mednafen_pce_fast_libretro",
 			"Nintendo - Family Computer Disk System":         "fceumm_libretro",
 			"Nintendo - Game Boy Advance":                    "mgba_libretro",
 			"Nintendo - Game Boy Color":                      "gambatte_libretro",
