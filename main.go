@@ -81,7 +81,6 @@ func gameSyncCheck() {
 
 // Rollback if needed.
 func HandleRollbacks() {
-	return
 	lastGameTick := state.Global.Tick - 1
 	// The input needed to resync state is available so rollback.
 	// netplay.LastSyncedTick keeps track of the lastest synced game tick.
@@ -170,7 +169,8 @@ func update() {
 				if netplay.TickSyncing == false {
 					// Calculate tick offset using the clock synchronization algorithm.
 					// See https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_synchronization_algorithm
-					netplay.TickOffset = (netplay.LocalTickDelta - netplay.RemoteTickDelta) / 2.0
+					netplay.TickOffset = (float64(netplay.LocalTickDelta) - float64(netplay.RemoteTickDelta)) / 2.0
+					log.Println(netplay.TickOffset)
 
 					// Only sync when the tick difference is more than one frame.
 					if netplay.TickOffset >= 1 {
@@ -220,6 +220,7 @@ func update() {
 			// Update local input history
 			sendInput := input.GetLatest(input.LocalPlayerPort)
 			netplay.SetLocalInput(sendInput, lastGameTick+netplay.NET_INPUT_DELAY)
+			// log.Println(sendInput, lastGameTick+netplay.NET_INPUT_DELAY)
 
 			// Set the input state fo[r the current tick for the remote player's character.
 			input.SetState(input.LocalPlayerPort, netplay.GetLocalInputState(lastGameTick))
@@ -270,7 +271,8 @@ func update() {
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
-	var currTime, prevTime time.Time
+	currTime := time.Now()
+	prevTime := time.Now()
 	lag := float64(0)
 	for !vid.Window.ShouldClose() {
 		currTime = time.Now()
@@ -333,13 +335,12 @@ func gameUnserialize() {
 		return
 	}
 
-	log.Println("Rolling back")
-
 	s := state.Global.Core.SerializeSize()
 	err := state.Global.Core.Unserialize(SAVESTATE, s)
 	if err != nil {
 		log.Println(err)
 	}
+	log.Println("Rolling back size", s)
 	input.Unserialize(BUFF)
 	state.Global.Tick = TICK
 }

@@ -53,7 +53,7 @@ var remoteInputHistory = [NET_INPUT_HISTORY_SIZE]EncodedInput{}
 var clientAddr net.Addr
 var latency int64
 var TickSyncing = false
-var TickOffset = int64(0)
+var TickOffset = float64(0)
 var LastSyncedTick = int64(-1)
 var DesyncCheckRate = int64(20)
 var toSendPackets = []struct {
@@ -158,7 +158,7 @@ func DesyncCheck() (bool, int64) {
 
 	// When the local sync data does not match the remote data indicate a desync has occurred.
 	if isStateDesynced || localSyncDataTick == remoteSyncDataTick {
-		// print("Desync Check at: " .. localSyncDataTick)
+		log.Println("Desync Check at: ", localSyncDataTick)
 
 		if localSyncData != remoteSyncData {
 			log.Println(localSyncData, remoteSyncData)
