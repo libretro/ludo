@@ -215,7 +215,7 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		return 0
 	}
 
-	if GetLatest(port)[id] {
+	if currentState(port)[id] {
 		return 1
 	}
 	return 0

@@ -176,7 +176,7 @@ func SendInputData(tick int64) {
 		return
 	}
 
-	log.Println("Send input packet", tick)
+	//log.Println("Send input packet", tick)
 
 	SendPacket(MakeInputPacket(tick), 1)
 }
@@ -238,9 +238,9 @@ func ProcessDelayedPackets() {
 // Send a packet immediately
 func SendPacketRaw(packet []byte) {
 	_, err := Conn.WriteTo(packet, clientAddr)
-	if err != nil {
-		log.Println(err)
-	}
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 }
 
 // Handles receiving packets from the other client.
@@ -297,7 +297,7 @@ func ReceiveData() {
 				binary.Read(r, binary.LittleEndian, &tickDelta)
 				binary.Read(r, binary.LittleEndian, &receivedTick)
 
-				log.Println("Received input", receivedTick)
+				//log.Println("Received input", receivedTick)
 
 				// We only care about the latest tick delta, so make sure the confirmed frame is atleast the same or newer.
 				// This would work better if we added a packet count.
@@ -360,10 +360,7 @@ func MakeInputPacket(tick int64) []byte {
 	historyIndexStart := tick - NET_SEND_HISTORY_SIZE
 	for i := int64(0); i < NET_SEND_HISTORY_SIZE; i++ {
 		encodedInput := inputHistory[(NET_INPUT_HISTORY_SIZE+historyIndexStart+i)%NET_INPUT_HISTORY_SIZE]
-		err := binary.Write(buf, binary.LittleEndian, encodedInput)
-		if err != nil {
-			log.Println(err)
-		}
+		binary.Write(buf, binary.LittleEndian, encodedInput)
 	}
 
 	return buf.Bytes()

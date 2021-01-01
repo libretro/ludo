@@ -294,7 +294,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 }
 
 func gameUpdate() {
-	log.Println("updating", state.Global.Tick)
+	//log.Println("updating", state.Global.Tick)
 	if state.Global.CoreRunning {
 		state.Global.Core.Run()
 		if state.Global.Core.FrameTimeCallback != nil {
@@ -311,7 +311,7 @@ var BUFF = [input.MaxPlayers][input.MaxFrames]input.PlayerState{}
 var TICK = int64(0)
 
 func gameSerialize() {
-	log.Println("gameSerialize")
+	//log.Println("gameSerialize")
 	s := state.Global.Core.SerializeSize()
 	bytes, err := state.Global.Core.Serialize(s)
 	if err != nil {
