@@ -161,6 +161,7 @@ func DesyncCheck() (bool, int64) {
 		// print("Desync Check at: " .. localSyncDataTick)
 
 		if localSyncData != remoteSyncData {
+			log.Println(localSyncData, remoteSyncData)
 			isStateDesynced = true
 			return true, localSyncDataTick
 		}
@@ -238,9 +239,9 @@ func ProcessDelayedPackets() {
 // Send a packet immediately
 func SendPacketRaw(packet []byte) {
 	_, err := Conn.WriteTo(packet, clientAddr)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // Handles receiving packets from the other client.
@@ -312,13 +313,18 @@ func ReceiveData() {
 
 					ConfirmedTick = receivedTick
 
-					// log.Println("Received Input: ", results[3+NET_SEND_HISTORY_SIZE], " @ ",  receivedTick)
-
-					for offset := int64(0); offset < NET_SEND_HISTORY_SIZE; offset++ {
+					// if !isServer {
+					// 	log.Println("----")
+					// }
+					for offset := int64(NET_SEND_HISTORY_SIZE); offset > 0; offset-- {
 						var encodedInput EncodedInput
 						binary.Read(r, binary.LittleEndian, &encodedInput)
 						// Save the input history sent in the packet.
 						SetRemoteEncodedInput(encodedInput, receivedTick-offset)
+
+						// if !isServer {
+						// 	log.Println(encodedInput, receivedTick-offset)
+						// }
 					}
 				}
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"hash/crc32"
 	"log"
 	"math"
 	"os"
@@ -36,13 +37,14 @@ const MAX_FRAME_SKIP = 25
 
 // Gets the sync data to confirm the client game states are in sync
 func gameGetSyncData() uint32 {
-	// For now we will just compare the x coordinates of the both players
-	// if CHAR1 and CHAR2 then
-	// 	return love.data.pack("string", "nnnn", math.floor(CHAR1.x), math.floor(CHAR1.y), math.floor(CHAR2.x), math.floor(CHAR2.y))
-	// end
-	// return love.data.pack("string", "nnnn", 0, 0, 0, 0)
+	s := state.Global.Core.SerializeSize()
+	bytes, err := state.Global.Core.Serialize(s)
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
 
-	return 42
+	return crc32.ChecksumIEEE(bytes)
 }
 
 // Checks whether or not a game state desync has occurred between the local and remote clients.
@@ -79,6 +81,7 @@ func gameSyncCheck() {
 
 // Rollback if needed.
 func HandleRollbacks() {
+	return
 	lastGameTick := state.Global.Tick - 1
 	// The input needed to resync state is available so rollback.
 	// netplay.LastSyncedTick keeps track of the lastest synced game tick.
@@ -93,12 +96,12 @@ func HandleRollbacks() {
 	// rollbackGraphTable[ 1 + (lastGameTick % 60) * 2 + 1  ] = -1 * rollbackFrames * GRAPH_UNIT_SCALE
 
 	if lastGameTick >= 0 && lastGameTick > (netplay.LastSyncedTick+1) && netplay.ConfirmedTick > netplay.LastSyncedTick {
-		log.Println("Rolling back")
+		log.Println(lastGameTick, netplay.LastSyncedTick, netplay.ConfirmedTick, rollbackFrames)
 
 		// Must revert back to the last known synced game frame.
 		gameUnserialize()
 
-		for i := int64(1); i < rollbackFrames; i++ {
+		for i := int64(0); i < rollbackFrames; i++ {
 			// Get input from the input history buffer. The network system will predict input after the last confirmed tick (for the remote player).
 			input.SetState(input.LocalPlayerPort, netplay.GetLocalInputState(state.Global.Tick)) // Offset of 1 ensure it's used for the next game update.
 			input.SetState(input.RemotePlayerPort, netplay.GetRemoteInputState(state.Global.Tick))
@@ -329,6 +332,8 @@ func gameUnserialize() {
 		log.Println("Trying to unserialize a savestate of len 0")
 		return
 	}
+
+	log.Println("Rolling back")
 
 	s := state.Global.Core.SerializeSize()
 	err := state.Global.Core.Unserialize(SAVESTATE, s)
