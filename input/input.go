@@ -67,12 +67,12 @@ func index(offset int64) int64 {
 	return (MaxFrames + tick) % MaxFrames
 }
 
-func Serialize() interface{} {
+func Serialize() [MaxPlayers][MaxFrames]PlayerState {
 	copy, err := deepcopy.Anything(buffers)
 	if err != nil {
 		panic(err)
 	}
-	return copy
+	return copy.([MaxPlayers][MaxFrames]PlayerState)
 }
 
 func Unserialize(st interface{}) {

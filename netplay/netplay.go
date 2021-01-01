@@ -195,7 +195,7 @@ func SendPacket(packet []byte, duplicates int) {
 		duplicates = 1
 	}
 
-	for i := 1; i < duplicates; i++ {
+	for i := 0; i < duplicates; i++ {
 		if NET_SEND_DELAY_FRAMES > 0 {
 			SendPacketWithDelay(packet)
 		} else {
@@ -293,8 +293,6 @@ func ReceiveData() {
 				}
 			} else if code == MsgCodePlayerInput {
 				// Break apart the packet into its parts.
-				//results := { love.data.unpack(INPUT_FORMAT_STRING, data, 1) } // Final parameter is the start position
-
 				var tickDelta, receivedTick int64
 				binary.Read(r, binary.LittleEndian, &tickDelta)
 				binary.Read(r, binary.LittleEndian, &receivedTick)
@@ -324,13 +322,13 @@ func ReceiveData() {
 
 				// NetLog("Received Tick: " .. receivedTick .. ",  Input: " .. remoteInputHistory[(confirmedTick % NET_INPUT_HISTORY_SIZE)+1])
 			} else if code == MsgCodePing {
-				var pingTime time.Time
+				var pingTime int64
 				binary.Read(r, binary.LittleEndian, &pingTime)
-				SendPacket(MakePongPacket(pingTime), 1)
+				SendPacket(MakePongPacket(time.Unix(pingTime, 0)), 1)
 			} else if code == MsgCodePong {
-				var pongTime time.Time
+				var pongTime int64
 				binary.Read(r, binary.LittleEndian, &pongTime)
-				latency = time.Now().Unix() - pongTime.Unix()
+				latency = time.Now().Unix() - pongTime
 				//print("Got pong message: " .. latency)
 			} else if code == MsgCodeSync {
 				var tick int64
@@ -352,8 +350,7 @@ func ReceiveData() {
 
 // Generate a packet containing information about player input.
 func MakeInputPacket(tick int64) []byte {
-	// log.Println('[Packet] tick: ', tick, '      input: ', history[NET_SEND_HISTORY_SIZE])
-	// data := love.data.pack("string", INPUT_FORMAT_STRING, MsgCodePlayerInput, LocalTickDelta, tick, unpack(history))
+	log.Println("MakeInputPacket", tick)
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodePlayerInput)
 	binary.Write(buf, binary.LittleEndian, LocalTickDelta)
@@ -362,7 +359,10 @@ func MakeInputPacket(tick int64) []byte {
 	historyIndexStart := tick - NET_SEND_HISTORY_SIZE
 	for i := int64(0); i < NET_SEND_HISTORY_SIZE; i++ {
 		encodedInput := inputHistory[(NET_INPUT_HISTORY_SIZE+historyIndexStart+i)%NET_INPUT_HISTORY_SIZE]
-		binary.Write(buf, binary.LittleEndian, encodedInput)
+		err := binary.Write(buf, binary.LittleEndian, encodedInput)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	return buf.Bytes()
@@ -377,7 +377,7 @@ func SendPingMessage() {
 func MakePingPacket(t time.Time) []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodePing)
-	binary.Write(buf, binary.LittleEndian, t)
+	binary.Write(buf, binary.LittleEndian, t.Unix())
 	return buf.Bytes()
 }
 
@@ -385,7 +385,7 @@ func MakePingPacket(t time.Time) []byte {
 func MakePongPacket(t time.Time) []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodePong)
-	binary.Write(buf, binary.LittleEndian, t)
+	binary.Write(buf, binary.LittleEndian, t.Unix())
 	return buf.Bytes()
 }
 

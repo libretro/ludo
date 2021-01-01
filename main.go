@@ -29,6 +29,8 @@ func init() {
 const ROLLBACK_TEST_ENABLED = false
 const NET_ROLLBACK_MAX_FRAMES = 10
 const NET_DETECT_DESYNCS = true
+const TICK_RATE = 1.0 / 60.0
+const MAX_FRAME_SKIP = 25
 
 // Gets the sync data to confirm the client game states are in sync
 func gameGetSyncData() uint32 {
@@ -89,6 +91,7 @@ func HandleRollbacks(vid *video.Video) {
 	// rollbackGraphTable[ 1 + (lastGameTick % 60) * 2 + 1  ] = -1 * rollbackFrames * GRAPH_UNIT_SCALE
 
 	if lastGameTick >= 0 && lastGameTick > (netplay.LastSyncedTick+1) && netplay.ConfirmedTick > netplay.LastSyncedTick {
+		log.Println("Rolling back")
 
 		// Must revert back to the last known synced game frame.
 		gameUnserialize()
@@ -216,10 +219,11 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			// Poll inputs for this frame. In network mode the network manager will handle updating player command buffers.
 			// updateCommandBuffers := !netplay.Enabled
 			// input.Poll(updateCommandBuffers)
-			input.Poll()
 
 			// Network manager will handle updating inputs.
 			if netplay.Enabled {
+				input.Poll()
+
 				// Update local input history
 				sendInput := input.GetLatest(input.LocalPlayerPort)
 				netplay.SetLocalInput(sendInput, lastGameTick+netplay.NET_INPUT_DELAY)
@@ -275,6 +279,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 
 func gameUpdate(vid *video.Video) {
 	// if !state.Global.MenuActive {
+	log.Println("updating", state.Global.Tick)
 	if state.Global.CoreRunning {
 		state.Global.Core.Run()
 		if state.Global.Core.FrameTimeCallback != nil {
@@ -293,7 +298,7 @@ func gameUpdate(vid *video.Video) {
 	// }
 	// m.RenderNotifications()
 	// if state.Global.FastForward {
-	// 	glfw.SwapInterval(0)
+	glfw.SwapInterval(0)
 	// } else {
 	// 	glfw.SwapInterval(1)
 	// }
@@ -311,8 +316,7 @@ func gameSerialize() {
 	}
 	SAVESTATE = bytes
 
-	buff := input.Serialize()
-	BUFF = buff.([input.MaxPlayers][input.MaxFrames]input.PlayerState)
+	BUFF = input.Serialize()
 }
 
 func gameUnserialize() {
