@@ -15,14 +15,14 @@ import (
 )
 
 // MaxPlayers is the maximum number of players to poll input for
-const MaxPlayers = 5
+const MaxPlayers = 2
 
-const maxFrames = 60
+const MaxFrames = int64(60)
 const LocalPlayerPort = 0
 const RemotePlayerPort = 1
 
 var polled = InputState{}
-var buffers = []InputState{}
+var buffers = [MaxPlayers][MaxFrames]PlayerState{}
 
 type joybinds map[bind]uint32
 
@@ -61,10 +61,10 @@ const (
 	ActionLast uint32 = libretro.DeviceIDJoypadR3 + 5
 )
 
-func index(offset int) int {
+func index(offset int64) int64 {
 	tick := state.Global.Tick
 	tick += offset
-	return (maxFrames + tick) % maxFrames
+	return (MaxFrames + tick) % MaxFrames
 }
 
 func Serialize() interface{} {
@@ -80,11 +80,11 @@ func Unserialize(st interface{}) {
 	if err != nil {
 		panic(err)
 	}
-	buffers = copy.([]InputState)
+	buffers = copy.([MaxPlayers][MaxFrames]PlayerState)
 }
 
-func getState(port uint, tick int) PlayerState {
-	frame := (maxFrames + tick) % maxFrames
+func getState(port uint, tick int64) PlayerState {
+	frame := (MaxFrames + tick) % MaxFrames
 	st := buffers[port][frame]
 	return st
 }
@@ -98,15 +98,13 @@ func currentState(port uint) PlayerState {
 }
 
 func SetState(port uint, st PlayerState) {
-	copy, err := deepcopy.Anything(st)
-	if err != nil {
-		panic(err)
+	for i, b := range st {
+		buffers[port][index(0)][i] = b
 	}
-	buffers[port][index(0)] = copy.(PlayerState)
 }
 
-func initializeBuffer(port uint) {
-	for i := 0; i < maxFrames; i++ {
+func InitializeBuffer(port uint) {
+	for i := int64(0); i < MaxFrames; i++ {
 		buffers[port][i] = PlayerState{}
 	}
 }

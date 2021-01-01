@@ -20,8 +20,8 @@ type State struct {
 	DB                rdb.DB         // The game database loaded on startup
 	LudOS             bool           // Run Ludo as a unix desktop environment
 	FastForward       bool           // Run the core as fast as possible
-	Tick              int
-	LastConfirmedTick int
+	Tick              int64
+	LastConfirmedTick int64
 	SyncedLastUpdate  bool
 
 	sync.Mutex

@@ -31,14 +31,14 @@ const NET_ROLLBACK_MAX_FRAMES = 10
 const NET_DETECT_DESYNCS = true
 
 // Gets the sync data to confirm the client game states are in sync
-func gameGetSyncData() string {
+func gameGetSyncData() uint32 {
 	// For now we will just compare the x coordinates of the both players
 	// if CHAR1 and CHAR2 then
 	// 	return love.data.pack("string", "nnnn", math.floor(CHAR1.x), math.floor(CHAR1.y), math.floor(CHAR2.x), math.floor(CHAR2.y))
 	// end
 	// return love.data.pack("string", "nnnn", 0, 0, 0, 0)
 
-	return "0000"
+	return 42
 }
 
 // Checks whether or not a game state desync has occurred between the local and remote clients.
@@ -93,7 +93,7 @@ func HandleRollbacks(vid *video.Video) {
 		// Must revert back to the last known synced game frame.
 		gameUnserialize()
 
-		for i := 1; i < rollbackFrames; i++ {
+		for i := int64(0); i < rollbackFrames; i++ {
 			// Get input from the input history buffer. The network system will predict input after the last confirmed tick (for the remote player).
 			input.SetState(input.LocalPlayerPort, netplay.GetLocalInputState(state.Global.Tick)) // Offset of 1 ensure it's used for the next game update.
 			input.SetState(input.RemotePlayerPort, netplay.GetRemoteInputState(state.Global.Tick))
@@ -301,6 +301,7 @@ func gameUpdate(vid *video.Video) {
 }
 
 var SAVESTATE = []byte{}
+var BUFF = [input.MaxPlayers][input.MaxFrames]input.PlayerState{}
 
 func gameSerialize() {
 	s := state.Global.Core.SerializeSize()
@@ -309,6 +310,9 @@ func gameSerialize() {
 		log.Println(err)
 	}
 	SAVESTATE = bytes
+
+	buff := input.Serialize()
+	BUFF = buff.([input.MaxPlayers][input.MaxFrames]input.PlayerState)
 }
 
 func gameUnserialize() {
@@ -317,6 +321,7 @@ func gameUnserialize() {
 	if err != nil {
 		log.Println(err)
 	}
+	input.Unserialize(BUFF)
 }
 
 func main() {
