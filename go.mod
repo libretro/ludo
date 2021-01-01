@@ -1,6 +1,7 @@
 module github.com/libretro/ludo
 
 require (
+	github.com/barkimedes/go-deepcopy v0.0.0-20200817023428-a044a1957ca4
 	github.com/cavaliercoder/grab v2.0.0+incompatible
 	github.com/disintegration/imaging v1.6.0
 	github.com/fatih/structs v1.1.0
