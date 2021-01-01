@@ -52,7 +52,7 @@ var toSendPackets = []struct {
 	Packet []byte
 	Time   time.Time
 }{}
-var clientIPPort net.Addr
+var clientAddr net.Addr
 var latency int64
 var ConfirmedTick = 0
 var TickSyncing = false
@@ -63,7 +63,8 @@ var DesyncCheckRate = 20
 // Init initialises a netplay session between two players
 func Init() {
 	if Listen { // Host mode
-		Conn, err := net.ListenUDP("udp", &net.UDPAddr{
+		var err error
+		Conn, err = net.ListenUDP("udp", &net.UDPAddr{
 			Port: 8080,
 		})
 		if err != nil {
@@ -73,14 +74,10 @@ func Init() {
 
 		Conn.SetReadBuffer(1048576)
 
-		log.Println("Netplay", "Listening.")
-
-		msg := [2]byte{}
-		Conn.Read(msg[:])
-		log.Println(msg)
-		log.Println("Netplay", "Player #2 is connected.")
 		Enabled = true
 		isServer = true
+
+		log.Println("Netplay", "Listening.")
 	} else if Join { // Guest mode
 		var err error
 		Conn, err = net.DialUDP("udp", nil, &net.UDPAddr{
@@ -91,11 +88,14 @@ func Init() {
 			log.Println("Netplay", err.Error())
 			return
 		}
-		log.Println("Netplay", "Connected.")
-		Conn.Write([]byte("hi"))
+
+		clientAddr = Conn.RemoteAddr()
+
 		Enabled = true
 		isServer = false
-		clientIPPort = Conn.RemoteAddr()
+
+		log.Println("sending handshake")
+		SendPacket(MakeHandshakePacket(), 5)
 	}
 }
 
@@ -222,16 +222,16 @@ func ProcessDelayedPackets() {
 
 // Send a packet immediately
 func SendPacketRaw(packet []byte) {
-	Conn.WriteTo(packet, clientIPPort)
+	Conn.WriteTo(packet, clientAddr)
 }
 
 // Handles receiving packets from the other client.
-func ReceivePacket() ([]byte, net.Addr, error) {
-	data := []byte{}
+func ReceivePacket() (int, []byte, net.Addr, error) {
+	buffer := make([]byte, 1024)
+	Conn.SetReadDeadline(time.Now().Add(time.Millisecond))
+	n, addr, err := Conn.ReadFrom(buffer)
 
-	_, addr, err := Conn.ReadFrom(data)
-
-	return data[:], addr, err
+	return n, buffer[:n], addr, err
 }
 
 // Checks the queue for any incoming packets and process them.
@@ -242,9 +242,13 @@ func ReceiveData() {
 
 	// For now we'll process all packets every frame.
 	for {
-		data, addr, err := ReceivePacket()
+		n, data, addr, err := ReceivePacket()
+		if err != nil {
+			// log.Println(err)
+			return
+		}
 
-		if err == nil {
+		if n > 0 {
 			r := bytes.NewReader(data)
 			var code byte
 			binary.Read(r, binary.LittleEndian, &code)
@@ -258,9 +262,9 @@ func ReceiveData() {
 					if true {
 						// Server needs to the other the client address and ip to know where to send data.
 						if isServer {
-							clientIPPort = addr
+							clientAddr = addr
 						}
-						log.Println("Received Handshake from: ", clientIPPort.String())
+						log.Println("Received Handshake from: ", clientAddr.String())
 						// Send handshake to client.
 						SendPacket(MakeHandshakePacket(), 5)
 					}
@@ -320,8 +324,6 @@ func ReceiveData() {
 					DesyncCheck()
 				}
 			}
-		} else {
-			return
 		}
 	}
 }
