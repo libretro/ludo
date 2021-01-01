@@ -38,7 +38,7 @@ type EncodedInput [20]byte
 var Enabled = false
 var ConnectedToClient = false
 var isServer = false
-var ConfirmedTick = int64(-1)
+var ConfirmedTick = int64(0)
 var localSyncData = uint32(0)
 var remoteSyncData = uint32(0)
 var isStateDesynced = false
