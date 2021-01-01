@@ -50,16 +50,16 @@ var syncDataHistoryLocal = [NET_INPUT_HISTORY_SIZE]uint32{}
 var syncDataHistoryRemote = [NET_INPUT_HISTORY_SIZE]uint32{}
 var inputHistory = [NET_INPUT_HISTORY_SIZE]EncodedInput{}
 var remoteInputHistory = [NET_INPUT_HISTORY_SIZE]EncodedInput{}
-var toSendPackets = []struct {
-	Packet []byte
-	Time   time.Time
-}{}
 var clientAddr net.Addr
 var latency int64
 var TickSyncing = false
 var TickOffset = int64(0)
 var LastSyncedTick = int64(-1)
 var DesyncCheckRate = int64(20)
+var toSendPackets = []struct {
+	Packet []byte
+	Time   time.Time
+}{}
 
 // Init initialises a netplay session between two players
 func Init() {
@@ -314,7 +314,7 @@ func ReceiveData() {
 
 					// log.Println("Received Input: ", results[3+NET_SEND_HISTORY_SIZE], " @ ",  receivedTick)
 
-					for offset := int64(0); offset < NET_SEND_HISTORY_SIZE-1; offset++ {
+					for offset := int64(0); offset < NET_SEND_HISTORY_SIZE; offset++ {
 						var encodedInput EncodedInput
 						binary.Read(r, binary.LittleEndian, &encodedInput)
 						// Save the input history sent in the packet.

@@ -79,7 +79,6 @@ func gameSyncCheck() {
 
 // Rollback if needed.
 func HandleRollbacks() {
-	return
 	lastGameTick := state.Global.Tick - 1
 	// The input needed to resync state is available so rollback.
 	// netplay.LastSyncedTick keeps track of the lastest synced game tick.
@@ -309,6 +308,7 @@ func gameUpdate() {
 
 var SAVESTATE = []byte{}
 var BUFF = [input.MaxPlayers][input.MaxFrames]input.PlayerState{}
+var TICK = int64(0)
 
 func gameSerialize() {
 	log.Println("gameSerialize")
@@ -321,6 +321,7 @@ func gameSerialize() {
 	copy(SAVESTATE[:], bytes[:])
 
 	BUFF = input.Serialize()
+	TICK = state.Global.Tick
 }
 
 func gameUnserialize() {
@@ -335,6 +336,7 @@ func gameUnserialize() {
 		log.Println(err)
 	}
 	input.Unserialize(BUFF)
+	state.Global.Tick = TICK
 }
 
 func main() {
