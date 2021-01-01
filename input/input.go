@@ -21,8 +21,8 @@ const maxFrames = 60
 const localPlayerPort = 0
 const remotePlayerPort = 1
 
-var polled = inputState{}
-var buffers = []inputState{}
+var polled = InputState{}
+var buffers = []InputState{}
 
 type joybinds map[bind]uint32
 
@@ -36,15 +36,15 @@ type bind struct {
 	threshold float32
 }
 
-type playerState [ActionLast]bool
-type inputState [MaxPlayers]playerState
+type PlayerState [ActionLast]bool
+type InputState [MaxPlayers]PlayerState
 
 // Input state for all the players
 var (
-	NewState inputState // input state for the current frame
-	OldState inputState // input state for the previous frame
-	Released inputState // keys just released during this frame
-	Pressed  inputState // keys just pressed during this frame
+	NewState InputState // input state for the current frame
+	OldState InputState // input state for the previous frame
+	Released InputState // keys just released during this frame
+	Pressed  InputState // keys just pressed during this frame
 )
 
 // Hot keys
@@ -80,34 +80,34 @@ func Unserialize(st interface{}) {
 	if err != nil {
 		panic(err)
 	}
-	buffers = copy.([]inputState)
+	buffers = copy.([]InputState)
 }
 
-func getState(port uint, tick int) playerState {
+func getState(port uint, tick int) PlayerState {
 	frame := (maxFrames + tick) % maxFrames
 	st := buffers[port][frame]
 	return st
 }
 
-func getLatest(port uint) playerState {
+func getLatest(port uint) PlayerState {
 	return polled[port]
 }
 
-func currentState(port uint) playerState {
+func currentState(port uint) PlayerState {
 	return getState(port, state.Global.Tick)
 }
 
-func setState(port uint, st playerState) {
+func setState(port uint, st PlayerState) {
 	copy, err := deepcopy.Anything(st)
 	if err != nil {
 		panic(err)
 	}
-	buffers[port][index(0)] = copy.(playerState)
+	buffers[port][index(0)] = copy.(PlayerState)
 }
 
 func initializeBuffer(port uint) {
 	for i := 0; i < maxFrames; i++ {
-		buffers[port][i] = playerState{}
+		buffers[port][i] = PlayerState{}
 	}
 }
 
@@ -187,7 +187,7 @@ func pollKeyboard() {
 }
 
 // Compute the keys pressed or released during this frame
-func getPressedReleased(new inputState, old inputState) (inputState, inputState) {
+func getPressedReleased(new InputState, old InputState) (InputState, InputState) {
 	for p := range new {
 		for k := range new[p] {
 			Pressed[p][k] = new[p][k] && !old[p][k]
@@ -199,7 +199,7 @@ func getPressedReleased(new inputState, old inputState) (inputState, inputState)
 
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
-	polled = inputState{}
+	polled = InputState{}
 	pollKeyboard()
 	pollJoypads()
 	NewState = polled

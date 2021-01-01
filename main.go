@@ -76,8 +76,8 @@ func main() {
 	flag.StringVar(&state.Global.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Global.Verbose, "v", false, "Verbose logs")
 	flag.BoolVar(&state.Global.LudOS, "ludos", false, "Expose the features related to LudOS")
-	flag.IntVar(&netplay.Listen, "listen", -1, "Example: :8080")
-	flag.StringVar(&netplay.Join, "join", "", "Peer IP and port to join")
+	flag.BoolVar(&netplay.Listen, "listen", false, "For the netplay server")
+	flag.BoolVar(&netplay.Join, "join", false, "For the netplay client")
 	flag.Parse()
 	args := flag.Args()
 
