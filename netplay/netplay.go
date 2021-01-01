@@ -33,8 +33,8 @@ var Join bool
 // Conn is the connection between two players
 var Conn *net.UDPConn
 
-var enabled = false
-var connectedToClient = false
+var Enabled = false
+var ConnectedToClient = false
 var isServer = false
 var confirmedTick = -1
 var localSyncData = ""
@@ -42,8 +42,8 @@ var remoteSyncData = ""
 var isStateDesynced = false
 var localSyncDataTick = -1
 var remoteSyncDataTick = -1
-var localTickDelta = 0
-var remoteTickDelta = 0
+var LocalTickDelta = 0
+var RemoteTickDelta = 0
 var syncDataHistoryLocal = []string{}
 var syncDataHistoryRemote = []string{}
 var inputHistory = [][20]byte{}
@@ -54,6 +54,11 @@ var toSendPackets = []struct {
 }{}
 var clientIPPort net.Addr
 var latency int64
+var ConfirmedTick = 0
+var TickSyncing = false
+var TickOffset = 0
+var LastSyncedTick = -1
+var DesyncCheckRate = 20
 
 // Init initialises a netplay session between two players
 func Init() {
@@ -68,10 +73,14 @@ func Init() {
 
 		Conn.SetReadBuffer(1048576)
 
+		log.Println("Netplay", "Listening.")
+
 		msg := [2]byte{}
 		Conn.Read(msg[:])
 		log.Println(msg)
 		log.Println("Netplay", "Player #2 is connected.")
+		Enabled = true
+		isServer = true
 	} else if Join { // Guest mode
 		var err error
 		Conn, err = net.DialUDP("udp", nil, &net.UDPAddr{
@@ -84,6 +93,9 @@ func Init() {
 		}
 		log.Println("Netplay", "Connected.")
 		Conn.Write([]byte("hi"))
+		Enabled = true
+		isServer = false
+		clientIPPort = Conn.RemoteAddr()
 	}
 }
 
@@ -147,7 +159,7 @@ func DesyncCheck() (bool, int) {
 // Send the inputState for the local player to the remote player for the given game tick.
 func SendInputData(tick int) {
 	// Don't send input data when not connect to another player's game client.
-	if !(enabled && connectedToClient) {
+	if !(Enabled && ConnectedToClient) {
 		return
 	}
 
@@ -215,16 +227,16 @@ func SendPacketRaw(packet []byte) {
 
 // Handles receiving packets from the other client.
 func ReceivePacket() ([]byte, net.Addr, error) {
-	data := [1024]byte{}
+	data := []byte{}
 
-	_, addr, err := Conn.ReadFrom(data[:])
+	_, addr, err := Conn.ReadFrom(data)
 
 	return data[:], addr, err
 }
 
 // Checks the queue for any incoming packets and process them.
 func ReceiveData() {
-	if !enabled {
+	if !Enabled {
 		return
 	}
 
@@ -239,8 +251,8 @@ func ReceiveData() {
 
 			// Handshake code must be received by both game instances before a match can begin.
 			if code == MsgCodeHandshake {
-				if !connectedToClient {
-					connectedToClient = true
+				if !ConnectedToClient {
+					ConnectedToClient = true
 
 					// The server needs to remember the address and port in order to send data to the other cilent.
 					if true {
@@ -264,7 +276,7 @@ func ReceiveData() {
 				// We only care about the latest tick delta, so make sure the confirmed frame is atleast the same or newer.
 				// This would work better if we added a packet count.
 				if receivedTick >= confirmedTick {
-					remoteTickDelta = tickDelta
+					RemoteTickDelta = tickDelta
 				}
 
 				if receivedTick > confirmedTick {
@@ -317,10 +329,10 @@ func ReceiveData() {
 // Generate a packet containing information about player input.
 func MakeInputPacket(tick int) []byte {
 	// log.Println('[Packet] tick: ', tick, '      input: ', history[NET_SEND_HISTORY_SIZE])
-	// data := love.data.pack("string", INPUT_FORMAT_STRING, MsgCodePlayerInput, localTickDelta, tick, unpack(history))
+	// data := love.data.pack("string", INPUT_FORMAT_STRING, MsgCodePlayerInput, LocalTickDelta, tick, unpack(history))
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodePlayerInput)
-	binary.Write(buf, binary.LittleEndian, localTickDelta)
+	binary.Write(buf, binary.LittleEndian, LocalTickDelta)
 	binary.Write(buf, binary.LittleEndian, tick)
 
 	historyIndexStart := tick - NET_SEND_HISTORY_SIZE

@@ -18,8 +18,8 @@ import (
 const MaxPlayers = 5
 
 const maxFrames = 60
-const localPlayerPort = 0
-const remotePlayerPort = 1
+const LocalPlayerPort = 0
+const RemotePlayerPort = 1
 
 var polled = InputState{}
 var buffers = []InputState{}
@@ -89,7 +89,7 @@ func getState(port uint, tick int) PlayerState {
 	return st
 }
 
-func getLatest(port uint) PlayerState {
+func GetLatest(port uint) PlayerState {
 	return polled[port]
 }
 
@@ -97,7 +97,7 @@ func currentState(port uint) PlayerState {
 	return getState(port, state.Global.Tick)
 }
 
-func setState(port uint, st PlayerState) {
+func SetState(port uint, st PlayerState) {
 	copy, err := deepcopy.Anything(st)
 	if err != nil {
 		panic(err)
@@ -181,7 +181,7 @@ func pollJoypads() {
 func pollKeyboard() {
 	for k, v := range keyBinds {
 		if vid.Window.GetKey(k) == glfw.Press {
-			polled[localPlayerPort][v] = true
+			polled[LocalPlayerPort][v] = true
 		}
 	}
 }
@@ -217,7 +217,7 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		return 0
 	}
 
-	if getLatest(port)[id] {
+	if GetLatest(port)[id] {
 		return 1
 	}
 	return 0
