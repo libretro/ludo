@@ -38,7 +38,7 @@ type EncodedInput [20]byte
 var Enabled = false
 var ConnectedToClient = false
 var isServer = false
-var confirmedTick = int64(-1)
+var ConfirmedTick = int64(-1)
 var localSyncData = uint32(0)
 var remoteSyncData = uint32(0)
 var isStateDesynced = false
@@ -56,7 +56,6 @@ var toSendPackets = []struct {
 }{}
 var clientAddr net.Addr
 var latency int64
-var ConfirmedTick = int64(0)
 var TickSyncing = false
 var TickOffset = int64(0)
 var LastSyncedTick = int64(-1)
@@ -115,9 +114,9 @@ func Init() {
 
 // Get input from the remote player for the passed in game tick.
 func GetRemoteInputState(tick int64) input.PlayerState {
-	if tick > confirmedTick {
+	if tick > ConfirmedTick {
 		// Repeat the last confirmed input when we don't have a confirmed tick
-		tick = confirmedTick
+		tick = ConfirmedTick
 	}
 	return DecodeInput(remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
 }
@@ -176,6 +175,8 @@ func SendInputData(tick int64) {
 	if !(Enabled && ConnectedToClient) {
 		return
 	}
+
+	log.Println("Send input packet", tick)
 
 	SendPacket(MakeInputPacket(tick), 1)
 }
@@ -236,7 +237,6 @@ func ProcessDelayedPackets() {
 
 // Send a packet immediately
 func SendPacketRaw(packet []byte) {
-	log.Println("sending", packet)
 	_, err := Conn.WriteTo(packet, clientAddr)
 	if err != nil {
 		log.Println(err)
@@ -249,9 +249,9 @@ func ReceivePacket() (int, []byte, net.Addr, error) {
 	Conn.SetReadDeadline(time.Now().Add(time.Microsecond))
 	n, addr, err := Conn.ReadFrom(buffer)
 
-	if n > 0 {
-		log.Println("received", n, buffer[:n])
-	}
+	// if n > 0 {
+	// 	log.Println("received", n, buffer[:n])
+	// }
 
 	return n, buffer[:n], addr, err
 }
@@ -297,18 +297,20 @@ func ReceiveData() {
 				binary.Read(r, binary.LittleEndian, &tickDelta)
 				binary.Read(r, binary.LittleEndian, &receivedTick)
 
+				log.Println("Received input", receivedTick)
+
 				// We only care about the latest tick delta, so make sure the confirmed frame is atleast the same or newer.
 				// This would work better if we added a packet count.
-				if receivedTick >= confirmedTick {
+				if receivedTick >= ConfirmedTick {
 					RemoteTickDelta = tickDelta
 				}
 
-				if receivedTick > confirmedTick {
-					if receivedTick-confirmedTick > NET_INPUT_DELAY {
-						log.Println("Received packet with a tick too far ahead. Last: ", confirmedTick, "     Current: ", receivedTick)
+				if receivedTick > ConfirmedTick {
+					if receivedTick-ConfirmedTick > NET_INPUT_DELAY {
+						log.Println("Received packet with a tick too far ahead. Last: ", ConfirmedTick, "     Current: ", receivedTick)
 					}
 
-					confirmedTick = receivedTick
+					ConfirmedTick = receivedTick
 
 					// log.Println("Received Input: ", results[3+NET_SEND_HISTORY_SIZE], " @ ",  receivedTick)
 
@@ -320,7 +322,7 @@ func ReceiveData() {
 					}
 				}
 
-				// NetLog("Received Tick: " .. receivedTick .. ",  Input: " .. remoteInputHistory[(confirmedTick % NET_INPUT_HISTORY_SIZE)+1])
+				// NetLog("Received Tick: " .. receivedTick .. ",  Input: " .. remoteInputHistory[(ConfirmedTick % NET_INPUT_HISTORY_SIZE)+1])
 			} else if code == MsgCodePing {
 				var pingTime int64
 				binary.Read(r, binary.LittleEndian, &pingTime)
@@ -350,7 +352,6 @@ func ReceiveData() {
 
 // Generate a packet containing information about player input.
 func MakeInputPacket(tick int64) []byte {
-	log.Println("MakeInputPacket", tick)
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodePlayerInput)
 	binary.Write(buf, binary.LittleEndian, LocalTickDelta)

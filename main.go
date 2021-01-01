@@ -102,7 +102,7 @@ func HandleRollbacks(vid *video.Video) {
 			input.SetState(input.RemotePlayerPort, netplay.GetRemoteInputState(state.Global.Tick))
 
 			lastRolledBackGameTick := state.Global.Tick
-			gameUpdate(vid)
+			gameUpdate()
 			state.Global.Tick++
 
 			// Confirm that we are indeed still synced
@@ -125,7 +125,6 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 
 		glfw.PollEvents()
 		m.ProcessHotkeys()
-		//ntf.Process(dt)
 		vid.ResizeViewport()
 		m.UpdatePalette()
 
@@ -145,7 +144,6 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			netplay.ProcessDelayedPackets()
 
 			if netplay.ConnectedToClient {
-
 				// First we assume that the game can be updated, sync checks below can halt updates
 				updateGame = true
 
@@ -196,7 +194,6 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 					} else {
 						state.Global.SyncedLastUpdate = false
 					}
-
 				}
 
 				// Only halt the game update based on exceeding the rollback window when the game updated hasn't previously been stopped by time sync code
@@ -219,11 +216,10 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			// Poll inputs for this frame. In network mode the network manager will handle updating player command buffers.
 			// updateCommandBuffers := !netplay.Enabled
 			// input.Poll(updateCommandBuffers)
+			input.Poll()
 
 			// Network manager will handle updating inputs.
 			if netplay.Enabled {
-				input.Poll()
-
 				// Update local input history
 				sendInput := input.GetLatest(input.LocalPlayerPort)
 				netplay.SetLocalInput(sendInput, lastGameTick+netplay.NET_INPUT_DELAY)
@@ -234,7 +230,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			}
 
 			// Increment the tick count only when the game actually updates.
-			gameUpdate(vid)
+			gameUpdate()
 
 			state.Global.Tick++
 
@@ -274,11 +270,14 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			// Send ping so we can test network latency.
 			netplay.SendPingMessage()
 		}
+
+		vid.Render()
+		glfw.SwapInterval(1)
+		vid.Window.SwapBuffers()
 	}
 }
 
-func gameUpdate(vid *video.Video) {
-	// if !state.Global.MenuActive {
+func gameUpdate() {
 	log.Println("updating", state.Global.Tick)
 	if state.Global.CoreRunning {
 		state.Global.Core.Run()
@@ -289,20 +288,6 @@ func gameUpdate(vid *video.Video) {
 			state.Global.Core.AudioCallback.Callback()
 		}
 	}
-	vid.Render()
-	// } else {
-	// 	input.Poll()
-	// 	m.Update(dt)
-	// 	vid.Render()
-	// 	m.Render(dt)
-	// }
-	// m.RenderNotifications()
-	// if state.Global.FastForward {
-	glfw.SwapInterval(0)
-	// } else {
-	// 	glfw.SwapInterval(1)
-	// }
-	vid.Window.SwapBuffers()
 }
 
 var SAVESTATE = []byte{}
@@ -320,6 +305,11 @@ func gameSerialize() {
 }
 
 func gameUnserialize() {
+	if len(SAVESTATE) == 0 {
+		log.Println("Trying to unserialize a savestate of len 0")
+		return
+	}
+
 	s := state.Global.Core.SerializeSize()
 	err := state.Global.Core.Unserialize(SAVESTATE, s)
 	if err != nil {
