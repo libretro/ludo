@@ -31,7 +31,7 @@ func init() {
 
 const ROLLBACK_TEST_ENABLED = false
 const NET_ROLLBACK_MAX_FRAMES = 10
-const NET_DETECT_DESYNCS = true
+const NET_DETECT_DESYNCS = false
 const TICK_RATE = 1.0 / 60.0
 const MAX_FRAME_SKIP = 25
 
@@ -70,7 +70,7 @@ func gameSyncCheck() {
 
 	desynced, desyncFrame := netplay.DesyncCheck()
 
-	if !desynced || desyncFrame == 0 { // Some cores send bullshit savestate on frame 0, so ignore desyncFrame 0
+	if !desynced {
 		return
 	}
 
@@ -115,6 +115,7 @@ func HandleRollbacks() {
 			if lastRolledBackGameTick <= netplay.ConfirmedTick {
 				// Store the state since we know it's synced. We really only need to call this on the last synced frame.
 				// Leaving in for demonstration purposes.
+				log.Println("Save after rollback")
 				gameSerialize()
 				netplay.LastSyncedTick = lastRolledBackGameTick
 
@@ -146,9 +147,9 @@ func update() {
 			// First we assume that the game can be updated, sync checks below can halt updates
 			updateGame = true
 
-			// if Game.forcePause {
-			// 	updateGame = false
-			// }
+			if state.Global.ForcePause {
+				updateGame = false
+			}
 
 			// Run any rollbacks that can be processed before the next game update
 			HandleRollbacks()
@@ -286,6 +287,8 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		vid.ResizeViewport()
 		m.UpdatePalette()
 
+		state.Global.ForcePause = vid.Window.GetKey(glfw.KeySpace) == glfw.Press
+
 		// Cap number of Frames that can be skipped so lag doesn't accumulate
 		lag = math.Min(lag+dt, TICK_RATE*MAX_FRAME_SKIP)
 
@@ -303,7 +306,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 
 func gameUpdate() {
 	if state.Global.CoreRunning {
-		// log.Println("updating", state.Global.Tick)
+		// log.Println("updating", state.Global.Tick, gameGetSyncData())
 		state.Global.Core.Run()
 		if state.Global.Core.FrameTimeCallback != nil {
 			state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
@@ -333,6 +336,7 @@ func gameSerialize() {
 }
 
 func gameUnserialize() {
+	log.Println("unserialize")
 	if len(SAVESTATE) == 0 {
 		log.Println("Trying to unserialize a savestate of len 0")
 		return

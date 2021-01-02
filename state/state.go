@@ -23,6 +23,7 @@ type State struct {
 	Tick              int64
 	LastConfirmedTick int64
 	SyncedLastUpdate  bool
+	ForcePause        bool
 
 	sync.Mutex
 }
