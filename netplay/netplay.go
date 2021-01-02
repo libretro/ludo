@@ -66,8 +66,8 @@ func Init() {
 	if Listen { // Host mode
 		var err error
 		Conn, err = net.ListenUDP("udp", &net.UDPAddr{
-			IP:   net.ParseIP("127.0.0.1"),
-			Port: 8080,
+			IP:   net.ParseIP("0.0.0.0"),
+			Port: 1234,
 		})
 		if err != nil {
 			log.Println("Netplay", err.Error())
@@ -96,8 +96,8 @@ func Init() {
 	} else if Join { // Guest mode
 		var err error
 		Conn, err = net.ListenUDP("udp", &net.UDPAddr{
-			IP:   net.ParseIP("127.0.0.1"),
-			Port: 8081,
+			IP:   net.ParseIP("0.0.0.0"),
+			Port: 1235,
 		})
 		if err != nil {
 			log.Println("Netplay", err.Error())
@@ -106,7 +106,7 @@ func Init() {
 
 		clientAddr = &net.UDPAddr{
 			IP:   net.ParseIP("127.0.0.1"),
-			Port: 8080,
+			Port: 1234,
 		}
 
 		Conn.SetReadBuffer(1048576)
@@ -181,7 +181,7 @@ func DesyncCheck() (bool, int64) {
 		log.Println("Desync Check at: ", localSyncDataTick)
 
 		if localSyncData != remoteSyncData {
-			// log.Println(localSyncData, remoteSyncData)
+			log.Println(localSyncDataTick, localSyncData, remoteSyncData)
 			isStateDesynced = true
 			return true, localSyncDataTick
 		}

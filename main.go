@@ -31,7 +31,7 @@ func init() {
 
 const ROLLBACK_TEST_ENABLED = false
 const NET_ROLLBACK_MAX_FRAMES = 10
-const NET_DETECT_DESYNCS = false
+const NET_DETECT_DESYNCS = true
 const TICK_RATE = 1.0 / 60.0
 const MAX_FRAME_SKIP = 25
 
@@ -306,7 +306,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 
 func gameUpdate() {
 	if state.Global.CoreRunning {
-		// log.Println("updating", state.Global.Tick, gameGetSyncData())
+		log.Println("updating", state.Global.Tick, gameGetSyncData())
 		state.Global.Core.Run()
 		if state.Global.Core.FrameTimeCallback != nil {
 			state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)

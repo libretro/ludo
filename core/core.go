@@ -11,7 +11,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
@@ -19,7 +18,6 @@ import (
 	"github.com/libretro/ludo/netplay"
 	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/patch"
-	"github.com/libretro/ludo/savefiles"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 )
@@ -33,17 +31,17 @@ var Options *options.Options
 // Call Init before calling other functions of this package.
 func Init(v *video.Video) {
 	vid = v
-	ticker := time.NewTicker(time.Second * 10)
-	go func() {
-		for range ticker.C {
-			state.Global.Lock()
-			canSave := state.Global.CoreRunning && !state.Global.MenuActive
-			state.Global.Unlock()
-			if canSave {
-				savefiles.SaveSRAM()
-			}
-		}
-	}()
+	// ticker := time.NewTicker(time.Second * 10)
+	// go func() {
+	// 	for range ticker.C {
+	// 		state.Global.Lock()
+	// 		canSave := state.Global.CoreRunning && !state.Global.MenuActive
+	// 		state.Global.Unlock()
+	// 		if canSave {
+	// 			savefiles.SaveSRAM()
+	// 		}
+	// 	}
+	// }()
 }
 
 // Load loads a libretro core
@@ -63,7 +61,7 @@ func Load(sofile string) error {
 	state.Global.Core.SetEnvironment(environment)
 	state.Global.Core.Init()
 	state.Global.Core.SetVideoRefresh(vid.Refresh)
-	state.Global.Core.SetInputPoll(input.Poll)
+	state.Global.Core.SetInputPoll(input.FakePoll)
 	state.Global.Core.SetInputState(input.State)
 	state.Global.Core.SetAudioSample(audio.Sample)
 	state.Global.Core.SetAudioSampleBatch(audio.SampleBatch)
@@ -201,7 +199,7 @@ func LoadGame(gamePath string) error {
 	state.Global.Core.SetControllerPortDevice(4, libretro.DeviceJoypad)
 
 	log.Println("[Core]: Game loaded: " + gamePath)
-	savefiles.LoadSRAM()
+	// savefiles.LoadSRAM()
 
 	return nil
 }
@@ -222,7 +220,7 @@ func Unload() {
 // UnloadGame unloads a game.
 func UnloadGame() {
 	if state.Global.CoreRunning {
-		savefiles.SaveSRAM()
+		//savefiles.SaveSRAM()
 		state.Global.Core.UnloadGame()
 		state.Global.Lock()
 		state.Global.GamePath = ""

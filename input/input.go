@@ -203,6 +203,8 @@ func Poll() {
 	OldState = NewState
 }
 
+func FakePoll() {}
+
 // State is a callback passed to core.SetInputState
 // It returns 1 if the button corresponding to the parameters is pressed
 func State(port uint, device uint32, index uint, id uint) int16 {
