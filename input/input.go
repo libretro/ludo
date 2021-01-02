@@ -4,6 +4,8 @@
 package input
 
 import (
+	"log"
+
 	deepcopy "github.com/barkimedes/go-deepcopy"
 	"github.com/go-gl/glfw/v3.3/glfw"
 
@@ -18,8 +20,9 @@ import (
 const MaxPlayers = 2
 
 const MaxFrames = int64(60)
-const LocalPlayerPort = 0
-const RemotePlayerPort = 1
+
+var LocalPlayerPort = uint(0)
+var RemotePlayerPort = uint(1)
 
 var polled = InputState{}
 var buffers = [MaxPlayers][MaxFrames]PlayerState{}
@@ -210,7 +213,7 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 	}
 
 	if currentState(port)[id] {
-		// log.Println(port, id, state.Global.Tick)
+		log.Println(port, id, state.Global.Tick)
 		return 1
 	}
 	return 0

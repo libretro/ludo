@@ -37,6 +37,8 @@ const MAX_FRAME_SKIP = 25
 
 // Gets the sync data to confirm the client game states are in sync
 func gameGetSyncData() uint32 {
+	return 42
+
 	s := state.Global.Core.SerializeSize()
 	bytes, err := state.Global.Core.Serialize(s)
 	if err != nil {
@@ -170,7 +172,7 @@ func update() {
 					// Calculate tick offset using the clock synchronization algorithm.
 					// See https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_synchronization_algorithm
 					netplay.TickOffset = (float64(netplay.LocalTickDelta) - float64(netplay.RemoteTickDelta)) / 2.0
-					log.Println(netplay.TickOffset)
+					// log.Println(netplay.TickOffset)
 
 					// Only sync when the tick difference is more than one frame.
 					if netplay.TickOffset >= 1 {

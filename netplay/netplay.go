@@ -81,6 +81,8 @@ func Init() {
 
 		input.InitializeBuffer(0)
 		input.InitializeBuffer(1)
+		input.LocalPlayerPort = 0
+		input.RemotePlayerPort = 1
 
 		log.Println("Netplay", "Listening.")
 	} else if Join { // Guest mode
@@ -106,6 +108,8 @@ func Init() {
 
 		input.InitializeBuffer(0)
 		input.InitializeBuffer(1)
+		input.LocalPlayerPort = 1
+		input.RemotePlayerPort = 0
 
 		log.Println("sending handshake")
 		SendPacket(MakeHandshakePacket(), 5)
@@ -247,7 +251,7 @@ func SendPacketRaw(packet []byte) {
 // Handles receiving packets from the other client.
 func ReceivePacket() (int, []byte, net.Addr, error) {
 	buffer := make([]byte, 1024)
-	Conn.SetReadDeadline(time.Now().Add(time.Microsecond))
+	Conn.SetReadDeadline(time.Now().Add(time.Millisecond))
 	n, addr, err := Conn.ReadFrom(buffer)
 
 	// if n > 0 {
@@ -313,18 +317,18 @@ func ReceiveData() {
 
 					ConfirmedTick = receivedTick
 
-					// if !isServer {
-					// 	log.Println("----")
-					// }
+					if !isServer {
+						log.Println("----")
+					}
 					for offset := int64(NET_SEND_HISTORY_SIZE); offset > 0; offset-- {
 						var encodedInput EncodedInput
 						binary.Read(r, binary.LittleEndian, &encodedInput)
 						// Save the input history sent in the packet.
 						SetRemoteEncodedInput(encodedInput, receivedTick-offset)
 
-						// if !isServer {
-						// 	log.Println(encodedInput, receivedTick-offset)
-						// }
+						if !isServer {
+							log.Println(encodedInput, receivedTick-offset)
+						}
 					}
 				}
 
