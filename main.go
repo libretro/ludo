@@ -37,8 +37,6 @@ const MAX_FRAME_SKIP = 25
 
 // Gets the sync data to confirm the client game states are in sync
 func gameGetSyncData() uint32 {
-	return 42
-
 	s := state.Global.Core.SerializeSize()
 	bytes, err := state.Global.Core.Serialize(s)
 	if err != nil {
@@ -71,7 +69,8 @@ func gameSyncCheck() {
 	netplay.SendSyncData()
 
 	desynced, desyncFrame := netplay.DesyncCheck()
-	if !desynced {
+
+	if !desynced || desyncFrame == 0 { // Some cores send bullshit savestate on frame 0, so ignore desyncFrame 0
 		return
 	}
 
@@ -303,8 +302,8 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 }
 
 func gameUpdate() {
-	//log.Println("updating", state.Global.Tick)
 	if state.Global.CoreRunning {
+		// log.Println("updating", state.Global.Tick)
 		state.Global.Core.Run()
 		if state.Global.Core.FrameTimeCallback != nil {
 			state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)

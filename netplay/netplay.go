@@ -85,6 +85,14 @@ func Init() {
 		input.RemotePlayerPort = 1
 
 		log.Println("Netplay", "Listening.")
+
+		buffer := make([]byte, 1024)
+		_, addr, _ := Conn.ReadFrom(buffer)
+
+		ConnectedToClient = true
+		clientAddr = addr
+
+		SendPacket(MakeHandshakePacket(), 5)
 	} else if Join { // Guest mode
 		var err error
 		Conn, err = net.ListenUDP("udp", &net.UDPAddr{
@@ -113,6 +121,12 @@ func Init() {
 
 		log.Println("sending handshake")
 		SendPacket(MakeHandshakePacket(), 5)
+
+		buffer := make([]byte, 1024)
+		_, addr, _ := Conn.ReadFrom(buffer)
+
+		ConnectedToClient = true
+		clientAddr = addr
 	}
 }
 
@@ -149,6 +163,7 @@ func GetSyncDataRemote(tick int64) uint32 {
 // Set sync data for a game tick
 func SetLocalSyncData(tick int64, syncData uint32) {
 	if !isStateDesynced {
+		// log.Println("SetLocalSyncData", tick, syncData)
 		localSyncData = syncData
 		localSyncDataTick = tick
 	}
@@ -269,7 +284,7 @@ func ReceiveData() {
 
 	// For now we'll process all packets every frame.
 	for {
-		n, data, addr, err := ReceivePacket()
+		n, data, _, err := ReceivePacket()
 		if err != nil {
 			// log.Println(err)
 			return
@@ -281,22 +296,23 @@ func ReceiveData() {
 			binary.Read(r, binary.LittleEndian, &code)
 
 			// Handshake code must be received by both game instances before a match can begin.
-			if code == MsgCodeHandshake {
-				if !ConnectedToClient {
-					ConnectedToClient = true
+			// if code == MsgCodeHandshake {
+			// 	if !ConnectedToClient {
+			// 		ConnectedToClient = true
 
-					// The server needs to remember the address and port in order to send data to the other cilent.
-					if true {
-						// Server needs to the other the client address and ip to know where to send data.
-						if isServer {
-							clientAddr = addr
-						}
-						log.Println("Received Handshake from: ", clientAddr.String())
-						// Send handshake to client.
-						SendPacket(MakeHandshakePacket(), 5)
-					}
-				}
-			} else if code == MsgCodePlayerInput {
+			// 		// The server needs to remember the address and port in order to send data to the other cilent.
+			// 		if true {
+			// 			// Server needs to the other the client address and ip to know where to send data.
+			// 			if isServer {
+			// 				clientAddr = addr
+			// 			}
+			// 			log.Println("Received Handshake from: ", clientAddr.String())
+			// 			// Send handshake to client.
+			// 			SendPacket(MakeHandshakePacket(), 5)
+			// 		}
+			// 	}
+			// } else
+			if code == MsgCodePlayerInput {
 				// Break apart the packet into its parts.
 				var tickDelta, receivedTick int64
 				binary.Read(r, binary.LittleEndian, &tickDelta)
