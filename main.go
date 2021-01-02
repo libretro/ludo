@@ -4,10 +4,8 @@ import (
 	"flag"
 	"hash/crc32"
 	"log"
-	"math"
 	"os"
 	"runtime"
-	"time"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/audio"
@@ -274,12 +272,12 @@ func update() {
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
-	currTime := time.Now()
-	prevTime := time.Now()
-	lag := float64(0)
+	//currTime := time.Now()
+	//prevTime := time.Now()
+	//lag := float64(0)
 	for !vid.Window.ShouldClose() {
-		currTime = time.Now()
-		dt := float64(currTime.Sub(prevTime)) / 1000000000
+		//currTime = time.Now()
+		//dt := float64(currTime.Sub(prevTime)) / 1000000000
 
 		glfw.PollEvents()
 		m.ProcessHotkeys()
@@ -287,17 +285,21 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		m.UpdatePalette()
 
 		// Cap number of Frames that can be skipped so lag doesn't accumulate
-		lag = math.Min(lag+dt, TICK_RATE*MAX_FRAME_SKIP)
+		//lag = math.Min(lag+dt, TICK_RATE*MAX_FRAME_SKIP)
 
-		for lag >= TICK_RATE {
-			update()
-			lag -= TICK_RATE
-		}
+		//for lag >= TICK_RATE {
+		update()
+		//lag -= TICK_RATE
+		//}
 
 		vid.Render()
-		glfw.SwapInterval(0)
+		if state.Global.FastForward {
+			glfw.SwapInterval(0)
+		} else {
+			glfw.SwapInterval(1)
+		}
 		vid.Window.SwapBuffers()
-		prevTime = currTime
+		//prevTime = currTime
 	}
 }
 
