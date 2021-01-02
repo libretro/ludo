@@ -97,7 +97,8 @@ func HandleRollbacks() {
 	// rollbackGraphTable[ 1 + (lastGameTick % 60) * 2 + 1  ] = -1 * rollbackFrames * GRAPH_UNIT_SCALE
 
 	if lastGameTick >= 0 && lastGameTick > (netplay.LastSyncedTick+1) && netplay.ConfirmedTick > netplay.LastSyncedTick {
-		log.Println(lastGameTick, netplay.LastSyncedTick, netplay.ConfirmedTick, rollbackFrames)
+		log.Println("Rollback")
+		state.Global.FastForward = true
 
 		// Must revert back to the last known synced game frame.
 		gameUnserialize()
@@ -122,6 +123,7 @@ func HandleRollbacks() {
 				gameSyncCheck()
 			}
 		}
+		state.Global.FastForward = false
 	}
 }
 
@@ -342,7 +344,6 @@ func gameUnserialize() {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println("Rolling back size", s)
 	input.Unserialize(BUFF)
 	state.Global.Tick = TICK
 }

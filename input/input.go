@@ -4,8 +4,6 @@
 package input
 
 import (
-	"log"
-
 	deepcopy "github.com/barkimedes/go-deepcopy"
 	"github.com/go-gl/glfw/v3.3/glfw"
 
@@ -213,7 +211,7 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 	}
 
 	if currentState(port)[id] {
-		log.Println(port, id, state.Global.Tick)
+		//log.Println(port, id, state.Global.Tick)
 		return 1
 	}
 	return 0

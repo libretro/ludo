@@ -162,7 +162,7 @@ func DesyncCheck() (bool, int64) {
 
 	// When the local sync data does not match the remote data indicate a desync has occurred.
 	if isStateDesynced || localSyncDataTick == remoteSyncDataTick {
-		log.Println("Desync Check at: ", localSyncDataTick)
+		// log.Println("Desync Check at: ", localSyncDataTick)
 
 		if localSyncData != remoteSyncData {
 			log.Println(localSyncData, remoteSyncData)
@@ -317,18 +317,18 @@ func ReceiveData() {
 
 					ConfirmedTick = receivedTick
 
-					if !isServer {
-						log.Println("----")
-					}
+					// if !isServer {
+					// 	log.Println("----")
+					// }
 					for offset := int64(NET_SEND_HISTORY_SIZE); offset > 0; offset-- {
 						var encodedInput EncodedInput
 						binary.Read(r, binary.LittleEndian, &encodedInput)
 						// Save the input history sent in the packet.
 						SetRemoteEncodedInput(encodedInput, receivedTick-offset)
 
-						if !isServer {
-							log.Println(encodedInput, receivedTick-offset)
-						}
+						// if !isServer {
+						// 	log.Println(encodedInput, receivedTick-offset)
+						// }
 					}
 				}
 
