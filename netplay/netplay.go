@@ -33,6 +33,7 @@ var Join bool
 // Conn is the connection between two players
 var Conn *net.UDPConn
 
+// EncodedInput is PlayerInput encoded for the network
 type EncodedInput [20]byte
 
 var enabled = false

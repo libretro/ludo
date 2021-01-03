@@ -62,13 +62,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 }
 
 func gameUpdate() {
-	// if input.LocalPlayerPort == 0 {
-	// 	log.Println("----> updating", state.Global.Tick, gameGetSyncData(), netplay.GetLocalInputState(state.Global.Tick))
-	// } else {
-	// 	log.Println("----> updating", state.Global.Tick, gameGetSyncData(), netplay.GetRemoteInputState(state.Global.Tick))
-	// }
 	state.Global.Core.Run()
-	//log.Println("----> done updating")
 	if state.Global.Core.FrameTimeCallback != nil {
 		state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
 	}

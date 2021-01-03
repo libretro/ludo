@@ -10,6 +10,8 @@ const NET_ROLLBACK_MAX_FRAMES = 10
 
 var tickSyncing = false
 var tickOffset = float64(0)
+var lastConfirmedTick int64
+var syncedLastUpdate = false
 
 func Update(inputPoll, gameUpdate func()) {
 	lastGameTick := state.Global.Tick
@@ -45,9 +47,9 @@ func Update(inputPoll, gameUpdate func()) {
 			//timeSyncGraphTable[1+(lastGameTick%60)*2+1] = -1 * (localTickDelta - RemoteTickDelta) * GRAPH_UNIT_SCALE
 
 			// Only do time sync check when the previous confirmed tick from the remote client hasn't been used yet.
-			if confirmedTick > state.Global.LastConfirmedTick {
+			if confirmedTick > lastConfirmedTick {
 
-				state.Global.LastConfirmedTick = confirmedTick
+				lastConfirmedTick = confirmedTick
 
 				// Prevent updating the game when the tick difference is greater on this end.
 				// This allows the game deltas to be off by 2 frames. Our timing is only accurate to one frame so any slight increase in network latency
@@ -66,9 +68,9 @@ func Update(inputPoll, gameUpdate func()) {
 					}
 				}
 
-				if tickSyncing && state.Global.SyncedLastUpdate == false {
+				if tickSyncing && syncedLastUpdate == false {
 					shouldUpdate = false
-					state.Global.SyncedLastUpdate = true
+					syncedLastUpdate = true
 
 					tickOffset = tickOffset - 1
 
@@ -77,7 +79,7 @@ func Update(inputPoll, gameUpdate func()) {
 						tickSyncing = false
 					}
 				} else {
-					state.Global.SyncedLastUpdate = false
+					syncedLastUpdate = false
 				}
 			}
 
