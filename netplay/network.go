@@ -14,8 +14,6 @@ const inputDelayFrames = 3
 const inputHistorySize = int64(300)
 const sendHistorySize = 5
 
-//const sendDelayFrames = 0
-
 // Network code indicating the type of message.
 const (
 	MsgCodeHandshake   = byte(1) // Used when sending the hand shake.
@@ -50,13 +48,7 @@ var remoteInputHistory = [inputHistorySize]uint32{}
 var clientAddr net.Addr
 var latency int64
 var lastSyncedTick = int64(-1)
-
-// var toSendPackets = []struct {
-// 	Packet []byte
-// 	Time   time.Time
-// }{}
-// var syncDataHistoryLocal = [inputHistorySize]uint32{}
-// var syncDataHistoryRemote = [inputHistorySize]uint32{}
+var messages chan []byte
 
 // Init initialises a netplay session between two players
 func Init() {
@@ -90,6 +82,9 @@ func Init() {
 		clientAddr = addr
 
 		sendPacket(makeHandshakePacket(), 5)
+
+		messages = make(chan []byte, 256)
+		go listen()
 	} else if Join { // Guest mode
 		var err error
 		Conn, err = net.ListenUDP("udp", &net.UDPAddr{
@@ -124,6 +119,9 @@ func Init() {
 
 		connectedToClient = true
 		clientAddr = addr
+
+		messages = make(chan []byte, 256)
+		go listen()
 	}
 }
 
@@ -141,22 +139,6 @@ func getRemoteInputState(tick int64) input.PlayerState {
 func getLocalInputState(tick int64) input.PlayerState {
 	return decodeInput(inputHistory[(inputHistorySize+tick)%inputHistorySize])
 }
-
-// func getLocalInputEncoded(tick int64) uint32 {
-// 	return inputHistory[(inputHistorySize+tick)%inputHistorySize]
-// }
-
-// Get the sync data which is used to check for game state desync between the clients.
-// func GetSyncDataLocal(tick int64) uint32 {
-// 	index := (inputHistorySize + tick) % inputHistorySize
-// 	return syncDataHistoryLocal[index]
-// }
-
-// Get sync data from the remote client.
-// func GetSyncDataRemote(tick int64) uint32 {
-// 	index := (inputHistorySize + tick) % inputHistorySize
-// 	return syncDataHistoryRemote[index]
-// }
 
 // Send the inputState for the local player to the remote player for the given game tick.
 func sendInputData(tick int64) {
@@ -186,43 +168,9 @@ func sendPacket(packet []byte, duplicates int) {
 	}
 
 	for i := 0; i < duplicates; i++ {
-		// if sendDelayFrames > 0 {
-		// 	sendPacketWithDelay(packet)
-		// } else {
 		sendPacketRaw(packet)
-		// }
 	}
 }
-
-// Queues a packet to be sent later
-// func sendPacketWithDelay(packet []byte) {
-// 	delayedPacket := struct {
-// 		Packet []byte
-// 		Time   time.Time
-// 	}{
-// 		Packet: packet,
-// 		Time:   time.Now(),
-// 	}
-// 	toSendPackets = append(toSendPackets, delayedPacket)
-// }
-
-// Send all packets which have been queued and who's delay time as elapsed.
-// func processDelayedPackets() {
-// 	newPacketList := []struct {
-// 		Packet []byte
-// 		Time   time.Time
-// 	}{} // List of packets that haven't been sent yet.
-// 	timeInterval := sendDelayFrames / 60 // How much time must pass (converting from frames into seconds)
-
-// 	for _, data := range toSendPackets {
-// 		if (time.Now().Unix() - data.Time.Unix()) > int64(timeInterval) {
-// 			sendPacketRaw(data.Packet) // Send packet when enough time as passed.
-// 		} else {
-// 			newPacketList = append(newPacketList, data) // Keep the packet if the not enough time as passed.
-// 		}
-// 	}
-// 	toSendPackets = newPacketList
-// }
 
 // Send a packet immediately
 func sendPacketRaw(packet []byte) {
@@ -232,12 +180,16 @@ func sendPacketRaw(packet []byte) {
 	}
 }
 
-// Handles receiving packets from the other client.
-func receivePacket() (int, []byte, net.Addr, error) {
-	buffer := make([]byte, 1024)
-	Conn.SetReadDeadline(time.Now().Add(time.Millisecond))
-	n, addr, err := Conn.ReadFrom(buffer)
-	return n, buffer[:n], addr, err
+func listen() {
+	for {
+		buffer := make([]byte, 1024)
+		n, err := Conn.Read(buffer)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		messages <- buffer[:n]
+	}
 }
 
 // Checks the queue for any incoming packets and process them.
@@ -248,41 +200,17 @@ func receiveData() {
 
 	// For now we'll process all packets every frame.
 	for {
-		n, data, _, err := receivePacket()
-		if err != nil {
-			// log.Println(err)
-			return
-		}
-
-		if n > 0 {
+		select {
+		case data := <-messages:
 			r := bytes.NewReader(data)
 			var code byte
 			binary.Read(r, binary.LittleEndian, &code)
 
-			// Handshake code must be received by both game instances before a match can begin.
-			// if code == MsgCodeHandshake {
-			// 	if !connectedToClient {
-			// 		connectedToClient = true
-
-			// 		// The server needs to remember the address and port in order to send data to the other cilent.
-			// 		if true {
-			// 			// Server needs to the other the client address and ip to know where to send data.
-			// 			if isServer {
-			// 				clientAddr = addr
-			// 			}
-			// 			log.Println("Received Handshake from: ", clientAddr.String())
-			// 			// Send handshake to client.
-			// 			sendPacket(makeHandshakePacket(), 5)
-			// 		}
-			// 	}
-			// } else
 			if code == MsgCodePlayerInput {
 				// Break apart the packet into its parts.
 				var tickDelta, receivedTick int64
 				binary.Read(r, binary.LittleEndian, &tickDelta)
 				binary.Read(r, binary.LittleEndian, &receivedTick)
-
-				//log.Println("Received input", receivedTick)
 
 				// We only care about the latest tick delta, so make sure the confirmed frame is atleast the same or newer.
 				// This would work better if we added a packet count.
@@ -304,7 +232,6 @@ func receiveData() {
 						binary.Read(r, binary.LittleEndian, &encodedInput)
 						// Save the input history sent in the packet.
 						setRemoteEncodedInput(encodedInput, receivedTick-offset)
-
 						// log.Println(encodedInput, receivedTick-offset, offset)
 					}
 				}
@@ -333,6 +260,8 @@ func receiveData() {
 					isDesynced()
 				}
 			}
+		default:
+			return
 		}
 	}
 }
