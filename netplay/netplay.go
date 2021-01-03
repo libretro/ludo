@@ -55,7 +55,6 @@ var latency int64
 var TickSyncing = false
 var TickOffset = float64(0)
 var LastSyncedTick = int64(-1)
-var DesyncCheckRate = int64(10)
 var toSendPackets = []struct {
 	Packet []byte
 	Time   time.Time
@@ -92,7 +91,7 @@ func Init() {
 		ConnectedToClient = true
 		clientAddr = addr
 
-		SendPacket(MakeHandshakePacket(), 5)
+		sendPacket(makeHandshakePacket(), 5)
 	} else if Join { // Guest mode
 		var err error
 		Conn, err = net.ListenUDP("udp", &net.UDPAddr{
@@ -120,7 +119,7 @@ func Init() {
 		input.RemotePlayerPort = 0
 
 		log.Println("sending handshake")
-		SendPacket(MakeHandshakePacket(), 5)
+		sendPacket(makeHandshakePacket(), 5)
 
 		buffer := make([]byte, 1024)
 		_, addr, _ := Conn.ReadFrom(buffer)
@@ -137,12 +136,12 @@ func GetRemoteInputState(tick int64) input.PlayerState {
 		tick = ConfirmedTick
 		log.Println("Predict:", ConfirmedTick, remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
 	}
-	return DecodeInput(remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
+	return decodeInput(remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
 }
 
 // Get input state for the local client
 func GetLocalInputState(tick int64) input.PlayerState {
-	return DecodeInput(inputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
+	return decodeInput(inputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
 }
 
 func GetLocalInputEncoded(tick int64) EncodedInput {
@@ -199,11 +198,11 @@ func SendInputData(tick int64) {
 
 	//log.Println("Send input packet", tick)
 
-	SendPacket(MakeInputPacket(tick), 1)
+	sendPacket(makeInputPacket(tick), 1)
 }
 
 func SetLocalInput(st input.PlayerState, tick int64) {
-	encodedInput := EncodeInput(st)
+	encodedInput := encodeInput(st)
 	inputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE] = encodedInput
 }
 
@@ -212,22 +211,22 @@ func SetRemoteEncodedInput(encodedInput EncodedInput, tick int64) {
 }
 
 // Handles sending packets to the other client. Set duplicates to something > 0 to send more than once.
-func SendPacket(packet []byte, duplicates int) {
+func sendPacket(packet []byte, duplicates int) {
 	if duplicates == 0 {
 		duplicates = 1
 	}
 
 	for i := 0; i < duplicates; i++ {
 		if NET_SEND_DELAY_FRAMES > 0 {
-			SendPacketWithDelay(packet)
+			sendPacketWithDelay(packet)
 		} else {
-			SendPacketRaw(packet)
+			sendPacketRaw(packet)
 		}
 	}
 }
 
 // Queues a packet to be sent later
-func SendPacketWithDelay(packet []byte) {
+func sendPacketWithDelay(packet []byte) {
 	delayedPacket := struct {
 		Packet []byte
 		Time   time.Time
@@ -248,7 +247,7 @@ func ProcessDelayedPackets() {
 
 	for _, data := range toSendPackets {
 		if (time.Now().Unix() - data.Time.Unix()) > int64(timeInterval) {
-			SendPacketRaw(data.Packet) // Send packet when enough time as passed.
+			sendPacketRaw(data.Packet) // Send packet when enough time as passed.
 		} else {
 			newPacketList = append(newPacketList, data) // Keep the packet if the not enough time as passed.
 		}
@@ -257,7 +256,7 @@ func ProcessDelayedPackets() {
 }
 
 // Send a packet immediately
-func SendPacketRaw(packet []byte) {
+func sendPacketRaw(packet []byte) {
 	_, err := Conn.WriteTo(packet, clientAddr)
 	if err != nil {
 		log.Println(err)
@@ -309,7 +308,7 @@ func ReceiveData() {
 			// 			}
 			// 			log.Println("Received Handshake from: ", clientAddr.String())
 			// 			// Send handshake to client.
-			// 			SendPacket(MakeHandshakePacket(), 5)
+			// 			sendPacket(makeHandshakePacket(), 5)
 			// 		}
 			// 	}
 			// } else
@@ -350,7 +349,7 @@ func ReceiveData() {
 			} else if code == MsgCodePing {
 				var pingTime int64
 				binary.Read(r, binary.LittleEndian, &pingTime)
-				SendPacket(MakePongPacket(time.Unix(pingTime, 0)), 1)
+				sendPacket(makePongPacket(time.Unix(pingTime, 0)), 1)
 			} else if code == MsgCodePong {
 				var pongTime int64
 				binary.Read(r, binary.LittleEndian, &pongTime)
@@ -375,7 +374,7 @@ func ReceiveData() {
 }
 
 // Generate a packet containing information about player input.
-func MakeInputPacket(tick int64) []byte {
+func makeInputPacket(tick int64) []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodePlayerInput)
 	binary.Write(buf, binary.LittleEndian, LocalTickDelta)
@@ -394,11 +393,11 @@ func MakeInputPacket(tick int64) []byte {
 
 // Send a ping message in order to test network latency
 func SendPingMessage() {
-	SendPacket(MakePingPacket(time.Now()), 1)
+	sendPacket(makePingPacket(time.Now()), 1)
 }
 
 // Make a ping packet
-func MakePingPacket(t time.Time) []byte {
+func makePingPacket(t time.Time) []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodePing)
 	binary.Write(buf, binary.LittleEndian, t.Unix())
@@ -406,7 +405,7 @@ func MakePingPacket(t time.Time) []byte {
 }
 
 // Make pong packet
-func MakePongPacket(t time.Time) []byte {
+func makePongPacket(t time.Time) []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodePong)
 	binary.Write(buf, binary.LittleEndian, t.Unix())
@@ -414,12 +413,12 @@ func MakePongPacket(t time.Time) []byte {
 }
 
 // Sends sync data
-func SendSyncData() {
-	SendPacket(MakeSyncDataPacket(localSyncDataTick, localSyncData), 5)
+func sendSyncData() {
+	sendPacket(makeSyncDataPacket(localSyncDataTick, localSyncData), 5)
 }
 
 // Make a sync data packet
-func MakeSyncDataPacket(tick int64, syncData uint32) []byte {
+func makeSyncDataPacket(tick int64, syncData uint32) []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodeSync)
 	binary.Write(buf, binary.LittleEndian, tick)
@@ -431,14 +430,14 @@ func MakeSyncDataPacket(tick int64, syncData uint32) []byte {
 }
 
 // Generate handshake packet for connecting with another client.
-func MakeHandshakePacket() []byte {
+func makeHandshakePacket() []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodeHandshake)
 	return buf.Bytes()
 }
 
 // Encodes the player input state into a compact form for network transmission.
-func EncodeInput(st input.PlayerState) EncodedInput {
+func encodeInput(st input.PlayerState) EncodedInput {
 	netoutput := EncodedInput{}
 	for i, b := range st {
 		if b {
@@ -448,8 +447,8 @@ func EncodeInput(st input.PlayerState) EncodedInput {
 	return netoutput
 }
 
-// Decodes the input from a packet generated by EncodeInput().
-func DecodeInput(data EncodedInput) input.PlayerState {
+// Decodes the input from a packet generated by encodeInput().
+func decodeInput(data EncodedInput) input.PlayerState {
 	st := input.PlayerState{}
 	for i, b := range data {
 		if b == 1 {
