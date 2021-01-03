@@ -96,7 +96,7 @@ func HandleRollbacks() {
 	// rollbackGraphTable[ 1 + (lastGameTick % 60) * 2 + 1  ] = -1 * rollbackFrames * GRAPH_UNIT_SCALE
 
 	if lastGameTick >= 0 && lastGameTick > (netplay.LastSyncedTick+1) && netplay.ConfirmedTick > netplay.LastSyncedTick {
-		log.Println("Rollback")
+		log.Println("Rollback", rollbackFrames, "frames")
 		state.Global.FastForward = true
 
 		// Must revert back to the last known synced game frame.
@@ -113,14 +113,15 @@ func HandleRollbacks() {
 
 			// Confirm that we are indeed still synced
 			if lastRolledBackGameTick <= netplay.ConfirmedTick {
+				log.Println("Save after rollback")
+				gameSerialize()
+
 				netplay.LastSyncedTick = lastRolledBackGameTick
 
 				// Confirm the game clients are in sync
 				gameSyncCheck()
 			}
 		}
-		log.Println("Save after rollback")
-		gameSerialize()
 
 		state.Global.FastForward = false
 	}
