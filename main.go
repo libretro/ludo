@@ -3,10 +3,8 @@ package main
 import (
 	"flag"
 	"log"
-	"math"
 	"os"
 	"runtime"
-	"time"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/audio"
@@ -23,22 +21,13 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-const tickRATE = 1.0 / 60.0
-const maxFrameSkip = 25
-
 func init() {
 	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
-	currTime := time.Now()
-	prevTime := time.Now()
-	lag := float64(0)
 	for !vid.Window.ShouldClose() {
-		currTime = time.Now()
-		dt := float64(currTime.Sub(prevTime)) / 1000000000
-
 		glfw.PollEvents()
 		m.ProcessHotkeys()
 		vid.ResizeViewport()
@@ -46,18 +35,15 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 
 		state.Global.ForcePause = vid.Window.GetKey(glfw.KeySpace) == glfw.Press
 
-		// Cap number of Frames that can be skipped so lag doesn't accumulate
-		lag = math.Min(lag+dt, tickRATE*maxFrameSkip)
-
-		for lag >= tickRATE {
-			netplay.Update(input.Poll, gameUpdate)
-			lag -= tickRATE
-		}
+		netplay.Update(input.Poll, gameUpdate)
 
 		vid.Render()
-		glfw.SwapInterval(0)
+		if state.Global.FastForward {
+			glfw.SwapInterval(0)
+		} else {
+			glfw.SwapInterval(1)
+		}
 		vid.Window.SwapBuffers()
-		prevTime = currTime
 	}
 }
 

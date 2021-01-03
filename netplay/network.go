@@ -237,11 +237,6 @@ func receivePacket() (int, []byte, net.Addr, error) {
 	buffer := make([]byte, 1024)
 	Conn.SetReadDeadline(time.Now().Add(time.Millisecond))
 	n, addr, err := Conn.ReadFrom(buffer)
-
-	// if n > 0 {
-	// 	log.Println("received", n, buffer[:n])
-	// }
-
 	return n, buffer[:n], addr, err
 }
 
