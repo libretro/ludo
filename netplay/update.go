@@ -45,7 +45,7 @@ func Update(inputPoll, gameUpdate func()) {
 			// We don't use the latest local tick, but the tick for the latest input sent to the remote client.
 			localTickDelta = lastGameTick - confirmedTick
 
-			//timeSyncGraphTable[1+(lastGameTick%60)*2+1] = -1 * (localTickDelta - RemoteTickDelta) * GRAPH_UNIT_SCALE
+			// timeSyncGraphTable[1+(lastGameTick%60)*2+1] = -1 * (localTickDelta - RemoteTickDelta) * GRAPH_UNIT_SCALE
 
 			// Only do time sync check when the previous confirmed tick from the remote client hasn't been used yet.
 			if confirmedTick > lastConfirmedTick {
@@ -61,7 +61,6 @@ func Update(inputPoll, gameUpdate func()) {
 					// Calculate tick offset using the clock synchronization algorithm.
 					// See https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_synchronization_algorithm
 					tickOffset = (float64(localTickDelta) - float64(remoteTickDelta)) / 2.0
-					// log.Println(tickOffset)
 
 					// Only sync when the tick difference is more than one frame.
 					if tickOffset >= 1 {

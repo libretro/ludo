@@ -12,8 +12,9 @@ import (
 
 const inputDelayFrames = 3
 const inputHistorySize = int64(300)
-const sendDelayFrames = 0
 const sendHistorySize = 5
+
+//const sendDelayFrames = 0
 
 // Network code indicating the type of message.
 const (
@@ -390,10 +391,7 @@ func makeSyncDataPacket(tick int64, syncData uint32) []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, MsgCodeSync)
 	binary.Write(buf, binary.LittleEndian, tick)
-	err := binary.Write(buf, binary.LittleEndian, syncData)
-	if err != nil {
-		log.Println(err)
-	}
+	binary.Write(buf, binary.LittleEndian, syncData)
 	return buf.Bytes()
 }
 
