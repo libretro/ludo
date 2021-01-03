@@ -8,8 +8,8 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-const NET_DETECT_DESYNCS = true
-const DESYNC_CHECK_RATE = int64(10)
+const detectDesyncs = true
+const desyncCheckRate = int64(10)
 
 // Gets the sync data to confirm the client game states are in sync
 func gameGetSyncData() uint32 {
@@ -25,7 +25,7 @@ func gameGetSyncData() uint32 {
 
 // Checks whether or not a game state desync has occurred between the local and remote clients.
 func checkSync() {
-	if !NET_DETECT_DESYNCS {
+	if !detectDesyncs {
 		return
 	}
 
@@ -34,7 +34,7 @@ func checkSync() {
 	}
 
 	// Check desyncs at a fixed rate.
-	if (lastSyncedTick % DESYNC_CHECK_RATE) != 0 {
+	if (lastSyncedTick % desyncCheckRate) != 0 {
 		return
 	}
 

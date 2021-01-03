@@ -7,9 +7,11 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-var SAVESTATE = []byte{}
-var INPUTSTATE = [input.MaxPlayers][input.MaxFrames]input.PlayerState{}
-var TICK = int64(0)
+var saved struct {
+	GameState []byte
+	Inputs    [input.MaxPlayers][input.MaxFrames]input.PlayerState
+	Tick      int64
+}
 
 func serialize() {
 	//log.Println("Serialize")
@@ -18,31 +20,31 @@ func serialize() {
 	if err != nil {
 		log.Println(err)
 	}
-	SAVESTATE = make([]byte, s)
-	copy(SAVESTATE[:], bytes[:])
+	saved.GameState = make([]byte, s)
+	copy(saved.GameState[:], bytes[:])
 
-	INPUTSTATE = input.Serialize()
-	TICK = state.Global.Tick
+	saved.Inputs = input.Serialize()
+	saved.Tick = state.Global.Tick
 }
 
 func unserialize() {
 	log.Println("Unserialize")
-	if len(SAVESTATE) == 0 {
+	if len(saved.GameState) == 0 {
 		log.Println("Trying to unserialize a savestate of len 0")
 		return
 	}
 
 	s := state.Global.Core.SerializeSize()
-	err := state.Global.Core.Unserialize(SAVESTATE, s)
+	err := state.Global.Core.Unserialize(saved.GameState, s)
 	if err != nil {
 		log.Println(err)
 	}
-	input.Unserialize(INPUTSTATE)
-	state.Global.Tick = TICK
+	input.Unserialize(saved.Inputs)
+	state.Global.Tick = saved.Tick
 }
 
-// HandleRollbacks will rollback if needed.
-func HandleRollbacks(gameUpdate func()) {
+// handleRollbacks will rollback if needed.
+func handleRollbacks(gameUpdate func()) {
 	lastGameTick := state.Global.Tick - 1
 	// The input needed to resync state is available so rollback.
 	// lastSyncedTick keeps track of the lastest synced game tick.
@@ -65,8 +67,8 @@ func HandleRollbacks(gameUpdate func()) {
 
 		for i := int64(0); i < rollbackFrames; i++ {
 			// Get input from the input history buffer. The network system will predict input after the last confirmed tick (for the remote player).
-			input.SetState(input.LocalPlayerPort, GetLocalInputState(state.Global.Tick)) // Offset of 1 ensure it's used for the next game update.
-			input.SetState(input.RemotePlayerPort, GetRemoteInputState(state.Global.Tick))
+			input.SetState(input.LocalPlayerPort, getLocalInputState(state.Global.Tick)) // Offset of 1 ensure it's used for the next game update.
+			input.SetState(input.RemotePlayerPort, getRemoteInputState(state.Global.Tick))
 
 			lastRolledBackGameTick := state.Global.Tick
 			gameUpdate()

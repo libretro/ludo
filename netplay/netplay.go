@@ -10,10 +10,10 @@ import (
 	"github.com/libretro/ludo/input"
 )
 
-const NET_INPUT_DELAY = 3
-const NET_INPUT_HISTORY_SIZE = int64(300)
-const NET_SEND_DELAY_FRAMES = 0
-const NET_SEND_HISTORY_SIZE = 5
+const inputDelayFrames = 3
+const inputHistorySize = int64(300)
+const sendDelayFrames = 0
+const sendHistorySize = 5
 
 // Network code indicating the type of message.
 const (
@@ -44,18 +44,18 @@ var localSyncDataTick = int64(-1)
 var remoteSyncDataTick = int64(-1)
 var localTickDelta = int64(0)
 var remoteTickDelta = int64(0)
-var inputHistory = [NET_INPUT_HISTORY_SIZE]uint32{}
-var remoteInputHistory = [NET_INPUT_HISTORY_SIZE]uint32{}
+var inputHistory = [inputHistorySize]uint32{}
+var remoteInputHistory = [inputHistorySize]uint32{}
 var clientAddr net.Addr
 var latency int64
 var lastSyncedTick = int64(-1)
-var toSendPackets = []struct {
-	Packet []byte
-	Time   time.Time
-}{}
 
-// var syncDataHistoryLocal = [NET_INPUT_HISTORY_SIZE]uint32{}
-// var syncDataHistoryRemote = [NET_INPUT_HISTORY_SIZE]uint32{}
+// var toSendPackets = []struct {
+// 	Packet []byte
+// 	Time   time.Time
+// }{}
+// var syncDataHistoryLocal = [inputHistorySize]uint32{}
+// var syncDataHistoryRemote = [inputHistorySize]uint32{}
 
 // Init initialises a netplay session between two players
 func Init() {
@@ -127,33 +127,33 @@ func Init() {
 }
 
 // Get input from the remote player for the passed in game tick.
-func GetRemoteInputState(tick int64) input.PlayerState {
+func getRemoteInputState(tick int64) input.PlayerState {
 	if tick > confirmedTick {
 		// Repeat the last confirmed input when we don't have a confirmed tick
 		tick = confirmedTick
-		log.Println("Predict:", confirmedTick, remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
+		log.Println("Predict:", confirmedTick, remoteInputHistory[(inputHistorySize+tick)%inputHistorySize])
 	}
-	return decodeInput(remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
+	return decodeInput(remoteInputHistory[(inputHistorySize+tick)%inputHistorySize])
 }
 
 // Get input state for the local client
-func GetLocalInputState(tick int64) input.PlayerState {
-	return decodeInput(inputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
+func getLocalInputState(tick int64) input.PlayerState {
+	return decodeInput(inputHistory[(inputHistorySize+tick)%inputHistorySize])
 }
 
-func GetLocalInputEncoded(tick int64) uint32 {
-	return inputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE]
-}
+// func getLocalInputEncoded(tick int64) uint32 {
+// 	return inputHistory[(inputHistorySize+tick)%inputHistorySize]
+// }
 
 // Get the sync data which is used to check for game state desync between the clients.
 // func GetSyncDataLocal(tick int64) uint32 {
-// 	index := (NET_INPUT_HISTORY_SIZE + tick) % NET_INPUT_HISTORY_SIZE
+// 	index := (inputHistorySize + tick) % inputHistorySize
 // 	return syncDataHistoryLocal[index]
 // }
 
 // Get sync data from the remote client.
 // func GetSyncDataRemote(tick int64) uint32 {
-// 	index := (NET_INPUT_HISTORY_SIZE + tick) % NET_INPUT_HISTORY_SIZE
+// 	index := (inputHistorySize + tick) % inputHistorySize
 // 	return syncDataHistoryRemote[index]
 // }
 
@@ -171,11 +171,11 @@ func sendInputData(tick int64) {
 
 func setLocalInput(st input.PlayerState, tick int64) {
 	encodedInput := encodeInput(st)
-	inputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE] = encodedInput
+	inputHistory[(inputHistorySize+tick)%inputHistorySize] = encodedInput
 }
 
 func setRemoteEncodedInput(encodedInput uint32, tick int64) {
-	remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE] = encodedInput
+	remoteInputHistory[(inputHistorySize+tick)%inputHistorySize] = encodedInput
 }
 
 // Handles sending packets to the other client. Set duplicates to something > 0 to send more than once.
@@ -185,43 +185,43 @@ func sendPacket(packet []byte, duplicates int) {
 	}
 
 	for i := 0; i < duplicates; i++ {
-		if NET_SEND_DELAY_FRAMES > 0 {
-			sendPacketWithDelay(packet)
-		} else {
-			sendPacketRaw(packet)
-		}
+		// if sendDelayFrames > 0 {
+		// 	sendPacketWithDelay(packet)
+		// } else {
+		sendPacketRaw(packet)
+		// }
 	}
 }
 
 // Queues a packet to be sent later
-func sendPacketWithDelay(packet []byte) {
-	delayedPacket := struct {
-		Packet []byte
-		Time   time.Time
-	}{
-		Packet: packet,
-		Time:   time.Now(),
-	}
-	toSendPackets = append(toSendPackets, delayedPacket)
-}
+// func sendPacketWithDelay(packet []byte) {
+// 	delayedPacket := struct {
+// 		Packet []byte
+// 		Time   time.Time
+// 	}{
+// 		Packet: packet,
+// 		Time:   time.Now(),
+// 	}
+// 	toSendPackets = append(toSendPackets, delayedPacket)
+// }
 
 // Send all packets which have been queued and who's delay time as elapsed.
-func processDelayedPackets() {
-	newPacketList := []struct {
-		Packet []byte
-		Time   time.Time
-	}{} // List of packets that haven't been sent yet.
-	timeInterval := NET_SEND_DELAY_FRAMES / 60 // How much time must pass (converting from frames into seconds)
+// func processDelayedPackets() {
+// 	newPacketList := []struct {
+// 		Packet []byte
+// 		Time   time.Time
+// 	}{} // List of packets that haven't been sent yet.
+// 	timeInterval := sendDelayFrames / 60 // How much time must pass (converting from frames into seconds)
 
-	for _, data := range toSendPackets {
-		if (time.Now().Unix() - data.Time.Unix()) > int64(timeInterval) {
-			sendPacketRaw(data.Packet) // Send packet when enough time as passed.
-		} else {
-			newPacketList = append(newPacketList, data) // Keep the packet if the not enough time as passed.
-		}
-	}
-	toSendPackets = newPacketList
-}
+// 	for _, data := range toSendPackets {
+// 		if (time.Now().Unix() - data.Time.Unix()) > int64(timeInterval) {
+// 			sendPacketRaw(data.Packet) // Send packet when enough time as passed.
+// 		} else {
+// 			newPacketList = append(newPacketList, data) // Keep the packet if the not enough time as passed.
+// 		}
+// 	}
+// 	toSendPackets = newPacketList
+// }
 
 // Send a packet immediately
 func sendPacketRaw(packet []byte) {
@@ -295,7 +295,7 @@ func receiveData() {
 				}
 
 				if receivedTick > confirmedTick {
-					if receivedTick-confirmedTick > NET_INPUT_DELAY {
+					if receivedTick-confirmedTick > inputDelayFrames {
 						log.Println("Received packet with a tick too far ahead. Last: ", confirmedTick, "     Current: ", receivedTick)
 					}
 
@@ -303,7 +303,7 @@ func receiveData() {
 
 					// log.Println("----")
 					// log.Println(confirmedTick)
-					for offset := int64(NET_SEND_HISTORY_SIZE - 1); offset >= 0; offset-- {
+					for offset := int64(sendHistorySize - 1); offset >= 0; offset-- {
 						var encodedInput uint32
 						binary.Read(r, binary.LittleEndian, &encodedInput)
 						// Save the input history sent in the packet.
@@ -313,7 +313,7 @@ func receiveData() {
 					}
 				}
 
-				// NetLog("Received Tick: " .. receivedTick .. ",  Input: " .. remoteInputHistory[(confirmedTick % NET_INPUT_HISTORY_SIZE)+1])
+				// NetLog("Received Tick: " .. receivedTick .. ",  Input: " .. remoteInputHistory[(confirmedTick % inputHistorySize)+1])
 			} else if code == MsgCodePing {
 				var pingTime int64
 				binary.Read(r, binary.LittleEndian, &pingTime)
@@ -348,12 +348,12 @@ func makeInputPacket(tick int64) []byte {
 	binary.Write(buf, binary.LittleEndian, localTickDelta)
 	binary.Write(buf, binary.LittleEndian, tick)
 
-	historyIndexStart := tick - NET_SEND_HISTORY_SIZE + 1
+	historyIndexStart := tick - sendHistorySize + 1
 	// log.Println("Make input", tick, historyIndexStart)
-	for i := int64(0); i < NET_SEND_HISTORY_SIZE; i++ {
-		encodedInput := inputHistory[(NET_INPUT_HISTORY_SIZE+historyIndexStart+i)%NET_INPUT_HISTORY_SIZE]
+	for i := int64(0); i < sendHistorySize; i++ {
+		encodedInput := inputHistory[(inputHistorySize+historyIndexStart+i)%inputHistorySize]
 		binary.Write(buf, binary.LittleEndian, encodedInput)
-		// log.Println((NET_INPUT_HISTORY_SIZE + historyIndexStart + i) % NET_INPUT_HISTORY_SIZE)
+		// log.Println((inputHistorySize + historyIndexStart + i) % inputHistorySize)
 	}
 
 	return buf.Bytes()
@@ -409,7 +409,7 @@ func encodeInput(st input.PlayerState) uint32 {
 	var out uint32
 	for i, b := range st {
 		if b {
-			out |= uint32(i)
+			out |= (1 << i)
 		}
 	}
 	return out
@@ -418,8 +418,8 @@ func encodeInput(st input.PlayerState) uint32 {
 // Decodes the input from a packet generated by encodeInput().
 func decodeInput(in uint32) input.PlayerState {
 	st := input.PlayerState{}
-	for i, _ := range st {
-		st[i] = in&1 > 0
+	for i := range st {
+		st[i] = in&(1<<i) > 0
 	}
 	return st
 }

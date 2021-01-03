@@ -5,19 +5,20 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-const ROLLBACK_TEST_ENABLED = false
-const NET_ROLLBACK_MAX_FRAMES = 10
+const rollbackTestEnabled = false
+const rollbackMaxFrames = 10
 
 var tickSyncing = false
 var tickOffset = float64(0)
 var lastConfirmedTick int64
 var syncedLastUpdate = false
 
+// Update processes a frame of the netplay, taking care of polling inputs and executing the game
 func Update(inputPoll, gameUpdate func()) {
 	lastGameTick := state.Global.Tick
 	shouldUpdate := false
 
-	if ROLLBACK_TEST_ENABLED {
+	if rollbackTestEnabled {
 		shouldUpdate = true
 	}
 
@@ -27,7 +28,7 @@ func Update(inputPoll, gameUpdate func()) {
 		receiveData()
 
 		// Send any packets that have been queued
-		processDelayedPackets()
+		// processDelayedPackets()
 
 		if connectedToClient {
 			// First we assume that the game can be updated, sync checks below can halt updates
@@ -38,7 +39,7 @@ func Update(inputPoll, gameUpdate func()) {
 			}
 
 			// Run any rollbacks that can be processed before the next game update
-			HandleRollbacks(gameUpdate)
+			handleRollbacks(gameUpdate)
 
 			// Calculate the difference between remote game tick and the local. This will be used for syncing.
 			// We don't use the latest local tick, but the tick for the latest input sent to the remote client.
@@ -85,9 +86,9 @@ func Update(inputPoll, gameUpdate func()) {
 
 			// Only halt the game update based on exceeding the rollback window when the game updated hasn't previously been stopped by time sync code
 			if shouldUpdate {
-				// We allow the game to run for NET_ROLLBACK_MAX_FRAMES updates without having input for the current frame.
+				// We allow the game to run for rollbackMaxFrames updates without having input for the current frame.
 				// Once the game can no longer update, it will wait until the other player's client can catch up.
-				if lastGameTick <= (confirmedTick + NET_ROLLBACK_MAX_FRAMES) {
+				if lastGameTick <= (confirmedTick + rollbackMaxFrames) {
 					shouldUpdate = true
 				} else {
 					shouldUpdate = false
@@ -109,12 +110,12 @@ func Update(inputPoll, gameUpdate func()) {
 		if enabled {
 			// Update local input history
 			sendInput := input.GetLatest(input.LocalPlayerPort)
-			setLocalInput(sendInput, lastGameTick+NET_INPUT_DELAY)
-			// log.Println(sendInput, lastGameTick+NET_INPUT_DELAY)
+			setLocalInput(sendInput, lastGameTick+inputDelayFrames)
+			// log.Println(sendInput, lastGameTick+inputDelayFrames)
 
 			// Set the input state fo[r the current tick for the remote player's character.
-			input.SetState(input.LocalPlayerPort, GetLocalInputState(lastGameTick))
-			input.SetState(input.RemotePlayerPort, GetRemoteInputState(lastGameTick))
+			input.SetState(input.LocalPlayerPort, getLocalInputState(lastGameTick))
+			input.SetState(input.RemotePlayerPort, getRemoteInputState(lastGameTick))
 		}
 
 		// Increment the tick count only when the game actually updates.
@@ -123,7 +124,7 @@ func Update(inputPoll, gameUpdate func()) {
 		state.Global.Tick++
 
 		// Save stage after an update if testing rollbacks
-		if ROLLBACK_TEST_ENABLED {
+		if rollbackTestEnabled {
 			// Save local input history for this game tick
 			setLocalInput(input.GetLatest(input.LocalPlayerPort), lastGameTick)
 		}
@@ -148,12 +149,12 @@ func Update(inputPoll, gameUpdate func()) {
 	// Previously this as happening before the gameupdate() and adding uneeded latency.
 	if enabled && connectedToClient {
 		// if shouldUpdate then
-		// 	PacketLog("Sending Input: " .. GetLocalInputEncoded(lastGameTick + NET_INPUT_DELAY) .. ' @ ' .. lastGameTick + NET_INPUT_DELAY  )
+		// 	PacketLog("Sending Input: " .. getLocalInputEncoded(lastGameTick + inputDelayFrames) .. ' @ ' .. lastGameTick + inputDelayFrames  )
 		// end
 
-		// Send this player's input state. We when NET_INPUT_DELAY frames ahead.
+		// Send this player's input state. We when inputDelayFrames frames ahead.
 		// Note: This input comes from the last game update, so we subtract 1 to set the correct tick.
-		sendInputData(state.Global.Tick - 1 + NET_INPUT_DELAY)
+		sendInputData(state.Global.Tick - 1 + inputDelayFrames)
 
 		// Send ping so we can test network latency.
 		sendPingMessage()
