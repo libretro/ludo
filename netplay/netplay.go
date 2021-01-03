@@ -11,7 +11,7 @@ import (
 )
 
 const NET_INPUT_DELAY = 3
-const NET_INPUT_HISTORY_SIZE = int64(60)
+const NET_INPUT_HISTORY_SIZE = int64(300)
 const NET_SEND_DELAY_FRAMES = 0
 const NET_SEND_HISTORY_SIZE = 5
 
@@ -55,7 +55,7 @@ var latency int64
 var TickSyncing = false
 var TickOffset = float64(0)
 var LastSyncedTick = int64(-1)
-var DesyncCheckRate = int64(20)
+var DesyncCheckRate = int64(10)
 var toSendPackets = []struct {
 	Packet []byte
 	Time   time.Time
@@ -135,7 +135,7 @@ func GetRemoteInputState(tick int64) input.PlayerState {
 	if tick > ConfirmedTick {
 		// Repeat the last confirmed input when we don't have a confirmed tick
 		tick = ConfirmedTick
-		log.Println("Predict:", remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
+		log.Println("Predict:", ConfirmedTick, remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
 	}
 	return DecodeInput(remoteInputHistory[(NET_INPUT_HISTORY_SIZE+tick)%NET_INPUT_HISTORY_SIZE])
 }
@@ -334,14 +334,15 @@ func ReceiveData() {
 
 					ConfirmedTick = receivedTick
 
-					//log.Println("----")
-					for offset := int64(NET_SEND_HISTORY_SIZE); offset > 0; offset-- {
+					// log.Println("----")
+					// log.Println(ConfirmedTick)
+					for offset := int64(NET_SEND_HISTORY_SIZE - 1); offset >= 0; offset-- {
 						var encodedInput EncodedInput
 						binary.Read(r, binary.LittleEndian, &encodedInput)
 						// Save the input history sent in the packet.
 						SetRemoteEncodedInput(encodedInput, receivedTick-offset)
 
-						//log.Println(encodedInput, receivedTick-offset)
+						// log.Println(encodedInput, receivedTick-offset, offset)
 					}
 				}
 
@@ -380,10 +381,12 @@ func MakeInputPacket(tick int64) []byte {
 	binary.Write(buf, binary.LittleEndian, LocalTickDelta)
 	binary.Write(buf, binary.LittleEndian, tick)
 
-	historyIndexStart := tick - NET_SEND_HISTORY_SIZE
+	historyIndexStart := tick - NET_SEND_HISTORY_SIZE + 1
+	// log.Println("Make input", tick, historyIndexStart)
 	for i := int64(0); i < NET_SEND_HISTORY_SIZE; i++ {
 		encodedInput := inputHistory[(NET_INPUT_HISTORY_SIZE+historyIndexStart+i)%NET_INPUT_HISTORY_SIZE]
 		binary.Write(buf, binary.LittleEndian, encodedInput)
+		// log.Println((NET_INPUT_HISTORY_SIZE + historyIndexStart + i) % NET_INPUT_HISTORY_SIZE)
 	}
 
 	return buf.Bytes()
