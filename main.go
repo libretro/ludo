@@ -118,9 +118,10 @@ func HandleRollbacks() {
 				// Confirm the game clients are in sync
 				gameSyncCheck()
 			}
-			log.Println("Save after rollback")
-			gameSerialize()
 		}
+		log.Println("Save after rollback")
+		gameSerialize()
+
 		state.Global.FastForward = false
 	}
 }
