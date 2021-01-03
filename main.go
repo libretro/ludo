@@ -113,15 +113,13 @@ func HandleRollbacks() {
 
 			// Confirm that we are indeed still synced
 			if lastRolledBackGameTick <= netplay.ConfirmedTick {
-				// Store the state since we know it's synced. We really only need to call this on the last synced frame.
-				// Leaving in for demonstration purposes.
-				log.Println("Save after rollback")
-				gameSerialize()
 				netplay.LastSyncedTick = lastRolledBackGameTick
 
 				// Confirm the game clients are in sync
 				gameSyncCheck()
 			}
+			log.Println("Save after rollback")
+			gameSerialize()
 		}
 		state.Global.FastForward = false
 	}

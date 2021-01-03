@@ -178,7 +178,7 @@ func DesyncCheck() (bool, int64) {
 
 	// When the local sync data does not match the remote data indicate a desync has occurred.
 	if isStateDesynced || localSyncDataTick == remoteSyncDataTick {
-		log.Println("Desync Check at: ", localSyncDataTick)
+		//log.Println("Desync Check at: ", localSyncDataTick)
 
 		if localSyncData != remoteSyncData {
 			log.Println(localSyncDataTick, localSyncData, remoteSyncData)
