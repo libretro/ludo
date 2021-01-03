@@ -75,7 +75,7 @@ func handleRollbacks(gameUpdate func()) {
 			state.Global.Tick++
 
 			// Confirm that we are indeed still synced
-			if lastRolledBackGameTick <= confirmedTick && i == rollbackFrames-1 {
+			if lastRolledBackGameTick <= confirmedTick {
 				log.Println("Save after rollback")
 				serialize()
 
