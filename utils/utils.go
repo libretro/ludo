@@ -31,7 +31,7 @@ func IndexOfString(element string, data []string) int {
 			return k
 		}
 	}
-	return -1
+	return 0
 }
 
 // FileName returns the name of a file, without the path and extension.

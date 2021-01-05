@@ -111,6 +111,24 @@ func environmentSetCoreOptions(data unsafe.Pointer) bool {
 	return true
 }
 
+func environmentSetCoreOptionsIntl(data unsafe.Pointer) bool {
+	optionDefinitions := libretro.GetCoreOptionsIntl(data)
+
+	pass := []options.VariableInterface{}
+	for _, cod := range optionDefinitions {
+		cod := cod
+		pass = append(pass, &cod)
+	}
+
+	var err error
+	Options, err = options.New(pass)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
+
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
 	case libretro.EnvironmentSetRotation:
@@ -137,9 +155,10 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetCoreOptionsVersion:
 		libretro.SetUint(data, 1)
-		return true
 	case libretro.EnvironmentSetCoreOptions:
 		return environmentSetCoreOptions(data)
+	case libretro.EnvironmentSetCoreOptionsIntl:
+		return environmentSetCoreOptionsIntl(data)
 	case libretro.EnvironmentGetVariable:
 		return environmentGetVariable(data)
 	case libretro.EnvironmentSetVariables:
@@ -154,6 +173,8 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		vid.Geom = avi.Geometry
 	case libretro.EnvironmentGetFastforwarding:
 		libretro.SetBool(data, state.Global.FastForward)
+	case libretro.EnvironmentGetLanguage:
+		libretro.SetUint(data, 0)
 	default:
 		//log.Println("[Env]: Not implemented:", cmd)
 		return false

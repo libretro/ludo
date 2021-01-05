@@ -162,7 +162,7 @@ func (cod *CoreOptionDefinition) Values() []CoreOptionValue {
 
 	for i := 0; i < C.RETRO_NUM_CORE_OPTION_VALUES_MAX; i++ {
 		v := (C.struct_retro_core_option_value)(cod.values[i])
-		if v.value == nil || v.label == nil {
+		if v.value == nil {
 			break
 		}
 		values = append(values, (CoreOptionValue)(v))
@@ -177,7 +177,7 @@ func (cod *CoreOptionDefinition) Choices() []string {
 
 	for i := 0; i < C.RETRO_NUM_CORE_OPTION_VALUES_MAX; i++ {
 		v := (C.struct_retro_core_option_value)(cod.values[i])
-		if v.value == nil || v.label == nil {
+		if v.value == nil {
 			break
 		}
 		choices = append(choices, C.GoString(v.value))
@@ -304,6 +304,8 @@ const (
 	EnvironmentGetFastforwarding     = uint32(C.RETRO_ENVIRONMENT_GET_FASTFORWARDING)
 	EnvironmentGetCoreOptionsVersion = uint32(C.RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION)
 	EnvironmentSetCoreOptions        = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS)
+	EnvironmentSetCoreOptionsIntl    = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL)
+	EnvironmentGetLanguage           = uint32(C.RETRO_ENVIRONMENT_GET_LANGUAGE)
 )
 
 // Debug levels
@@ -671,6 +673,29 @@ func GetCoreOptionDefinitions(data unsafe.Pointer) []CoreOptionDefinition {
 		}
 		definitions = append(definitions, *(*CoreOptionDefinition)(v))
 		data = unsafe.Pointer(uintptr(data) +
+			unsafe.Sizeof(v.key) +
+			unsafe.Sizeof(v.desc) +
+			unsafe.Sizeof(v.info) +
+			unsafe.Sizeof(v.values) +
+			unsafe.Sizeof(v.default_value))
+	}
+
+	return definitions
+}
+
+// GetCoreOptionsIntl is an environment callback helper that returns the list of CoreOptionsIntl needed by a core
+func GetCoreOptionsIntl(data unsafe.Pointer) []CoreOptionDefinition {
+	var definitions []CoreOptionDefinition
+
+	intl := (*C.struct_retro_core_options_intl)(data)
+	uuss := unsafe.Pointer(intl.us)
+	for {
+		v := (*C.struct_retro_core_option_definition)(uuss)
+		if v.key == nil {
+			break
+		}
+		definitions = append(definitions, *(*CoreOptionDefinition)(v))
+		uuss = unsafe.Pointer(uintptr(uuss) +
 			unsafe.Sizeof(v.key) +
 			unsafe.Sizeof(v.desc) +
 			unsafe.Sizeof(v.info) +
