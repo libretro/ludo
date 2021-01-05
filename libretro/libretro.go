@@ -117,6 +117,32 @@ func (v *Variable) SetValue(val string) {
 	*s = C.CString(val)
 }
 
+// CoreOptionDefinition represents a core option in the version 1 of the core options API
+type CoreOptionDefinition C.struct_retro_core_option_definition
+
+// CoreOptionValue represents the value of a core option in the version 1 of the core options API
+type CoreOptionValue C.struct_retro_core_option_value
+
+// Key returns the key of a CoreOptionDefinition as a string
+func (v *CoreOptionDefinition) Key() string {
+	return C.GoString(v.key)
+}
+
+// Desc returns the name of a CoreOptionDefinition as a string
+func (v *CoreOptionDefinition) Desc() string {
+	return C.GoString(v.desc)
+}
+
+// Info returns the detailed description of a CoreOptionDefinition as a string
+func (v *CoreOptionDefinition) Info() string {
+	return C.GoString(v.info)
+}
+
+// DefaultValue returns the default value of a CoreOptionDefinition as a string
+func (v *CoreOptionDefinition) DefaultValue() string {
+	return C.GoString(v.default_value)
+}
+
 // FrameTimeCallback stores the frame time callback itself and the reference time
 type FrameTimeCallback struct {
 	Callback  func(int64)
@@ -570,7 +596,7 @@ func GetVariable(data unsafe.Pointer) *Variable {
 	return (*Variable)(data)
 }
 
-// GetVariables is an environment callback helper that returns the list of Variables needed by a core
+// GetVariables is an environment callback helper that returns the list of Variable needed by a core
 func GetVariables(data unsafe.Pointer) []Variable {
 	var vars []Variable
 
@@ -584,6 +610,27 @@ func GetVariables(data unsafe.Pointer) []Variable {
 	}
 
 	return vars
+}
+
+// GetCoreOptionDefinitions is an environment callback helper that returns the list of CoreOptionDefinition needed by a core
+func GetCoreOptionDefinitions(data unsafe.Pointer) []CoreOptionDefinition {
+	var definitions []CoreOptionDefinition
+
+	for {
+		v := (*C.struct_retro_core_option_definition)(data)
+		if v.key == nil {
+			break
+		}
+		definitions = append(definitions, *(*CoreOptionDefinition)(v))
+		data = unsafe.Pointer(uintptr(data) +
+			unsafe.Sizeof(v.key) +
+			unsafe.Sizeof(v.desc) +
+			unsafe.Sizeof(v.info) +
+			unsafe.Sizeof(v.values) +
+			unsafe.Sizeof(v.default_value))
+	}
+
+	return definitions
 }
 
 // GetGeometry is an environment callback helper that returns the game geometry

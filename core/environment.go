@@ -86,13 +86,11 @@ func environmentSetVariables(data unsafe.Pointer) bool {
 }
 
 func environmentSetCoreOptions(data unsafe.Pointer) bool {
-	log.Println("environmentSetCoreOptions")
-	// var err error
-	// Options, err = options.New(libretro.GetVariables(data))
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return false
-	// }
+	optionDefinitions := libretro.GetCoreOptionDefinitions(data)
+	for _, v := range optionDefinitions {
+		log.Println(v.Key(), v.Desc(), v.Info(), v.DefaultValue())
+	}
+
 	Options, _ = options.New([]libretro.Variable{})
 	return true
 }
