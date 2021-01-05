@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -25,6 +26,7 @@ type Variable struct {
 	Desc    string   // human readable name of the variable
 	Choices []string // available values
 	Choice  int      // index of the current value
+	Default string
 }
 
 // Options is a container type for core options internals
@@ -36,15 +38,31 @@ type Options struct {
 }
 
 // New instantiate a core options manager
-func New(vars []libretro.Variable) (*Options, error) {
+func New(vars []interface{}) (*Options, error) {
 	o := &Options{}
 	// Cache core options
+	log.Println(len(vars))
 	for _, v := range vars {
-		o.Vars = append(o.Vars, &Variable{
-			Key:     v.Key(),
-			Desc:    v.Desc(),
-			Choices: v.Choices(),
-		})
+		switch vi := v.(type) {
+		case libretro.Variable:
+			log.Println("libretro.Variable")
+			o.Vars = append(o.Vars, &Variable{
+				Key:     vi.Key(),
+				Desc:    vi.Desc(),
+				Choices: vi.Choices(),
+				Default: vi.Choices()[0],
+			})
+		case libretro.CoreOptionDefinition:
+			log.Println("libretro.CoreOptionDefinition")
+			o.Vars = append(o.Vars, &Variable{
+				Key:     vi.Key(),
+				Desc:    vi.Desc(),
+				Choices: vi.Choices(),
+				Default: vi.DefaultValue(),
+			})
+		default:
+			log.Println("something else")
+		}
 	}
 	o.Updated = true
 	err := o.load()

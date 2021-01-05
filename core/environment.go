@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/user"
@@ -77,8 +76,15 @@ func environmentGetSaveDirectory(data unsafe.Pointer) bool {
 }
 
 func environmentSetVariables(data unsafe.Pointer) bool {
+	variables := libretro.GetVariables(data)
+
+	pass := []interface{}{}
+	for _, va := range variables {
+		pass = append(pass, va)
+	}
+
 	var err error
-	Options, err = options.New(libretro.GetVariables(data))
+	Options, err = options.New(pass)
 	if err != nil {
 		log.Println(err)
 		return false
@@ -88,14 +94,18 @@ func environmentSetVariables(data unsafe.Pointer) bool {
 
 func environmentSetCoreOptions(data unsafe.Pointer) bool {
 	optionDefinitions := libretro.GetCoreOptionDefinitions(data)
+
+	pass := []interface{}{}
 	for _, cod := range optionDefinitions {
-		fmt.Println(cod.Key())
-		for _, val := range cod.Values() {
-			fmt.Println("\t", val.Value(), val.Label())
-		}
+		pass = append(pass, cod)
 	}
 
-	Options, _ = options.New([]libretro.Variable{})
+	var err error
+	Options, err = options.New(pass)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
 	return true
 }
 

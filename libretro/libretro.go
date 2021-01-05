@@ -117,6 +117,13 @@ func (v *Variable) SetValue(val string) {
 	*s = C.CString(val)
 }
 
+// DefaultValue returns the default value of a Variable
+func (v *Variable) DefaultValue() string {
+	val := C.GoString(v.value)
+	s := strings.Split(val, "; ")
+	return strings.Split(s[1], "|")[0]
+}
+
 // CoreOptionValue represents the value of a core option in the version 1 of the core options API
 type CoreOptionValue C.struct_retro_core_option_value
 
@@ -149,7 +156,7 @@ func (cod *CoreOptionDefinition) Info() string {
 	return C.GoString(cod.info)
 }
 
-// DefaultValue returns the default value of a CoreOptionDefinition as a string
+// Values returns the possible values of a CoreOptionDefinition as a string
 func (cod *CoreOptionDefinition) Values() []CoreOptionValue {
 	values := []CoreOptionValue{}
 
@@ -162,6 +169,21 @@ func (cod *CoreOptionDefinition) Values() []CoreOptionValue {
 	}
 
 	return values
+}
+
+// Choices returns the CoreOptionDefinition values as a string slice for compatibility with options v0
+func (cod *CoreOptionDefinition) Choices() []string {
+	choices := []string{}
+
+	for i := 0; i < C.RETRO_NUM_CORE_OPTION_VALUES_MAX; i++ {
+		v := (C.struct_retro_core_option_value)(cod.values[i])
+		if v.value == nil || v.label == nil {
+			break
+		}
+		choices = append(choices, C.GoString(v.value))
+	}
+
+	return choices
 }
 
 // DefaultValue returns the default value of a CoreOptionDefinition as a string
