@@ -76,7 +76,7 @@ func (o *Options) Save() error {
 
 	m := make(map[string]string)
 	for _, v := range o.Vars {
-		m[strings.Replace(v.Key, ".", "___", 1)] = v.Choices[v.Choice]
+		m[sanitizeKey(v.Key)] = v.Choices[v.Choice]
 	}
 	b, err := toml.Marshal(m)
 	if err != nil {
@@ -96,6 +96,11 @@ func (o *Options) Save() error {
 	}
 
 	return fd.Sync()
+}
+
+// this is a workaround for duckstation that has keys containing dots, which causes issues in toml
+func sanitizeKey(k string) string {
+	return strings.Replace(k, "___", ".", 1)
 }
 
 // Load core options from a file
@@ -122,7 +127,7 @@ func (o *Options) load() error {
 
 	for optk, optv := range opts {
 		for _, variable := range o.Vars {
-			if variable.Key == strings.Replace(optk, "___", ".", 1) {
+			if variable.Key == sanitizeKey(optk) {
 				for j, c := range variable.Choices {
 					if c == optv {
 						variable.Choice = j
