@@ -85,6 +85,18 @@ func environmentSetVariables(data unsafe.Pointer) bool {
 	return true
 }
 
+func environmentSetCoreOptions(data unsafe.Pointer) bool {
+	log.Println("environmentSetCoreOptions")
+	// var err error
+	// Options, err = options.New(libretro.GetVariables(data))
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return false
+	// }
+	Options, _ = options.New([]libretro.Variable{})
+	return true
+}
+
 func environment(cmd uint32, data unsafe.Pointer) bool {
 	switch cmd {
 	case libretro.EnvironmentSetRotation:
@@ -109,6 +121,11 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		return environmentGetSaveDirectory(data)
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
+	case libretro.EnvironmentGetCoreOptionsVersion:
+		libretro.SetUint(data, 1)
+		return true
+	case libretro.EnvironmentSetCoreOptions:
+		return environmentSetCoreOptions(data)
 	case libretro.EnvironmentGetVariable:
 		return environmentGetVariable(data)
 	case libretro.EnvironmentSetVariables:
