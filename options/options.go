@@ -7,12 +7,11 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
-	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/pelletier/go-toml"
@@ -37,32 +36,27 @@ type Options struct {
 	sync.Mutex
 }
 
+// VariableInterface is used as a compatibility layer for old v0 options and v1 options
+type VariableInterface interface {
+	Key() string
+	Desc() string
+	Choices() []string
+	DefaultValue() string
+}
+
 // New instantiate a core options manager
-func New(vars []interface{}) (*Options, error) {
+func New(vars []VariableInterface) (*Options, error) {
 	o := &Options{}
+
 	// Cache core options
-	log.Println(len(vars))
 	for _, v := range vars {
-		switch vi := v.(type) {
-		case libretro.Variable:
-			log.Println("libretro.Variable")
-			o.Vars = append(o.Vars, &Variable{
-				Key:     vi.Key(),
-				Desc:    vi.Desc(),
-				Choices: vi.Choices(),
-				Default: vi.Choices()[0],
-			})
-		case libretro.CoreOptionDefinition:
-			log.Println("libretro.CoreOptionDefinition")
-			o.Vars = append(o.Vars, &Variable{
-				Key:     vi.Key(),
-				Desc:    vi.Desc(),
-				Choices: vi.Choices(),
-				Default: vi.DefaultValue(),
-			})
-		default:
-			log.Println("something else")
-		}
+		v := v
+		o.Vars = append(o.Vars, &Variable{
+			Key:     v.Key(),
+			Desc:    v.Desc(),
+			Choices: v.Choices(),
+			Default: v.DefaultValue(),
+		})
 	}
 	o.Updated = true
 	err := o.load()
@@ -81,7 +75,7 @@ func (o *Options) Save() error {
 
 	m := make(map[string]string)
 	for _, v := range o.Vars {
-		m[v.Key] = v.Choices[v.Choice]
+		m[strings.Replace(v.Key, ".", "___", 1)] = v.Choices[v.Choice]
 	}
 	b, err := toml.Marshal(m)
 	if err != nil {
@@ -127,7 +121,7 @@ func (o *Options) load() error {
 
 	for optk, optv := range opts {
 		for _, variable := range o.Vars {
-			if variable.Key == optk {
+			if variable.Key == strings.Replace(optk, "___", ".", 1) {
 				for j, c := range variable.Choices {
 					if c == optv {
 						variable.Choice = j

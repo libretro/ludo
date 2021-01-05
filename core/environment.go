@@ -78,9 +78,10 @@ func environmentGetSaveDirectory(data unsafe.Pointer) bool {
 func environmentSetVariables(data unsafe.Pointer) bool {
 	variables := libretro.GetVariables(data)
 
-	pass := []interface{}{}
+	pass := []options.VariableInterface{}
 	for _, va := range variables {
-		pass = append(pass, va)
+		va := va
+		pass = append(pass, &va)
 	}
 
 	var err error
@@ -95,9 +96,10 @@ func environmentSetVariables(data unsafe.Pointer) bool {
 func environmentSetCoreOptions(data unsafe.Pointer) bool {
 	optionDefinitions := libretro.GetCoreOptionDefinitions(data)
 
-	pass := []interface{}{}
+	pass := []options.VariableInterface{}
 	for _, cod := range optionDefinitions {
-		pass = append(pass, cod)
+		cod := cod
+		pass = append(pass, &cod)
 	}
 
 	var err error
