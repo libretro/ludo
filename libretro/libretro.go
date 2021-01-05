@@ -117,30 +117,56 @@ func (v *Variable) SetValue(val string) {
 	*s = C.CString(val)
 }
 
-// CoreOptionDefinition represents a core option in the version 1 of the core options API
-type CoreOptionDefinition C.struct_retro_core_option_definition
-
 // CoreOptionValue represents the value of a core option in the version 1 of the core options API
 type CoreOptionValue C.struct_retro_core_option_value
 
+// Value is the expected option value
+func (cov *CoreOptionValue) Value() string {
+	return C.GoString(cov.value)
+}
+
+// Label is the human readable value label of the CoreOptionValue.
+// If NULL, value itself will be displayed by the frontend
+func (cov *CoreOptionValue) Label() string {
+	return C.GoString(cov.label)
+}
+
+// CoreOptionDefinition represents a core option in the version 1 of the core options API
+type CoreOptionDefinition C.struct_retro_core_option_definition
+
 // Key returns the key of a CoreOptionDefinition as a string
-func (v *CoreOptionDefinition) Key() string {
-	return C.GoString(v.key)
+func (cod *CoreOptionDefinition) Key() string {
+	return C.GoString(cod.key)
 }
 
 // Desc returns the name of a CoreOptionDefinition as a string
-func (v *CoreOptionDefinition) Desc() string {
-	return C.GoString(v.desc)
+func (cod *CoreOptionDefinition) Desc() string {
+	return C.GoString(cod.desc)
 }
 
 // Info returns the detailed description of a CoreOptionDefinition as a string
-func (v *CoreOptionDefinition) Info() string {
-	return C.GoString(v.info)
+func (cod *CoreOptionDefinition) Info() string {
+	return C.GoString(cod.info)
 }
 
 // DefaultValue returns the default value of a CoreOptionDefinition as a string
-func (v *CoreOptionDefinition) DefaultValue() string {
-	return C.GoString(v.default_value)
+func (cod *CoreOptionDefinition) Values() []CoreOptionValue {
+	values := []CoreOptionValue{}
+
+	for i := 0; i < C.RETRO_NUM_CORE_OPTION_VALUES_MAX; i++ {
+		v := (C.struct_retro_core_option_value)(cod.values[i])
+		if v.value == nil || v.label == nil {
+			break
+		}
+		values = append(values, (CoreOptionValue)(v))
+	}
+
+	return values
+}
+
+// DefaultValue returns the default value of a CoreOptionDefinition as a string
+func (cod *CoreOptionDefinition) DefaultValue() string {
+	return C.GoString(cod.default_value)
 }
 
 // FrameTimeCallback stores the frame time callback itself and the reference time

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/user"
@@ -87,8 +88,11 @@ func environmentSetVariables(data unsafe.Pointer) bool {
 
 func environmentSetCoreOptions(data unsafe.Pointer) bool {
 	optionDefinitions := libretro.GetCoreOptionDefinitions(data)
-	for _, v := range optionDefinitions {
-		log.Println(v.Key(), v.Desc(), v.Info(), v.DefaultValue())
+	for _, cod := range optionDefinitions {
+		fmt.Println(cod.Key())
+		for _, val := range cod.Values() {
+			fmt.Println("\t", val.Value(), val.Label())
+		}
 	}
 
 	Options, _ = options.New([]libretro.Variable{})
