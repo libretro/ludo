@@ -56,6 +56,7 @@ func New(vars []VariableInterface) (*Options, error) {
 			Desc:    v.Desc(),
 			Choices: v.Choices(),
 			Default: v.DefaultValue(),
+			Choice:  utils.IndexOfString(v.DefaultValue(), v.Choices()),
 		})
 	}
 	o.Updated = true
