@@ -117,6 +117,80 @@ func (v *Variable) SetValue(val string) {
 	*s = C.CString(val)
 }
 
+// DefaultValue returns the default value of a Variable
+func (v *Variable) DefaultValue() string {
+	val := C.GoString(v.value)
+	s := strings.Split(val, "; ")
+	return strings.Split(s[1], "|")[0]
+}
+
+// CoreOptionValue represents the value of a core option in the version 1 of the core options API
+type CoreOptionValue C.struct_retro_core_option_value
+
+// Value is the expected option value
+func (cov *CoreOptionValue) Value() string {
+	return C.GoString(cov.value)
+}
+
+// Label is the human readable value label of the CoreOptionValue.
+// If NULL, value itself will be displayed by the frontend
+func (cov *CoreOptionValue) Label() string {
+	return C.GoString(cov.label)
+}
+
+// CoreOptionDefinition represents a core option in the version 1 of the core options API
+type CoreOptionDefinition C.struct_retro_core_option_definition
+
+// Key returns the key of a CoreOptionDefinition as a string
+func (cod *CoreOptionDefinition) Key() string {
+	return C.GoString(cod.key)
+}
+
+// Desc returns the name of a CoreOptionDefinition as a string
+func (cod *CoreOptionDefinition) Desc() string {
+	return C.GoString(cod.desc)
+}
+
+// Info returns the detailed description of a CoreOptionDefinition as a string
+func (cod *CoreOptionDefinition) Info() string {
+	return C.GoString(cod.info)
+}
+
+// Values returns the possible values of a CoreOptionDefinition as a string
+func (cod *CoreOptionDefinition) Values() []CoreOptionValue {
+	values := []CoreOptionValue{}
+
+	for i := 0; i < C.RETRO_NUM_CORE_OPTION_VALUES_MAX; i++ {
+		v := (C.struct_retro_core_option_value)(cod.values[i])
+		if v.value == nil {
+			break
+		}
+		values = append(values, (CoreOptionValue)(v))
+	}
+
+	return values
+}
+
+// Choices returns the CoreOptionDefinition values as a string slice for compatibility with options v0
+func (cod *CoreOptionDefinition) Choices() []string {
+	choices := []string{}
+
+	for i := 0; i < C.RETRO_NUM_CORE_OPTION_VALUES_MAX; i++ {
+		v := (C.struct_retro_core_option_value)(cod.values[i])
+		if v.value == nil {
+			break
+		}
+		choices = append(choices, C.GoString(v.value))
+	}
+
+	return choices
+}
+
+// DefaultValue returns the default value of a CoreOptionDefinition as a string
+func (cod *CoreOptionDefinition) DefaultValue() string {
+	return C.GoString(cod.default_value)
+}
+
 // FrameTimeCallback stores the frame time callback itself and the reference time
 type FrameTimeCallback struct {
 	Callback  func(int64)
@@ -211,23 +285,27 @@ const (
 
 // Environment callback API. See libretro.h for details
 const (
-	EnvironmentSetRotation          = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
-	EnvironmentGetUsername          = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
-	EnvironmentGetLogInterface      = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
-	EnvironmentGetCanDupe           = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
-	EnvironmentSetPixelFormat       = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
-	EnvironmentGetSystemDirectory   = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
-	EnvironmentGetSaveDirectory     = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
-	EnvironmentShutdown             = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
-	EnvironmentGetVariable          = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
-	EnvironmentSetVariables         = uint32(C.RETRO_ENVIRONMENT_SET_VARIABLES)
-	EnvironmentGetVariableUpdate    = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE)
-	EnvironmentGetPerfInterface     = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
-	EnvironmentSetFrameTimeCallback = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
-	EnvironmentSetAudioCallback     = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
-	EnvironmentSetGeometry          = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
-	EnvironmentSetSystemAVInfo      = uint32(C.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO)
-	EnvironmentGetFastforwarding    = uint32(C.RETRO_ENVIRONMENT_GET_FASTFORWARDING)
+	EnvironmentSetRotation           = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
+	EnvironmentGetUsername           = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
+	EnvironmentGetLogInterface       = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
+	EnvironmentGetCanDupe            = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
+	EnvironmentSetPixelFormat        = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
+	EnvironmentGetSystemDirectory    = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
+	EnvironmentGetSaveDirectory      = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
+	EnvironmentShutdown              = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
+	EnvironmentGetVariable           = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
+	EnvironmentSetVariables          = uint32(C.RETRO_ENVIRONMENT_SET_VARIABLES)
+	EnvironmentGetVariableUpdate     = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE)
+	EnvironmentGetPerfInterface      = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
+	EnvironmentSetFrameTimeCallback  = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
+	EnvironmentSetAudioCallback      = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
+	EnvironmentSetGeometry           = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
+	EnvironmentSetSystemAVInfo       = uint32(C.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO)
+	EnvironmentGetFastforwarding     = uint32(C.RETRO_ENVIRONMENT_GET_FASTFORWARDING)
+	EnvironmentGetCoreOptionsVersion = uint32(C.RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION)
+	EnvironmentSetCoreOptions        = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS)
+	EnvironmentSetCoreOptionsIntl    = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL)
+	EnvironmentGetLanguage           = uint32(C.RETRO_ENVIRONMENT_GET_LANGUAGE)
 )
 
 // Debug levels
@@ -568,7 +646,7 @@ func GetVariable(data unsafe.Pointer) *Variable {
 	return (*Variable)(data)
 }
 
-// GetVariables is an environment callback helper that returns the list of Variables needed by a core
+// GetVariables is an environment callback helper that returns the list of Variable needed by a core
 func GetVariables(data unsafe.Pointer) []Variable {
 	var vars []Variable
 
@@ -582,6 +660,50 @@ func GetVariables(data unsafe.Pointer) []Variable {
 	}
 
 	return vars
+}
+
+// GetCoreOptionDefinitions is an environment callback helper that returns the list of CoreOptionDefinition needed by a core
+func GetCoreOptionDefinitions(data unsafe.Pointer) []CoreOptionDefinition {
+	var definitions []CoreOptionDefinition
+
+	for {
+		v := (*C.struct_retro_core_option_definition)(data)
+		if v.key == nil {
+			break
+		}
+		definitions = append(definitions, *(*CoreOptionDefinition)(v))
+		data = unsafe.Pointer(uintptr(data) +
+			unsafe.Sizeof(v.key) +
+			unsafe.Sizeof(v.desc) +
+			unsafe.Sizeof(v.info) +
+			unsafe.Sizeof(v.values) +
+			unsafe.Sizeof(v.default_value))
+	}
+
+	return definitions
+}
+
+// GetCoreOptionsIntl is an environment callback helper that returns the list of CoreOptionsIntl needed by a core
+func GetCoreOptionsIntl(data unsafe.Pointer) []CoreOptionDefinition {
+	var definitions []CoreOptionDefinition
+
+	intl := (*C.struct_retro_core_options_intl)(data)
+	uuss := unsafe.Pointer(intl.us)
+	for {
+		v := (*C.struct_retro_core_option_definition)(uuss)
+		if v.key == nil {
+			break
+		}
+		definitions = append(definitions, *(*CoreOptionDefinition)(v))
+		uuss = unsafe.Pointer(uintptr(uuss) +
+			unsafe.Sizeof(v.key) +
+			unsafe.Sizeof(v.desc) +
+			unsafe.Sizeof(v.info) +
+			unsafe.Sizeof(v.values) +
+			unsafe.Sizeof(v.default_value))
+	}
+
+	return definitions
 }
 
 // GetGeometry is an environment callback helper that returns the game geometry
@@ -622,6 +744,12 @@ func SetBool(data unsafe.Pointer, val bool) {
 func SetString(data unsafe.Pointer, val string) {
 	s := (**C.char)(data)
 	*s = C.CString(val)
+}
+
+// SetUint is an environment callback helper to set a string
+func SetUint(data unsafe.Pointer, val uint) {
+	i := (*C.uint)(data)
+	*i = C.uint(val)
 }
 
 // SetFrameTimeCallback is an environment callback helper to set the FrameTimeCallback
