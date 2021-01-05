@@ -326,6 +326,7 @@ const (
 	EnvironmentSetCoreOptions         = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS)
 	EnvironmentSetCoreOptionsIntl     = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL)
 	EnvironmentGetLanguage            = uint32(C.RETRO_ENVIRONMENT_GET_LANGUAGE)
+	EnvironmentSetHWRenderer          = uint32(C.RETRO_ENVIRONMENT_SET_HW_RENDER)
 	EnvironmentGetPrefferedHWRenderer = uint32(C.RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER)
 )
 

@@ -160,7 +160,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		return environmentGetSaveDirectory(data)
 	case libretro.EnvironmentGetPrefferedHWRenderer:
 		log.Println("[Env]: EnvironmentGetPrefferedHWRenderer: 1")
-		libretro.SetUint(data, libretro.HWContextOpenGL)
+		libretro.SetUint(data, uint(libretro.HWContextOpenGL))
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
 	case libretro.EnvironmentGetCoreOptionsVersion:
