@@ -1,4 +1,4 @@
-# ludo [![Build Status](https://travis-ci.org/libretro/ludo.svg?branch=master)](https://travis-ci.org/libretro/ludo) [![GoDoc](https://godoc.org/github.com/libretro/ludo?status.svg)](https://godoc.org/github.com/libretro/ludo)
+# ludo ![Build Status](https://github.com/libretro/ludo/workflows/CI/badge.svg) [![GoDoc](https://godoc.org/github.com/libretro/ludo?status.svg)](https://godoc.org/github.com/libretro/ludo)
 
 Ludo is a work in progress libretro frontend written in go.
 
@@ -10,9 +10,9 @@ It works on OSX, Linux, Linux ARM and Windows. You can download releases [here](
 
 ## Dependencies
 
- * GLFW 3.3
- * OpenGL >= 2.1
- * OpenAL
+- GLFW 3.3
+- OpenGL >= 2.1
+- OpenAL
 
 #### On OSX
 
@@ -30,6 +30,10 @@ You need to enable the experimental VC4 OpenGL support (Full KMS) in raspi-confi
 
     sudo apt-get install libopenal-dev xorg-dev
 
+#### On Alpine / postmarketOS
+
+    sudo apk add musl-dev gcc openal-soft-dev libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev mesa-dev
+
 #### On Windows
 
 Setup openal headers and dll in mingw-w64 `include` and `lib` folders.
@@ -43,4 +47,3 @@ Setup openal headers and dll in mingw-w64 `include` and `lib` folders.
 ## Running
 
     ./ludo
-

@@ -71,8 +71,8 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	// Make Font stuct type
 	f := new(Font)
 	f.fontChar = make([]*character, 0, high-low+1)
-	f.program = program    // Set shader program
-	f.SetColor(1, 1, 1, 1) // Set default white
+	f.program = program                       // Set shader program
+	f.SetColor(Color{R: 1, G: 1, B: 1, A: 1}) // Set default white
 
 	// Create new face
 	ttfFace := truetype.NewFace(ttf, &truetype.Options{
@@ -99,7 +99,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	rgba := image.NewRGBA(rect)
 	draw.Draw(rgba, rgba.Bounds(), bg, image.Point{}, draw.Src)
 
-	margin := 2
+	margin := 4
 	x := margin
 	y := margin
 
@@ -232,11 +232,8 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Fon
 }
 
 // SetColor allows you to set the text color to be used when you draw the text
-func (f *Font) SetColor(red float32, green float32, blue float32, alpha float32) {
-	f.color.R = red
-	f.color.G = green
-	f.color.B = blue
-	f.color.A = alpha
+func (f *Font) SetColor(color Color) {
+	f.color = color
 }
 
 // UpdateResolution passes the new framebuffer size to the font shader
@@ -275,10 +272,10 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		}
 
 		// Calculate position and size for current rune
-		xpos := x + float32(ch.bearingH)*scale
-		ypos := y - float32(ch.height-ch.bearingV)*scale
-		w := float32(ch.width) * scale
-		h := float32(ch.height) * scale
+		xpos := x - 1 + float32(ch.bearingH)*scale
+		ypos := y - 2 - float32(ch.height-ch.bearingV)*scale
+		w := float32(ch.width+2) * scale
+		h := float32(ch.height+2) * scale
 
 		// Set quad positions
 		var x1 = xpos
@@ -286,12 +283,12 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		var y1 = ypos
 		var y2 = ypos + h
 
-		coords = append(coords, point{x1, y1, float32(ch.x) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
-		coords = append(coords, point{x2, y1, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
-		coords = append(coords, point{x1, y2, float32(ch.x) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
-		coords = append(coords, point{x2, y1, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
-		coords = append(coords, point{x1, y2, float32(ch.x) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
-		coords = append(coords, point{x2, y2, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
+		coords = append(coords, point{x1, y1, float32(ch.x-1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
+		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
+		coords = append(coords, point{x1, y2, float32(ch.x-1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
+		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
+		coords = append(coords, point{x1, y2, float32(ch.x-1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
+		coords = append(coords, point{x2, y2, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
 		x += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))

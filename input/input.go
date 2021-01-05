@@ -7,6 +7,7 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
 )
 
@@ -73,16 +74,6 @@ func Init(v *video.Video) {
 	glfw.SetJoystickCallback(joystickCallback)
 }
 
-// Resets all retropad buttons to false
-func reset(state inputstate) inputstate {
-	for p := range state {
-		for k := range state[p] {
-			state[p][k] = false
-		}
-	}
-	return state
-}
-
 // pollJoypads process joypads of all players
 func pollJoypads(state inputstate) inputstate {
 	for p := range state {
@@ -103,6 +94,22 @@ func pollJoypads(state inputstate) inputstate {
 						k.direction*axisState[k.index] > k.threshold*k.direction {
 						state[p][v] = true
 					}
+				}
+
+				if !settings.Current.MapAxisToDPad {
+					continue
+				}
+				switch {
+				case axisState[0] < -0.5:
+					state[p][libretro.DeviceIDJoypadLeft] = true
+				case axisState[0] > 0.5:
+					state[p][libretro.DeviceIDJoypadRight] = true
+				}
+				switch {
+				case axisState[1] > 0.5:
+					state[p][libretro.DeviceIDJoypadDown] = true
+				case axisState[1] < -0.5:
+					state[p][libretro.DeviceIDJoypadUp] = true
 				}
 			}
 		}
@@ -133,7 +140,7 @@ func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate)
 
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
-	NewState = reset(NewState)
+	NewState = inputstate{}
 	NewState = pollJoypads(NewState)
 	NewState = pollKeyboard(NewState)
 	Pressed, Released = getPressedReleased(NewState, OldState)
@@ -145,7 +152,7 @@ func Poll() {
 // State is a callback passed to core.SetInputState
 // It returns 1 if the button corresponding to the parameters is pressed
 func State(port uint, device uint32, index uint, id uint) int16 {
-	if id >= 255 || index > 0 || device != libretro.DeviceJoypad {
+	if id >= 255 || index > 0 || port >= MaxPlayers || device&libretro.DeviceJoypad != 1 || id > uint(libretro.DeviceIDJoypadR3) {
 		return 0
 	}
 

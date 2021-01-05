@@ -142,7 +142,7 @@ func getPlaylists() []entry {
 		label := playlists.ShortName(filename)
 		pls = append(pls, entry{
 			label:    label,
-			subLabel: fmt.Sprintf("%d Games - 0 Favorites", count),
+			subLabel: fmt.Sprintf("%d Games", count),
 			icon:     filename,
 			callbackOK: func() {
 				menu.Push(buildPlaylist(path))
@@ -189,26 +189,23 @@ func (tabs *sceneTabs) animate() {
 	for i := range tabs.children {
 		e := &tabs.children[i]
 
-		var labelAlpha, iconAlpha, scale, width float32
+		var labelAlpha, scale, width float32
 		if i == tabs.ptr {
 			labelAlpha = 1
-			iconAlpha = 1
 			scale = 0.75
 			width = 500
 		} else if i < tabs.ptr {
 			labelAlpha = 0
-			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		} else if i > tabs.ptr {
 			labelAlpha = 0
-			iconAlpha = 1
 			scale = 0.25
 			width = 128
 		}
 
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, labelAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, iconAlpha, 0.15, ease.OutSine)
+		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 1, 0.15, ease.OutSine)
 		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 		menu.tweens[&e.width] = gween.New(e.width, width, 0.15, ease.OutSine)
 		menu.tweens[&e.margin] = gween.New(e.margin, 0, 0.15, ease.OutSine)
@@ -265,33 +262,34 @@ func (tabs sceneTabs) render() {
 	stackWidth := 710 * menu.ratio
 	for i, e := range tabs.children {
 
-		c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
+		cf := colorful.Hcl(float64(i)*20, 0.5, 0.5)
+		c := video.Color{R: float32(cf.R), G: float32(cf.B), B: float32(cf.G), A: e.iconAlpha}
 
 		x := -menu.scroll*menu.ratio + stackWidth + e.width/2*menu.ratio
 
 		stackWidth += e.width*menu.ratio + e.margin*menu.ratio
 
 		if e.labelAlpha > 0 {
-			vid.Font.SetColor(float32(c.R), float32(c.B), float32(c.G), e.labelAlpha)
+			vid.Font.SetColor(c.Alpha(e.labelAlpha))
 			lw := vid.Font.Width(0.5*menu.ratio, e.label)
-			vid.Font.Printf(x-lw/2, float32(h)/2+250*menu.ratio, 0.5*menu.ratio, e.label)
+			vid.Font.Printf(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), 0.5*menu.ratio, e.label)
 			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
-			vid.Font.Printf(x-lw/2, float32(h)/2+330*menu.ratio, 0.4*menu.ratio, e.subLabel)
+			vid.Font.Printf(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), 0.4*menu.ratio, e.subLabel)
 		}
 
 		vid.DrawImage(menu.icons["hexagon"],
 			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio,
-			440*menu.ratio, 440*menu.ratio, e.scale, video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.iconAlpha})
+			440*menu.ratio, 440*menu.ratio, e.scale, c)
 
 		vid.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha})
+			256*menu.ratio, 256*menu.ratio, e.scale, white.Alpha(e.iconAlpha))
 	}
 }
 
 func (tabs sceneTabs) drawHintBar() {
 	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1})
+	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 
