@@ -83,6 +83,9 @@ jobs:
       - run: choco install wget --ignore-checksums
       - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
       - run: 7z x openal-soft-1.21.0-bin.zip -o/c/openal-soft-1.21.0-bin
+      - run: ls -lah /c/
+      - run: ls -lah /c/openal-soft-1.21.0-bin
+      - run: ls -lah /c/openal-soft-1.21.0-bin/include/
       - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
       - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
       - run: go get .
