@@ -81,10 +81,10 @@ jobs:
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
       - run: choco install wget --ignore-checksums
-      - run: wget http://static.kivutar.me/openal-soft-1.19.0-bin.zip
-      - run: 7z x openal-soft-1.19.0-bin.zip -o/c/openal-soft-1.19.0-bin
-      - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.19.0-bin/include/" >> $GITHUB_ENV
-      - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.19.0-bin/build/Release/" >> $GITHUB_ENV
+      - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
+      - run: 7z x openal-soft-1.21.0-bin.zip -o/c/
+      - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
+      - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
       - run: go get .
       #- run: go test -v -race ./...
       #- run: go vet ./...
