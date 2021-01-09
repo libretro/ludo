@@ -51,23 +51,24 @@ func handleRollbacks(gameUpdate func()) {
 	// When the tick count for the inputs we have is more than the number of synced ticks it's possible to rerun those game updates
 	// with a rollback.
 
-	// The number of frames that's elasped since the game has been out of sync.
-	// Rerun rollbackFrames number of updates.
-	rollbackFrames := lastGameTick - lastSyncedTick
-
-	// Update the graph indicating the number of rollback frames
-	// rollbackGraphTable[ 1 + (lastGameTick % 60) * 2 + 1  ] = -1 * rollbackFrames * GRAPH_UNIT_SCALE
-
 	if lastGameTick >= 0 && lastGameTick > (lastSyncedTick+1) && confirmedTick > lastSyncedTick {
+
+		// The number of frames that's elasped since the game has been out of sync.
+		// Rerun rollbackFrames number of updates.
+		rollbackFrames := lastGameTick - lastSyncedTick
+
 		log.Println("Rollback", rollbackFrames, "frames")
+
+		// Disable audio because audio is blocking
 		state.Global.FastForward = true
 
 		// Must revert back to the last known synced game frame.
 		unserialize()
 
 		for i := int64(0); i < rollbackFrames; i++ {
-			// Get input from the input history buffer. The network system will predict input after the last confirmed tick (for the remote player).
-			input.SetState(input.LocalPlayerPort, getLocalInputState(state.Global.Tick)) // Offset of 1 ensure it's used for the next game update.
+			// Get input from the input history buffer.
+			// The network system can predict input after the last confirmed tick (for the remote player).
+			input.SetState(input.LocalPlayerPort, getLocalInputState(state.Global.Tick))
 			input.SetState(input.RemotePlayerPort, getRemoteInputState(state.Global.Tick))
 
 			lastRolledBackGameTick := state.Global.Tick
@@ -76,7 +77,8 @@ func handleRollbacks(gameUpdate func()) {
 
 			// Confirm that we are indeed still synced
 			if lastRolledBackGameTick <= confirmedTick {
-				log.Println("Save after rollback")
+				log.Println("Saving after a rollback")
+
 				serialize()
 
 				lastSyncedTick = lastRolledBackGameTick
@@ -86,6 +88,7 @@ func handleRollbacks(gameUpdate func()) {
 			}
 		}
 
+		// Enable audio again
 		state.Global.FastForward = false
 	}
 }

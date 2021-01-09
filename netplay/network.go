@@ -245,7 +245,7 @@ func receiveData() {
 				var pongTime int64
 				binary.Read(r, binary.LittleEndian, &pongTime)
 				latency = time.Now().Unix() - pongTime
-				//print("Got pong message: " .. latency)
+				// log.Println("Got pong message: ", latency)
 			} else if code == MsgCodeSync {
 				var tick int64
 				var syncData uint32
