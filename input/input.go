@@ -17,9 +17,13 @@ import (
 // MaxPlayers is the maximum number of players to poll input for
 const MaxPlayers = 2
 
+// MaxFrames is the max number of frames to keep in the input buffer. Used by netplay.
 const MaxFrames = int64(60)
 
+// LocalPlayerPort is the joypad port of the local player
 var LocalPlayerPort = uint(0)
+
+// RemotePlayerPort is the joypad port of the remote player
 var RemotePlayerPort = uint(1)
 
 var polled = InputState{}
@@ -37,7 +41,10 @@ type bind struct {
 	threshold float32
 }
 
+// PlayerState is the state of inputs for a single player
 type PlayerState [ActionLast]bool
+
+// InputState is the state of inputs for all players
 type InputState [MaxPlayers]PlayerState
 
 // Input state for all the players
@@ -68,11 +75,13 @@ func index(offset int64) int64 {
 	return (MaxFrames + tick) % MaxFrames
 }
 
+// Serialize saves the current input state, used by netplay
 func Serialize() [MaxPlayers][MaxFrames]PlayerState {
 	copy := deepcopy.MustAnything(buffers)
 	return copy.([MaxPlayers][MaxFrames]PlayerState)
 }
 
+// Unserialize restaures the input state from a save, used by netplay
 func Unserialize(st interface{}) {
 	copy := deepcopy.MustAnything(st)
 	buffers = copy.([MaxPlayers][MaxFrames]PlayerState)
@@ -84,6 +93,7 @@ func getState(port uint, tick int64) PlayerState {
 	return st
 }
 
+// GetLatest returns the most recent polled inputs
 func GetLatest(port uint) PlayerState {
 	return polled[port]
 }
@@ -92,6 +102,7 @@ func currentState(port uint) PlayerState {
 	return getState(port, state.Global.Tick)
 }
 
+// SetState forces the input state for a given player
 func SetState(port uint, st PlayerState) {
 	for i, b := range st {
 		buffers[port][index(0)][i] = b

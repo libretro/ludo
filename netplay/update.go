@@ -29,7 +29,7 @@ func Update() {
 		}
 
 		// Run any rollbacks that can be processed before the next game update
-		handleRollbacks(gameUpdate)
+		handleRollbacks()
 
 		// Calculate the difference between remote game tick and the local. This will be used for syncing.
 		// We don't use the latest local tick, but the tick for the latest input sent to the remote client.
@@ -84,13 +84,13 @@ func Update() {
 
 	if shouldUpdate {
 		// Poll inputs for this frame.
-		input.Poll()
+		inputPoll()
 
 		// Update local input history
 		sendInput := input.GetLatest(input.LocalPlayerPort)
 		setLocalInput(sendInput, lastGameTick+inputDelayFrames)
 
-		// Set the input state fo[r the current tick for the remote player's character.
+		// Set the input state for the current tick for the remote player's character.
 		input.SetState(input.LocalPlayerPort, getLocalInputState(lastGameTick))
 		input.SetState(input.RemotePlayerPort, getRemoteInputState(lastGameTick))
 

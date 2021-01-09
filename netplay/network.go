@@ -49,9 +49,9 @@ var messages chan []byte
 var inputPoll, gameUpdate func()
 
 // Init initialises a netplay session between two players
-func Init(poll, update func()) {
-	inputPoll = poll
-	gameUpdate = update
+func Init(pollCb, updateCb func()) {
+	inputPoll = pollCb
+	gameUpdate = updateCb
 
 	if Listen { // Host mode
 		var err error

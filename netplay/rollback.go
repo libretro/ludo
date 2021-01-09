@@ -15,12 +15,11 @@ var saved struct {
 
 func serialize() {
 	s := state.Global.Core.SerializeSize()
-	bytes, err := state.Global.Core.Serialize(s)
+	var err error
+	saved.GameState, err = state.Global.Core.Serialize(s)
 	if err != nil {
 		log.Println(err)
 	}
-	saved.GameState = make([]byte, s)
-	copy(saved.GameState[:], bytes[:])
 
 	saved.Inputs = input.Serialize()
 	saved.Tick = state.Global.Tick
@@ -42,7 +41,7 @@ func unserialize() {
 }
 
 // handleRollbacks will rollback if needed.
-func handleRollbacks(gameUpdate func()) {
+func handleRollbacks() {
 	lastGameTick := state.Global.Tick - 1
 	// The input needed to resync state is available so rollback.
 	// lastSyncedTick keeps track of the lastest synced game tick.
