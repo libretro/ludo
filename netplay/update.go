@@ -54,7 +54,7 @@ func Update(inputPoll, gameUpdate func()) {
 				// for one player over the other.
 
 				// Only calculate time sync frames when we are not currently time syncing.
-				if tickSyncing == false {
+				if !tickSyncing {
 					// Calculate tick offset using the clock synchronization algorithm.
 					// See https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_synchronization_algorithm
 					tickOffset = (float64(localTickDelta) - float64(remoteTickDelta)) / 2.0
@@ -65,7 +65,7 @@ func Update(inputPoll, gameUpdate func()) {
 					}
 				}
 
-				if tickSyncing && syncedLastUpdate == false {
+				if tickSyncing && !syncedLastUpdate {
 					shouldUpdate = false
 					syncedLastUpdate = true
 

@@ -34,7 +34,6 @@ var Conn *net.UDPConn
 
 var enabled = false
 var connectedToClient = false
-var isServer = false
 var confirmedTick = int64(0)
 var localSyncData = uint32(0)
 var remoteSyncData = uint32(0)
@@ -46,7 +45,6 @@ var remoteTickDelta = int64(0)
 var inputHistory = [inputHistorySize]uint32{}
 var remoteInputHistory = [inputHistorySize]uint32{}
 var clientAddr net.Addr
-var latency int64
 var lastSyncedTick = int64(-1)
 var messages chan []byte
 
@@ -66,7 +64,6 @@ func Init() {
 		Conn.SetReadBuffer(1048576)
 
 		enabled = true
-		isServer = true
 
 		input.LocalPlayerPort = 0
 		input.RemotePlayerPort = 1
@@ -102,7 +99,6 @@ func Init() {
 		Conn.SetReadBuffer(1048576)
 
 		enabled = true
-		isServer = false
 
 		input.LocalPlayerPort = 1
 		input.RemotePlayerPort = 0
@@ -240,8 +236,6 @@ func receiveData() {
 			} else if code == MsgCodePong {
 				var pongTime int64
 				binary.Read(r, binary.LittleEndian, &pongTime)
-				latency = time.Now().Unix() - pongTime
-				// log.Println("Got pong message: ", latency)
 			} else if code == MsgCodeSync {
 				var tick int64
 				var syncData uint32
