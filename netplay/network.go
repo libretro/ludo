@@ -68,8 +68,6 @@ func Init() {
 		enabled = true
 		isServer = true
 
-		input.InitializeBuffer(0)
-		input.InitializeBuffer(1)
 		input.LocalPlayerPort = 0
 		input.RemotePlayerPort = 1
 
@@ -106,8 +104,6 @@ func Init() {
 		enabled = true
 		isServer = false
 
-		input.InitializeBuffer(0)
-		input.InitializeBuffer(1)
 		input.LocalPlayerPort = 1
 		input.RemotePlayerPort = 0
 

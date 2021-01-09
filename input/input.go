@@ -98,12 +98,6 @@ func SetState(port uint, st PlayerState) {
 	}
 }
 
-func InitializeBuffer(port uint) {
-	for i := int64(0); i < MaxFrames; i++ {
-		buffers[port][i] = PlayerState{}
-	}
-}
-
 // joystickCallback is triggered when a joypad is plugged.
 func joystickCallback(joy glfw.Joystick, event glfw.PeripheralEvent) {
 	switch event {
