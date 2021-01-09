@@ -60,7 +60,7 @@ func Load(sofile string) error {
 	state.Global.Core.SetEnvironment(environment)
 	state.Global.Core.Init()
 	state.Global.Core.SetVideoRefresh(vid.Refresh)
-	state.Global.Core.SetInputPoll(input.FakePoll)
+	state.Global.Core.SetInputPoll(func() {})
 	state.Global.Core.SetInputState(input.State)
 	state.Global.Core.SetAudioSample(audio.Sample)
 	state.Global.Core.SetAudioSampleBatch(audio.SampleBatch)

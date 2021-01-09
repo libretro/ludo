@@ -26,7 +26,7 @@ var LocalPlayerPort = uint(0)
 // RemotePlayerPort is the joypad port of the remote player
 var RemotePlayerPort = uint(1)
 
-var polled = InputState{}
+var polled = States{}
 var buffers = [MaxPlayers][MaxFrames]PlayerState{}
 
 type joybinds map[bind]uint32
@@ -44,15 +44,15 @@ type bind struct {
 // PlayerState is the state of inputs for a single player
 type PlayerState [ActionLast]bool
 
-// InputState is the state of inputs for all players
-type InputState [MaxPlayers]PlayerState
+// States is the state of inputs for all players
+type States [MaxPlayers]PlayerState
 
 // Input state for all the players
 var (
-	NewState InputState // input state for the current frame
-	OldState InputState // input state for the previous frame
-	Released InputState // keys just released during this frame
-	Pressed  InputState // keys just pressed during this frame
+	NewState States // input state for the current frame
+	OldState States // input state for the previous frame
+	Released States // keys just released during this frame
+	Pressed  States // keys just pressed during this frame
 )
 
 // Hot keys
@@ -185,7 +185,7 @@ func pollKeyboard() {
 }
 
 // Compute the keys pressed or released during this frame
-func getPressedReleased(new InputState, old InputState) (InputState, InputState) {
+func getPressedReleased(new States, old States) (States, States) {
 	for p := range new {
 		for k := range new[p] {
 			Pressed[p][k] = new[p][k] && !old[p][k]
@@ -197,7 +197,7 @@ func getPressedReleased(new InputState, old InputState) (InputState, InputState)
 
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
-	polled = InputState{}
+	polled = States{}
 	pollKeyboard()
 	pollJoypads()
 	NewState = polled
@@ -208,9 +208,7 @@ func Poll() {
 	OldState = NewState
 }
 
-func FakePoll() {}
-
-// State is a callback passed to core.SetInputState
+// State is a callback passed to core.SetStates
 // It returns 1 if the button corresponding to the parameters is pressed
 func State(port uint, device uint32, index uint, id uint) int16 {
 	if id >= 255 || index > 0 || port >= MaxPlayers || device&libretro.DeviceJoypad != 1 || id > uint(libretro.DeviceIDJoypadR3) {
