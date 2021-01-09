@@ -15,7 +15,6 @@ import (
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/netplay"
 	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/patch"
 	"github.com/libretro/ludo/state"
@@ -80,8 +79,6 @@ func Load(sofile string) error {
 			log.Println("[Core]: Block extract:", si.BlockExtract)
 		}
 	}
-
-	netplay.Init()
 
 	return nil
 }

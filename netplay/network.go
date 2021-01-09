@@ -32,7 +32,6 @@ var Join bool
 // Conn is the connection between two players
 var Conn *net.UDPConn
 
-var enabled = false
 var connectedToClient = false
 var confirmedTick = int64(0)
 var localSyncData = uint32(0)
@@ -47,9 +46,13 @@ var remoteInputHistory = [inputHistorySize]uint32{}
 var clientAddr net.Addr
 var lastSyncedTick = int64(-1)
 var messages chan []byte
+var inputPoll, gameUpdate func()
 
 // Init initialises a netplay session between two players
-func Init() {
+func Init(poll, update func()) {
+	inputPoll = poll
+	gameUpdate = update
+
 	if Listen { // Host mode
 		var err error
 		Conn, err = net.ListenUDP("udp", &net.UDPAddr{
@@ -62,8 +65,6 @@ func Init() {
 		}
 
 		Conn.SetReadBuffer(1048576)
-
-		enabled = true
 
 		input.LocalPlayerPort = 0
 		input.RemotePlayerPort = 1
@@ -97,8 +98,6 @@ func Init() {
 		}
 
 		Conn.SetReadBuffer(1048576)
-
-		enabled = true
 
 		input.LocalPlayerPort = 1
 		input.RemotePlayerPort = 0
@@ -135,7 +134,7 @@ func getLocalInputState(tick int64) input.PlayerState {
 // Send the inputState for the local player to the remote player for the given game tick.
 func sendInputData(tick int64) {
 	// Don't send input data when not connect to another player's game client.
-	if !(enabled && connectedToClient) {
+	if !connectedToClient {
 		return
 	}
 
@@ -186,10 +185,6 @@ func listen() {
 
 // Checks the queue for any incoming packets and process them.
 func receiveData() {
-	if !enabled {
-		return
-	}
-
 	// For now we'll process all packets every frame.
 	for {
 		select {
