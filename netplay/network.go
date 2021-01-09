@@ -11,7 +11,7 @@ import (
 )
 
 const inputDelayFrames = 3
-const inputHistorySize = int64(300)
+const historySize = int64(60)
 const sendHistorySize = 5
 
 // Network code indicating the type of message.
@@ -41,8 +41,8 @@ var localSyncDataTick = int64(-1)
 var remoteSyncDataTick = int64(-1)
 var localTickDelta = int64(0)
 var remoteTickDelta = int64(0)
-var inputHistory = [inputHistorySize]uint32{}
-var remoteInputHistory = [inputHistorySize]uint32{}
+var localInputHistory = [historySize]uint32{}
+var remoteInputHistory = [historySize]uint32{}
 var clientAddr net.Addr
 var lastSyncedTick = int64(-1)
 var messages chan []byte
@@ -121,14 +121,14 @@ func getRemoteInputState(tick int64) input.PlayerState {
 	if tick > confirmedTick {
 		// Repeat the last confirmed input when we don't have a confirmed tick
 		tick = confirmedTick
-		log.Println("Predict:", confirmedTick, remoteInputHistory[(inputHistorySize+tick)%inputHistorySize])
+		log.Println("Predict:", confirmedTick, remoteInputHistory[(historySize+tick)%historySize])
 	}
-	return decodeInput(remoteInputHistory[(inputHistorySize+tick)%inputHistorySize])
+	return decodeInput(remoteInputHistory[(historySize+tick)%historySize])
 }
 
 // Get input state for the local client
 func getLocalInputState(tick int64) input.PlayerState {
-	return decodeInput(inputHistory[(inputHistorySize+tick)%inputHistorySize])
+	return decodeInput(localInputHistory[(historySize+tick)%historySize])
 }
 
 // Send the inputState for the local player to the remote player for the given game tick.
@@ -145,11 +145,11 @@ func sendInputData(tick int64) {
 
 func setLocalInput(st input.PlayerState, tick int64) {
 	encodedInput := encodeInput(st)
-	inputHistory[(inputHistorySize+tick)%inputHistorySize] = encodedInput
+	localInputHistory[(historySize+tick)%historySize] = encodedInput
 }
 
 func setRemoteEncodedInput(encodedInput uint32, tick int64) {
-	remoteInputHistory[(inputHistorySize+tick)%inputHistorySize] = encodedInput
+	remoteInputHistory[(historySize+tick)%historySize] = encodedInput
 }
 
 // Handles sending packets to the other client. Set duplicates to something > 0 to send more than once.
@@ -207,7 +207,7 @@ func receiveData() {
 
 				if receivedTick > confirmedTick {
 					if receivedTick-confirmedTick > inputDelayFrames {
-						log.Println("Received packet with a tick too far ahead. Last: ", confirmedTick, "     Current: ", receivedTick)
+						log.Println("Received packet with a tick too far ahead. Last: ", confirmedTick, " Current: ", receivedTick)
 					}
 
 					confirmedTick = receivedTick
@@ -222,8 +222,6 @@ func receiveData() {
 						// log.Println(encodedInput, receivedTick-offset, offset)
 					}
 				}
-
-				// NetLog("Received Tick: " .. receivedTick .. ",  Input: " .. remoteInputHistory[(confirmedTick % inputHistorySize)+1])
 			} else if code == MsgCodePing {
 				var pingTime int64
 				binary.Read(r, binary.LittleEndian, &pingTime)
@@ -261,9 +259,9 @@ func makeInputPacket(tick int64) []byte {
 	historyIndexStart := tick - sendHistorySize + 1
 	// log.Println("Make input", tick, historyIndexStart)
 	for i := int64(0); i < sendHistorySize; i++ {
-		encodedInput := inputHistory[(inputHistorySize+historyIndexStart+i)%inputHistorySize]
+		encodedInput := localInputHistory[(historySize+historyIndexStart+i)%historySize]
 		binary.Write(buf, binary.LittleEndian, encodedInput)
-		// log.Println((inputHistorySize + historyIndexStart + i) % inputHistorySize)
+		// log.Println((historySize + historyIndexStart + i) % historySize)
 	}
 
 	return buf.Bytes()
