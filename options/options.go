@@ -9,9 +9,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
-	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/pelletier/go-toml"
@@ -25,6 +25,7 @@ type Variable struct {
 	Desc    string   // human readable name of the variable
 	Choices []string // available values
 	Choice  int      // index of the current value
+	Default string
 }
 
 // Options is a container type for core options internals
@@ -35,15 +36,27 @@ type Options struct {
 	sync.Mutex
 }
 
+// VariableInterface is used as a compatibility layer for old v0 options and v1 options
+type VariableInterface interface {
+	Key() string
+	Desc() string
+	Choices() []string
+	DefaultValue() string
+}
+
 // New instantiate a core options manager
-func New(vars []libretro.Variable) (*Options, error) {
+func New(vars []VariableInterface) (*Options, error) {
 	o := &Options{}
+
 	// Cache core options
 	for _, v := range vars {
+		v := v
 		o.Vars = append(o.Vars, &Variable{
 			Key:     v.Key(),
 			Desc:    v.Desc(),
 			Choices: v.Choices(),
+			Default: v.DefaultValue(),
+			Choice:  utils.IndexOfString(v.DefaultValue(), v.Choices()),
 		})
 	}
 	o.Updated = true
@@ -63,7 +76,7 @@ func (o *Options) Save() error {
 
 	m := make(map[string]string)
 	for _, v := range o.Vars {
-		m[v.Key] = v.Choices[v.Choice]
+		m[sanitizeKey(v.Key)] = v.Choices[v.Choice]
 	}
 	b, err := toml.Marshal(m)
 	if err != nil {
@@ -83,6 +96,11 @@ func (o *Options) Save() error {
 	}
 
 	return fd.Sync()
+}
+
+// this is a workaround for duckstation that has keys containing dots, which causes issues in toml
+func sanitizeKey(k string) string {
+	return strings.Replace(k, "___", ".", 1)
 }
 
 // Load core options from a file
@@ -109,7 +127,7 @@ func (o *Options) load() error {
 
 	for optk, optv := range opts {
 		for _, variable := range o.Vars {
-			if variable.Key == optk {
+			if variable.Key == sanitizeKey(optk) {
 				for j, c := range variable.Choices {
 					if c == optv {
 						variable.Choice = j

@@ -76,8 +76,52 @@ func environmentGetSaveDirectory(data unsafe.Pointer) bool {
 }
 
 func environmentSetVariables(data unsafe.Pointer) bool {
+	variables := libretro.GetVariables(data)
+
+	pass := []options.VariableInterface{}
+	for _, va := range variables {
+		va := va
+		pass = append(pass, &va)
+	}
+
 	var err error
-	Options, err = options.New(libretro.GetVariables(data))
+	Options, err = options.New(pass)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
+
+func environmentSetCoreOptions(data unsafe.Pointer) bool {
+	optionDefinitions := libretro.GetCoreOptionDefinitions(data)
+
+	pass := []options.VariableInterface{}
+	for _, cod := range optionDefinitions {
+		cod := cod
+		pass = append(pass, &cod)
+	}
+
+	var err error
+	Options, err = options.New(pass)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
+
+func environmentSetCoreOptionsIntl(data unsafe.Pointer) bool {
+	optionDefinitions := libretro.GetCoreOptionsIntl(data)
+
+	pass := []options.VariableInterface{}
+	for _, cod := range optionDefinitions {
+		cod := cod
+		pass = append(pass, &cod)
+	}
+
+	var err error
+	Options, err = options.New(pass)
 	if err != nil {
 		log.Println(err)
 		return false
@@ -109,6 +153,12 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		return environmentGetSaveDirectory(data)
 	case libretro.EnvironmentShutdown:
 		vid.Window.SetShouldClose(true)
+	case libretro.EnvironmentGetCoreOptionsVersion:
+		libretro.SetUint(data, 1)
+	case libretro.EnvironmentSetCoreOptions:
+		return environmentSetCoreOptions(data)
+	case libretro.EnvironmentSetCoreOptionsIntl:
+		return environmentSetCoreOptionsIntl(data)
 	case libretro.EnvironmentGetVariable:
 		return environmentGetVariable(data)
 	case libretro.EnvironmentSetVariables:
@@ -123,6 +173,8 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		vid.Geom = avi.Geometry
 	case libretro.EnvironmentGetFastforwarding:
 		libretro.SetBool(data, state.Global.FastForward)
+	case libretro.EnvironmentGetLanguage:
+		libretro.SetUint(data, 0)
 	default:
 		//log.Println("[Env]: Not implemented:", cmd)
 		return false
