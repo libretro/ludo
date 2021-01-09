@@ -14,7 +14,6 @@ var saved struct {
 }
 
 func serialize() {
-	//log.Println("Serialize")
 	s := state.Global.Core.SerializeSize()
 	bytes, err := state.Global.Core.Serialize(s)
 	if err != nil {
@@ -28,7 +27,6 @@ func serialize() {
 }
 
 func unserialize() {
-	log.Println("Unserialize")
 	if len(saved.GameState) == 0 {
 		log.Println("Trying to unserialize a savestate of len 0")
 		return
@@ -48,8 +46,8 @@ func handleRollbacks(gameUpdate func()) {
 	lastGameTick := state.Global.Tick - 1
 	// The input needed to resync state is available so rollback.
 	// lastSyncedTick keeps track of the lastest synced game tick.
-	// When the tick count for the inputs we have is more than the number of synced ticks it's possible to rerun those game updates
-	// with a rollback.
+	// When the tick count for the inputs we have is more than the number of synced ticks it's possible to rerun those
+	// game updates with a rollback.
 
 	if lastGameTick >= 0 && lastGameTick > (lastSyncedTick+1) && confirmedTick > lastSyncedTick {
 
