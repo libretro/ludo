@@ -135,7 +135,7 @@ func Init(v *video.Video) {
 
 // pollJoypads process joypads of all players
 func pollJoypads() {
-	p := 0
+	p := LocalPlayerPort
 	buttonState := glfw.Joystick.GetButtons(glfw.Joystick(0))
 	axisState := glfw.Joystick.GetAxes(glfw.Joystick(0))
 	name := glfw.Joystick.GetName(glfw.Joystick(0))
