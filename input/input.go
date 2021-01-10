@@ -15,7 +15,7 @@ import (
 )
 
 // MaxPlayers is the maximum number of players to poll input for
-const MaxPlayers = 2
+const MaxPlayers = 5
 
 // MaxFrames is the max number of frames to keep in the input buffer. Used by netplay.
 const MaxFrames = int64(60)
