@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/audio"
@@ -27,9 +28,13 @@ func init() {
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
+	var currTime, prevTime time.Time
 	for !vid.Window.ShouldClose() {
+		currTime = time.Now()
+		dt := float32(currTime.Sub(prevTime)) / 1000000000
 		glfw.PollEvents()
 		m.ProcessHotkeys()
+		ntf.Process(dt)
 		vid.ResizeViewport()
 		m.UpdatePalette()
 
@@ -38,12 +43,15 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		netplay.Update()
 
 		vid.Render()
+
+		m.RenderNotifications()
 		if state.Global.FastForward {
 			glfw.SwapInterval(0)
 		} else {
 			glfw.SwapInterval(1)
 		}
 		vid.Window.SwapBuffers()
+		prevTime = currTime
 	}
 }
 
