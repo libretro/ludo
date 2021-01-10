@@ -135,41 +135,40 @@ func Init(v *video.Video) {
 
 // pollJoypads process joypads of all players
 func pollJoypads() {
-	for p := range polled {
-		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
-		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
-		name := glfw.Joystick.GetName(glfw.Joystick(p))
-		jb := joyBinds[name]
-		if len(buttonState) > 0 {
-			for k, v := range jb {
-				switch k.kind {
-				case btn:
-					if int(k.index) < len(buttonState) &&
-						glfw.Action(buttonState[k.index]) == glfw.Press {
-						polled[p][v] = true
-					}
-				case axis:
-					if int(k.index) < len(axisState) &&
-						k.direction*axisState[k.index] > k.threshold*k.direction {
-						polled[p][v] = true
-					}
+	p := 0
+	buttonState := glfw.Joystick.GetButtons(glfw.Joystick(0))
+	axisState := glfw.Joystick.GetAxes(glfw.Joystick(0))
+	name := glfw.Joystick.GetName(glfw.Joystick(0))
+	jb := joyBinds[name]
+	if len(buttonState) > 0 {
+		for k, v := range jb {
+			switch k.kind {
+			case btn:
+				if int(k.index) < len(buttonState) &&
+					glfw.Action(buttonState[k.index]) == glfw.Press {
+					polled[p][v] = true
 				}
+			case axis:
+				if int(k.index) < len(axisState) &&
+					k.direction*axisState[k.index] > k.threshold*k.direction {
+					polled[p][v] = true
+				}
+			}
 
-				if !settings.Current.MapAxisToDPad {
-					continue
-				}
-				switch {
-				case axisState[0] < -0.5:
-					polled[p][libretro.DeviceIDJoypadLeft] = true
-				case axisState[0] > 0.5:
-					polled[p][libretro.DeviceIDJoypadRight] = true
-				}
-				switch {
-				case axisState[1] > 0.5:
-					polled[p][libretro.DeviceIDJoypadDown] = true
-				case axisState[1] < -0.5:
-					polled[p][libretro.DeviceIDJoypadUp] = true
-				}
+			if !settings.Current.MapAxisToDPad {
+				continue
+			}
+			switch {
+			case axisState[0] < -0.5:
+				polled[p][libretro.DeviceIDJoypadLeft] = true
+			case axisState[0] > 0.5:
+				polled[p][libretro.DeviceIDJoypadRight] = true
+			}
+			switch {
+			case axisState[1] > 0.5:
+				polled[p][libretro.DeviceIDJoypadDown] = true
+			case axisState[1] < -0.5:
+				polled[p][libretro.DeviceIDJoypadUp] = true
 			}
 		}
 	}
