@@ -6,15 +6,15 @@ import (
 
 func Test_getPressedReleased(t *testing.T) {
 	t.Run("works", func(t *testing.T) {
-		var old = inputstate{
+		var old = States{
 			{false, true, false, false},
 		}
-		var new = inputstate{
+		var new = States{
 			{false, false, false, true},
 		}
 		pressed, released := getPressedReleased(new, old)
-		wantpressed := inputstate{{false, false, false, true}}
-		wantreleased := inputstate{{false, true, false, false}}
+		wantpressed := States{{false, false, false, true}}
+		wantreleased := States{{false, true, false, false}}
 		if pressed != wantpressed {
 			t.Errorf("got = %v, want %v", pressed, wantpressed)
 		}
