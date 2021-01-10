@@ -109,7 +109,7 @@ jobs:
       - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
       - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
       - run: cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
-      - run: cp /c/openal-soft-1.19.0-bin/build/Release/OpenAL32.* .
+      - run: cp /c/openal-soft-1.21.0-bin/libs/Win64/OpenAL32.* .
       - run: cp /c/Windows/System32/VCRUNTIME140.dll .
       - run: mkdir -p ./Ludo-Windows-x86_64-${VERSION}/
       - run: cp *.dll ./Ludo-Windows-x86_64-${VERSION}/
