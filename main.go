@@ -55,16 +55,6 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 	}
 }
 
-func gameUpdate() {
-	state.Global.Core.Run()
-	if state.Global.Core.FrameTimeCallback != nil {
-		state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
-	}
-	if state.Global.Core.AudioCallback != nil {
-		state.Global.Core.AudioCallback.Callback()
-	}
-}
-
 func main() {
 	err := settings.Load()
 	if err != nil {
@@ -128,8 +118,6 @@ func main() {
 
 	// No game running? display the menu
 	state.Global.MenuActive = !state.Global.CoreRunning
-
-	netplay.Init(input.Poll, gameUpdate)
 
 	runLoop(vid, m)
 

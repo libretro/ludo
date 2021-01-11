@@ -15,6 +15,7 @@ import (
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/netplay"
 	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/patch"
 	"github.com/libretro/ludo/state"
@@ -133,6 +134,17 @@ func unzipGame(filename string) (string, int64, error) {
 	return mainPath, mainSize, nil
 }
 
+// Update runs one frame of the game
+func Update() {
+	state.Global.Core.Run()
+	if state.Global.Core.FrameTimeCallback != nil {
+		state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
+	}
+	if state.Global.Core.AudioCallback != nil {
+		state.Global.Core.AudioCallback.Callback()
+	}
+}
+
 // LoadGame loads a game. A core has to be loaded first.
 func LoadGame(gamePath string) error {
 	// If we're loading a new game on the same core, save the RAM of the previous
@@ -197,6 +209,8 @@ func LoadGame(gamePath string) error {
 
 	log.Println("[Core]: Game loaded: " + gamePath)
 	// savefiles.LoadSRAM()
+
+	netplay.Init(input.Poll, Update)
 
 	return nil
 }
