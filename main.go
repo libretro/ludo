@@ -40,6 +40,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		w, h := vid.Window.GetFramebufferSize()
 		vid.Font.UpdateResolution(w, h)
 		vid.BoldFont.UpdateResolution(w, h)
+		m.UpdatePalette()
 		if !state.Global.MenuActive {
 			if state.Global.CoreRunning {
 				state.Global.Core.Run()

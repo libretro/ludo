@@ -13,9 +13,10 @@ type Color struct {
 	R, G, B, A float32
 }
 
-// Alpha returns the same color with altered alpha
-func (c Color) Alpha(a float32) Color {
-	return Color{c.R, c.G, c.B, a}
+// Alpha sets the alpha channel of a color
+func (color Color) Alpha(alpha float32) Color {
+	color.A = alpha
+	return color
 }
 
 // XYWHTo4points converts coordinates from (x, y, width, height) to (x1, y1, x2, y2, x3, y3, x4, y4)

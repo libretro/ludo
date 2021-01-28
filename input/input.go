@@ -7,6 +7,7 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
 )
 
@@ -25,14 +26,15 @@ type bind struct {
 	threshold float32
 }
 
-type inputstate [MaxPlayers][ActionLast]bool
+// States is the state of inputs for all players
+type States [MaxPlayers][ActionLast]bool
 
 // Input state for all the players
 var (
-	NewState inputstate // input state for the current frame
-	OldState inputstate // input state for the previous frame
-	Released inputstate // keys just released during this frame
-	Pressed  inputstate // keys just pressed during this frame
+	NewState States // input state for the current frame
+	OldState States // input state for the previous frame
+	Released States // keys just released during this frame
+	Pressed  States // keys just pressed during this frame
 )
 
 // Hot keys
@@ -74,7 +76,7 @@ func Init(v *video.Video) {
 }
 
 // pollJoypads process joypads of all players
-func pollJoypads(state inputstate) inputstate {
+func pollJoypads(state States) States {
 	for p := range state {
 		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
 		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
@@ -94,6 +96,22 @@ func pollJoypads(state inputstate) inputstate {
 						state[p][v] = true
 					}
 				}
+
+				if !settings.Current.MapAxisToDPad {
+					continue
+				}
+				switch {
+				case axisState[0] < -0.5:
+					state[p][libretro.DeviceIDJoypadLeft] = true
+				case axisState[0] > 0.5:
+					state[p][libretro.DeviceIDJoypadRight] = true
+				}
+				switch {
+				case axisState[1] > 0.5:
+					state[p][libretro.DeviceIDJoypadDown] = true
+				case axisState[1] < -0.5:
+					state[p][libretro.DeviceIDJoypadUp] = true
+				}
 			}
 		}
 	}
@@ -101,7 +119,7 @@ func pollJoypads(state inputstate) inputstate {
 }
 
 // pollKeyboard processes keyboard keys
-func pollKeyboard(state inputstate) inputstate {
+func pollKeyboard(state States) States {
 	for k, v := range keyBinds {
 		if vid.Window.GetKey(k) == glfw.Press {
 			state[0][v] = true
@@ -111,7 +129,7 @@ func pollKeyboard(state inputstate) inputstate {
 }
 
 // Compute the keys pressed or released during this frame
-func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate) {
+func getPressedReleased(new States, old States) (States, States) {
 	for p := range new {
 		for k := range new[p] {
 			Pressed[p][k] = new[p][k] && !old[p][k]
@@ -123,7 +141,7 @@ func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate)
 
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
-	NewState = inputstate{}
+	NewState = States{}
 	NewState = pollJoypads(NewState)
 	NewState = pollKeyboard(NewState)
 	Pressed, Released = getPressedReleased(NewState, OldState)
@@ -135,7 +153,7 @@ func Poll() {
 // State is a callback passed to core.SetInputState
 // It returns 1 if the button corresponding to the parameters is pressed
 func State(port uint, device uint32, index uint, id uint) int16 {
-	if id >= 255 || index > 0 || device != libretro.DeviceJoypad || port >= MaxPlayers {
+	if id >= 255 || index > 0 || port >= MaxPlayers || device&libretro.DeviceJoypad != 1 || id > uint(libretro.DeviceIDJoypadR3) {
 		return 0
 	}
 
