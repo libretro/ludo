@@ -3,10 +3,13 @@ ARCH ?= x86_64
 VERSION ?= dev
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 
-CORES = atari800 bluemsx chailove fbneo fceumm gambatte genesis_plus_gx handy lutro mednafen_ngp mednafen_pce_fast mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella2014 vecx virtualjaguar
+CORES = atari800 bluemsx duckstation fbneo fceumm gambatte genesis_plus_gx handy lutro mednafen_ngp mednafen_pce_fast mednafen_pcfx mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba melonds np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella2014 vecx virtualjaguar
 
 ifeq ($(ARCH), arm)
+	CORES := $(filter-out duckstation,$(CORES))
+	CORES := $(filter-out mednafen_pcfx,$(CORES))
 	CORES := $(filter-out mednafen_saturn,$(CORES))
+	CORES := $(filter-out melonds,$(CORES))
 endif
 
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
