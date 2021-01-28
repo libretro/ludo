@@ -26,14 +26,15 @@ type bind struct {
 	threshold float32
 }
 
-type inputstate [MaxPlayers][ActionLast]bool
+// States is the state of inputs for all players
+type States [MaxPlayers][ActionLast]bool
 
 // Input state for all the players
 var (
-	NewState inputstate // input state for the current frame
-	OldState inputstate // input state for the previous frame
-	Released inputstate // keys just released during this frame
-	Pressed  inputstate // keys just pressed during this frame
+	NewState States // input state for the current frame
+	OldState States // input state for the previous frame
+	Released States // keys just released during this frame
+	Pressed  States // keys just pressed during this frame
 )
 
 // Hot keys
@@ -75,7 +76,7 @@ func Init(v *video.Video) {
 }
 
 // pollJoypads process joypads of all players
-func pollJoypads(state inputstate) inputstate {
+func pollJoypads(state States) States {
 	for p := range state {
 		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
 		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
@@ -118,7 +119,7 @@ func pollJoypads(state inputstate) inputstate {
 }
 
 // pollKeyboard processes keyboard keys
-func pollKeyboard(state inputstate) inputstate {
+func pollKeyboard(state States) States {
 	for k, v := range keyBinds {
 		if vid.Window.GetKey(k) == glfw.Press {
 			state[0][v] = true
@@ -128,7 +129,7 @@ func pollKeyboard(state inputstate) inputstate {
 }
 
 // Compute the keys pressed or released during this frame
-func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate) {
+func getPressedReleased(new States, old States) (States, States) {
 	for p := range new {
 		for k := range new[p] {
 			Pressed[p][k] = new[p][k] && !old[p][k]
@@ -140,7 +141,7 @@ func getPressedReleased(new inputstate, old inputstate) (inputstate, inputstate)
 
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
-	NewState = inputstate{}
+	NewState = States{}
 	NewState = pollJoypads(NewState)
 	NewState = pollKeyboard(NewState)
 	Pressed, Released = getPressedReleased(NewState, OldState)
