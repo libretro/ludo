@@ -37,7 +37,7 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-go@v2
-      - run: sudo apt-get install binutils-multiarch
+      - run: sudo apt-get install binutils-multiarch aptitude
       - run: sudo dpkg --add-architecture armhf
       - run: echo "" | sudo tee /etc/apt/sources.list
       - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
