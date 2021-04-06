@@ -27,7 +27,8 @@ func init() {
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
-	var currTime, prevTime time.Time
+	currTime := time.Now()
+	prevTime := time.Now()
 	for !vid.Window.ShouldClose() {
 		currTime = time.Now()
 		dt := float32(currTime.Sub(prevTime)) / 1000000000
@@ -109,17 +110,17 @@ func main() {
 
 	if len(state.Global.CorePath) > 0 {
 		err := core.Load(state.Global.CorePath)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	if len(gamePath) > 0 {
-		err := core.LoadGame(gamePath)
-		if err != nil {
-			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+		if err == nil {
+			if len(gamePath) > 0 {
+				err := core.LoadGame(gamePath)
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+				} else {
+					m.WarpToQuickMenu()
+				}
+			}
 		} else {
-			m.WarpToQuickMenu()
+			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 		}
 	}
 
