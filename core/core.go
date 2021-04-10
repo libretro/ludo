@@ -147,6 +147,10 @@ func Update() {
 
 // LoadGame loads a game. A core has to be loaded first.
 func LoadGame(gamePath string) error {
+	if _, err := os.Stat(gamePath); os.IsNotExist(err) {
+		return err
+	}
+
 	// If we're loading a new game on the same core, save the RAM of the previous
 	// game before closing it.
 	if state.Global.GamePath != gamePath {
