@@ -6,6 +6,7 @@ import (
 	"log"
 	"path/filepath"
 	"time"
+	"unsafe"
 
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -22,7 +23,6 @@ var audio struct {
 	numBuffers int32
 	tmpBuf     [bufSize]byte
 	tmpBufPtr  int32
-	bufPtr     int32
 	resPtr     int32
 }
 
@@ -94,7 +94,6 @@ func alGetBuffer() al.Buffer {
 			if alUnqueueBuffers() {
 				break
 			}
-
 			time.Sleep(time.Millisecond)
 		}
 	}
@@ -103,12 +102,9 @@ func alGetBuffer() al.Buffer {
 	return audio.buffers[audio.resPtr]
 }
 
-func fillInternalBuf(buf []byte, size int32) int32 {
-	readSize := min(bufSize-audio.tmpBufPtr, size)
-	if readSize > int32(len(buf)) {
-		return size
-	}
-	copy(audio.tmpBuf[audio.tmpBufPtr:], buf[audio.bufPtr:audio.bufPtr+readSize])
+func fillInternalBuf(buf []byte) int32 {
+	readSize := min(bufSize-audio.tmpBufPtr, int32(len(buf)))
+	copy(audio.tmpBuf[audio.tmpBufPtr:], buf[:readSize])
 	audio.tmpBufPtr += readSize
 	return readSize
 }
@@ -122,10 +118,9 @@ func write(buf []byte, size int32) int32 {
 
 	for size > 0 {
 
-		rc := fillInternalBuf(buf, size)
+		rc := fillInternalBuf(buf[written:])
 
 		written += rc
-		audio.bufPtr += rc
 		size -= rc
 
 		if audio.tmpBufPtr != bufSize {
@@ -143,16 +138,17 @@ func write(buf []byte, size int32) int32 {
 		}
 	}
 
-	audio.bufPtr = 0
-
 	return written
 }
 
 // Sample renders a single audio frame.
 // It is passed as a callback to the libretro implementation.
 func Sample(left int16, right int16) {
-	buf := []byte{byte(left), byte(right)}
-	write(buf, 4)
+	// simulate the kind of raw byte array that would be provided from C via SampleBatch.
+	// (effectively typecasting int16 array to byte array) 
+	buf := []int16{left, right}
+	pi := (*[4]byte)(unsafe.Pointer(&buf[0]))
+	write((*pi)[:], 4)
 }
 
 // SampleBatch renders multiple audio frames in one go

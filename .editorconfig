@@ -1,0 +1,28 @@
+root = true
+
+[*]
+end_of_line = lf
+
+[*.go]
+indent_style = tab
+indent_size = 3
+insert_final_newline = true
+
+# c/cpp/h rules match libretro (mostly just for libretro.h)
+[*.{c,cpp,h,inl}]
+indent_style = space
+insert_final_newline = true
+indent_size = 3
+
+[*.{txt,md}]
+indent_style = space
+indent_size = 4
+
+[*,{html,xml,cs}]
+indent_style = space
+indent_size = 2
+
+[*,{csproj,vcxproj,sln}]
+indent_style = tab
+indent_size = 4
+end_of_line = crlf
