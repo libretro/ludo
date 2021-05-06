@@ -5,12 +5,10 @@ package video
 
 import (
 	"log"
-
 	"unsafe"
 
-	"github.com/go-gl/gl/all-core/gl"
-	"github.com/go-gl/glfw/v3.2/glfw"
-	"github.com/kivutar/glfont"
+	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -33,30 +31,33 @@ type WindowInterface interface {
 
 // Video holds the state of the video package
 type Video struct {
-	GLVersion string
-	Window    WindowInterface
-	Geom      libretro.GameGeometry
-	Font      *glfont.Font
+	Window WindowInterface
+	Geom   libretro.GameGeometry
+	Font   *Font
 
-	program        uint32 // default program used for the game window
-	roundedProgram uint32 // program to draw rectangles with rounded corners
-	borderProgram  uint32 // program to draw rectangles borders
-	circleProgram  uint32 // program to draw textured circles
-	demulProgram   uint32 // program to draw premultiplied alpha images
-	vao            uint32
-	vbo            uint32
-	texID          uint32
-	white          uint32
-	pitch          int32
-	pixFmt         uint32
-	pixType        uint32
-	bpp            int32
+	program              uint32 // current program used for the game quad
+	defaultProgram       uint32 // default program used for the game quad
+	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
+	zfastCRTProgram      uint32 // fast CRT program used for the game quad
+	roundedProgram       uint32 // program to draw rectangles with rounded corners
+	borderProgram        uint32 // program to draw rectangles borders
+	circleProgram        uint32 // program to draw textured circles
+	demulProgram         uint32 // program to draw premultiplied alpha images
+	vao                  uint32
+	vbo                  uint32
+	texID                uint32
+
+	pitch         int32  // pitch set by the refresh callback
+	pixFmt        uint32 // format set by the environment callback
+	pixType       uint32
+	bpp           int32
+	width, height int32 // dimensions set by the refresh callback
+	rot           uint
 }
 
 // Init instanciates the video package
-func Init(fullscreen bool, GLVersion string) *Video {
+func Init(fullscreen bool) *Video {
 	vid := &Video{}
-	vid.GLVersion = GLVersion
 	vid.Configure(fullscreen)
 	return vid
 }
@@ -69,70 +70,15 @@ func (video *Video) Reconfigure(fullscreen bool) {
 	video.Configure(fullscreen)
 }
 
-func (video *Video) configureContext() uint {
-	var GLSLVersion uint
-	switch video.GLVersion {
-	case "2.0":
-		glfw.WindowHint(glfw.ContextVersionMajor, 2)
-		glfw.WindowHint(glfw.ContextVersionMinor, 0)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
-		GLSLVersion = 110
-	case "2.1":
-		glfw.WindowHint(glfw.ContextVersionMajor, 2)
-		glfw.WindowHint(glfw.ContextVersionMinor, 1)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
-		GLSLVersion = 120
-	case "3.0":
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 0)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
-		GLSLVersion = 130
-	case "3.1":
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 1)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
-		GLSLVersion = 140
-	case "3.2":
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 2)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-		GLSLVersion = 150
-	case "4.1":
-		glfw.WindowHint(glfw.ContextVersionMajor, 4)
-		glfw.WindowHint(glfw.ContextVersionMinor, 1)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-		GLSLVersion = 410
-	case "4.2":
-		glfw.WindowHint(glfw.ContextVersionMajor, 4)
-		glfw.WindowHint(glfw.ContextVersionMinor, 2)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-		GLSLVersion = 420
-	default: // 3.2
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 2)
-		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-		glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-		GLSLVersion = 150
-	}
-	return GLSLVersion
-}
-
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
 	var width, height int
 	var m *glfw.Monitor
-	GLSLVersion := video.configureContext()
 
 	if fullscreen {
 		m = glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
-		vm := m.GetVideoMode()
+		vms := m.GetVideoModes()
+		vm := vms[len(vms)-1]
 		width = vm.Width
 		height = vm.Height
 	} else {
@@ -143,7 +89,7 @@ func (video *Video) Configure(fullscreen bool) {
 	var err error
 	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
 	if err != nil {
-		panic(err)
+		panic("Window creation failed:" + err.Error())
 	}
 
 	video.Window.MakeContextCurrent()
@@ -159,56 +105,58 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	video.CoreRatioViewport(fbw, fbh)
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	assets := settings.Current.AssetsDirectory
-	video.Font, err = glfont.LoadFont(assets+"/font.ttf", int32(64), fbw, fbh, GLSLVersion)
+	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh)
 	if err != nil {
 		panic(err)
-	}
-
-	if state.Global.Verbose {
-		version := gl.GoStr(gl.GetString(gl.VERSION))
-		log.Println("[Video]: OpenGL version:", version)
 	}
 
 	// Configure the vertex and fragment shaders
-	video.program, err = newProgram(GLSLVersion, vertexShader, darkenFragmentShader)
+	video.defaultProgram, err = newProgram(vertexShader, defaultFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.roundedProgram, err = newProgram(GLSLVersion, vertexShader, roundedFragmentShader)
+	video.sharpBilinearProgram, err = newProgram(vertexShader, sharpBilinearFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.borderProgram, err = newProgram(GLSLVersion, vertexShader, borderFragmentShader)
+	video.zfastCRTProgram, err = newProgram(vertexShader, zfastCRTFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.circleProgram, err = newProgram(GLSLVersion, vertexShader, circleFragmentShader)
+	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	video.demulProgram, err = newProgram(GLSLVersion, vertexShader, demulFragmentShader)
+	video.borderProgram, err = newProgram(vertexShader, borderFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
-	gl.UseProgram(video.program)
+	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
+	if err != nil {
+		panic(err)
+	}
 
-	textureUniform := gl.GetUniformLocation(video.program, gl.Str("tex\x00"))
+	video.demulProgram, err = newProgram(vertexShader, demulFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	video.UpdateFilter(settings.Current.VideoFilter)
+
+	textureUniform := gl.GetUniformLocation(video.program, gl.Str("Texture\x00"))
 	gl.Uniform1i(textureUniform, 0)
 
-	gl.BindFragDataLocation(video.program, 0, gl.Str("outputColor\x00"))
-
 	// Configure the vertex data
-	gl.GenVertexArrays(1, &video.vao)
-	gl.BindVertexArray(video.vao)
+	genVertexArrays(1, &video.vao)
+	bindVertexArray(video.vao)
 
 	gl.GenBuffers(1, &video.vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
@@ -222,9 +170,11 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.EnableVertexAttribArray(texCoordAttrib)
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
 
-	// Sets a default pixel format
+	// Some cores won't call SetPixelFormat, provide default values
 	if video.pixFmt == 0 {
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+		video.pixType = gl.BGRA
+		video.bpp = 2
 	}
 
 	gl.GenTextures(1, &video.texID)
@@ -236,10 +186,48 @@ func (video *Video) Configure(fullscreen bool) {
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	video.UpdateFilter(settings.Current.VideoFilter)
 
-	video.white = newWhite()
+	video.coreRatioViewport(fbw, fbh)
+
+	if e := gl.GetError(); e != gl.NO_ERROR {
+		log.Printf("[Video] OpenGL error: %d\n", e)
+	}
+}
+
+// UpdateFilter configures the game texture filter and shader. We currently
+// support 4 modes:
+// Raw: nearest
+// Smooth: linear
+// Pixel Perfect: sharp-bilinear
+// CRT: zfast-crt
+func (video *Video) UpdateFilter(filter string) {
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	switch filter {
+	case "Smooth":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.defaultProgram
+	case "Pixel Perfect":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.sharpBilinearProgram
+	case "CRT":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.zfastCRTProgram
+	case "Raw":
+		fallthrough
+	default:
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+		video.program = video.defaultProgram
+	}
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.UseProgram(video.program)
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.width), float32(video.height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
 }
 
 // SetPixelFormat is a callback passed to the libretro implementation.
@@ -249,57 +237,80 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 		log.Printf("[Video]: Set Pixel Format: %v\n", format)
 	}
 
+	// PixelStorei also needs to be updated whenever bpp changes
+	defer gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
+
 	switch format {
 	case libretro.PixelFormat0RGB1555:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
 		video.pixType = gl.BGRA
 		video.bpp = 2
+		return true
 	case libretro.PixelFormatXRGB8888:
 		video.pixFmt = gl.UNSIGNED_INT_8_8_8_8_REV
 		video.pixType = gl.BGRA
 		video.bpp = 4
+		return true
 	case libretro.PixelFormatRGB565:
 		video.pixFmt = gl.UNSIGNED_SHORT_5_6_5
 		video.pixType = gl.RGB
 		video.bpp = 2
+		return true
 	default:
-		log.Fatalf("Unknown pixel type %v", format)
+		log.Printf("Unknown pixel type %v", format)
 	}
 
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
-
-	return true
+	return false
 }
 
-func (video *Video) updateMaskUniform() {
-	maskUniform := gl.GetUniformLocation(video.program, gl.Str("mask\x00"))
-	if state.Global.MenuActive {
-		gl.Uniform1f(maskUniform, 1.0)
-	} else {
-		gl.Uniform1f(maskUniform, 0.0)
-	}
+// ResetPitch should be called when unloading a game so that the next game won't
+// be rendered with the wrong pitch
+func (video *Video) ResetPitch() {
+	video.pitch = 0
 }
 
-// CoreRatioViewport configures the vertex array to display the game at the center of the window
+// ResetRot should be called when unloading a game so that the next game won't
+// be rendered with the wrong rotation
+func (video *Video) ResetRot() {
+	video.rot = 0
+}
+
+// coreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
-func (video *Video) CoreRatioViewport(fbWidth int, fbHeight int) {
+func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
-	h := fbh
-	w := fbh * float32(video.Geom.AspectRatio)
+
+	// NXEngine workaround
+	aspectRatio := float32(video.Geom.AspectRatio)
+	if aspectRatio == 0 {
+		aspectRatio = float32(video.Geom.BaseWidth) / float32(video.Geom.BaseHeight)
+	}
+
+	h = fbh
+	w = fbh * aspectRatio
 	if w > fbw {
-		h = fbw / float32(video.Geom.AspectRatio)
+		h = fbw / aspectRatio
 		w = fbw
 	}
 
 	// Place the content in the middle of the window.
-	x := (fbw - w) / 2
-	y := (fbh - h) / 2
+	x = (fbw - w) / 2
+	y = (fbh - h) / 2
 
 	va := video.vertexArray(x, y, w, h, 1.0)
+	va = rotateUV(va, video.rot)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+
+	return
+}
+
+// ResizeViewport resizes the GL viewport to the framebuffer size
+func (video *Video) ResizeViewport() {
+	fbw, fbh := video.Window.GetFramebufferSize()
+	gl.Viewport(0, 0, int32(fbw), int32(fbh))
 }
 
 // Render the current frame
@@ -312,18 +323,19 @@ func (video *Video) Render() {
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
-	avi := state.Global.Core.GetSystemAVInfo()
-	video.Geom = avi.Geometry
+	// Early return to not render the first frame of a newly loaded game with the
+	// previous game pitch. A sane pitch must be set by video.Refresh first.
+	if video.pitch == 0 {
+		return
+	}
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	gl.Viewport(0, 0, int32(fbw), int32(fbh))
-	video.CoreRatioViewport(fbw, fbh)
+	_, _, w, h := video.coreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
-	video.updateMaskUniform()
-	gl.Uniform4f(gl.GetUniformLocation(video.program, gl.Str("texColor\x00")), 1, 1, 1, 1)
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
-	gl.BindVertexArray(video.vao)
+	bindVertexArray(video.vao)
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
@@ -333,15 +345,33 @@ func (video *Video) Render() {
 
 // Refresh the texture framebuffer
 func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
-	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
-
+	video.width = width
+	video.height = height
 	video.pitch = pitch
+
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
-	if data != nil {
-		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, video.pixType, video.pixFmt, data)
+	gl.UseProgram(video.program)
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
+
+	if data == nil {
+		return
 	}
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, data)
+}
+
+// SetRotation rotates the game image as requested by the core
+func (video *Video) SetRotation(rot uint) bool {
+	// limit to valid values (0, 1, 2, 3, which rotates screen by 0, 90, 180 270 degrees counter-clockwise)
+	video.rot = rot % 4
+
+	if state.Global.Verbose {
+		log.Printf("[Video]: Set Rotation: %v", video.rot)
+	}
+
+	return true
 }
 
 var vertices = []float32{

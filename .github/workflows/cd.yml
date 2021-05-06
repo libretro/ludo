@@ -1,0 +1,124 @@
+name: CD
+
+on:
+  release:
+    types: [created]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-go@v2
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
+      - run: sudo apt-get update -q
+      - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
+      - run: OS=Linux ARCH=x86_64 VERSION=$VERSION make tar
+      - run: sha256sum Ludo-Linux-x86_64-${VERSION}.tar.gz > Ludo-Linux-x86_64-${VERSION}.tar.gz.sha256
+
+      - name: Upload Release Asset
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./Ludo-*.tar.gz*"]'
+
+  build_linux_arm:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-go@v2
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
+      - run: sudo apt install binutils-multiarch
+      - run: sudo dpkg --add-architecture armhf
+      - run: echo "" | sudo tee /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
+      - run: sudo apt update -q
+      - run: sudo apt install -f libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
+      - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
+      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
+      - run: OS=Linux ARCH=arm VERSION=$VERSION make tar
+      - run: sha256sum Ludo-Linux-arm-${VERSION}.tar.gz > Ludo-Linux-arm-${VERSION}.tar.gz.sha256
+
+      - name: Upload Release Asset
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./Ludo-*.tar.gz*"]'
+
+  build_osx:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-go@v2
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
+      - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
+      - run: go get golang.org/x/lint/golint
+      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: brew install openal-soft
+      - run: echo ${{ secrets.OSXCERT }} | base64 --decode > dev.p12
+      - run: security create-keychain -p github build.keychain
+      - run: security default-keychain -s build.keychain
+      - run: security unlock-keychain -p github build.keychain
+      - run: security import dev.p12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
+      - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
+      - run: OS=OSX ARCH=x86_64 VERSION=$VERSION make dmg
+      - run: echo "REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${VERSION}.dmg --primary-bundle-id org.libretro.ludo -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -itc_provider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }')" >> $GITHUB_ENV
+      - run: sleep 180
+      - run: xcrun altool --notarization-info $REQUESTUUID -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -ascprovider ZE9XE938Z2
+      - run: xcrun stapler staple Ludo-OSX-x86_64-${VERSION}.dmg
+      - run: xcrun stapler validate Ludo-OSX-x86_64-${VERSION}.dmg
+      - run: shasum -a 256 Ludo-OSX-x86_64-${VERSION}.dmg > Ludo-OSX-x86_64-${VERSION}.dmg.sha256
+
+      - name: Upload Release Asset
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./Ludo-*.dmg*"]'
+
+  build_windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-go@v2
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
+      - run: choco install wget make hashdeep --ignore-checksums
+      - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
+      - run: wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe
+      - run: 7z x openal-soft-1.21.0-bin.zip -o/c/
+      - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
+      - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
+      - run: cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
+      - run: cp /c/openal-soft-1.21.0-bin/bin/Win64/soft_oal.dll OpenAL32.dll
+      - run: cp /c/Windows/System32/VCRUNTIME140.dll .
+      - run: mkdir -p ./Ludo-Windows-x86_64-${VERSION}/
+      - run: cp *.dll ./Ludo-Windows-x86_64-${VERSION}/
+      - run: OS=Windows ARCH=x86_64 VERSION=$VERSION make zip
+      - run: hashdeep -c sha256 Ludo-Windows-x86_64-${VERSION}.zip > Ludo-Windows-x86_64-${VERSION}.zip.sha256
+
+      - name: Upload Release Asset
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./Ludo-*.zip*"]'

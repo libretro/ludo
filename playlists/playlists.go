@@ -10,36 +10,45 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
+	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/libretro/ludo/settings"
 )
 
-// PlaylistEntry represents a game in a playlist.
-type PlaylistEntry struct {
+// Game represents a game in a playlist.
+type Game struct {
 	Path  string // Absolute path of the game on the filesystem
 	Name  string // Human readable name of the game, comes from the RDB
 	CRC32 uint32 // Checksum of the game, used for deduplication
 }
 
 // Playlist is a list of games, result of scanning for games on the filesystem.
-type Playlist []PlaylistEntry
+type Playlist []Game
 
 // Playlists is a map of playlists organized per system.
 var Playlists = map[string]Playlist{}
 
+// Gets a list of full paths to playlists
+func getPaths() (paths []string) {
+	paths, err := filepath.Glob(settings.Current.PlaylistsDirectory + "/*.csv")
+	if err != nil {
+		log.Println(err)
+	}
+	return
+}
+
 // Load loops over lpl files in the playlists directory and loads them into
 // memory.
 func Load() {
-	paths, _ := filepath.Glob(settings.Current.PlaylistsDirectory + "/*.csv")
-
-	Playlists = map[string]Playlist{}
-	for _, path := range paths {
+	for _, path := range getPaths() {
 		path := path
 
-		file, _ := os.Open(path)
+		file, err := os.Open(path)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
 		defer file.Close()
 		reader := csv.NewReader(bufio.NewReader(file))
 		reader.Comma = '\t'
@@ -53,8 +62,8 @@ func Load() {
 				log.Println(err)
 				continue
 			}
-			var entry PlaylistEntry
-			entry.Path = line[0]
+			var entry Game
+			entry.Path = filepath.Clean(line[0])
 			entry.Name = line[1]
 			if line[2] != "" {
 				u64, err := strconv.ParseUint(line[2], 16, 64)
@@ -67,15 +76,18 @@ func Load() {
 
 			playlist = append(playlist, entry)
 		}
+		sort.Slice(playlist, func(i, j int) bool {
+			return playlist[i].Name < playlist[j].Name
+		})
 		Playlists[path] = playlist
 	}
 }
 
 // Contains checks if a game is already in a playlist.
-func Contains(lplpath, path string, CRC32 uint32) bool {
-	for _, entry := range Playlists[lplpath] {
+func Contains(CSVPath, path string, CRC32 uint32) bool {
+	for _, entry := range Playlists[filepath.Clean(CSVPath)] {
 		// Be careful, sometimes we don't have a CRC32
-		if entry.Path == path || (CRC32 != 0 && entry.CRC32 == CRC32) {
+		if filepath.Clean(entry.Path) == filepath.Clean(path) || (CRC32 != 0 && entry.CRC32 == CRC32) {
 			return true
 		}
 	}
@@ -84,18 +96,62 @@ func Contains(lplpath, path string, CRC32 uint32) bool {
 
 // Count is a quick way of knowing how many games are in a playlist
 func Count(path string) int {
-	return len(Playlists[path])
+	return len(Playlists[filepath.Clean(path)])
 }
 
 // ShortName shortens the name of some game systems that are too long to be
 // displayed in the menu
 func ShortName(in string) string {
-	if len(in) < 20 {
+	shortNames := map[string]string{
+		"Atari - 2600":                                   "Atari 2600",
+		"Atari - 5200":                                   "Atari 5200",
+		"Atari - 7800":                                   "Atari 7800",
+		"Atari - Jaguar":                                 "Atari Jaguar",
+		"Atari - Lynx":                                   "Atari Lynx",
+		"Atari - ST":                                     "Atari ST",
+		"Bandai - WonderSwan Color":                      "WonderSwan Color",
+		"Bandai - WonderSwan":                            "WonderSwan",
+		"Coleco - ColecoVision":                          "ColecoVision",
+		"Commodore - 64":                                 "Commodore 64",
+		"FBNeo - Arcade Games":                           "Arcade (FBNeo)",
+		"GCE - Vectrex":                                  "Vectrex",
+		"Magnavox - Odyssey2":                            "Magnavox Odyssey²",
+		"Microsoft - MSX":                                "MSX",
+		"Microsoft - MSX2":                               "MSX2",
+		"NEC - PC Engine - TurboGrafx 16":                "TurboGrafx-16",
+		"NEC - PC Engine CD - TurboGrafx-CD":             "TurboGrafx-CD",
+		"NEC - PC Engine SuperGrafx":                     "SuperGrafx",
+		"NEC - PC-FX":                                    "PC-FX",
+		"Nintendo - Family Computer Disk System":         "Famicom Disk System",
+		"Nintendo - Game Boy Advance":                    "Game Boy Advance",
+		"Nintendo - Game Boy Color":                      "Game Boy Color",
+		"Nintendo - Game Boy":                            "Game Boy",
+		"Nintendo - Nintendo Entertainment System":       "NES / Famicom",
+		"Nintendo - Pokemon Mini":                        "Pokemon Mini",
+		"Nintendo - Super Nintendo Entertainment System": "Super Nintendo",
+		"Nintendo - Virtual Boy":                         "Virtual Boy",
+		"Sega - 32X":                                     "32X",
+		"Sega - Game Gear":                               "Game Gear",
+		"Sega - Master System - Mark III":                "Master System",
+		"Sega - Mega Drive - Genesis":                    "Mega Drive / Genesis",
+		"Sega - PICO":                                    "Pico",
+		"Sega - Saturn":                                  "Saturn",
+		"Sega - SG-1000":                                 "SG-1000",
+		"Sharp - X68000":                                 "X68000",
+		"Sinclair - ZX 81":                               "ZX81",
+		"Sinclair - ZX Spectrum +3":                      "ZX Spectrum +3",
+		"Sinclair - ZX Spectrum":                         "ZX Spectrum",
+		"SNK - Neo Geo CD":                               "Neo Geo CD",
+		"SNK - Neo Geo Pocket Color":                     "Neo Geo Pocket Color",
+		"SNK - Neo Geo Pocket":                           "Neo Geo Pocket",
+		"Sony - PlayStation":                             "PlayStation",
+		"The 3DO Company - 3DO":                          "3DO",
+		"Uzebox":                                         "Uzebox",
+	}
+
+	out, ok := shortNames[in]
+	if !ok {
 		return in
 	}
-	r, _ := regexp.Compile(`(.*?) - (.*)`)
-	out := r.ReplaceAllString(in, "$2")
-	out = strings.Replace(out, "Nintendo Entertainment System", "NES", -1)
-	out = strings.Replace(out, "PC Engine", "PCE", -1)
 	return out
 }

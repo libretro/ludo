@@ -1,15 +1,22 @@
 module github.com/libretro/ludo
 
 require (
-	github.com/disintegration/imaging v1.5.0
+	github.com/cavaliercoder/grab v2.0.0+incompatible
+	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/structs v1.1.0
-	github.com/go-gl/gl v0.0.0-20181026044259-55b76b7df9d2
-	github.com/go-gl/glfw v0.0.0-20181213070059-819e8ce5125f
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/kivutar/glfont v0.0.0-20190119064645-3f4c07235fb3
-	github.com/lucasb-eyer/go-colorful v0.0.0-20181028223441-12d3b2882a08
-	github.com/rs/xid v1.2.1
-	github.com/tanema/gween v0.0.0-20171018143308-f05d97ee644d
-	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2 // indirect
-	golang.org/x/mobile v0.0.0-20190127143845-a42111704963
+	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20201108214237-06ea97f0c265
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/kr/text v0.2.0 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0
+	github.com/pelletier/go-toml v1.8.1
+	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/tanema/gween v0.0.0-20200427131925-c89ae23cc63c
+	github.com/youpy/go-wav v0.1.0
+	golang.org/x/image v0.0.0-20201208152932-35266b937fa6
+	golang.org/x/mobile v0.0.0-20201217150744-e6ae53a27f4f
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
+
+go 1.13

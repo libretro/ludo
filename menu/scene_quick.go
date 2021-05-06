@@ -6,12 +6,12 @@ import (
 	"github.com/libretro/ludo/utils"
 )
 
-type screenQuick struct {
+type sceneQuick struct {
 	entry
 }
 
 func buildQuickMenu() Scene {
-	var list screenQuick
+	var list sceneQuick
 	list.label = "Quick Menu"
 
 	list.children = append(list.children, entry{
@@ -19,6 +19,7 @@ func buildQuickMenu() Scene {
 		icon:  "resume",
 		callbackOK: func() {
 			state.Global.MenuActive = false
+			state.Global.FastForward = false
 		},
 	})
 
@@ -28,6 +29,7 @@ func buildQuickMenu() Scene {
 		callbackOK: func() {
 			state.Global.Core.Reset()
 			state.Global.MenuActive = false
+			state.Global.FastForward = false
 		},
 	})
 
@@ -36,7 +38,7 @@ func buildQuickMenu() Scene {
 		icon:  "states",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildSavestates())
+			menu.Push(buildSavestates())
 		},
 	})
 
@@ -45,8 +47,12 @@ func buildQuickMenu() Scene {
 		icon:  "screenshot",
 		callbackOK: func() {
 			name := utils.DatedName(state.Global.GamePath)
-			vid.TakeScreenshot(name)
-			ntf.DisplayAndLog(ntf.Success, "Menu", "Took a screenshot.")
+			err := vid.TakeScreenshot(name)
+			if err != nil {
+				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+			} else {
+				ntf.DisplayAndLog(ntf.Success, "Menu", "Took a screenshot.")
+			}
 		},
 	})
 
@@ -55,7 +61,7 @@ func buildQuickMenu() Scene {
 		icon:  "subsetting",
 		callbackOK: func() {
 			list.segueNext()
-			menu.stack = append(menu.stack, buildCoreOptions())
+			menu.Push(buildCoreOptions())
 		},
 	})
 
@@ -64,30 +70,30 @@ func buildQuickMenu() Scene {
 	return &list
 }
 
-func (s *screenQuick) Entry() *entry {
+func (s *sceneQuick) Entry() *entry {
 	return &s.entry
 }
 
-func (s *screenQuick) segueMount() {
+func (s *sceneQuick) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *screenQuick) segueNext() {
+func (s *sceneQuick) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *screenQuick) segueBack() {
+func (s *sceneQuick) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *screenQuick) update(dt float32) {
+func (s *sceneQuick) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
 
-func (s *screenQuick) render() {
+func (s *sceneQuick) render() {
 	genericRender(&s.entry)
 }
 
-func (s *screenQuick) drawHintBar() {
+func (s *sceneQuick) drawHintBar() {
 	genericDrawHintBar()
 }

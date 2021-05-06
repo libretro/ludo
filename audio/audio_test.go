@@ -15,12 +15,13 @@ func Test_alUnqueueBuffers(t *testing.T) {
 
 func Test_Sample(t *testing.T) {
 	t.Run("Doesn't crash when called", func(t *testing.T) {
-		Sample(30000, 30000)
+		Sample(-30000, -30000)
+		Sample( 30000,  30000)
 	})
 }
 
 func Test_fillInternalBuf(t *testing.T) {
-	Init(48000)
+	Reconfigure(48000)
 	type args struct {
 		buf  []byte
 		size int32
@@ -33,39 +34,23 @@ func Test_fillInternalBuf(t *testing.T) {
 		{
 			name: "Fill the buffer partially",
 			args: args{
-				buf:  make([]byte, 4096),
-				size: 3000,
+				buf:  make([]byte, bufSize),
+				size: 6000,
 			},
-			want: 3000,
+			want: 6000,
 		},
 		{
 			name: "Fill the buffer fully",
 			args: args{
-				buf:  make([]byte, 4096),
-				size: 3000,
-			},
-			want: 1096,
-		},
-		{
-			name: "Early return to avoid out of range copy",
-			args: args{
-				buf:  make([]byte, 4096),
+				buf:  make([]byte, bufSize),
 				size: 6000,
 			},
-			want: 6000,
-		},
-		{
-			name: "Early return to avoid out of range bounds",
-			args: args{
-				buf:  make([]byte, 2),
-				size: 6000,
-			},
-			want: 6000,
+			want: 2192,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := fillInternalBuf(tt.args.buf, tt.args.size); got != tt.want {
+			if got := fillInternalBuf(tt.args.buf[:tt.args.size]); got != tt.want {
 				t.Errorf("fillInternalBuf() = %v, want %v", got, tt.want)
 			}
 		})

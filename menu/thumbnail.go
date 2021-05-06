@@ -1,22 +1,21 @@
 package menu
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/libretro/ludo/settings"
-
 	"github.com/libretro/ludo/video"
 )
 
+// Downloads a thumbnail from the web and cache it to the local filesystem.
 func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
@@ -29,20 +28,21 @@ func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
 
 	err = os.MkdirAll(folderPath, os.ModePerm)
 	if err != nil {
-		fmt.Println(err)
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
 
-	out, err := os.Create(path)
+	imgFile, err := os.Create(path)
 	if err != nil {
-		fmt.Println(err)
 		list.children[i].thumbnail = menu.icons["img-broken"]
 		return
 	}
-	defer out.Close()
+	defer imgFile.Close()
 
-	io.Copy(out, resp.Body)
+	_, err = io.Copy(imgFile, resp.Body)
+	if err != nil {
+		list.children[i].thumbnail = menu.icons["img-broken"]
+	}
 }
 
 // Scrub characters that are not cross-platform and/or violate the
@@ -60,10 +60,11 @@ func scrubIllegalChars(str string) string {
 	return str
 }
 
+// Draws a thumbnail in the playlist scene.
 func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, color video.Color) {
 	folderPath := filepath.Join(settings.Current.ThumbnailsDirectory, system, "Named_Snaps")
-	path := filepath.Join(folderPath, gameName+".png")
 	legalName := scrubIllegalChars(gameName)
+	path := filepath.Join(folderPath, legalName+".png")
 	url := "http://thumbnails.libretro.com/" + system + "/Named_Snaps/" + legalName + ".png"
 
 	if list.children[i].thumbnail == 0 || list.children[i].thumbnail == menu.icons["img-dl"] {
@@ -82,6 +83,7 @@ func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scal
 	)
 }
 
+// Draws a thumbnail in the savestates scene.
 func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale float32, color video.Color) {
 	if list.children[i].thumbnail == 0 {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
@@ -94,4 +96,13 @@ func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale f
 		x, y, w, h, scale,
 		color,
 	)
+}
+
+func freeThumbnail(list *entry, i int) {
+	if list.children[i].thumbnail != 0 &&
+		list.children[i].thumbnail != menu.icons["img-dl"] &&
+		list.children[i].thumbnail != menu.icons["img-broken"] {
+		gl.DeleteTextures(1, &list.children[i].thumbnail)
+		list.children[i].thumbnail = 0
+	}
 }

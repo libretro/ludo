@@ -11,14 +11,14 @@ import (
 func Test_List(t *testing.T) {
 	Clear()
 	t.Run("Returns the notifications", func(t *testing.T) {
-		nid1 := Display(Error, "Test1", Medium)
-		nid2 := Display(Error, "Test2", Medium)
-		nid3 := Display(Error, "Test3", Medium)
+		Display(Error, "Test1", Medium)
+		Display(Error, "Test2", Medium)
+		Display(Error, "Test3", Medium)
 		got := List()
-		want := []Notification{
-			Notification{ID: nid1, Severity: Error, Message: "Test1", Duration: Medium},
-			Notification{ID: nid2, Severity: Error, Message: "Test2", Duration: Medium},
-			Notification{ID: nid3, Severity: Error, Message: "Test3", Duration: Medium},
+		want := []*Notification{
+			&Notification{Severity: Error, Message: "Test1", Duration: Medium},
+			&Notification{Severity: Error, Message: "Test2", Duration: Medium},
+			&Notification{Severity: Error, Message: "Test3", Duration: Medium},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
@@ -29,14 +29,14 @@ func Test_List(t *testing.T) {
 func Test_Display(t *testing.T) {
 	Clear()
 	t.Run("Stacks notifications correctly", func(t *testing.T) {
-		nid1 := Display(Error, "Test1", Medium)
-		nid2 := Display(Info, "Test2", Medium)
-		nid3 := Display(Warning, "Test3", Medium)
+		Display(Error, "Test1", Medium)
+		Display(Info, "Test2", Medium)
+		Display(Warning, "Test3", Medium)
 		got := notifications
-		want := []Notification{
-			Notification{ID: nid1, Severity: Error, Message: "Test1", Duration: Medium},
-			Notification{ID: nid2, Severity: Info, Message: "Test2", Duration: Medium},
-			Notification{ID: nid3, Severity: Warning, Message: "Test3", Duration: Medium},
+		want := []*Notification{
+			&Notification{Severity: Error, Message: "Test1", Duration: Medium},
+			&Notification{Severity: Info, Message: "Test2", Duration: Medium},
+			&Notification{Severity: Warning, Message: "Test3", Duration: Medium},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
@@ -121,22 +121,22 @@ func Test_Clear(t *testing.T) {
 
 func Test_Update(t *testing.T) {
 	Clear()
-	t.Run("Is able to update a notification independantly", func(t *testing.T) {
+	t.Run("Is able to update a notification independently", func(t *testing.T) {
 		Display(Error, "Test1", Medium/2)
 		nid2 := Display(Error, "Test2", Medium)
-		nid3 := Display(Error, "Test3", Medium)
+		Display(Error, "Test3", Medium)
 
 		Process(0.5)
 		Process(0.5)
 		Process(0.5)
 		Process(0.5)
-		Update(nid2, Success, "Test4")
+		nid2.Update(Success, "Test4")
 		Process(0.5)
 
 		got := List()
-		want := []Notification{
-			Notification{ID: nid2, Severity: Success, Message: "Test4", Duration: Medium - 0.5},
-			Notification{ID: nid3, Severity: Error, Message: "Test3", Duration: Medium - 0.5*5},
+		want := []*Notification{
+			&Notification{Severity: Success, Message: "Test4", Duration: Medium - 0.5},
+			&Notification{Severity: Error, Message: "Test3", Duration: Medium - 0.5*5},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)

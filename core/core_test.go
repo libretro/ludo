@@ -3,11 +3,12 @@ package core
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -27,16 +28,12 @@ func (m WindowMock) ShouldClose() bool                           { return false 
 func (m WindowMock) SetTitle(string)                             {}
 func (m WindowMock) SwapBuffers()                                {}
 
-type MenuMock struct{}
-
-func (m MenuMock) ContextReset() {}
-
 func Test_coreLoad(t *testing.T) {
 	state.Global.Verbose = true
 
 	ext := utils.CoreExt()
 
-	Init(&video.Video{Window: &WindowMock{}}, &MenuMock{})
+	Init(&video.Video{Window: &WindowMock{}})
 
 	out := utils.CaptureOutput(func() { Load("testdata/vecx_libretro" + ext) })
 
@@ -54,7 +51,7 @@ func Test_coreLoad(t *testing.T) {
 [Core]: Need fullpath: false
 [Core]: Block extract: false
 `
-		if got != want {
+		if !strings.Contains(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
 		}
 	})
@@ -89,7 +86,7 @@ func Test_getGameInfo(t *testing.T) {
 			name: "Returns the right path and size for a zipped ROM",
 			args: args{filename: "testdata/Polar Rescue (USA).zip", blockExtract: false},
 			want: &libretro.GameInfo{
-				Path: os.TempDir() + "/Polar Rescue (USA).vec",
+				Path: filepath.Join(os.TempDir(), "Polar Rescue (USA).vec"),
 				Size: 8192,
 			},
 			wantErr: false,
@@ -156,7 +153,7 @@ func Test_unzipGame(t *testing.T) {
 		{
 			name:    "Should unzip to the right path",
 			args:    args{filename: "testdata/Polar Rescue (USA).zip"},
-			want:    os.TempDir() + "/Polar Rescue (USA).vec",
+			want:    filepath.Join(os.TempDir(), "Polar Rescue (USA).vec"),
 			want1:   8192,
 			wantErr: false,
 		},
@@ -197,12 +194,11 @@ func Test_coreLoadGame(t *testing.T) {
 
 	ext := utils.CoreExt()
 
-	Init(&video.Video{Window: &WindowMock{}}, &MenuMock{})
+	Init(&video.Video{Window: &WindowMock{}})
 
 	if err := glfw.Init(); err != nil {
-		log.Fatalln("failed to initialize glfw:", err)
+		log.Fatalln("failed to initialize glfw")
 	}
-	defer glfw.Terminate()
 
 	Load("testdata/vecx_libretro" + ext)
 
@@ -215,8 +211,30 @@ func Test_coreLoadGame(t *testing.T) {
 		}
 	})
 
-	state.Global.Core.UnloadGame()
-	state.Global.Core.Deinit()
-	state.Global.GamePath = ""
-	state.Global.Verbose = false
+	t.Run("Global state should be set by Load", func(t *testing.T) {
+		if state.Global.Core == nil {
+			t.Errorf("got = %v, want %v", nil, state.Global.Core)
+		}
+		if state.Global.GamePath != "testdata/Polar Rescue (USA).vec" {
+			t.Errorf("got = %v, want %v", state.Global.GamePath, "testdata/Polar Rescue (USA).vec")
+		}
+		if !state.Global.CoreRunning {
+			t.Errorf("got = %v, want %v", state.Global.CoreRunning, true)
+		}
+	})
+
+	UnloadGame()
+	Unload()
+
+	t.Run("Global state should be cleared by Unload", func(t *testing.T) {
+		if state.Global.Core != nil {
+			t.Errorf("got = %v, want %v", state.Global.Core, nil)
+		}
+		if state.Global.GamePath != "" {
+			t.Errorf("got = %v, want %v", state.Global.GamePath, "")
+		}
+		if state.Global.CoreRunning {
+			t.Errorf("got = %v, want %v", state.Global.CoreRunning, false)
+		}
+	})
 }

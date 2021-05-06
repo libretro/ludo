@@ -1,7 +1,7 @@
 package input
 
 import (
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/libretro"
 )
 
@@ -18,6 +18,7 @@ var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyRight:      libretro.DeviceIDJoypadRight,
 	glfw.KeyEnter:      libretro.DeviceIDJoypadStart,
 	glfw.KeyRightShift: libretro.DeviceIDJoypadSelect,
+	glfw.KeySpace:      ActionFastForwardToggle,
 	glfw.KeyP:          ActionMenuToggle,
 	glfw.KeyF:          ActionFullscreenToggle,
 	glfw.KeyEscape:     ActionShouldClose,

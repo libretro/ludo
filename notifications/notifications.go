@@ -1,3 +1,5 @@
+// Package notifications exposes functions to display messages in toast
+// widgets.
 package notifications
 
 import (
@@ -5,8 +7,6 @@ import (
 	"log"
 
 	"github.com/libretro/ludo/state"
-
-	"github.com/rs/xid"
 )
 
 // Severity represents the severity of a notification message. It will affect
@@ -29,7 +29,6 @@ const (
 // Notification is a message that will be displayed on the screen during a
 // certain time.
 type Notification struct {
-	ID       xid.ID
 	Severity Severity
 	Message  string
 	Duration float32
@@ -38,18 +37,16 @@ type Notification struct {
 // Medium is the standard duration for a notification
 const Medium float32 = 4
 
-var notifications []Notification
+var notifications []*Notification
 
 // List lists the current notifications.
-func List() []Notification {
+func List() []*Notification {
 	return notifications
 }
 
 // Display creates a new notification.
-func Display(severity Severity, message string, duration float32) xid.ID {
-	id := xid.New()
-	n := Notification{
-		id,
+func Display(severity Severity, message string, duration float32) *Notification {
+	n := &Notification{
 		severity,
 		message,
 		duration,
@@ -57,17 +54,12 @@ func Display(severity Severity, message string, duration float32) xid.ID {
 
 	notifications = append(notifications, n)
 
-	return id
+	return n
 }
 
 // DisplayAndLog creates a new notification and also logs the message to stdout.
-func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) xid.ID {
-	var msg string
-	if len(vars) > 0 {
-		msg = fmt.Sprintf(message, vars...)
-	} else {
-		msg = message
-	}
+func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) *Notification {
+	msg := fmt.Sprintf(message, vars...)
 	if state.Global.Verbose {
 		log.Print("[" + prefix + "]: " + msg + "\n")
 	}
@@ -89,28 +81,15 @@ func Process(dt float32) {
 
 // Clear empties the notification list
 func Clear() {
-	notifications = []Notification{}
-}
-
-// find notification by unique ID
-func find(id xid.ID) *Notification {
-	for i := range notifications {
-		if notifications[i].ID == id {
-			return &notifications[i]
-		}
-	}
-	return nil
+	notifications = []*Notification{}
 }
 
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
-func Update(id xid.ID, severity Severity, message string) {
-	n := find(id)
-	if n == nil {
-		return
-	}
+func (n *Notification) Update(severity Severity, message string, vars ...interface{}) {
+	msg := fmt.Sprintf(message, vars...)
 
 	n.Duration = Medium
-	n.Message = message
+	n.Message = msg
 	n.Severity = severity
 }
