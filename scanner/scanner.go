@@ -12,21 +12,21 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/libretro/ludo/dat"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
-	"github.com/libretro/ludo/rdb"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 )
 
 // LoadDB loops over the RDBs in a given directory and parses them
-func LoadDB(dir string) (rdb.DB, error) {
+func LoadDB(dir string) (dat.DB, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return rdb.DB{}, err
+		return dat.DB{}, err
 	}
-	db := make(rdb.DB)
+	db := make(dat.DB)
 	for _, f := range files {
 		name := f.Name()
 		if !strings.Contains(name, ".dat") {
@@ -34,7 +34,7 @@ func LoadDB(dir string) (rdb.DB, error) {
 		}
 		system := name[0 : len(name)-4]
 		bytes, _ := ioutil.ReadFile(filepath.Join(dir, name))
-		db[system] = rdb.Parse(bytes)
+		db[system] = dat.Parse(bytes)
 	}
 	return db, nil
 }
@@ -47,7 +47,7 @@ func ScanDir(dir string, doneCb func()) {
 		n.Update(ntf.Error, err.Error())
 		return
 	}
-	games := make(chan (rdb.Game))
+	games := make(chan (dat.Game))
 	go Scan(dir, roms, games, n)
 	go func() {
 		i := 0
@@ -76,7 +76,7 @@ func ScanDir(dir string, doneCb func()) {
 }
 
 // Scan scans a list of roms against the database
-func Scan(dir string, roms []string, games chan (rdb.Game), n *ntf.Notification) {
+func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification) {
 	for i, f := range roms {
 		ext := filepath.Ext(f)
 		switch ext {

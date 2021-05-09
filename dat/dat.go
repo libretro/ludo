@@ -1,6 +1,6 @@
-// Package rdb is a parser for rdb files, a binary database of games with
+// Package dat is a parser for dat files, a binary database of games with
 // metadata also used by RetroArch.
-package rdb
+package dat
 
 import (
 	"encoding/xml"
@@ -45,11 +45,11 @@ func (s *CRC) UnmarshalXMLAttr(attr xml.Attr) error {
 	return nil
 }
 
-// Parse parses a .rdb file content and returns an array of Entries
-func Parse(rdb []byte) Dat {
+// Parse parses a .dat file content and returns an array of Entries
+func Parse(dat []byte) Dat {
 	var output Dat
 
-	err := xml.Unmarshal(rdb, &output)
+	err := xml.Unmarshal(dat, &output)
 	if err != nil {
 		log.Println(err)
 	}
