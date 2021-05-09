@@ -29,7 +29,7 @@ func LoadDB(dir string) (rdb.DB, error) {
 	db := make(rdb.DB)
 	for _, f := range files {
 		name := f.Name()
-		if !strings.Contains(name, ".rdb") {
+		if !strings.Contains(name, ".dat") {
 			continue
 		}
 		system := name[0 : len(name)-4]
@@ -54,7 +54,7 @@ func ScanDir(dir string, doneCb func()) {
 		for game := range games {
 			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
 			CSVPath := filepath.Join(settings.Current.PlaylistsDirectory, game.System+".csv")
-			if playlists.Contains(CSVPath, game.Path, game.CRC32) {
+			if playlists.Contains(CSVPath, game.Path, uint32(game.ROMs[0].CRC)) {
 				continue
 			}
 			f, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
@@ -63,8 +63,8 @@ func ScanDir(dir string, doneCb func()) {
 			}
 			f.WriteString(game.Path + "\t")
 			f.WriteString(game.Name + "\t")
-			if game.CRC32 > 0 {
-				f.WriteString(strconv.FormatUint(uint64(game.CRC32), 16))
+			if game.ROMs[0].CRC > 0 {
+				f.WriteString(strconv.FormatUint(uint64(game.ROMs[0].CRC), 16))
 			}
 			f.WriteString("\n")
 			f.Close()
