@@ -58,11 +58,11 @@ func ScanDir(dir string, doneCb func()) {
 				continue
 			}
 			f, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-			if len(game.Name) == 0 {
+			if len(game.Description) == 0 {
 				continue
 			}
 			f.WriteString(game.Path + "\t")
-			f.WriteString(game.Name + "\t")
+			f.WriteString(game.Description + "\t")
 			if game.ROMs[0].CRC > 0 {
 				f.WriteString(strconv.FormatUint(uint64(game.ROMs[0].CRC), 16))
 			}

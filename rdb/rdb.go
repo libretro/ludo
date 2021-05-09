@@ -18,9 +18,10 @@ type Dat struct {
 }
 
 type Game struct {
-	XMLName xml.Name `xml:"game"`
-	Name    string   `xml:"name,attr"`
-	ROMs    []ROM    `xml:"rom"`
+	XMLName     xml.Name `xml:"game"`
+	Name        string   `xml:"name,attr"`
+	Description string   `xml:"description"`
+	ROMs        []ROM    `xml:"rom"`
 
 	Path   string
 	System string
