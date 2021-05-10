@@ -12,23 +12,27 @@ import (
 // DB is a database that contains many Dats, mapped to their system name
 type DB map[string]Dat
 
+// Dat is a list of the games of a system
 type Dat struct {
 	XMLName xml.Name `xml:"datafile"`
 	Games   []Game   `xml:"game"`
 }
 
+// Game represents a game and can contain a list of ROMs
 type Game struct {
 	XMLName     xml.Name `xml:"game"`
 	Name        string   `xml:"name,attr"`
-	Description string   `xml:"description"`
+	Description string   `xml:"description"` // The human readable name of the game
 	ROMs        []ROM    `xml:"rom"`
 
 	Path   string
 	System string
 }
 
+// CRC is the CRC32 checksum of a ROM
 type CRC uint32
 
+// ROM can be a game file or part of a game
 type ROM struct {
 	XMLName xml.Name `xml:"rom"`
 	Name    string   `xml:"name,attr"`
@@ -66,6 +70,9 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 		go func(dat Dat, crc uint32, system string) {
 			// For each game in the Dat
 			for _, game := range dat.Games {
+				if len(game.ROMs) == 0 {
+					continue
+				}
 				// If the checksums match
 				if crc == uint32(game.ROMs[0].CRC) {
 					game.Path = romPath
@@ -89,6 +96,9 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 		go func(dat Dat, crc uint32, system string) {
 			// For each game in the Dat
 			for _, game := range dat.Games {
+				if len(game.ROMs) == 0 {
+					continue
+				}
 				// If the checksums match
 				if romName == game.ROMs[0].Name {
 					game.Path = romPath

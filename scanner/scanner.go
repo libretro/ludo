@@ -75,6 +75,31 @@ func ScanDir(dir string, doneCb func()) {
 	}()
 }
 
+// Returns the checksum and headerless checksum of a ROM
+func checksumHeaderless(rom *zip.File, headerSize uint) (uint32, uint32, error) {
+	h, err := rom.Open()
+	if err != nil {
+		return 0, 0, err
+	}
+	defer h.Close()
+	bytes, err := ioutil.ReadAll(h)
+	if err != nil {
+		return 0, 0, err
+	}
+	crc := crc32.ChecksumIEEE(bytes)
+	crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
+	return crc, crcHeaderless, nil
+}
+
+// Some ROMs have a header that we will need to remove to calculare the checksum
+// Our database has checksums of headerless ROMs
+var headerSizes = map[string]uint{
+	".nes": 16,
+	".fds": 16,
+	".a78": 128,
+	".lnx": 64,
+}
+
 // Scan scans a list of roms against the database
 func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification) {
 	for i, f := range roms {
@@ -88,7 +113,18 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				continue
 			}
 			for _, rom := range z.File {
-				if rom.CRC32 > 0 {
+				romExt := filepath.Ext(rom.Name)
+				// these 4 systems might have headered or headerless roms and need special logic
+				if romExt == ".nes" || romExt == ".a78" || romExt == ".lnx" || romExt == ".fds" {
+					crc, crcHeaderless, err := checksumHeaderless(rom, headerSizes[romExt])
+					if err != nil {
+						n.Update(ntf.Error, err.Error())
+						continue
+					}
+					state.Global.DB.FindByCRC(f, rom.Name, crc, games)
+					state.Global.DB.FindByCRC(f, rom.Name, crcHeaderless, games)
+					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+				} else if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
 					state.Global.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
 					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
