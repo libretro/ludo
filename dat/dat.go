@@ -39,6 +39,7 @@ type ROM struct {
 	CRC     CRC      `xml:"crc,attr"`
 }
 
+// UnmarshalXMLAttr is used to parse a hex number in string form to uint
 func (s *CRC) UnmarshalXMLAttr(attr xml.Attr) error {
 	u64, err := strconv.ParseUint(attr.Value, 16, 64)
 	if err != nil {
