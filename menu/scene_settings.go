@@ -272,21 +272,13 @@ func (s *sceneSettings) render() {
 }
 
 func (s *sceneSettings) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
-
+	cb := s.children[s.ptr].callbackOK
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
-
-	var stack float32
-	list := menu.stack[len(menu.stack)-1].Entry()
-	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	if list.children[list.ptr].callbackOK != nil {
-		stackHint(&stack, a, "SET", h)
-	} else {
-		stackHint(&stack, leftRight, "SET", h)
-	}
+	HintBar(&Props{},
+		Hint(&Props{Hidden: !state.Global.CoreRunning}, guide, "RESUME"),
+		Hint(&Props{}, upDown, "NAVIGATE"),
+		Hint(&Props{}, b, "BACK"),
+		Hint(&Props{Hidden: cb == nil}, a, "SET"),
+		Hint(&Props{Hidden: cb != nil}, leftRight, "SET"),
+	)()
 }

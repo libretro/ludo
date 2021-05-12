@@ -174,6 +174,7 @@ func thumbnailDrawCursor(list *entry) {
 // It also display values of settings if we are displaying a settings scene
 func genericRender(list *entry) {
 	w, h := vid.Window.GetFramebufferSize()
+	fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
 	genericDrawCursor(list)
 
@@ -183,8 +184,6 @@ func genericRender(list *entry) {
 		if e.yp < -0.1 || e.yp > 1.1 {
 			continue
 		}
-
-		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
 		vid.DrawImage(menu.icons[e.icon],
 			610*menu.ratio-64*0.5*menu.ratio,
@@ -215,16 +214,11 @@ func genericRender(list *entry) {
 }
 
 func genericDrawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
-
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
-
-	var stack float32
-	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, a, "OK", h)
+	HintBar(&Props{},
+		Hint(&Props{Hidden: !state.Global.CoreRunning}, guide, "RESUME"),
+		Hint(&Props{}, upDown, "NAVIGATE"),
+		Hint(&Props{}, b, "BACK"),
+		Hint(&Props{}, a, "OK"),
+	)()
 }

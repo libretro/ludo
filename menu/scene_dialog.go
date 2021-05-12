@@ -50,59 +50,52 @@ func (s *sceneDialog) render() {
 	w, h := vid.Window.GetFramebufferSize()
 	fw := float32(w)
 	fh := float32(h)
-	vid.DrawRect(0, 0, fw, fh, 0, black.Alpha(0.85))
 
-	var width float32 = 1000
-	var height float32 = 400
-
-	vid.DrawRect(
-		fw/2-width/2*menu.ratio,
-		fh/2-height/2*menu.ratio,
-		width*menu.ratio,
-		height*menu.ratio,
-		0.05,
-		white,
-	)
-
-	vid.Font.SetColor(orange)
-	msg1 := "A game is currently running."
-	lw1 := vid.Font.Width(0.7*menu.ratio, msg1)
-	vid.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 0.7*menu.ratio, msg1)
-	vid.Font.SetColor(black)
-	msg2 := "If you have not saved yet, your progress will be lost."
-	lw2 := vid.Font.Width(0.5*menu.ratio, msg2)
-	vid.Font.Printf(fw/2-lw2/2, fh/2-30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg2)
-	msg3 := "Do you want to exit Ludo anyway?"
-	lw3 := vid.Font.Width(0.5*menu.ratio, msg3)
-	vid.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg3)
-
-	vid.Font.SetColor(darkGrey)
-
-	var margin float32 = 15
+	width := 1000 * menu.ratio
+	height := 400 * menu.ratio
 
 	_, _, _, a, b, _, _, _, _, _ := hintIcons()
 
-	vid.DrawImage(
-		b,
-		fw/2-width/2*menu.ratio+margin*menu.ratio,
-		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, darkGrey)
-	vid.Font.Printf(
-		fw/2-width/2*menu.ratio+margin*menu.ratio+70*menu.ratio,
-		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
-		0.4*menu.ratio,
-		"NO")
-
-	vid.DrawImage(
-		a,
-		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio,
-		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, darkGrey)
-	vid.Font.Printf(
-		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio+70*menu.ratio,
-		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
-		0.4*menu.ratio,
-		"YES")
+	// Background
+	Box(&Props{Width: fw, Height: fh, Color: black.Alpha(0.85)},
+		// Dialog
+		VBox(&Props{
+			X:            fw/2 - width/2,
+			Y:            fh/2 - height/2,
+			Width:        width,
+			Height:       height,
+			BorderRadius: 0.05,
+			Color:        white,
+		},
+			// Title
+			Label(&Props{
+				TextAlign: "center",
+				Scale:     0.7 * menu.ratio,
+				Color:     orange,
+				Height:    150 * menu.ratio,
+			}, "A game is currently running"),
+			// Messages
+			Label(&Props{
+				TextAlign: "center",
+				Scale:     0.5 * menu.ratio,
+				Color:     black,
+				Height:    60 * menu.ratio,
+			}, "If you have not saved yet, your progress will be lost."),
+			Label(&Props{
+				TextAlign: "center",
+				Scale:     0.5 * menu.ratio,
+				Color:     black,
+				Height:    60 * menu.ratio,
+			}, "Do you want to exit Ludo anyway?"),
+			Box(&Props{Height: 40 * menu.ratio}),
+			Box(&Props{},
+				// The NO Hint
+				Hint(&Props{}, b, "NO"),
+				// The YES Hint
+				Hint(&Props{X: width - 175*menu.ratio}, a, "YES"),
+			),
+		),
+	)()
 }
 
 func (s *sceneDialog) drawHintBar() {

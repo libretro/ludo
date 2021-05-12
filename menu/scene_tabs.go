@@ -256,47 +256,64 @@ func (tabs *sceneTabs) update(dt float32) {
 	}
 }
 
+// Tab is a widget that draws the homepage hexagon plus title
+func Tab(props *Props, i int, e entry) func() {
+	c := colorful.Hcl(float64(i)*20, 0.5, 0.5)
+	return Box(props,
+		Box(&Props{Width: e.width * menu.ratio},
+			Image(&Props{
+				X:      e.width/2*menu.ratio - 220*e.scale*menu.ratio,
+				Y:      -220 * e.scale * menu.ratio,
+				Width:  440 * menu.ratio,
+				Height: 440 * menu.ratio,
+				Scale:  e.scale,
+				Color:  video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.iconAlpha},
+			}, menu.icons["hexagon"]),
+			Image(&Props{
+				X:      e.width/2*menu.ratio - 128*e.scale*menu.ratio,
+				Y:      -128 * e.scale * menu.ratio,
+				Width:  256 * menu.ratio,
+				Height: 256 * menu.ratio,
+				Scale:  e.scale,
+				Color:  video.Color{R: 1, G: 1, B: 1, A: e.iconAlpha},
+			}, menu.icons[e.icon]),
+			Label(&Props{
+				Y:         250 * menu.ratio,
+				TextAlign: "center",
+				Scale:     0.6 * menu.ratio,
+				Color:     video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.labelAlpha},
+			}, e.label),
+			Label(&Props{
+				Y:         330 * menu.ratio,
+				TextAlign: "center",
+				Scale:     0.4 * menu.ratio,
+				Color:     video.Color{R: float32(c.R), G: float32(c.B), B: float32(c.G), A: e.labelAlpha},
+			}, e.subLabel),
+		),
+	)
+}
+
 func (tabs sceneTabs) render() {
 	_, h := vid.Window.GetFramebufferSize()
 
-	stackWidth := 710 * menu.ratio
+	var children []func()
 	for i, e := range tabs.children {
-
-		cf := colorful.Hcl(float64(i)*20, 0.5, 0.5)
-		c := video.Color{R: float32(cf.R), G: float32(cf.B), B: float32(cf.G), A: e.iconAlpha}
-
-		x := -menu.scroll*menu.ratio + stackWidth + e.width/2*menu.ratio
-
-		stackWidth += e.width*menu.ratio + e.margin*menu.ratio
-
-		if e.labelAlpha > 0 {
-			vid.Font.SetColor(c.Alpha(e.labelAlpha))
-			lw := vid.Font.Width(0.5*menu.ratio, e.label)
-			vid.Font.Printf(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), 0.5*menu.ratio, e.label)
-			lw = vid.Font.Width(0.4*menu.ratio, e.subLabel)
-			vid.Font.Printf(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), 0.4*menu.ratio, e.subLabel)
-		}
-
-		vid.DrawImage(menu.icons["hexagon"],
-			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio,
-			440*menu.ratio, 440*menu.ratio, e.scale, c)
-
-		vid.DrawImage(menu.icons[e.icon],
-			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, white.Alpha(e.iconAlpha))
+		children = append(children, Tab(&Props{
+			Y:     float32(h) / 2,
+			Width: e.width*menu.ratio + e.margin*menu.ratio,
+		}, i, e))
 	}
+
+	HBox(&Props{
+		X: 710*menu.ratio - menu.scroll*menu.ratio,
+	}, children...)()
 }
 
 func (tabs sceneTabs) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
-
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
-
-	var stack float32
-	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, leftRight, "NAVIGATE", h)
-	stackHint(&stack, a, "OPEN", h)
+	HintBar(&Props{},
+		Hint(&Props{Hidden: !state.Global.CoreRunning}, guide, "RESUME"),
+		Hint(&Props{}, leftRight, "NAVIGATE"),
+		Hint(&Props{}, a, "OPEN"),
+	)()
 }

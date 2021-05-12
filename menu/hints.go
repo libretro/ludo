@@ -5,14 +5,38 @@ import (
 	"github.com/libretro/ludo/input"
 )
 
-// Used to easily compose different hint bars based on the context.
-func stackHint(stack *float32, icon uint32, label string, h int) {
-	vid.Font.SetColor(darkGrey)
-	*stack += 30 * menu.ratio
-	vid.DrawImage(icon, *stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, darkGrey)
-	*stack += 70 * menu.ratio
-	vid.Font.Printf(*stack, float32(h)-23*menu.ratio, 0.4*menu.ratio, label)
-	*stack += vid.Font.Width(0.4*menu.ratio, label)
+// HintBar is the bar showing at the bottom of the screen
+func HintBar(props *Props, children ...func()) func() {
+	w, h := vid.Window.GetFramebufferSize()
+	return HBox(&Props{
+		Y:      float32(h) - 70*menu.ratio,
+		Width:  float32(w),
+		Height: 70 * menu.ratio,
+		Color:  lightGrey,
+		Hidden: props.Hidden,
+	},
+		children...,
+	)
+}
+
+// Hint is a widget combining an icon and a label
+func Hint(props *Props, icon uint32, title string) func() {
+	darkGrey := darkGrey
+	return HBox(props,
+		Box(&Props{Width: 15}),
+		Image(&Props{
+			Width:  70 * menu.ratio,
+			Height: 70 * menu.ratio,
+			Scale:  1,
+			Color:  darkGrey,
+		}, icon),
+		Label(&Props{
+			Height: 70 * menu.ratio,
+			Scale:  0.4 * menu.ratio,
+			Color:  darkGrey,
+		}, title),
+		Box(&Props{Width: 15}),
+	)
 }
 
 func hintIcons() (arrows, upDown, leftRight, a, b, x, y, start, slct, guide uint32) {

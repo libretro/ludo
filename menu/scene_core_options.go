@@ -80,16 +80,11 @@ func (s *sceneCoreOptions) render() {
 }
 
 func (s *sceneCoreOptions) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
-
 	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()
-
-	var stack float32
-	if state.Global.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, leftRight, "SET", h)
+	HintBar(&Props{},
+		Hint(&Props{Hidden: !state.Global.CoreRunning}, guide, "RESUME"),
+		Hint(&Props{}, upDown, "NAVIGATE"),
+		Hint(&Props{}, b, "BACK"),
+		Hint(&Props{}, leftRight, "SET"),
+	)()
 }
