@@ -16,7 +16,7 @@ import (
 
 const bufSize = 1024 * 8
 
-var audio struct {
+var (
 	source     al.Source
 	buffers    []al.Buffer
 	rate       int32
@@ -24,14 +24,14 @@ var audio struct {
 	tmpBuf     [bufSize]byte
 	tmpBufPtr  int32
 	resPtr     int32
-}
+)
 
 // Effects are sound effects
 var Effects map[string]*Effect
 
 // SetVolume sets the audio volume
 func SetVolume(vol float32) {
-	audio.source.SetGain(vol)
+	source.SetGain(vol)
 }
 
 // Init initializes the audio device
@@ -54,19 +54,19 @@ func Init() {
 
 // Reconfigure initializes the audio package. It sets the number of buffers, the
 // volume and the source for the games.
-func Reconfigure(rate int32) {
-	audio.rate = rate
-	audio.numBuffers = 4
+func Reconfigure(r int32) {
+	rate = r
+	numBuffers = 4
 
-	log.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
+	log.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", numBuffers, bufSize)
 
-	audio.source = al.GenSources(1)[0]
-	audio.buffers = al.GenBuffers(int(audio.numBuffers))
-	audio.resPtr = audio.numBuffers
-	audio.tmpBufPtr = 0
-	audio.tmpBuf = [bufSize]byte{}
+	source = al.GenSources(1)[0]
+	buffers = al.GenBuffers(int(numBuffers))
+	resPtr = numBuffers
+	tmpBufPtr = 0
+	tmpBuf = [bufSize]byte{}
 
-	audio.source.SetGain(settings.Current.AudioVolume)
+	source.SetGain(settings.Current.AudioVolume)
 }
 
 func min(a, b int32) int32 {
@@ -77,19 +77,19 @@ func min(a, b int32) int32 {
 }
 
 func alUnqueueBuffers() bool {
-	val := audio.source.BuffersProcessed()
+	val := source.BuffersProcessed()
 
 	if val <= 0 {
 		return false
 	}
 
-	audio.source.UnqueueBuffers(audio.buffers[audio.resPtr:val]...)
-	audio.resPtr += val
+	source.UnqueueBuffers(buffers[resPtr:val]...)
+	resPtr += val
 	return true
 }
 
 func alGetBuffer() al.Buffer {
-	if audio.resPtr == 0 {
+	if resPtr == 0 {
 		for {
 			if alUnqueueBuffers() {
 				break
@@ -98,21 +98,21 @@ func alGetBuffer() al.Buffer {
 		}
 	}
 
-	audio.resPtr--
-	return audio.buffers[audio.resPtr]
+	resPtr--
+	return buffers[resPtr]
 }
 
 func fillInternalBuf(buf []byte) int32 {
-	readSize := min(bufSize-audio.tmpBufPtr, int32(len(buf)))
-	copy(audio.tmpBuf[audio.tmpBufPtr:], buf[:readSize])
-	audio.tmpBufPtr += readSize
+	readSize := min(bufSize-tmpBufPtr, int32(len(buf)))
+	copy(tmpBuf[tmpBufPtr:], buf[:readSize])
+	tmpBufPtr += readSize
 	return readSize
 }
 
 func write(buf []byte, size int32) int32 {
 	written := int32(0)
 
-	if state.Global.FastForward {
+	if state.FastForward {
 		return size
 	}
 
@@ -123,18 +123,18 @@ func write(buf []byte, size int32) int32 {
 		written += rc
 		size -= rc
 
-		if audio.tmpBufPtr != bufSize {
+		if tmpBufPtr != bufSize {
 			break
 		}
 
 		buffer := alGetBuffer()
 
-		buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], audio.rate)
-		audio.tmpBufPtr = 0
-		audio.source.QueueBuffers(buffer)
+		buffer.BufferData(al.FormatStereo16, tmpBuf[:], rate)
+		tmpBufPtr = 0
+		source.QueueBuffers(buffer)
 
-		if audio.source.State() != al.Playing {
-			al.PlaySources(audio.source)
+		if source.State() != al.Playing {
+			al.PlaySources(source)
 		}
 	}
 
@@ -145,7 +145,7 @@ func write(buf []byte, size int32) int32 {
 // It is passed as a callback to the libretro implementation.
 func Sample(left int16, right int16) {
 	// simulate the kind of raw byte array that would be provided from C via SampleBatch.
-	// (effectively typecasting int16 array to byte array) 
+	// (effectively typecasting int16 array to byte array)
 	buf := []int16{left, right}
 	pi := (*[4]byte)(unsafe.Pointer(&buf[0]))
 	write((*pi)[:], 4)

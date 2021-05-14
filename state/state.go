@@ -3,26 +3,33 @@
 package state
 
 import (
-	"sync"
-
+	"github.com/libretro/ludo/dat"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/rdb"
 )
 
-// State is a type for the global state of the app
-type State struct {
-	Core        *libretro.Core // Current libretro core
-	CoreRunning bool           // Should be true if a game or a gameless core is loaded
-	MenuActive  bool           // When set to true, will display the menu layer
-	Verbose     bool           // When set to true, will output a lots of logs
-	CorePath    string         // Path of the current libretro core
-	GamePath    string         // Path of the current game
-	DB          rdb.DB         // The game database loaded on startup
-	LudOS       bool           // Run Ludo as a unix desktop environment
-	FastForward bool           // Run the core as fast as possible
+// Core is the current libretro core, if any is loaded
+var Core *libretro.Core
 
-	sync.Mutex
-}
+// CoreRunning is true if a game or a gameless core is loaded
+var CoreRunning bool
 
-// Global state
-var Global State
+// MenuActive is whether to display the menu layer
+var MenuActive bool
+
+// Verbose will output more logs
+var Verbose bool
+
+// CorePath is the path of the current libretro core
+var CorePath string
+
+// GamePath is the path of the current game
+var GamePath string
+
+// DB is the game database loaded on startup
+var DB dat.DB
+
+// LudOS is whether run Ludo as a unix desktop environment
+var LudOS bool
+
+// FastForward will run the core as fast as possible
+var FastForward bool

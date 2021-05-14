@@ -66,7 +66,7 @@ func withRepeat() func(dt float32, pressed bool, f func()) {
 // vertically in entry lists, and also respond to presses on OK and Cancel.
 func genericInput(list *entry, dt float32) {
 	// Down
-	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown], func() {
+	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown] == 1, func() {
 		list.ptr++
 		if list.ptr >= len(list.children) {
 			list.ptr = 0
@@ -76,7 +76,7 @@ func genericInput(list *entry, dt float32) {
 	})
 
 	// Up
-	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp], func() {
+	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp] == 1, func() {
 		list.ptr--
 		if list.ptr < 0 {
 			list.ptr = len(list.children) - 1
@@ -86,7 +86,7 @@ func genericInput(list *entry, dt float32) {
 	})
 
 	// OK
-	if input.Released[0][libretro.DeviceIDJoypadA] {
+	if input.Released[0][libretro.DeviceIDJoypadA] == 1 {
 		if list.children[list.ptr].callbackOK != nil {
 			audio.PlayEffect(audio.Effects["ok"])
 			list.children[list.ptr].callbackOK()
@@ -94,7 +94,7 @@ func genericInput(list *entry, dt float32) {
 	}
 
 	// Right
-	if input.Released[0][libretro.DeviceIDJoypadRight] {
+	if input.Released[0][libretro.DeviceIDJoypadRight] == 1 {
 		if list.children[list.ptr].incr != nil {
 			audio.PlayEffect(audio.Effects["up"])
 			list.children[list.ptr].incr(1)
@@ -102,7 +102,7 @@ func genericInput(list *entry, dt float32) {
 	}
 
 	// Left
-	if input.Released[0][libretro.DeviceIDJoypadLeft] {
+	if input.Released[0][libretro.DeviceIDJoypadLeft] == 1 {
 		if list.children[list.ptr].incr != nil {
 			audio.PlayEffect(audio.Effects["down"])
 			list.children[list.ptr].incr(-1)
@@ -110,7 +110,7 @@ func genericInput(list *entry, dt float32) {
 	}
 
 	// Cancel
-	if input.Released[0][libretro.DeviceIDJoypadB] {
+	if input.Released[0][libretro.DeviceIDJoypadB] == 1 {
 		if len(menu.stack) > 1 {
 			audio.PlayEffect(audio.Effects["cancel"])
 			menu.stack[len(menu.stack)-2].segueBack()
@@ -119,14 +119,14 @@ func genericInput(list *entry, dt float32) {
 	}
 
 	// Jump to next letter
-	if input.Released[0][libretro.DeviceIDJoypadR] && len(list.indexes) > 0 {
+	if input.Released[0][libretro.DeviceIDJoypadR] == 1 && len(list.indexes) > 0 {
 		list.ptr = indexed(list, +1)
 		audio.PlayEffect(audio.Effects["down"])
 		genericAnimate(list)
 	}
 
 	// Jump to previous letter
-	if input.Released[0][libretro.DeviceIDJoypadL] && len(list.indexes) > 0 {
+	if input.Released[0][libretro.DeviceIDJoypadL] == 1 && len(list.indexes) > 0 {
 		list.ptr = indexed(list, -1)
 		audio.PlayEffect(audio.Effects["up"])
 		genericAnimate(list)
@@ -159,13 +159,13 @@ func (m *Menu) ProcessHotkeys() {
 	}
 
 	// Toggle the menu if ActionMenuToggle or the combo L3+R3 is pressed
-	combo := input.NewState[0][libretro.DeviceIDJoypadL3] && input.Pressed[0][libretro.DeviceIDJoypadR3]
-	combo = combo || input.Pressed[0][libretro.DeviceIDJoypadL3] && input.NewState[0][libretro.DeviceIDJoypadR3]
+	combo := input.NewState[0][libretro.DeviceIDJoypadL3] == 1 && input.Pressed[0][libretro.DeviceIDJoypadR3] == 1
+	combo = combo || input.Pressed[0][libretro.DeviceIDJoypadL3] == 1 && input.NewState[0][libretro.DeviceIDJoypadR3] == 1
 
-	if (input.Pressed[0][input.ActionMenuToggle] || combo) && state.Global.CoreRunning {
-		state.Global.MenuActive = !state.Global.MenuActive
-		state.Global.FastForward = false
-		if state.Global.MenuActive {
+	if (input.Pressed[0][input.ActionMenuToggle] == 1 || combo) && state.CoreRunning {
+		state.MenuActive = !state.MenuActive
+		state.FastForward = false
+		if state.MenuActive {
 			audio.PlayEffect(audio.Effects["notice"])
 		} else {
 			audio.PlayEffect(audio.Effects["notice_back"])
@@ -173,9 +173,9 @@ func (m *Menu) ProcessHotkeys() {
 	}
 
 	// Toggle fullscreen if ActionFullscreenToggle is pressed
-	if input.Pressed[0][input.ActionFullscreenToggle] {
+	if input.Pressed[0][input.ActionFullscreenToggle] == 1 {
 		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
-		vid.Reconfigure(settings.Current.VideoFullscreen)
+		m.Reconfigure(settings.Current.VideoFullscreen)
 		m.ContextReset()
 		err := settings.Save()
 		if err != nil {
@@ -183,9 +183,9 @@ func (m *Menu) ProcessHotkeys() {
 		}
 	}
 
-	if input.Pressed[0][input.ActionFastForwardToggle] && !state.Global.MenuActive {
-		state.Global.FastForward = !state.Global.FastForward
-		if state.Global.FastForward {
+	if input.Pressed[0][input.ActionFastForwardToggle] == 1 && !state.MenuActive {
+		state.FastForward = !state.FastForward
+		if state.FastForward {
 			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward ON")
 		} else {
 			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward OFF")
@@ -194,9 +194,9 @@ func (m *Menu) ProcessHotkeys() {
 
 	// Close if ActionShouldClose is pressed, but display a confirmation dialog
 	// in case a game is running
-	if input.Pressed[0][input.ActionShouldClose] {
+	if input.Pressed[0][input.ActionShouldClose] == 1 {
 		askConfirmation(func() {
-			vid.Window.SetShouldClose(true)
+			m.SetShouldClose(true)
 		})
 	}
 }

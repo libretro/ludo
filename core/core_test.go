@@ -29,17 +29,17 @@ func (m WindowMock) SetTitle(string)                             {}
 func (m WindowMock) SwapBuffers()                                {}
 
 func Test_coreLoad(t *testing.T) {
-	state.Global.Verbose = true
+	state.Verbose = true
 
 	ext := utils.CoreExt()
 
-	Init(&video.Video{Window: &WindowMock{}})
+	Init(&video.Video{})
 
 	out := utils.CaptureOutput(func() { Load("testdata/vecx_libretro" + ext) })
 
 	t.Run("The core is loaded", func(t *testing.T) {
-		if state.Global.Core == nil {
-			t.Errorf("got = %v, want not nil", state.Global.Core)
+		if state.Core == nil {
+			t.Errorf("got = %v, want not nil", state.Core)
 		}
 	})
 
@@ -56,10 +56,10 @@ func Test_coreLoad(t *testing.T) {
 		}
 	})
 
-	state.Global.Core.UnloadGame()
-	state.Global.Core.Deinit()
-	state.Global.GamePath = ""
-	state.Global.Verbose = false
+	state.Core.UnloadGame()
+	state.Core.Deinit()
+	state.GamePath = ""
+	state.Verbose = false
 }
 
 func Test_getGameInfo(t *testing.T) {
@@ -190,11 +190,11 @@ func Test_unzipGame(t *testing.T) {
 }
 
 func Test_coreLoadGame(t *testing.T) {
-	state.Global.Verbose = true
+	state.Verbose = true
 
 	ext := utils.CoreExt()
 
-	Init(&video.Video{Window: &WindowMock{}})
+	Init(&video.Video{})
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw")
@@ -212,14 +212,14 @@ func Test_coreLoadGame(t *testing.T) {
 	})
 
 	t.Run("Global state should be set by Load", func(t *testing.T) {
-		if state.Global.Core == nil {
-			t.Errorf("got = %v, want %v", nil, state.Global.Core)
+		if state.Core == nil {
+			t.Errorf("got = %v, want %v", nil, state.Core)
 		}
-		if state.Global.GamePath != "testdata/Polar Rescue (USA).vec" {
-			t.Errorf("got = %v, want %v", state.Global.GamePath, "testdata/Polar Rescue (USA).vec")
+		if state.GamePath != "testdata/Polar Rescue (USA).vec" {
+			t.Errorf("got = %v, want %v", state.GamePath, "testdata/Polar Rescue (USA).vec")
 		}
-		if !state.Global.CoreRunning {
-			t.Errorf("got = %v, want %v", state.Global.CoreRunning, true)
+		if !state.CoreRunning {
+			t.Errorf("got = %v, want %v", state.CoreRunning, true)
 		}
 	})
 
@@ -227,14 +227,14 @@ func Test_coreLoadGame(t *testing.T) {
 	Unload()
 
 	t.Run("Global state should be cleared by Unload", func(t *testing.T) {
-		if state.Global.Core != nil {
-			t.Errorf("got = %v, want %v", state.Global.Core, nil)
+		if state.Core != nil {
+			t.Errorf("got = %v, want %v", state.Core, nil)
 		}
-		if state.Global.GamePath != "" {
-			t.Errorf("got = %v, want %v", state.Global.GamePath, "")
+		if state.GamePath != "" {
+			t.Errorf("got = %v, want %v", state.GamePath, "")
 		}
-		if state.Global.CoreRunning {
-			t.Errorf("got = %v, want %v", state.Global.CoreRunning, false)
+		if state.CoreRunning {
+			t.Errorf("got = %v, want %v", state.CoreRunning, false)
 		}
 	})
 }

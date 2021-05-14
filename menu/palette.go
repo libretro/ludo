@@ -40,7 +40,7 @@ func (m *Menu) UpdatePalette() {
 	cursorBg = cyan
 	textColor = black
 
-	if state.Global.CoreRunning || settings.Current.VideoDarkMode {
+	if state.CoreRunning || settings.Current.VideoDarkMode {
 		bgColor = darkerGrey
 		cursorBg = darkBlue
 		textColor = white

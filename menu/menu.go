@@ -12,7 +12,6 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-var vid *video.Video
 var menu *Menu
 
 // Menu is a type holding the menu state, the stack of scenes, tweens, etc
@@ -23,17 +22,18 @@ type Menu struct {
 	scroll float32
 	ratio  float32
 	t      float64
+
+	*video.Video // we embbed video here to have direct access to drawing functions
 }
 
 // Init initializes the menu.
 // If a game is already running, it will warp the user to the quick menu.
 // If not, it will display the menu tabs.
 func Init(v *video.Video) *Menu {
-	vid = v
-
-	w, _ := v.Window.GetFramebufferSize()
+	w, _ := v.GetFramebufferSize()
 
 	menu = &Menu{}
+	menu.Video = v
 	menu.stack = []Scene{}
 	menu.tweens = make(Tweens)
 	menu.ratio = float32(w) / 1920
@@ -56,18 +56,18 @@ func (m *Menu) Push(s Scene) {
 func (m *Menu) Render(dt float32) {
 	// Early return to not render the menu, in case MenuActive is set to false
 	// during the same mainloop iteration
-	if !state.Global.MenuActive {
+	if !state.MenuActive {
 		return
 	}
 
 	m.t += float64(dt * 8)
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := m.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
 
-	if state.Global.CoreRunning {
-		vid.DrawRect(0, 0, float32(w), float32(h), 0, bgColor.Alpha(0.85))
+	if state.CoreRunning {
+		m.DrawRect(0, 0, float32(w), float32(h), 0, bgColor.Alpha(0.85))
 	} else {
-		vid.DrawRect(0, 0, float32(w), float32(h), 0, bgColor)
+		m.DrawRect(0, 0, float32(w), float32(h), 0, bgColor)
 	}
 
 	m.tweens.Update(dt)
