@@ -303,6 +303,7 @@ const (
 	DeviceIDJoypadR3     = uint32(C.RETRO_DEVICE_ID_JOYPAD_R3)
 )
 
+// Mask used to identify joypads
 const (
 	DeviceIDJoypadMask = uint32(C.RETRO_DEVICE_ID_JOYPAD_MASK)
 )

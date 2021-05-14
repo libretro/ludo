@@ -5,6 +5,7 @@ package video
 
 import (
 	"log"
+	"path/filepath"
 	"unsafe"
 
 	"github.com/go-gl/gl/v2.1/gl"
@@ -15,24 +16,9 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-// WindowInterface lists all the methods from glfw.Window that we are using.
-// It is there only to allow mocking during tests.
-type WindowInterface interface {
-	GetFramebufferSize() (width, height int)
-	Destroy()
-	MakeContextCurrent()
-	SetSizeLimits(minw, minh, maxw, maxh int)
-	SetInputMode(mode glfw.InputMode, value int)
-	GetKey(key glfw.Key) glfw.Action
-	SetShouldClose(bool)
-	ShouldClose() bool
-	SetTitle(string)
-	SwapBuffers()
-}
-
 // Video holds the state of the video package
 type Video struct {
-	Window WindowInterface
+	Window *glfw.Window
 	Geom   libretro.GameGeometry
 	Font   *Font
 
@@ -75,13 +61,37 @@ func (video *Video) Reconfigure(fullscreen bool) {
 		// for fullscreen toggling to work, but ppsspp breaks. OTOH, ppsspp
 		// breaks in those situations even if we don't call context_destroy
 		// so ignore it.
-		hw := state.Global.Core.HWRenderCallback
-		if state.Global.CoreRunning && hw != nil && hw.ContextDestroy != nil {
-			state.Global.Core.HWRenderCallback.ContextDestroy()
+		hw := state.Core.HWRenderCallback
+		if state.CoreRunning && hw != nil && hw.ContextDestroy != nil {
+			state.Core.HWRenderCallback.ContextDestroy()
 		}
 		video.Window.Destroy()
 	}
 	video.Configure(fullscreen)
+}
+
+// GetFramebufferSize retrieves the size, in pixels, of the framebuffer of the specified window.
+func (video *Video) GetFramebufferSize() (int, int) {
+	if video.Window == nil {
+		return 0, 0
+	}
+	return video.Window.GetFramebufferSize()
+}
+
+// SetTitle sets the window title, encoded as UTF-8, of the window.
+func (video *Video) SetTitle(title string) {
+	if video.Window == nil {
+		return
+	}
+	video.Window.SetTitle(title)
+}
+
+// SetShouldClose sets the value of the close flag of the window.
+func (video *Video) SetShouldClose(b bool) {
+	if video.Window == nil {
+		return
+	}
+	video.Window.SetShouldClose(b)
 }
 
 // Configure instanciates the video package
@@ -121,8 +131,8 @@ func (video *Video) Configure(fullscreen bool) {
 	fbw, fbh := video.Window.GetFramebufferSize()
 
 	// LoadFont (fontfile, font scale, window width, window height)
-	assets := settings.Current.AssetsDirectory
-	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh)
+	fontPath := filepath.Join(settings.Current.AssetsDirectory, "font.ttf")
+	video.Font, err = LoadFont(fontPath, int32(36*2), fbw, fbh)
 	if err != nil {
 		panic(err)
 	}
@@ -197,7 +207,7 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	gl.GenTextures(1, &video.texID)
-	if video.texID == 0 && state.Global.Verbose {
+	if video.texID == 0 && state.Verbose {
 		log.Fatalln("[Video]: Failed to create the vid texture")
 	}
 
@@ -256,7 +266,7 @@ func (video *Video) UpdateFilter(filter string) {
 // SetPixelFormat is a callback passed to the libretro implementation.
 // It allows the core or the game to tell us which pixel format should be used for the display.
 func (video *Video) SetPixelFormat(format uint32) bool {
-	if state.Global.Verbose {
+	if state.Verbose {
 		log.Printf("[Video]: Set Pixel Format: %v\n", format)
 	}
 
@@ -360,7 +370,7 @@ func (video *Video) Render() {
 
 	video.ResizeViewport()
 
-	if !state.Global.CoreRunning {
+	if !state.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		return
@@ -371,7 +381,7 @@ func (video *Video) Render() {
 
 	// Early return to not render the first frame of a newly loaded game with the
 	// previous game pitch. A sane pitch must be set by video.Refresh first.
-	if state.Global.Core.HWRenderCallback == nil && video.pitch == 0 {
+	if state.Core.HWRenderCallback == nil && video.pitch == 0 {
 		return
 	}
 
@@ -381,7 +391,7 @@ func (video *Video) Render() {
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
-	if state.Global.Core.HWRenderCallback != nil {
+	if state.Core.HWRenderCallback != nil {
 		gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.orthoMat[0])
 	}
 
@@ -439,7 +449,7 @@ func (video *Video) SetRotation(rot uint) bool {
 	// limit to valid values (0, 1, 2, 3, which rotates screen by 0, 90, 180 270 degrees counter-clockwise)
 	video.rot = rot % 4
 
-	if state.Global.Verbose {
+	if state.Verbose {
 		log.Printf("[Video]: Set Rotation: %v", video.rot)
 	}
 

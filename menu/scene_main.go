@@ -23,7 +23,7 @@ func buildMainMenu() Scene {
 
 	usr, _ := user.Current()
 
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		list.children = append(list.children, entry{
 			label: "Quick Menu",
 			icon:  "subsetting",
@@ -52,7 +52,7 @@ func buildMainMenu() Scene {
 		label: "Load Game",
 		icon:  "subsetting",
 		callbackOK: func() {
-			if state.Global.Core != nil {
+			if state.Core != nil {
 				list.segueNext()
 				menu.Push(buildExplorer(
 					usr.HomeDir,
@@ -66,7 +66,7 @@ func buildMainMenu() Scene {
 		},
 	})
 
-	if state.Global.LudOS {
+	if state.LudOS {
 		list.children = append(list.children, entry{
 			label: "Updater",
 			icon:  "subsetting",
@@ -97,7 +97,7 @@ func buildMainMenu() Scene {
 			icon:  "subsetting",
 			callbackOK: func() {
 				askConfirmation(func() {
-					vid.Window.SetShouldClose(true)
+					menu.SetShouldClose(true)
 				})
 			},
 		})
@@ -126,10 +126,10 @@ func gameExplorerCb(path string) {
 	history.Push(history.Game{
 		Path:     path,
 		Name:     utils.FileName(path),
-		CorePath: state.Global.CorePath,
+		CorePath: state.CorePath,
 	})
 	menu.WarpToQuickMenu()
-	state.Global.MenuActive = false
+	state.MenuActive = false
 }
 
 // Shutdown the operating system
@@ -150,9 +150,9 @@ func cleanReboot() {
 
 // Displays a confirmation dialog before performing an irreversible action
 func askConfirmation(cb func()) {
-	if state.Global.CoreRunning {
-		if !state.Global.MenuActive {
-			state.Global.MenuActive = true
+	if state.CoreRunning {
+		if !state.MenuActive {
+			state.MenuActive = true
 		}
 		menu.Push(buildDialog(func() {
 			cb()

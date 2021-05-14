@@ -31,8 +31,8 @@ func (video *Video) renderScreenshot() {
 
 // TakeScreenshot captures the ouput of video.Render and writes it to a file
 func (video *Video) TakeScreenshot(name string) error {
-	state.Global.MenuActive = false
-	defer func() { state.Global.MenuActive = true }()
+	state.MenuActive = false
+	defer func() { state.MenuActive = true }()
 
 	gl.UseProgram(video.defaultProgram)
 

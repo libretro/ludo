@@ -136,19 +136,19 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetUsername:
 		return environmentGetUsername(data)
 	case libretro.EnvironmentGetLogInterface:
-		state.Global.Core.BindLogCallback(data, logCallback)
+		state.Core.BindLogCallback(data, logCallback)
 	case libretro.EnvironmentGetPerfInterface:
-		state.Global.Core.BindPerfCallback(data, getTimeUsec)
+		state.Core.BindPerfCallback(data, getTimeUsec)
 	case libretro.EnvironmentSetFrameTimeCallback:
-		state.Global.Core.SetFrameTimeCallback(data)
+		state.Core.SetFrameTimeCallback(data)
 	case libretro.EnvironmentSetAudioCallback:
-		state.Global.Core.SetAudioCallback(data)
+		state.Core.SetAudioCallback(data)
 	case libretro.EnvironmentSetHWRender:
-		state.Global.Core.HWRenderCallback = libretro.SetHWRenderCallback(
+		state.Core.HWRenderCallback = libretro.SetHWRenderCallback(
 			data,
 			vid.CurrentFramebuffer,
 			vid.ProcAddress)
-		log.Println("[Env]: HWContextType:", state.Global.Core.HWRenderCallback.HWContextType)
+		log.Println("[Env]: HWContextType:", state.Core.HWRenderCallback.HWContextType)
 		return true
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
@@ -162,7 +162,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		log.Println("[Env]: EnvironmentGetPrefferedHWRenderer: 1")
 		libretro.SetUint(data, uint(libretro.HWContextOpenGL))
 	case libretro.EnvironmentShutdown:
-		vid.Window.SetShouldClose(true)
+		vid.SetShouldClose(true)
 	case libretro.EnvironmentGetCoreOptionsVersion:
 		libretro.SetUint(data, 1)
 	case libretro.EnvironmentSetCoreOptions:
@@ -182,7 +182,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		avi := libretro.GetSystemAVInfo(data)
 		vid.Geom = avi.Geometry
 	case libretro.EnvironmentGetFastforwarding:
-		libretro.SetBool(data, state.Global.FastForward)
+		libretro.SetBool(data, state.FastForward)
 	case libretro.EnvironmentGetLanguage:
 		libretro.SetUint(data, 0)
 	default:

@@ -5,8 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
-
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 
@@ -14,26 +12,8 @@ import (
 	"github.com/tanema/gween/ease"
 )
 
-type WindowMock struct{}
-
-func (m WindowMock) GetFramebufferSize() (width, height int)     { return 320, 240 }
-func (m WindowMock) Destroy()                                    {}
-func (m WindowMock) MakeContextCurrent()                         {}
-func (m WindowMock) SetSizeLimits(minw, minh, maxw, maxh int)    {}
-func (m WindowMock) SetInputMode(mode glfw.InputMode, value int) {}
-func (m WindowMock) GetKey(key glfw.Key) glfw.Action             { return 0 }
-func (m WindowMock) SetShouldClose(bool)                         {}
-func (m WindowMock) ShouldClose() bool                           { return false }
-func (m WindowMock) SetTitle(string)                             {}
-func (m WindowMock) SwapBuffers()                                {}
-
 func Test_WarpToQuickMenu(t *testing.T) {
-
-	var vid = &video.Video{
-		Window: &WindowMock{},
-	}
-
-	m := Init(vid)
+	m := Init(&video.Video{})
 
 	t.Run("Starts with a single scene if no game is running", func(t *testing.T) {
 		got := len(menu.stack)
@@ -51,7 +31,7 @@ func Test_WarpToQuickMenu(t *testing.T) {
 		}
 	})
 
-	state.Global.CoreRunning = true
+	state.CoreRunning = true
 	m.WarpToQuickMenu()
 
 	t.Run("Warps at the quick menu if a game is launched", func(t *testing.T) {
