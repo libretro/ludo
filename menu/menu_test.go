@@ -51,7 +51,7 @@ func Test_WarpToQuickMenu(t *testing.T) {
 		}
 	})
 
-	state.Global.CoreRunning = true
+	state.CoreRunning = true
 	m.WarpToQuickMenu()
 
 	t.Run("Warps at the quick menu if a game is launched", func(t *testing.T) {

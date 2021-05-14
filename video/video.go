@@ -180,7 +180,7 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.GenTextures(1, &video.texID)
 
 	gl.ActiveTexture(gl.TEXTURE0)
-	if video.texID == 0 && state.Global.Verbose {
+	if video.texID == 0 && state.Verbose {
 		log.Println("[Video]: Failed to create the vid texture")
 	}
 
@@ -233,7 +233,7 @@ func (video *Video) UpdateFilter(filter string) {
 // SetPixelFormat is a callback passed to the libretro implementation.
 // It allows the core or the game to tell us which pixel format should be used for the display.
 func (video *Video) SetPixelFormat(format uint32) bool {
-	if state.Global.Verbose {
+	if state.Verbose {
 		log.Printf("[Video]: Set Pixel Format: %v\n", format)
 	}
 
@@ -315,7 +315,7 @@ func (video *Video) ResizeViewport() {
 
 // Render the current frame
 func (video *Video) Render() {
-	if !state.Global.CoreRunning {
+	if !state.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		return
@@ -367,7 +367,7 @@ func (video *Video) SetRotation(rot uint) bool {
 	// limit to valid values (0, 1, 2, 3, which rotates screen by 0, 90, 180 270 degrees counter-clockwise)
 	video.rot = rot % 4
 
-	if state.Global.Verbose {
+	if state.Verbose {
 		log.Printf("[Video]: Set Rotation: %v", video.rot)
 	}
 

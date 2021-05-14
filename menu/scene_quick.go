@@ -18,8 +18,8 @@ func buildQuickMenu() Scene {
 		label: "Resume",
 		icon:  "resume",
 		callbackOK: func() {
-			state.Global.MenuActive = false
-			state.Global.FastForward = false
+			state.MenuActive = false
+			state.FastForward = false
 		},
 	})
 
@@ -27,9 +27,9 @@ func buildQuickMenu() Scene {
 		label: "Reset",
 		icon:  "reset",
 		callbackOK: func() {
-			state.Global.Core.Reset()
-			state.Global.MenuActive = false
-			state.Global.FastForward = false
+			state.Core.Reset()
+			state.MenuActive = false
+			state.FastForward = false
 		},
 	})
 
@@ -46,7 +46,7 @@ func buildQuickMenu() Scene {
 		label: "Take Screenshot",
 		icon:  "screenshot",
 		callbackOK: func() {
-			name := utils.DatedName(state.Global.GamePath)
+			name := utils.DatedName(state.GamePath)
 			err := vid.TakeScreenshot(name)
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())

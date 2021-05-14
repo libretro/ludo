@@ -56,7 +56,7 @@ func (m *Menu) Push(s Scene) {
 func (m *Menu) Render(dt float32) {
 	// Early return to not render the menu, in case MenuActive is set to false
 	// during the same mainloop iteration
-	if !state.Global.MenuActive {
+	if !state.MenuActive {
 		return
 	}
 
@@ -64,7 +64,7 @@ func (m *Menu) Render(dt float32) {
 	w, h := vid.Window.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
 
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		vid.DrawRect(0, 0, float32(w), float32(h), 0, bgColor.Alpha(0.85))
 	} else {
 		vid.DrawRect(0, 0, float32(w), float32(h), 0, bgColor)

@@ -112,7 +112,7 @@ func fillInternalBuf(buf []byte) int32 {
 func write(buf []byte, size int32) int32 {
 	written := int32(0)
 
-	if state.Global.FastForward {
+	if state.FastForward {
 		return size
 	}
 
@@ -145,7 +145,7 @@ func write(buf []byte, size int32) int32 {
 // It is passed as a callback to the libretro implementation.
 func Sample(left int16, right int16) {
 	// simulate the kind of raw byte array that would be provided from C via SampleBatch.
-	// (effectively typecasting int16 array to byte array) 
+	// (effectively typecasting int16 array to byte array)
 	buf := []int16{left, right}
 	pi := (*[4]byte)(unsafe.Pointer(&buf[0]))
 	write((*pi)[:], 4)

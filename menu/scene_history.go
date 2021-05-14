@@ -54,14 +54,14 @@ func loadHistoryEntry(list Scene, game history.Game) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
 		return
 	}
-	if state.Global.CorePath != corePath {
+	if state.CorePath != corePath {
 		err := core.Load(corePath)
 		if err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
 		}
 	}
-	if state.Global.GamePath != game.Path {
+	if state.GamePath != game.Path {
 		err := core.LoadGame(game.Path)
 		if err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
@@ -76,7 +76,7 @@ func loadHistoryEntry(list Scene, game history.Game) {
 		list.segueNext()
 		menu.Push(buildQuickMenu())
 		menu.tweens.FastForward() // position the elements without animating
-		state.Global.MenuActive = false
+		state.MenuActive = false
 	} else {
 		list.segueNext()
 		menu.Push(buildQuickMenu())
@@ -136,7 +136,7 @@ func (s *sceneHistory) render() {
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
 				textColor.Alpha(e.iconAlpha))
-			if e.path == state.Global.GamePath && e.path != "" {
+			if e.path == state.GamePath && e.path != "" {
 				vid.DrawCircle(
 					680*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio+fontOffset,
@@ -195,7 +195,7 @@ func (s *sceneHistory) drawHintBar() {
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
 	var stack float32
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)

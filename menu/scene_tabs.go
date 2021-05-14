@@ -294,7 +294,7 @@ func (tabs sceneTabs) drawHintBar() {
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 
 	var stack float32
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, leftRight, "NAVIGATE", h)

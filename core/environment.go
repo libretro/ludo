@@ -136,13 +136,13 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetUsername:
 		return environmentGetUsername(data)
 	case libretro.EnvironmentGetLogInterface:
-		state.Global.Core.BindLogCallback(data, logCallback)
+		state.Core.BindLogCallback(data, logCallback)
 	case libretro.EnvironmentGetPerfInterface:
-		state.Global.Core.BindPerfCallback(data, getTimeUsec)
+		state.Core.BindPerfCallback(data, getTimeUsec)
 	case libretro.EnvironmentSetFrameTimeCallback:
-		state.Global.Core.SetFrameTimeCallback(data)
+		state.Core.SetFrameTimeCallback(data)
 	case libretro.EnvironmentSetAudioCallback:
-		state.Global.Core.SetAudioCallback(data)
+		state.Core.SetAudioCallback(data)
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:
@@ -172,7 +172,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		avi := libretro.GetSystemAVInfo(data)
 		vid.Geom = avi.Geometry
 	case libretro.EnvironmentGetFastforwarding:
-		libretro.SetBool(data, state.Global.FastForward)
+		libretro.SetBool(data, state.FastForward)
 	case libretro.EnvironmentGetLanguage:
 		libretro.SetUint(data, 0)
 	default:

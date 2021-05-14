@@ -25,15 +25,15 @@ type sceneSettings struct {
 // If we're in program mode, hide settings flagged with hide:"program"
 func isHidden(f *structs.Field) bool {
 	return f.Tag("hide") == "always" ||
-		(state.Global.LudOS && f.Tag("hide") == "ludos") ||
-		(!state.Global.LudOS && f.Tag("hide") == "app")
+		(state.LudOS && f.Tag("hide") == "ludos") ||
+		(!state.LudOS && f.Tag("hide") == "app")
 }
 
 func buildSettings() Scene {
 	var list sceneSettings
 	list.label = "Settings"
 
-	if state.Global.LudOS {
+	if state.LudOS {
 		list.children = append(list.children, entry{
 			label:       "Wi-Fi",
 			icon:        "subsetting",
@@ -279,7 +279,7 @@ func (s *sceneSettings) drawHintBar() {
 
 	var stack float32
 	list := menu.stack[len(menu.stack)-1].Entry()
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)

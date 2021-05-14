@@ -24,7 +24,7 @@ func buildSavestates() Scene {
 		label: "Save State",
 		icon:  "savestate",
 		callbackOK: func() {
-			name := utils.DatedName(state.Global.GamePath)
+			name := utils.DatedName(state.GamePath)
 			err := vid.TakeScreenshot(name)
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
@@ -40,7 +40,7 @@ func buildSavestates() Scene {
 		},
 	})
 
-	gameName := utils.FileName(state.Global.GamePath)
+	gameName := utils.FileName(state.GamePath)
 	paths, _ := filepath.Glob(settings.Current.SavestatesDirectory + "/" + gameName + "@*.state")
 	sort.Sort(sort.Reverse(sort.StringSlice(paths)))
 	for _, path := range paths {
@@ -55,7 +55,7 @@ func buildSavestates() Scene {
 				if err != nil {
 					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 				} else {
-					state.Global.MenuActive = false
+					state.MenuActive = false
 
 					ntf.DisplayAndLog(ntf.Success, "Menu", "State loaded.")
 				}
@@ -143,7 +143,7 @@ func (s *sceneSavestates) drawHintBar() {
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
 	var stack float32
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)

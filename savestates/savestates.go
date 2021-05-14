@@ -14,8 +14,8 @@ import (
 // Save the current state to the filesystem. name is the name of the
 // savestate file to save to, without extension.
 func Save(name string) error {
-	s := state.Global.Core.SerializeSize()
-	bytes, err := state.Global.Core.Serialize(s)
+	s := state.Core.SerializeSize()
+	bytes, err := state.Core.Serialize(s)
 	if err != nil {
 		return err
 	}
@@ -29,11 +29,11 @@ func Save(name string) error {
 
 // Load the state from the filesystem
 func Load(path string) error {
-	s := state.Global.Core.SerializeSize()
+	s := state.Core.SerializeSize()
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	err = state.Global.Core.Unserialize(bytes, s)
+	err = state.Core.Unserialize(bytes, s)
 	return err
 }

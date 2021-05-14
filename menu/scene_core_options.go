@@ -86,7 +86,7 @@ func (s *sceneCoreOptions) drawHintBar() {
 	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()
 
 	var stack float32
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)
