@@ -7,14 +7,29 @@ import (
 	"github.com/libretro/ludo/libretro"
 )
 
-var (
-	Core        *libretro.Core // Core is the current libretro core, if any is loaded
-	CoreRunning bool           // CoreRunning is true if a game or a gameless core is loaded
-	MenuActive  bool           // MenuActive is whether to display the menu layer
-	Verbose     bool           // Verbose will output more logs
-	CorePath    string         // CorePath is the path of the current libretro core
-	GamePath    string         // GamePath is the path of the current game
-	DB          dat.DB         // DB is the game database loaded on startup
-	LudOS       bool           // LudOS is a flag to run Ludo as a unix desktop environment
-	FastForward bool           // FastForward will run the core as fast as possible
-)
+// Core is the current libretro core, if any is loaded
+var Core *libretro.Core
+
+// CoreRunning is true if a game or a gameless core is loaded
+var CoreRunning bool
+
+// MenuActive is whether to display the menu layer
+var MenuActive bool
+
+// Verbose will output more logs
+var Verbose bool
+
+// CorePath is the path of the current libretro core
+var CorePath string
+
+// GamePath is the path of the current game
+var GamePath string
+
+// DB is the game database loaded on startup
+var DB dat.DB
+
+// LudOS is whether run Ludo as a unix desktop environment
+var LudOS bool
+
+// FastForward will run the core as fast as possible
+var FastForward bool
