@@ -59,6 +59,8 @@ type GameGeometry struct {
 	AspectRatio float64
 	BaseWidth   int
 	BaseHeight  int
+	MaxWidth    int
+	MaxHeight   int
 }
 
 // GameInfo stores information about a ROM
@@ -451,6 +453,8 @@ func (core *Core) GetSystemAVInfo() SystemAVInfo {
 			AspectRatio: float64(avi.geometry.aspect_ratio),
 			BaseWidth:   int(avi.geometry.base_width),
 			BaseHeight:  int(avi.geometry.base_height),
+			MaxWidth:    int(avi.geometry.max_width),
+			MaxHeight:   int(avi.geometry.max_height),
 		},
 		Timing: SystemTiming{
 			FPS:        float64(avi.timing.fps),
@@ -717,6 +721,8 @@ func GetGeometry(data unsafe.Pointer) GameGeometry {
 		AspectRatio: float64(geometry.aspect_ratio),
 		BaseWidth:   int(geometry.base_width),
 		BaseHeight:  int(geometry.base_height),
+		MaxWidth:    int(geometry.max_width),
+		MaxHeight:   int(geometry.max_height),
 	}
 }
 
@@ -729,6 +735,8 @@ func GetSystemAVInfo(data unsafe.Pointer) SystemAVInfo {
 			AspectRatio: float64(avi.geometry.aspect_ratio),
 			BaseWidth:   int(avi.geometry.base_width),
 			BaseHeight:  int(avi.geometry.base_height),
+			MaxWidth:    int(avi.geometry.max_width),
+			MaxHeight:   int(avi.geometry.max_height),
 		},
 		Timing: SystemTiming{
 			FPS:        float64(avi.timing.fps),
