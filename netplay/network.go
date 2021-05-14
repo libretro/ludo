@@ -313,9 +313,7 @@ func makeHandshakePacket() []byte {
 func encodeInput(st input.PlayerState) uint32 {
 	var out uint32
 	for i, b := range st {
-		if b == 1 {
-			out |= (1 << i)
-		}
+		out |= (uint32(b) << i)
 	}
 	return out
 }
@@ -324,11 +322,7 @@ func encodeInput(st input.PlayerState) uint32 {
 func decodeInput(in uint32) input.PlayerState {
 	st := input.PlayerState{}
 	for i := range st {
-		if in&(1<<i) > 0 {
-			st[i] = 1
-		} else {
-			st[i] = 0
-		}
+		st[i] = int16(in) & (1 << i)
 	}
 	return st
 }
