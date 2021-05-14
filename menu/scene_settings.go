@@ -133,7 +133,7 @@ var widgets = map[string]func(*entry){
 		if e.value().(bool) {
 			icon = "on"
 		}
-		w, h := vid.Window.GetFramebufferSize()
+		w, h := vid.GetFramebufferSize()
 		vid.DrawImage(menu.icons[icon],
 			float32(w)-128*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
@@ -143,7 +143,7 @@ var widgets = map[string]func(*entry){
 
 	// Range widget for audio volume and similat float settings
 	"range": func(e *entry) {
-		fbw, fbh := vid.Window.GetFramebufferSize()
+		fbw, fbh := vid.GetFramebufferSize()
 		x := float32(fbw) - 128*menu.ratio - 175*menu.ratio
 		y := float32(fbh)*e.yp - 4*menu.ratio
 		w := 175 * menu.ratio
@@ -272,7 +272,7 @@ func (s *sceneSettings) render() {
 }
 
 func (s *sceneSettings) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()

@@ -80,7 +80,7 @@ func (s *sceneCoreOptions) render() {
 }
 
 func (s *sceneCoreOptions) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()

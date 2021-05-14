@@ -257,7 +257,7 @@ func (tabs *sceneTabs) update(dt float32) {
 }
 
 func (tabs sceneTabs) render() {
-	_, h := vid.Window.GetFramebufferSize()
+	_, h := vid.GetFramebufferSize()
 
 	stackWidth := 710 * menu.ratio
 	for i, e := range tabs.children {
@@ -288,7 +288,7 @@ func (tabs sceneTabs) render() {
 }
 
 func (tabs sceneTabs) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()

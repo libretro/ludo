@@ -33,7 +33,7 @@ func Test_coreLoad(t *testing.T) {
 
 	ext := utils.CoreExt()
 
-	Init(&video.Video{Window: &WindowMock{}})
+	Init(&video.Video{})
 
 	out := utils.CaptureOutput(func() { Load("testdata/vecx_libretro" + ext) })
 
@@ -194,7 +194,7 @@ func Test_coreLoadGame(t *testing.T) {
 
 	ext := utils.CoreExt()
 
-	Init(&video.Video{Window: &WindowMock{}})
+	Init(&video.Video{})
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw")

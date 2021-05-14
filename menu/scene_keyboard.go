@@ -55,7 +55,7 @@ func (s *sceneKeyboard) Entry() *entry {
 }
 
 func (s *sceneKeyboard) segueMount() {
-	_, h := vid.Window.GetFramebufferSize()
+	_, h := vid.GetFramebufferSize()
 	s.y = float32(h)
 	s.alpha = 0
 	menu.tweens[&s.y] = gween.New(s.y, 0, 0.15, ease.OutSine)
@@ -149,7 +149,7 @@ func (s *sceneKeyboard) update(dt float32) {
 }
 
 func (s *sceneKeyboard) render() {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	lines := float32(4)
 	kbh := float32(h) * 0.6
 	ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
@@ -204,7 +204,7 @@ func (s *sceneKeyboard) render() {
 }
 
 func (s *sceneKeyboard) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	arrows, _, _, a, b, x, y, start, _, _ := hintIcons()

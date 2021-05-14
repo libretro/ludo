@@ -58,9 +58,7 @@ func Load(sofile string) error {
 	// Append the library name to the window title.
 	si := state.Core.GetSystemInfo()
 	if len(si.LibraryName) > 0 {
-		if vid.Window != nil {
-			vid.Window.SetTitle("Ludo - " + si.LibraryName)
-		}
+		vid.SetTitle("Ludo - " + si.LibraryName)
 		if state.Verbose {
 			log.Println("[Core]: Name:", si.LibraryName)
 			log.Println("[Core]: Version:", si.LibraryVersion)
@@ -168,7 +166,7 @@ func LoadGame(gamePath string) error {
 
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
-		vid.Window.SetTitle("Ludo - " + si.LibraryName)
+		vid.SetTitle("Ludo - " + si.LibraryName)
 	}
 
 	input.Init(vid)

@@ -31,7 +31,7 @@ type Menu struct {
 func Init(v *video.Video) *Menu {
 	vid = v
 
-	w, _ := v.Window.GetFramebufferSize()
+	w, _ := v.GetFramebufferSize()
 
 	menu = &Menu{}
 	menu.stack = []Scene{}
@@ -56,12 +56,12 @@ func (m *Menu) Push(s Scene) {
 func (m *Menu) Render(dt float32) {
 	// Early return to not render the menu, in case MenuActive is set to false
 	// during the same mainloop iteration
-	if !state.MenuActive {
+	if !state.MenuActive || vid.Window == nil {
 		return
 	}
 
 	m.t += float64(dt * 8)
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
 
 	if state.CoreRunning {

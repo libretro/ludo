@@ -1,11 +1,7 @@
 package video
 
 import (
-	"reflect"
 	"testing"
-
-	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/libretro/ludo/libretro"
 )
 
 func TestXYWHTo4points(t *testing.T) {
@@ -67,98 +63,6 @@ func TestXYWHTo4points(t *testing.T) {
 			}
 			if gotY4 != tt.wantY4 {
 				t.Errorf("XYWHTo4points() gotY4 = %v, want %v", gotY4, tt.wantY4)
-			}
-		})
-	}
-}
-
-type WindowMock struct{}
-
-func (m WindowMock) GetFramebufferSize() (width, height int)     { return 320, 240 }
-func (m WindowMock) Destroy()                                    {}
-func (m WindowMock) MakeContextCurrent()                         {}
-func (m WindowMock) SetSizeLimits(minw, minh, maxw, maxh int)    {}
-func (m WindowMock) SetInputMode(mode glfw.InputMode, value int) {}
-func (m WindowMock) GetKey(key glfw.Key) glfw.Action             { return 0 }
-func (m WindowMock) SetShouldClose(bool)                         {}
-func (m WindowMock) ShouldClose() bool                           { return false }
-func (m WindowMock) SetTitle(string)                             {}
-func (m WindowMock) SwapBuffers()                                {}
-
-func TestVideo_vertexArray(t *testing.T) {
-
-	var myWindowMock WindowMock
-
-	type fields struct {
-		Window         WindowInterface
-		Geom           libretro.GameGeometry
-		Font           *Font
-		program        uint32
-		roundedProgram uint32
-		borderProgram  uint32
-		circleProgram  uint32
-		demulProgram   uint32
-		vao            uint32
-		vbo            uint32
-		texID          uint32
-		pitch          int32
-		pixFmt         uint32
-		pixType        uint32
-		bpp            int32
-	}
-	type args struct {
-		x     float32
-		y     float32
-		w     float32
-		h     float32
-		scale float32
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   []float32
-	}{
-		{
-			name: "Works",
-			fields: fields{
-				Window: myWindowMock,
-			},
-			args: args{
-				x:     10,
-				y:     11,
-				w:     300,
-				h:     400,
-				scale: 2,
-			},
-			want: []float32{
-				-0.9375, -5.758333, 0, 1,
-				-0.9375, 0.9083333, 0, 0,
-				2.8125, -5.758333, 1, 1,
-				2.8125, 0.9083333, 1, 0},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			video := &Video{
-				Window:         tt.fields.Window,
-				Geom:           tt.fields.Geom,
-				Font:           tt.fields.Font,
-				program:        tt.fields.program,
-				roundedProgram: tt.fields.roundedProgram,
-				borderProgram:  tt.fields.borderProgram,
-				circleProgram:  tt.fields.circleProgram,
-				demulProgram:   tt.fields.demulProgram,
-				vao:            tt.fields.vao,
-				vbo:            tt.fields.vbo,
-				texID:          tt.fields.texID,
-				pitch:          tt.fields.pitch,
-				pixFmt:         tt.fields.pixFmt,
-				pixType:        tt.fields.pixType,
-				bpp:            tt.fields.bpp,
-			}
-			if got := video.vertexArray(tt.args.x, tt.args.y, tt.args.w, tt.args.h, tt.args.scale); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Video.vertexArray() = %v, want %v", got, tt.want)
 			}
 		})
 	}

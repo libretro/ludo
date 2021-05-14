@@ -5,6 +5,7 @@ package video
 
 import (
 	"log"
+	"path/filepath"
 	"unsafe"
 
 	"github.com/go-gl/gl/v2.1/gl"
@@ -14,24 +15,9 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-// WindowInterface lists all the methods from glfw.Window that we are using.
-// It is there only to allow mocking during tests.
-type WindowInterface interface {
-	GetFramebufferSize() (width, height int)
-	Destroy()
-	MakeContextCurrent()
-	SetSizeLimits(minw, minh, maxw, maxh int)
-	SetInputMode(mode glfw.InputMode, value int)
-	GetKey(key glfw.Key) glfw.Action
-	SetShouldClose(bool)
-	ShouldClose() bool
-	SetTitle(string)
-	SwapBuffers()
-}
-
 // Video holds the state of the video package
 type Video struct {
-	Window WindowInterface
+	Window *glfw.Window
 	Geom   libretro.GameGeometry
 	Font   *Font
 
@@ -68,6 +54,21 @@ func (video *Video) Reconfigure(fullscreen bool) {
 		video.Window.Destroy()
 	}
 	video.Configure(fullscreen)
+}
+
+// GetFramebufferSize retrieves the size, in pixels, of the framebuffer of the specified window.
+func (video *Video) GetFramebufferSize() (int, int) {
+	if video.Window == nil {
+		return 0, 0
+	}
+	return video.Window.GetFramebufferSize()
+}
+
+func (video *Video) SetTitle(title string) {
+	if video.Window == nil {
+		return
+	}
+	video.Window.SetTitle(title)
 }
 
 // Configure instanciates the video package
@@ -107,8 +108,8 @@ func (video *Video) Configure(fullscreen bool) {
 	fbw, fbh := video.Window.GetFramebufferSize()
 
 	// LoadFont (fontfile, font scale, window width, window height)
-	assets := settings.Current.AssetsDirectory
-	video.Font, err = LoadFont(assets+"/font.ttf", int32(36*2), fbw, fbh)
+	fontPath := filepath.Join(settings.Current.AssetsDirectory, "font.ttf")
+	video.Font, err = LoadFont(fontPath, int32(36*2), fbw, fbh)
 	if err != nil {
 		panic(err)
 	}

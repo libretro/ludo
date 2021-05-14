@@ -141,7 +141,7 @@ func (s *scenePlaylist) update(dt float32) {
 func (s *scenePlaylist) render() {
 	list := &s.entry
 
-	_, h := vid.Window.GetFramebufferSize()
+	_, h := vid.GetFramebufferSize()
 
 	thumbnailDrawCursor(list)
 
@@ -210,7 +210,7 @@ func (s *scenePlaylist) render() {
 }
 
 func (s *scenePlaylist) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()

@@ -92,7 +92,7 @@ func (s *sceneSavestates) update(dt float32) {
 func (s *sceneSavestates) render() {
 	list := &s.entry
 
-	_, h := vid.Window.GetFramebufferSize()
+	_, h := vid.GetFramebufferSize()
 
 	thumbnailDrawCursor(list)
 
@@ -135,7 +135,7 @@ func (s *sceneSavestates) render() {
 }
 
 func (s *sceneSavestates) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr

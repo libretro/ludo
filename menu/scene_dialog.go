@@ -47,7 +47,7 @@ func (s *sceneDialog) update(dt float32) {
 }
 
 func (s *sceneDialog) render() {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	fw := float32(w)
 	fh := float32(h)
 	vid.DrawRect(0, 0, fw, fh, 0, black.Alpha(0.85))

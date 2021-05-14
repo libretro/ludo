@@ -149,7 +149,7 @@ func genericSegueNext(list *entry) {
 // genericDrawCursor draws the blinking rectangular background of the active
 // menu entry
 func genericDrawCursor(list *entry) {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	vid.DrawImage(menu.icons["arrow"],
 		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
 		70*menu.ratio, 70*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
@@ -161,7 +161,7 @@ func genericDrawCursor(list *entry) {
 // thumbnailDrawCursor draws the blinking rectangular background of the active
 // menu entry when there is a thumbnail
 func thumbnailDrawCursor(list *entry) {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	vid.DrawImage(menu.icons["arrow"],
 		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		100*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
@@ -173,7 +173,7 @@ func thumbnailDrawCursor(list *entry) {
 // genericRender renders a vertical list of menu entries
 // It also display values of settings if we are displaying a settings scene
 func genericRender(list *entry) {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 
 	genericDrawCursor(list)
 
@@ -215,7 +215,7 @@ func genericRender(list *entry) {
 }
 
 func genericDrawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := vid.GetFramebufferSize()
 	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
