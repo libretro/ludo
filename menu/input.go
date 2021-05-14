@@ -175,7 +175,7 @@ func (m *Menu) ProcessHotkeys() {
 	// Toggle fullscreen if ActionFullscreenToggle is pressed
 	if input.Pressed[0][input.ActionFullscreenToggle] == 1 {
 		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
-		vid.Reconfigure(settings.Current.VideoFullscreen)
+		m.Reconfigure(settings.Current.VideoFullscreen)
 		m.ContextReset()
 		err := settings.Save()
 		if err != nil {
@@ -196,7 +196,7 @@ func (m *Menu) ProcessHotkeys() {
 	// in case a game is running
 	if input.Pressed[0][input.ActionShouldClose] == 1 {
 		askConfirmation(func() {
-			vid.SetShouldClose(true)
+			m.SetShouldClose(true)
 		})
 	}
 }

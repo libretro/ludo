@@ -25,7 +25,7 @@ func buildSavestates() Scene {
 		icon:  "savestate",
 		callbackOK: func() {
 			name := utils.DatedName(state.GamePath)
-			err := vid.TakeScreenshot(name)
+			err := menu.TakeScreenshot(name)
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			}
@@ -92,7 +92,7 @@ func (s *sceneSavestates) update(dt float32) {
 func (s *sceneSavestates) render() {
 	list := &s.entry
 
-	_, h := vid.GetFramebufferSize()
+	_, h := menu.GetFramebufferSize()
 
 	thumbnailDrawCursor(list)
 
@@ -112,21 +112,21 @@ func (s *sceneSavestates) render() {
 				170*menu.ratio, 128*menu.ratio,
 				e.scale, textColor.Alpha(e.iconAlpha),
 			)
-			vid.DrawBorder(
+			menu.DrawBorder(
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
 				textColor.Alpha(e.iconAlpha))
 			if i == 0 {
-				vid.DrawImage(menu.icons["savestate"],
+				menu.DrawImage(menu.icons["savestate"],
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
 					e.scale, textColor.Alpha(e.iconAlpha))
 			}
 
-			vid.Font.SetColor(textColor.Alpha(e.labelAlpha))
-			vid.Font.Printf(
+			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
+			menu.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.5*menu.ratio, e.label)
@@ -135,8 +135,8 @@ func (s *sceneSavestates) render() {
 }
 
 func (s *sceneSavestates) drawHintBar() {
-	w, h := vid.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	w, h := menu.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 

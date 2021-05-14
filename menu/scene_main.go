@@ -97,7 +97,7 @@ func buildMainMenu() Scene {
 			icon:  "subsetting",
 			callbackOK: func() {
 				askConfirmation(func() {
-					vid.SetShouldClose(true)
+					menu.SetShouldClose(true)
 				})
 			},
 		})

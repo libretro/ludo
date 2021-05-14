@@ -55,7 +55,7 @@ func (s *sceneKeyboard) Entry() *entry {
 }
 
 func (s *sceneKeyboard) segueMount() {
-	_, h := vid.GetFramebufferSize()
+	_, h := menu.GetFramebufferSize()
 	s.y = float32(h)
 	s.alpha = 0
 	menu.tweens[&s.y] = gween.New(s.y, 0, 0.15, ease.OutSine)
@@ -149,7 +149,7 @@ func (s *sceneKeyboard) update(dt float32) {
 }
 
 func (s *sceneKeyboard) render() {
-	w, h := vid.GetFramebufferSize()
+	w, h := menu.GetFramebufferSize()
 	lines := float32(4)
 	kbh := float32(h) * 0.6
 	ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
@@ -157,34 +157,34 @@ func (s *sceneKeyboard) render() {
 	ttw := 10 * ksp
 
 	// Background
-	vid.DrawRect(0, 0, float32(w), float32(h), 0,
+	menu.DrawRect(0, 0, float32(w), float32(h), 0,
 		white.Alpha(s.alpha))
 
 	// Label
-	vid.Font.SetColor(black)
-	vid.Font.Printf(
+	menu.Font.SetColor(black)
+	menu.Font.Printf(
 		float32(w)/2-ttw/2,
 		s.y+float32(h)*0.15-ksz/2+ksz*0.6,
 		ksz/260, s.label)
 
 	// Value
-	vid.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.25-ksz/2, ttw, ksz, 0,
+	menu.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.25-ksz/2, ttw, ksz, 0,
 		video.Color{R: 0.95, G: 0.95, B: 0.95, A: 1})
-	vid.Font.Printf(
+	menu.Font.Printf(
 		float32(w)/2-ttw/2+ksz/4,
 		s.y+float32(h)*0.25-ksz/2+ksz*0.62,
 		ksz/200, s.value+"|")
 
 	// Keyboard
 
-	vid.DrawRect(0, s.y+float32(h)-kbh, float32(w), kbh, 0, black)
+	menu.DrawRect(0, s.y+float32(h)-kbh, float32(w), kbh, 0, black)
 
-	vid.Font.SetColor(white)
+	menu.Font.SetColor(white)
 
 	for i, key := range layouts[s.layout] {
 		x := float32(i%10)*ksp - ttw/2 + float32(w)/2
 		y := s.y + float32(i/10)*ksp + ksp/2 + float32(h) - kbh
-		gw := vid.Font.Width(ksz/200, key)
+		gw := menu.Font.Width(ksz/200, key)
 
 		c1 := video.Color{R: 0.15, G: 0.15, B: 0.15, A: 1}
 		c2 := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
@@ -193,10 +193,10 @@ func (s *sceneKeyboard) render() {
 			c2 = video.Color{R: 0.45, G: 0.45, B: 0.45, A: 1}
 		}
 
-		vid.DrawRect(x, y, ksz, ksz, 0.2, c1)
-		vid.DrawRect(x, y, ksz, ksz*0.95, 0.2, c2)
+		menu.DrawRect(x, y, ksz, ksz, 0.2, c1)
+		menu.DrawRect(x, y, ksz, ksz*0.95, 0.2, c2)
 
-		vid.Font.Printf(
+		menu.Font.Printf(
 			x+ksz/2-gw/2,
 			y+ksz*0.6,
 			ksz/200, key)
@@ -204,8 +204,8 @@ func (s *sceneKeyboard) render() {
 }
 
 func (s *sceneKeyboard) drawHintBar() {
-	w, h := vid.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	w, h := menu.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	arrows, _, _, a, b, x, y, start, _, _ := hintIcons()
 

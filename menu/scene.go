@@ -149,11 +149,11 @@ func genericSegueNext(list *entry) {
 // genericDrawCursor draws the blinking rectangular background of the active
 // menu entry
 func genericDrawCursor(list *entry) {
-	w, h := vid.GetFramebufferSize()
-	vid.DrawImage(menu.icons["arrow"],
+	w, h := menu.GetFramebufferSize()
+	menu.DrawImage(menu.icons["arrow"],
 		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
 		70*menu.ratio, 70*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
-	vid.DrawRect(
+	menu.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		float32(w)-630*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
 }
@@ -161,11 +161,11 @@ func genericDrawCursor(list *entry) {
 // thumbnailDrawCursor draws the blinking rectangular background of the active
 // menu entry when there is a thumbnail
 func thumbnailDrawCursor(list *entry) {
-	w, h := vid.GetFramebufferSize()
-	vid.DrawImage(menu.icons["arrow"],
+	w, h := menu.GetFramebufferSize()
+	menu.DrawImage(menu.icons["arrow"],
 		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		100*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
-	vid.DrawRect(
+	menu.DrawRect(
 		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
 		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, cursorBg.Alpha(list.cursor.alpha))
 }
@@ -173,11 +173,11 @@ func thumbnailDrawCursor(list *entry) {
 // genericRender renders a vertical list of menu entries
 // It also display values of settings if we are displaying a settings scene
 func genericRender(list *entry) {
-	w, h := vid.GetFramebufferSize()
+	w, h := menu.GetFramebufferSize()
 
 	genericDrawCursor(list)
 
-	vid.ScissorStart(int32(530*menu.ratio), 0, int32(1310*menu.ratio), int32(h))
+	menu.ScissorStart(int32(530*menu.ratio), 0, int32(1310*menu.ratio), int32(h))
 
 	for _, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
@@ -186,15 +186,15 @@ func genericRender(list *entry) {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		vid.DrawImage(menu.icons[e.icon],
+		menu.DrawImage(menu.icons[e.icon],
 			610*menu.ratio-64*0.5*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*0.5*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
 			0.5, textColor.Alpha(e.iconAlpha))
 
 		if e.labelAlpha > 0 {
-			vid.Font.SetColor(textColor.Alpha(e.labelAlpha))
-			vid.Font.Printf(
+			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
+			menu.Font.Printf(
 				670*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.5*menu.ratio, e.label)
@@ -202,8 +202,8 @@ func genericRender(list *entry) {
 			if e.widget != nil {
 				e.widget(&e)
 			} else if e.stringValue != nil {
-				lw := vid.Font.Width(0.5*menu.ratio, e.stringValue())
-				vid.Font.Printf(
+				lw := menu.Font.Width(0.5*menu.ratio, e.stringValue())
+				menu.Font.Printf(
 					float32(w)-lw-128*menu.ratio,
 					float32(h)*e.yp+fontOffset,
 					0.5*menu.ratio, e.stringValue())
@@ -211,12 +211,12 @@ func genericRender(list *entry) {
 		}
 	}
 
-	vid.ScissorEnd()
+	menu.ScissorEnd()
 }
 
 func genericDrawHintBar() {
-	w, h := vid.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	w, h := menu.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 

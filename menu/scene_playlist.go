@@ -141,11 +141,11 @@ func (s *scenePlaylist) update(dt float32) {
 func (s *scenePlaylist) render() {
 	list := &s.entry
 
-	_, h := vid.GetFramebufferSize()
+	_, h := menu.GetFramebufferSize()
 
 	thumbnailDrawCursor(list)
 
-	vid.ScissorStart(int32(510*menu.ratio), 0, int32(1310*menu.ratio), int32(h))
+	menu.ScissorStart(int32(510*menu.ratio), 0, int32(1310*menu.ratio), int32(h))
 
 	for i, e := range list.children {
 		if e.yp < -0.1 || e.yp > 1.1 {
@@ -164,41 +164,41 @@ func (s *scenePlaylist) render() {
 				170*menu.ratio, 128*menu.ratio,
 				e.scale, white.Alpha(e.iconAlpha),
 			)
-			vid.DrawBorder(
+			menu.DrawBorder(
 				680*menu.ratio-85*e.scale*menu.ratio,
 				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
 				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
 				textColor.Alpha(e.iconAlpha))
 			if e.path == state.GamePath && e.path != "" {
-				vid.DrawCircle(
+				menu.DrawCircle(
 					680*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio+fontOffset,
 					90*menu.ratio*e.scale,
 					black.Alpha(e.iconAlpha))
-				vid.DrawImage(menu.icons["resume"],
+				menu.DrawImage(menu.icons["resume"],
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
 					e.scale, white.Alpha(e.iconAlpha))
 			}
 
-			vid.Font.SetColor(textColor.Alpha(e.labelAlpha))
+			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			stack := 840 * menu.ratio
-			vid.Font.Printf(
+			menu.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.5*menu.ratio, e.label)
-			stack += float32(int(vid.Font.Width(0.5*menu.ratio, e.label)))
+			stack += float32(int(menu.Font.Width(0.5*menu.ratio, e.label)))
 			stack += 10
 
 			for _, tag := range e.tags {
 				if _, ok := menu.icons[tag]; ok {
 					stack += 20
-					vid.DrawImage(
+					menu.DrawImage(
 						menu.icons[tag],
 						stack, float32(h)*e.yp-22*menu.ratio,
 						60*menu.ratio, 44*menu.ratio, 1.0, white.Alpha(e.tagAlpha))
-					vid.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
+					menu.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
 						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, black.Alpha(e.tagAlpha/4))
 					stack += 60 * menu.ratio
 				}
@@ -206,12 +206,12 @@ func (s *scenePlaylist) render() {
 		}
 	}
 
-	vid.ScissorEnd()
+	menu.ScissorEnd()
 }
 
 func (s *scenePlaylist) drawHintBar() {
-	w, h := vid.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	w, h := menu.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 

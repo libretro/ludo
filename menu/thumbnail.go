@@ -76,7 +76,7 @@ func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scal
 		}
 	}
 
-	vid.DrawImage(
+	menu.DrawImage(
 		list.children[i].thumbnail,
 		x, y, w, h, scale,
 		color,
@@ -91,7 +91,7 @@ func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale f
 		}
 	}
 
-	vid.DrawImage(
+	menu.DrawImage(
 		list.children[i].thumbnail,
 		x, y, w, h, scale,
 		color,
