@@ -70,7 +70,7 @@ func (s *sceneKeyboard) segueBack() {
 
 func (s *sceneKeyboard) update(dt float32) {
 	// Right
-	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight], func() {
+	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight] == 1, func() {
 		audio.PlayEffect(audio.Effects["up"])
 		if (s.index+1)%10 == 0 {
 			s.index -= 9
@@ -80,7 +80,7 @@ func (s *sceneKeyboard) update(dt float32) {
 	})
 
 	// Left
-	repeatLeft(dt, input.NewState[0][libretro.DeviceIDJoypadLeft], func() {
+	repeatLeft(dt, input.NewState[0][libretro.DeviceIDJoypadLeft] == 1, func() {
 		audio.PlayEffect(audio.Effects["down"])
 		if s.index%10 == 0 {
 			s.index += 9
@@ -90,7 +90,7 @@ func (s *sceneKeyboard) update(dt float32) {
 	})
 
 	// Up
-	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp], func() {
+	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp] == 1, func() {
 		audio.PlayEffect(audio.Effects["up"])
 		if s.index < 10 {
 			s.index += len(layouts[s.layout]) - 10
@@ -100,7 +100,7 @@ func (s *sceneKeyboard) update(dt float32) {
 	})
 
 	// Down
-	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown], func() {
+	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown] == 1, func() {
 		audio.PlayEffect(audio.Effects["down"])
 		if s.index >= len(layouts[s.layout])-10 {
 			s.index -= len(layouts[s.layout]) - 10
@@ -110,13 +110,13 @@ func (s *sceneKeyboard) update(dt float32) {
 	})
 
 	// OK
-	if input.Released[0][libretro.DeviceIDJoypadA] {
+	if input.Released[0][libretro.DeviceIDJoypadA] == 1 {
 		audio.PlayEffect(audio.Effects["ok"])
 		s.value += layouts[s.layout][s.index]
 	}
 
 	// Switch layout
-	if input.Released[0][libretro.DeviceIDJoypadX] {
+	if input.Released[0][libretro.DeviceIDJoypadX] == 1 {
 		audio.PlayEffect(audio.Effects["ok"])
 		s.layout++
 		if s.layout >= len(layouts) {
@@ -125,7 +125,7 @@ func (s *sceneKeyboard) update(dt float32) {
 	}
 
 	// Delete character
-	repeatY(dt, input.NewState[0][libretro.DeviceIDJoypadY], func() {
+	repeatY(dt, input.NewState[0][libretro.DeviceIDJoypadY] == 1, func() {
 		if len(s.value) > 0 {
 			audio.PlayEffect(audio.Effects["cancel"])
 			s.value = s.value[:len(s.value)-1]
@@ -133,14 +133,14 @@ func (s *sceneKeyboard) update(dt float32) {
 	})
 
 	// Cancel
-	if input.Released[0][libretro.DeviceIDJoypadB] && len(menu.stack) > 1 {
+	if input.Released[0][libretro.DeviceIDJoypadB] == 1 && len(menu.stack) > 1 {
 		audio.PlayEffect(audio.Effects["cancel"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
 	}
 
 	// Done
-	if input.Released[0][libretro.DeviceIDJoypadStart] && s.value != "" {
+	if input.Released[0][libretro.DeviceIDJoypadStart] == 1 && s.value != "" {
 		audio.PlayEffect(audio.Effects["notice"])
 		s.callbackDone(s.value)
 		menu.stack[len(menu.stack)-2].segueBack()

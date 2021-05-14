@@ -227,7 +227,7 @@ func (tabs *sceneTabs) segueNext() {
 
 func (tabs *sceneTabs) update(dt float32) {
 	// Right
-	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight], func() {
+	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight] == 1, func() {
 		tabs.ptr++
 		if tabs.ptr >= len(tabs.children) {
 			tabs.ptr = 0
@@ -237,7 +237,7 @@ func (tabs *sceneTabs) update(dt float32) {
 	})
 
 	// Left
-	repeatLeft(dt, input.NewState[0][libretro.DeviceIDJoypadLeft], func() {
+	repeatLeft(dt, input.NewState[0][libretro.DeviceIDJoypadLeft] == 1, func() {
 		tabs.ptr--
 		if tabs.ptr < 0 {
 			tabs.ptr = len(tabs.children) - 1
@@ -247,7 +247,7 @@ func (tabs *sceneTabs) update(dt float32) {
 	})
 
 	// OK
-	if input.Released[0][libretro.DeviceIDJoypadA] {
+	if input.Released[0][libretro.DeviceIDJoypadA] == 1 {
 		if tabs.children[tabs.ptr].callbackOK != nil {
 			audio.PlayEffect(audio.Effects["ok"])
 			tabs.segueNext()

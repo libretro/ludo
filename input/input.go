@@ -26,8 +26,11 @@ type bind struct {
 	threshold float32
 }
 
-// States is the state of inputs for all players
-type States [MaxPlayers][ActionLast]bool
+// States can store the state of inputs for all players
+type States [MaxPlayers][ActionLast]int16
+
+// AnalogStates can store the state of analog inputs for all players
+type AnalogStates [MaxPlayers][2]int16
 
 // Input state for all the players
 var (
@@ -35,6 +38,8 @@ var (
 	OldState States // input state for the previous frame
 	Released States // keys just released during this frame
 	Pressed  States // keys just pressed during this frame
+
+	NewAnalogState AnalogStates // analog input state for the current frame
 )
 
 // Hot keys
@@ -75,8 +80,12 @@ func Init(v *video.Video) {
 	glfw.SetJoystickCallback(joystickCallback)
 }
 
+func floatToAnalog(v float32) int16 {
+	return int16(v * 32767.0)
+}
+
 // pollJoypads process joypads of all players
-func pollJoypads(state States) States {
+func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) {
 	for p := range state {
 		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
 		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
@@ -88,41 +97,47 @@ func pollJoypads(state States) States {
 				case btn:
 					if int(k.index) < len(buttonState) &&
 						glfw.Action(buttonState[k.index]) == glfw.Press {
-						state[p][v] = true
+						state[p][v] = 1
 					}
 				case axis:
 					if int(k.index) < len(axisState) &&
 						k.direction*axisState[k.index] > k.threshold*k.direction {
-						state[p][v] = true
+						state[p][v] = 1
 					}
 				}
 
-				if !settings.Current.MapAxisToDPad {
-					continue
-				}
-				switch {
-				case axisState[0] < -0.5:
-					state[p][libretro.DeviceIDJoypadLeft] = true
-				case axisState[0] > 0.5:
-					state[p][libretro.DeviceIDJoypadRight] = true
-				}
-				switch {
-				case axisState[1] > 0.5:
-					state[p][libretro.DeviceIDJoypadDown] = true
-				case axisState[1] < -0.5:
-					state[p][libretro.DeviceIDJoypadUp] = true
+				if settings.Current.MapAxisToDPad {
+					if axisState[0] < -0.5 {
+						state[p][libretro.DeviceIDJoypadLeft] = 1
+					} else if axisState[0] > 0.5 {
+						state[p][libretro.DeviceIDJoypadRight] = 1
+					}
+					if axisState[1] > 0.5 {
+						state[p][libretro.DeviceIDJoypadDown] = 1
+					} else if axisState[1] < -0.5 {
+						state[p][libretro.DeviceIDJoypadUp] = 1
+					}
 				}
 			}
 		}
 	}
-	return state
+
+	for p := range analogState {
+		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
+		if len(axisState) >= 1 {
+			analogState[p][0] = floatToAnalog(axisState[0])
+			analogState[p][1] = floatToAnalog(axisState[1])
+		}
+	}
+
+	return state, analogState
 }
 
 // pollKeyboard processes keyboard keys
 func pollKeyboard(state States) States {
 	for k, v := range keyBinds {
 		if vid.Window.GetKey(k) == glfw.Press {
-			state[0][v] = true
+			state[0][v] = 1
 		}
 	}
 	return state
@@ -132,8 +147,16 @@ func pollKeyboard(state States) States {
 func getPressedReleased(new States, old States) (States, States) {
 	for p := range new {
 		for k := range new[p] {
-			Pressed[p][k] = new[p][k] && !old[p][k]
-			Released[p][k] = !new[p][k] && old[p][k]
+			if new[p][k] == 1 && old[p][k] == 0 {
+				Pressed[p][k] = 1
+			} else {
+				Pressed[p][k] = 0
+			}
+			if new[p][k] == 0 && old[p][k] == 1 {
+				Released[p][k] = 1
+			} else {
+				Released[p][k] = 0
+			}
 		}
 	}
 	return Pressed, Released
@@ -142,7 +165,7 @@ func getPressedReleased(new States, old States) (States, States) {
 // Poll calculates the input state. It is meant to be called for each frame.
 func Poll() {
 	NewState = States{}
-	NewState = pollJoypads(NewState)
+	NewState, NewAnalogState = pollJoypads(NewState, NewAnalogState)
 	NewState = pollKeyboard(NewState)
 	Pressed, Released = getPressedReleased(NewState, OldState)
 
@@ -153,13 +176,30 @@ func Poll() {
 // State is a callback passed to core.SetInputState
 // It returns 1 if the button corresponding to the parameters is pressed
 func State(port uint, device uint32, index uint, id uint) int16 {
-	if id >= 255 || index > 0 || port >= MaxPlayers || device&libretro.DeviceJoypad != 1 || id > uint(libretro.DeviceIDJoypadR3) {
+	if port >= MaxPlayers {
 		return 0
 	}
 
-	if NewState[port][id] {
-		return 1
+	if device == libretro.DeviceJoypad {
+		if id >= uint(ActionLast) || index > 0 {
+			return 0
+		}
+		return NewState[port][id]
 	}
+	if device == libretro.DeviceAnalog {
+		if id > uint(libretro.DeviceIDAnalogY) {
+			// invalid
+			return 0
+		}
+
+		switch uint32(index) {
+		case libretro.DeviceIndexAnalogLeft:
+			return NewAnalogState[port][id]
+		case libretro.DeviceIndexAnalogRight:
+			return NewAnalogState[port][id]
+		}
+	}
+
 	return 0
 }
 
