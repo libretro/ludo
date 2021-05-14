@@ -85,8 +85,8 @@ func (s *sceneWiFi) render() {
 }
 
 func (s *sceneWiFi) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	w, h := menu.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
 	_, upDown, _, a, b, _, _, _, _, _ := hintIcons()
 

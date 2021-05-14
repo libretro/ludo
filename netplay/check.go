@@ -13,8 +13,8 @@ const desyncCheckRate = int64(10)
 
 // Gets the sync data to confirm the client game states are in sync
 func gameGetSyncData() uint32 {
-	s := state.Global.Core.SerializeSize()
-	bytes, err := state.Global.Core.Serialize(s)
+	s := state.Core.SerializeSize()
+	bytes, err := state.Core.Serialize(s)
 	if err != nil {
 		log.Println(err)
 		return 0

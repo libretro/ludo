@@ -2,4 +2,4 @@
 
 package settings
 
-var playstationCore = "mednafen_psx_libretro"
+var playstationCore = "duckstation_libretro"

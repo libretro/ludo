@@ -31,17 +31,6 @@ var Options *options.Options
 // Call Init before calling other functions of this package.
 func Init(v *video.Video) {
 	vid = v
-	// ticker := time.NewTicker(time.Second * 10)
-	// go func() {
-	// 	for range ticker.C {
-	// 		state.Global.Lock()
-	// 		canSave := state.Global.CoreRunning && !state.Global.MenuActive
-	// 		state.Global.Unlock()
-	// 		if canSave {
-	// 			savefiles.SaveSRAM()
-	// 		}
-	// 	}
-	// }()
 }
 
 // Load loads a libretro core
@@ -51,28 +40,26 @@ func Load(sofile string) error {
 	Unload()
 
 	// This must be set before the environment callback is called
-	state.Global.CorePath = sofile
+	state.CorePath = sofile
 
 	var err error
-	state.Global.Core, err = libretro.Load(sofile)
+	state.Core, err = libretro.Load(sofile)
 	if err != nil {
 		return err
 	}
-	state.Global.Core.SetEnvironment(environment)
-	state.Global.Core.Init()
-	state.Global.Core.SetVideoRefresh(vid.Refresh)
-	state.Global.Core.SetInputPoll(func() {})
-	state.Global.Core.SetInputState(input.State)
-	state.Global.Core.SetAudioSample(audio.Sample)
-	state.Global.Core.SetAudioSampleBatch(audio.SampleBatch)
+	state.Core.SetEnvironment(environment)
+	state.Core.Init()
+	state.Core.SetVideoRefresh(vid.Refresh)
+	state.Core.SetInputPoll(func() {})
+	state.Core.SetInputState(input.State)
+	state.Core.SetAudioSample(audio.Sample)
+	state.Core.SetAudioSampleBatch(audio.SampleBatch)
 
 	// Append the library name to the window title.
-	si := state.Global.Core.GetSystemInfo()
+	si := state.Core.GetSystemInfo()
 	if len(si.LibraryName) > 0 {
-		if vid.Window != nil {
-			vid.Window.SetTitle("Ludo - " + si.LibraryName)
-		}
-		if state.Global.Verbose {
+		vid.SetTitle("Ludo - " + si.LibraryName)
+		if state.Verbose {
 			log.Println("[Core]: Name:", si.LibraryName)
 			log.Println("[Core]: Version:", si.LibraryVersion)
 			log.Println("[Core]: Valid extensions:", si.ValidExtensions)
@@ -136,12 +123,12 @@ func unzipGame(filename string) (string, int64, error) {
 
 // Update runs one frame of the game
 func Update() {
-	state.Global.Core.Run()
-	if state.Global.Core.FrameTimeCallback != nil {
-		state.Global.Core.FrameTimeCallback.Callback(state.Global.Core.FrameTimeCallback.Reference)
+	state.Core.Run()
+	if state.Core.FrameTimeCallback != nil {
+		state.Core.FrameTimeCallback.Callback(state.Core.FrameTimeCallback.Reference)
 	}
-	if state.Global.Core.AudioCallback != nil {
-		state.Global.Core.AudioCallback.Callback()
+	if state.Core.AudioCallback != nil {
+		state.Core.AudioCallback.Callback()
 	}
 }
 
@@ -153,11 +140,11 @@ func LoadGame(gamePath string) error {
 
 	// If we're loading a new game on the same core, save the RAM of the previous
 	// game before closing it.
-	if state.Global.GamePath != gamePath {
+	if state.GamePath != gamePath {
 		UnloadGame()
 	}
 
-	si := state.Global.Core.GetSystemInfo()
+	si := state.Core.GetSystemInfo()
 
 	gi, err := getGameInfo(gamePath, si.BlockExtract)
 	if err != nil {
@@ -178,38 +165,36 @@ func LoadGame(gamePath string) error {
 		}
 	}
 
-	ok := state.Global.Core.LoadGame(*gi)
+	ok := state.Core.LoadGame(*gi)
 	if !ok {
-		state.Global.CoreRunning = false
+		state.CoreRunning = false
 		return errors.New("failed to load the game")
 	}
 
-	avi := state.Global.Core.GetSystemAVInfo()
+	avi := state.Core.GetSystemAVInfo()
 
 	vid.Geom = avi.Geometry
 
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
-		vid.Window.SetTitle("Ludo - " + si.LibraryName)
+		vid.SetTitle("Ludo - " + si.LibraryName)
 	}
 
 	input.Init(vid)
 	audio.Reconfigure(int32(avi.Timing.SampleRate))
-	if state.Global.Core.AudioCallback != nil {
-		state.Global.Core.AudioCallback.SetState(true)
+	if state.Core.AudioCallback != nil {
+		state.Core.AudioCallback.SetState(true)
 	}
 
-	state.Global.Lock()
-	state.Global.CoreRunning = true
-	state.Global.FastForward = false
-	state.Global.GamePath = gamePath
-	state.Global.Unlock()
+	state.CoreRunning = true
+	state.FastForward = false
+	state.GamePath = gamePath
 
-	state.Global.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
-	state.Global.Core.SetControllerPortDevice(1, libretro.DeviceJoypad)
-	state.Global.Core.SetControllerPortDevice(2, libretro.DeviceJoypad)
-	state.Global.Core.SetControllerPortDevice(3, libretro.DeviceJoypad)
-	state.Global.Core.SetControllerPortDevice(4, libretro.DeviceJoypad)
+	state.Core.SetControllerPortDevice(0, libretro.DeviceJoypad)
+	state.Core.SetControllerPortDevice(1, libretro.DeviceJoypad)
+	state.Core.SetControllerPortDevice(2, libretro.DeviceJoypad)
+	state.Core.SetControllerPortDevice(3, libretro.DeviceJoypad)
+	state.Core.SetControllerPortDevice(4, libretro.DeviceJoypad)
 
 	log.Println("[Core]: Game loaded: " + gamePath)
 	// savefiles.LoadSRAM()
@@ -221,26 +206,22 @@ func LoadGame(gamePath string) error {
 
 // Unload unloads a libretro core
 func Unload() {
-	if state.Global.Core != nil {
+	if state.Core != nil {
 		UnloadGame()
-		state.Global.Core.Deinit()
-		state.Global.Lock()
-		state.Global.CorePath = ""
-		state.Global.Core = nil
+		state.Core.Deinit()
+		state.CorePath = ""
+		state.Core = nil
 		Options = nil
-		state.Global.Unlock()
 	}
 }
 
 // UnloadGame unloads a game.
 func UnloadGame() {
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		//savefiles.SaveSRAM()
-		state.Global.Core.UnloadGame()
-		state.Global.Lock()
-		state.Global.GamePath = ""
-		state.Global.CoreRunning = false
-		state.Global.Unlock()
+		state.Core.UnloadGame()
+		state.GamePath = ""
+		state.CoreRunning = false
 		vid.ResetPitch()
 		vid.ResetRot()
 	}

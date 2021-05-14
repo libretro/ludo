@@ -14,7 +14,7 @@ var syncedLastUpdate = false
 
 // Update processes a frame of the netplay, taking care of polling inputs and executing the game
 func Update() {
-	lastGameTick := state.Global.Tick
+	lastGameTick := state.Tick
 	shouldUpdate := false
 
 	// First get any data that has been sent from the other client
@@ -24,7 +24,7 @@ func Update() {
 		// First we assume that the game can be updated, sync checks below can halt updates
 		shouldUpdate = true
 
-		if state.Global.ForcePause {
+		if state.ForcePause {
 			shouldUpdate = false
 		}
 
@@ -97,7 +97,7 @@ func Update() {
 		// Increment the tick count only when the game actually updates.
 		gameUpdate()
 
-		state.Global.Tick++
+		state.Tick++
 
 		// Check whether or not the game state is confirmed to be in sync.
 		// Since we previously rolled back, it's safe to set the lastSyncedTick here since we know any previous
@@ -119,7 +119,7 @@ func Update() {
 	if connectedToClient {
 		// Send this player's input state. We when inputDelayFrames frames ahead.
 		// Note: This input comes from the last game update, so we subtract 1 to set the correct tick.
-		sendInputData(state.Global.Tick - 1 + inputDelayFrames)
+		sendInputData(state.Tick - 1 + inputDelayFrames)
 
 		// Send ping so we can test network latency.
 		sendPingMessage()
