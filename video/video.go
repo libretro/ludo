@@ -64,11 +64,20 @@ func (video *Video) GetFramebufferSize() (int, int) {
 	return video.Window.GetFramebufferSize()
 }
 
+// SetTitle sets the window title, encoded as UTF-8, of the window.
 func (video *Video) SetTitle(title string) {
 	if video.Window == nil {
 		return
 	}
 	video.Window.SetTitle(title)
+}
+
+// SetShouldClose sets the value of the close flag of the window.
+func (video *Video) SetShouldClose(b bool) {
+	if video.Window == nil {
+		return
+	}
+	video.Window.SetShouldClose(b)
 }
 
 // Configure instanciates the video package

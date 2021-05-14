@@ -152,7 +152,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetSaveDirectory:
 		return environmentGetSaveDirectory(data)
 	case libretro.EnvironmentShutdown:
-		vid.Window.SetShouldClose(true)
+		vid.SetShouldClose(true)
 	case libretro.EnvironmentGetCoreOptionsVersion:
 		libretro.SetUint(data, 1)
 	case libretro.EnvironmentSetCoreOptions:

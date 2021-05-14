@@ -196,7 +196,7 @@ func (m *Menu) ProcessHotkeys() {
 	// in case a game is running
 	if input.Pressed[0][input.ActionShouldClose] == 1 {
 		askConfirmation(func() {
-			vid.Window.SetShouldClose(true)
+			vid.SetShouldClose(true)
 		})
 	}
 }
