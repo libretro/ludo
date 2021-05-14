@@ -5,8 +5,8 @@ package state
 import (
 	"sync"
 
+	"github.com/libretro/ludo/dat"
 	"github.com/libretro/ludo/libretro"
-	"github.com/libretro/ludo/rdb"
 )
 
 // State is a type for the global state of the app
@@ -17,7 +17,7 @@ type State struct {
 	Verbose     bool           // When set to true, will output a lots of logs
 	CorePath    string         // Path of the current libretro core
 	GamePath    string         // Path of the current game
-	DB          rdb.DB         // The game database loaded on startup
+	DB          dat.DB         // The game database loaded on startup
 	LudOS       bool           // Run Ludo as a unix desktop environment
 	FastForward bool           // Run the core as fast as possible
 

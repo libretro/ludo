@@ -44,6 +44,8 @@ Setup openal headers and dll in mingw-w64 `include` and `lib` folders.
     cd ludo
     go build
 
+For more detailed build steps, please refer to [our continuous delivery config](https://github.com/libretro/ludo/blob/master/.github/workflows/cd.yml).
+
 ## Running
 
     ./ludo
