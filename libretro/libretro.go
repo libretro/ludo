@@ -285,6 +285,19 @@ const (
 	DeviceIDJoypadR3     = uint32(C.RETRO_DEVICE_ID_JOYPAD_R3)
 )
 
+const (
+	DeviceIDJoypadMask = uint32(C.RETRO_DEVICE_ID_JOYPAD_MASK)
+)
+
+// Index / Id values for ANALOG device.
+const (
+	DeviceIndexAnalogLeft   = uint32(C.RETRO_DEVICE_INDEX_ANALOG_LEFT)
+	DeviceIndexAnalogRight  = uint32(C.RETRO_DEVICE_INDEX_ANALOG_RIGHT)
+	DeviceIndexAnalogButton = uint32(C.RETRO_DEVICE_INDEX_ANALOG_BUTTON)
+	DeviceIDAnalogX         = uint32(C.RETRO_DEVICE_ID_ANALOG_X)
+	DeviceIDAnalogY         = uint32(C.RETRO_DEVICE_ID_ANALOG_Y)
+)
+
 // Environment callback API. See libretro.h for details
 const (
 	EnvironmentSetRotation           = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
