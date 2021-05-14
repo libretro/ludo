@@ -162,10 +162,10 @@ func (m *Menu) ProcessHotkeys() {
 	combo := input.NewState[0][libretro.DeviceIDJoypadL3] == 1 && input.Pressed[0][libretro.DeviceIDJoypadR3] == 1
 	combo = combo || input.Pressed[0][libretro.DeviceIDJoypadL3] == 1 && input.NewState[0][libretro.DeviceIDJoypadR3] == 1
 
-	if (input.Pressed[0][input.ActionMenuToggle] == 1 || combo) && state.Global.CoreRunning {
-		state.Global.MenuActive = !state.Global.MenuActive
-		state.Global.FastForward = false
-		if state.Global.MenuActive {
+	if (input.Pressed[0][input.ActionMenuToggle] == 1 || combo) && state.CoreRunning {
+		state.MenuActive = !state.MenuActive
+		state.FastForward = false
+		if state.MenuActive {
 			audio.PlayEffect(audio.Effects["notice"])
 		} else {
 			audio.PlayEffect(audio.Effects["notice_back"])
@@ -175,7 +175,7 @@ func (m *Menu) ProcessHotkeys() {
 	// Toggle fullscreen if ActionFullscreenToggle is pressed
 	if input.Pressed[0][input.ActionFullscreenToggle] == 1 {
 		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
-		vid.Reconfigure(settings.Current.VideoFullscreen)
+		m.Reconfigure(settings.Current.VideoFullscreen)
 		m.ContextReset()
 		err := settings.Save()
 		if err != nil {
@@ -183,9 +183,9 @@ func (m *Menu) ProcessHotkeys() {
 		}
 	}
 
-	if input.Pressed[0][input.ActionFastForwardToggle] == 1 && !state.Global.MenuActive {
-		state.Global.FastForward = !state.Global.FastForward
-		if state.Global.FastForward {
+	if input.Pressed[0][input.ActionFastForwardToggle] == 1 && !state.MenuActive {
+		state.FastForward = !state.FastForward
+		if state.FastForward {
 			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward ON")
 		} else {
 			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward OFF")
@@ -196,7 +196,7 @@ func (m *Menu) ProcessHotkeys() {
 	// in case a game is running
 	if input.Pressed[0][input.ActionShouldClose] == 1 {
 		askConfirmation(func() {
-			vid.Window.SetShouldClose(true)
+			m.SetShouldClose(true)
 		})
 	}
 }

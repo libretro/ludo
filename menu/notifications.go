@@ -21,8 +21,8 @@ var severityBgColor = map[ntf.Severity]video.Color{
 
 // RenderNotifications draws the list of notification messages on the viewport
 func (m *Menu) RenderNotifications() {
-	fbw, fbh := vid.Window.GetFramebufferSize()
-	vid.Font.UpdateResolution(fbw, fbh)
+	fbw, fbh := m.GetFramebufferSize()
+	m.Font.UpdateResolution(fbw, fbh)
 	var h float32 = 75
 	stack := h
 	for _, n := range ntf.List() {
@@ -31,10 +31,10 @@ func (m *Menu) RenderNotifications() {
 			fading = 1
 		}
 		offset := fading*h - h
-		lw := vid.Font.Width(0.5*m.ratio, n.Message)
+		lw := m.Font.Width(0.5*m.ratio, n.Message)
 		fg := severityFgColor[n.Severity]
 		bg := severityBgColor[n.Severity]
-		vid.DrawRect(
+		m.DrawRect(
 			25*m.ratio,
 			(stack+offset-46)*m.ratio,
 			lw+40*m.ratio,
@@ -42,8 +42,8 @@ func (m *Menu) RenderNotifications() {
 			0.25,
 			bg.Alpha(fading),
 		)
-		vid.Font.SetColor(fg.Alpha(fading))
-		vid.Font.Printf(
+		m.Font.SetColor(fg.Alpha(fading))
+		m.Font.Printf(
 			45*m.ratio,
 			(stack+offset)*m.ratio,
 			0.5*m.ratio,
