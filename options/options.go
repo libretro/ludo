@@ -83,7 +83,7 @@ func (o *Options) Save() error {
 		return err
 	}
 
-	name := utils.FileName(state.Global.CorePath)
+	name := utils.FileName(state.CorePath)
 	fd, err := os.Create(filepath.Join(home, ".ludo", name+".toml"))
 	if err != nil {
 		return err
@@ -108,7 +108,7 @@ func (o *Options) load() error {
 		return err
 	}
 
-	name := utils.FileName(state.Global.CorePath)
+	name := utils.FileName(state.CorePath)
 	b, err := ioutil.ReadFile(filepath.Join(home, ".ludo", name+".toml"))
 	if err != nil {
 		return err

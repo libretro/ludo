@@ -22,7 +22,7 @@ var mutex sync.Mutex
 func path() string {
 	return filepath.Join(
 		settings.Current.SavefilesDirectory,
-		utils.FileName(state.Global.GamePath) + ".srm")
+		utils.FileName(state.GamePath)+".srm")
 }
 
 // SaveSRAM saves the game SRAM to the filesystem
@@ -30,12 +30,12 @@ func SaveSRAM() error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if !state.Global.CoreRunning {
+	if !state.CoreRunning {
 		return errors.New("core not running")
 	}
 
-	len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
-	ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
+	len := state.Core.GetMemorySize(libretro.MemorySaveRAM)
+	ptr := state.Core.GetMemoryData(libretro.MemorySaveRAM)
 	if ptr == nil || len == 0 {
 		return errors.New("unable to get SRAM address")
 	}
@@ -71,12 +71,12 @@ func LoadSRAM() error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if !state.Global.CoreRunning {
+	if !state.CoreRunning {
 		return errors.New("core not running")
 	}
 
-	len := state.Global.Core.GetMemorySize(libretro.MemorySaveRAM)
-	ptr := state.Global.Core.GetMemoryData(libretro.MemorySaveRAM)
+	len := state.Core.GetMemorySize(libretro.MemorySaveRAM)
+	ptr := state.Core.GetMemoryData(libretro.MemorySaveRAM)
 	if ptr == nil || len == 0 {
 		return errors.New("unable to get SRAM address")
 	}

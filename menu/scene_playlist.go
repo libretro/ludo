@@ -61,13 +61,13 @@ func loadPlaylistEntry(list Scene, playlist string, game playlists.Game) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
 		return
 	}
-	if state.Global.CorePath != corePath {
+	if state.CorePath != corePath {
 		if err := core.Load(corePath); err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
 		}
 	}
-	if state.Global.GamePath != game.Path {
+	if state.GamePath != game.Path {
 		if err := core.LoadGame(game.Path); err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
@@ -81,7 +81,7 @@ func loadPlaylistEntry(list Scene, playlist string, game playlists.Game) {
 		list.segueNext()
 		menu.Push(buildQuickMenu())
 		menu.tweens.FastForward() // position the elements without animating
-		state.Global.MenuActive = false
+		state.MenuActive = false
 	} else {
 		list.segueNext()
 		menu.Push(buildQuickMenu())

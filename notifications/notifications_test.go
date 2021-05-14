@@ -67,7 +67,7 @@ func Test_DisplayAndLog(t *testing.T) {
 
 	Clear()
 	t.Run("Logs to stdout if verbose", func(t *testing.T) {
-		state.Global.Verbose = true
+		state.Verbose = true
 		got := utils.CaptureOutput(func() { DisplayAndLog(Info, "Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
 		want := "[Test]: Joypad #3 loaded with name Foo.\n"
 		if !reflect.DeepEqual(got, want) {
@@ -77,7 +77,7 @@ func Test_DisplayAndLog(t *testing.T) {
 
 	Clear()
 	t.Run("Logs nothing if not verbose", func(t *testing.T) {
-		state.Global.Verbose = false
+		state.Verbose = false
 		got := utils.CaptureOutput(func() { DisplayAndLog(Info, "Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
 		want := ""
 		if !reflect.DeepEqual(got, want) {

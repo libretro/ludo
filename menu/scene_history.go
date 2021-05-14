@@ -20,14 +20,14 @@ func loadHistoryEntry(list Scene, game history.Game) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
 		return
 	}
-	if state.Global.CorePath != corePath {
+	if state.CorePath != corePath {
 		err := core.Load(corePath)
 		if err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			return
 		}
 	}
-	if state.Global.GamePath != game.Path {
+	if state.GamePath != game.Path {
 		err := core.LoadGame(game.Path)
 		if err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
@@ -42,7 +42,7 @@ func loadHistoryEntry(list Scene, game history.Game) {
 		list.segueNext()
 		menu.Push(buildQuickMenu())
 		menu.tweens.FastForward() // position the elements without animating
-		state.Global.MenuActive = false
+		state.MenuActive = false
 	} else {
 		list.segueNext()
 		menu.Push(buildQuickMenu())

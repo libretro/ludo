@@ -59,6 +59,8 @@ type GameGeometry struct {
 	AspectRatio float64
 	BaseWidth   int
 	BaseHeight  int
+	MaxWidth    int
+	MaxHeight   int
 }
 
 // GameInfo stores information about a ROM
@@ -283,29 +285,78 @@ const (
 	DeviceIDJoypadR3     = uint32(C.RETRO_DEVICE_ID_JOYPAD_R3)
 )
 
+// Mask used to identify joypads
+const (
+	DeviceIDJoypadMask = uint32(C.RETRO_DEVICE_ID_JOYPAD_MASK)
+)
+
+// Index / Id values for ANALOG device.
+const (
+	DeviceIndexAnalogLeft   = uint32(C.RETRO_DEVICE_INDEX_ANALOG_LEFT)
+	DeviceIndexAnalogRight  = uint32(C.RETRO_DEVICE_INDEX_ANALOG_RIGHT)
+	DeviceIndexAnalogButton = uint32(C.RETRO_DEVICE_INDEX_ANALOG_BUTTON)
+	DeviceIDAnalogX         = uint32(C.RETRO_DEVICE_ID_ANALOG_X)
+	DeviceIDAnalogY         = uint32(C.RETRO_DEVICE_ID_ANALOG_Y)
+)
+
 // Environment callback API. See libretro.h for details
 const (
-	EnvironmentSetRotation           = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
-	EnvironmentGetUsername           = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
-	EnvironmentGetLogInterface       = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
-	EnvironmentGetCanDupe            = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
-	EnvironmentSetPixelFormat        = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
-	EnvironmentGetSystemDirectory    = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
-	EnvironmentGetSaveDirectory      = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
-	EnvironmentShutdown              = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
-	EnvironmentGetVariable           = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
-	EnvironmentSetVariables          = uint32(C.RETRO_ENVIRONMENT_SET_VARIABLES)
-	EnvironmentGetVariableUpdate     = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE)
-	EnvironmentGetPerfInterface      = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
-	EnvironmentSetFrameTimeCallback  = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
-	EnvironmentSetAudioCallback      = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
-	EnvironmentSetGeometry           = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
-	EnvironmentSetSystemAVInfo       = uint32(C.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO)
-	EnvironmentGetFastforwarding     = uint32(C.RETRO_ENVIRONMENT_GET_FASTFORWARDING)
-	EnvironmentGetCoreOptionsVersion = uint32(C.RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION)
-	EnvironmentSetCoreOptions        = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS)
-	EnvironmentSetCoreOptionsIntl    = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL)
-	EnvironmentGetLanguage           = uint32(C.RETRO_ENVIRONMENT_GET_LANGUAGE)
+	EnvironmentSetRotation                      = uint32(C.RETRO_ENVIRONMENT_SET_ROTATION)
+	EnvironmentGetOverscan                      = uint32(C.RETRO_ENVIRONMENT_GET_OVERSCAN) // Deprecated
+	EnvironmentGetCanDupe                       = uint32(C.RETRO_ENVIRONMENT_GET_CAN_DUPE)
+	EnvironmentSetMessage                       = uint32(C.RETRO_ENVIRONMENT_SET_MESSAGE)
+	EnvironmentShutdown                         = uint32(C.RETRO_ENVIRONMENT_SHUTDOWN)
+	EnvironmentSetPerformanceLevel              = uint32(C.RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL)
+	EnvironmentGetSystemDirectory               = uint32(C.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY)
+	EnvironmentSetPixelFormat                   = uint32(C.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT)
+	EnvironmentSetInputDescriptors              = uint32(C.RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS)
+	EnvironmentSetKeyboardCallback              = uint32(C.RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK)
+	EnvironmentSetDiskControlInterface          = uint32(C.RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE)
+	EnvironmentSetHWRender                      = uint32(C.RETRO_ENVIRONMENT_SET_HW_RENDER)
+	EnvironmentGetVariable                      = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE)
+	EnvironmentSetVariables                     = uint32(C.RETRO_ENVIRONMENT_SET_VARIABLES)
+	EnvironmentGetVariableUpdate                = uint32(C.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE)
+	EnvironmentSetSupportNoGame                 = uint32(C.RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME)
+	EnvironmentGetLibretroPath                  = uint32(C.RETRO_ENVIRONMENT_GET_LIBRETRO_PATH)
+	EnvironmentSetFrameTimeCallback             = uint32(C.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK)
+	EnvironmentSetAudioCallback                 = uint32(C.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK)
+	EnvironmentGetRumbleInterface               = uint32(C.RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE)
+	EnvironmentGetInputDeviceCapabilities       = uint32(C.RETRO_ENVIRONMENT_GET_INPUT_DEVICE_CAPABILITIES)
+	EnvironmentGetSensorInterface               = uint32(C.RETRO_ENVIRONMENT_GET_SENSOR_INTERFACE)
+	EnvironmentGetCameraInterface               = uint32(C.RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE)
+	EnvironmentGetLogInterface                  = uint32(C.RETRO_ENVIRONMENT_GET_LOG_INTERFACE)
+	EnvironmentGetPerfInterface                 = uint32(C.RETRO_ENVIRONMENT_GET_PERF_INTERFACE)
+	EnvironmentGetLocationInterface             = uint32(C.RETRO_ENVIRONMENT_GET_LOCATION_INTERFACE)
+	EnvironmentGetCoreAssetDirectory            = uint32(C.RETRO_ENVIRONMENT_GET_CORE_ASSETS_DIRECTORY)
+	EnvironmentGetSaveDirectory                 = uint32(C.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY)
+	EnvironmentSetSystemAVInfo                  = uint32(C.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO)
+	EnvironmentSetProcAddressCallback           = uint32(C.RETRO_ENVIRONMENT_SET_PROC_ADDRESS_CALLBACK)
+	EnvironmentSetSubsystemInfo                 = uint32(C.RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO)
+	EnvironmentSetControllerInfo                = uint32(C.RETRO_ENVIRONMENT_SET_CONTROLLER_INFO)
+	EnvironmentSetMemoryMaps                    = uint32(C.RETRO_ENVIRONMENT_SET_MEMORY_MAPS)
+	EnvironmentSetGeometry                      = uint32(C.RETRO_ENVIRONMENT_SET_GEOMETRY)
+	EnvironmentGetUsername                      = uint32(C.RETRO_ENVIRONMENT_GET_USERNAME)
+	EnvironmentGetLanguage                      = uint32(C.RETRO_ENVIRONMENT_GET_LANGUAGE)
+	EnvironmentGetCurrentSoftwareFramebuffer    = uint32(C.RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER)
+	EnvironmentGetHWRenderInterface             = uint32(C.RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE)
+	EnvironmentSetSupportAchievements           = uint32(C.RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS)
+	EnvironmentSetHWContextNegociationInterface = uint32(C.RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE)
+	EnvironmentSetSerializationQuirks           = uint32(C.RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS)
+	EnvironmentSetHWSharedContext               = uint32(C.RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT)
+	EnvironmentGetVFSInterface                  = uint32(C.RETRO_ENVIRONMENT_GET_VFS_INTERFACE)
+	EnvironmentGetLEDInterface                  = uint32(C.RETRO_ENVIRONMENT_GET_LED_INTERFACE)
+	EnvironmentGetAudioVideoEnable              = uint32(C.RETRO_ENVIRONMENT_GET_AUDIO_VIDEO_ENABLE)
+	EnvironmentGetMIDIInterface                 = uint32(C.RETRO_ENVIRONMENT_GET_MIDI_INTERFACE)
+	EnvironmentGetFastforwarding                = uint32(C.RETRO_ENVIRONMENT_GET_FASTFORWARDING)
+	EnvironmentGetTargetRefreshRate             = uint32(C.RETRO_ENVIRONMENT_GET_TARGET_REFRESH_RATE)
+	EnvironmentGetInputBitmasks                 = uint32(C.RETRO_ENVIRONMENT_GET_INPUT_BITMASKS)
+	EnvironmentGetCoreOptionsVersion            = uint32(C.RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION)
+	EnvironmentSetCoreOptions                   = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS)
+	EnvironmentSetCoreOptionsIntl               = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL)
+	EnvironmentSetCoreOptionsDisplay            = uint32(C.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY)
+	EnvironmentGetPrefferedHWRender             = uint32(C.RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER)
+	EnvironmentGetDiskControlInterfaceVersion   = uint32(C.RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION)
+	EnvironmentGetDiskControlExtInterface       = uint32(C.RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE)
 )
 
 // Debug levels
@@ -451,6 +502,8 @@ func (core *Core) GetSystemAVInfo() SystemAVInfo {
 			AspectRatio: float64(avi.geometry.aspect_ratio),
 			BaseWidth:   int(avi.geometry.base_width),
 			BaseHeight:  int(avi.geometry.base_height),
+			MaxWidth:    int(avi.geometry.max_width),
+			MaxHeight:   int(avi.geometry.max_height),
 		},
 		Timing: SystemTiming{
 			FPS:        float64(avi.timing.fps),
@@ -490,6 +543,9 @@ func (core *Core) Serialize(size uint) ([]byte, error) {
 
 // Unserialize unserializes internal state from a byte slice.
 func (core *Core) Unserialize(bytes []byte, size uint) error {
+	if size <= 0 {
+		return errors.New("retro_unserialize failed")
+	}
 	ok := bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
 	if !ok {
 		return errors.New("retro_unserialize failed")
@@ -714,6 +770,8 @@ func GetGeometry(data unsafe.Pointer) GameGeometry {
 		AspectRatio: float64(geometry.aspect_ratio),
 		BaseWidth:   int(geometry.base_width),
 		BaseHeight:  int(geometry.base_height),
+		MaxWidth:    int(geometry.max_width),
+		MaxHeight:   int(geometry.max_height),
 	}
 }
 
@@ -726,6 +784,8 @@ func GetSystemAVInfo(data unsafe.Pointer) SystemAVInfo {
 			AspectRatio: float64(avi.geometry.aspect_ratio),
 			BaseWidth:   int(avi.geometry.base_width),
 			BaseHeight:  int(avi.geometry.base_height),
+			MaxWidth:    int(avi.geometry.max_width),
+			MaxHeight:   int(avi.geometry.max_height),
 		},
 		Timing: SystemTiming{
 			FPS:        float64(avi.timing.fps),

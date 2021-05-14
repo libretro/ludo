@@ -25,15 +25,15 @@ type sceneSettings struct {
 // If we're in program mode, hide settings flagged with hide:"program"
 func isHidden(f *structs.Field) bool {
 	return f.Tag("hide") == "always" ||
-		(state.Global.LudOS && f.Tag("hide") == "ludos") ||
-		(!state.Global.LudOS && f.Tag("hide") == "app")
+		(state.LudOS && f.Tag("hide") == "ludos") ||
+		(!state.LudOS && f.Tag("hide") == "app")
 }
 
 func buildSettings() Scene {
 	var list sceneSettings
 	list.label = "Settings"
 
-	if state.Global.LudOS {
+	if state.LudOS {
 		list.children = append(list.children, entry{
 			label:       "Wi-Fi",
 			icon:        "subsetting",
@@ -133,8 +133,8 @@ var widgets = map[string]func(*entry, *entry, int){
 		if e.value().(bool) {
 			icon = "on"
 		}
-		fbw, _ := vid.Window.GetFramebufferSize()
-		vid.DrawImage(menu.icons[icon],
+		fbw, _ := menu.GetFramebufferSize()
+		menu.DrawImage(menu.icons[icon],
 			float32(fbw)-400*menu.ratio-128*menu.ratio,
 			list.y+(270+32)*menu.ratio+list.scroll*menu.ratio+100*float32(i)*menu.ratio+50*menu.ratio-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
@@ -143,15 +143,15 @@ var widgets = map[string]func(*entry, *entry, int){
 
 	// Range widget for audio volume and similat float settings
 	"range": func(list, e *entry, i int) {
-		fbw, _ := vid.Window.GetFramebufferSize()
+		fbw, _ := menu.GetFramebufferSize()
 		x := float32(fbw) - 400*menu.ratio - 175*menu.ratio
 		y := list.y + (270+32)*menu.ratio + list.scroll*menu.ratio + 100*float32(i)*menu.ratio + 50*menu.ratio - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
-		vid.DrawRect(x, y, w, h, 0.9, black.Alpha(e.iconAlpha/4))
+		menu.DrawRect(x, y, w, h, 0.9, black.Alpha(e.iconAlpha/4))
 		w = 175 * menu.ratio * e.value().(float32)
-		vid.DrawRect(x, y, w, h, 0.9, black.Alpha(e.iconAlpha))
-		vid.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, black.Alpha(e.iconAlpha))
+		menu.DrawRect(x, y, w, h, 0.9, black.Alpha(e.iconAlpha))
+		menu.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, black.Alpha(e.iconAlpha))
 	},
 }
 
@@ -163,7 +163,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
-		vid.Reconfigure(settings.Current.VideoFullscreen)
+		menu.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
 		settings.Save()
 	},
@@ -177,7 +177,7 @@ var incrCallbacks = map[string]callbackIncrement{
 			v = len(glfw.GetMonitors()) - 1
 		}
 		f.Set(v)
-		vid.Reconfigure(settings.Current.VideoFullscreen)
+		menu.Reconfigure(settings.Current.VideoFullscreen)
 		menu.ContextReset()
 		settings.Save()
 	},
@@ -193,7 +193,7 @@ var incrCallbacks = map[string]callbackIncrement{
 			i = 0
 		}
 		f.Set(filters[i])
-		vid.UpdateFilter(filters[i])
+		menu.UpdateFilter(filters[i])
 		settings.Save()
 	},
 	"VideoDarkMode": func(f *structs.Field, direction int) {
@@ -272,9 +272,9 @@ func (s *sceneSettings) render() {
 }
 
 func (s *sceneSettings) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+	w, h := menu.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 
@@ -288,7 +288,7 @@ func (s *sceneSettings) drawHintBar() {
 		stackHintLeft(&lstack, leftRight, "Set", h)
 	}
 	stackHintRight(&rstack, b, "Back", h)
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		stackHintRight(&rstack, guide, "Resume", h)
 	}
 }

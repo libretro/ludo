@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/dat"
 	"github.com/libretro/ludo/history"
 	ntf "github.com/libretro/ludo/notifications"
-	"github.com/libretro/ludo/rdb"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -43,7 +43,7 @@ func buildMainMenu() Scene {
 		label: "Load Game",
 		icon:  "subsetting",
 		callbackOK: func() {
-			if state.Global.Core != nil {
+			if state.Core != nil {
 				list.segueNext()
 				menu.Push(buildExplorer(
 					usr.HomeDir,
@@ -76,7 +76,7 @@ func gameExplorerCb(path string) {
 	if err := core.LoadGame(path); err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 	} else {
-		scanner.ScanFile(path, func(game rdb.Game) {
+		scanner.ScanFile(path, func(game dat.Game) {
 			name := game.Name
 			if name == "" {
 				name = utils.FileName(path)
@@ -85,12 +85,12 @@ func gameExplorerCb(path string) {
 				Path:     path,
 				Name:     name,
 				System:   game.System,
-				CorePath: state.Global.CorePath,
+				CorePath: state.CorePath,
 			})
 			history.Load()
 			menu.WarpToQuickMenu()
 		})
-		state.Global.MenuActive = false
+		state.MenuActive = false
 	}
 }
 
@@ -112,9 +112,9 @@ func cleanReboot() {
 
 // Displays a confirmation dialog before performing an irreversible action
 func askConfirmation(cb func()) {
-	if state.Global.CoreRunning {
-		if !state.Global.MenuActive {
-			state.Global.MenuActive = true
+	if state.CoreRunning {
+		if !state.MenuActive {
+			state.MenuActive = true
 		}
 		menu.Push(buildDialog(func() {
 			cb()

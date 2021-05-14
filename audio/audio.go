@@ -6,6 +6,7 @@ import (
 	"log"
 	"path/filepath"
 	"time"
+	"unsafe"
 
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -15,23 +16,22 @@ import (
 
 const bufSize = 1024 * 8
 
-var audio struct {
+var (
 	source     al.Source
 	buffers    []al.Buffer
 	rate       int32
 	numBuffers int32
 	tmpBuf     [bufSize]byte
 	tmpBufPtr  int32
-	bufPtr     int32
 	resPtr     int32
-}
+)
 
 // Effects are sound effects
 var Effects map[string]*Effect
 
 // SetVolume sets the audio volume
 func SetVolume(vol float32) {
-	audio.source.SetGain(vol)
+	source.SetGain(vol)
 }
 
 // Init initializes the audio device
@@ -54,19 +54,19 @@ func Init() {
 
 // Reconfigure initializes the audio package. It sets the number of buffers, the
 // volume and the source for the games.
-func Reconfigure(rate int32) {
-	audio.rate = rate
-	audio.numBuffers = 4
+func Reconfigure(r int32) {
+	rate = r
+	numBuffers = 4
 
-	log.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", audio.numBuffers, bufSize)
+	log.Printf("[OpenAL]: Using %v buffers of %v bytes.\n", numBuffers, bufSize)
 
-	audio.source = al.GenSources(1)[0]
-	audio.buffers = al.GenBuffers(int(audio.numBuffers))
-	audio.resPtr = audio.numBuffers
-	audio.tmpBufPtr = 0
-	audio.tmpBuf = [bufSize]byte{}
+	source = al.GenSources(1)[0]
+	buffers = al.GenBuffers(int(numBuffers))
+	resPtr = numBuffers
+	tmpBufPtr = 0
+	tmpBuf = [bufSize]byte{}
 
-	audio.source.SetGain(settings.Current.AudioVolume)
+	source.SetGain(settings.Current.AudioVolume)
 }
 
 func min(a, b int32) int32 {
@@ -77,73 +77,66 @@ func min(a, b int32) int32 {
 }
 
 func alUnqueueBuffers() bool {
-	val := audio.source.BuffersProcessed()
+	val := source.BuffersProcessed()
 
 	if val <= 0 {
 		return false
 	}
 
-	audio.source.UnqueueBuffers(audio.buffers[audio.resPtr:val]...)
-	audio.resPtr += val
+	source.UnqueueBuffers(buffers[resPtr:val]...)
+	resPtr += val
 	return true
 }
 
 func alGetBuffer() al.Buffer {
-	if audio.resPtr == 0 {
+	if resPtr == 0 {
 		for {
 			if alUnqueueBuffers() {
 				break
 			}
-
 			time.Sleep(time.Millisecond)
 		}
 	}
 
-	audio.resPtr--
-	return audio.buffers[audio.resPtr]
+	resPtr--
+	return buffers[resPtr]
 }
 
-func fillInternalBuf(buf []byte, size int32) int32 {
-	readSize := min(bufSize-audio.tmpBufPtr, size)
-	if readSize > int32(len(buf)) {
-		return size
-	}
-	copy(audio.tmpBuf[audio.tmpBufPtr:], buf[audio.bufPtr:audio.bufPtr+readSize])
-	audio.tmpBufPtr += readSize
+func fillInternalBuf(buf []byte) int32 {
+	readSize := min(bufSize-tmpBufPtr, int32(len(buf)))
+	copy(tmpBuf[tmpBufPtr:], buf[:readSize])
+	tmpBufPtr += readSize
 	return readSize
 }
 
 func write(buf []byte, size int32) int32 {
 	written := int32(0)
 
-	if state.Global.FastForward {
+	if state.FastForward {
 		return size
 	}
 
 	for size > 0 {
 
-		rc := fillInternalBuf(buf, size)
+		rc := fillInternalBuf(buf[written:])
 
 		written += rc
-		audio.bufPtr += rc
 		size -= rc
 
-		if audio.tmpBufPtr != bufSize {
+		if tmpBufPtr != bufSize {
 			break
 		}
 
 		buffer := alGetBuffer()
 
-		buffer.BufferData(al.FormatStereo16, audio.tmpBuf[:], audio.rate)
-		audio.tmpBufPtr = 0
-		audio.source.QueueBuffers(buffer)
+		buffer.BufferData(al.FormatStereo16, tmpBuf[:], rate)
+		tmpBufPtr = 0
+		source.QueueBuffers(buffer)
 
-		if audio.source.State() != al.Playing {
-			al.PlaySources(audio.source)
+		if source.State() != al.Playing {
+			al.PlaySources(source)
 		}
 	}
-
-	audio.bufPtr = 0
 
 	return written
 }
@@ -151,8 +144,11 @@ func write(buf []byte, size int32) int32 {
 // Sample renders a single audio frame.
 // It is passed as a callback to the libretro implementation.
 func Sample(left int16, right int16) {
-	buf := []byte{byte(left), byte(right)}
-	write(buf, 4)
+	// simulate the kind of raw byte array that would be provided from C via SampleBatch.
+	// (effectively typecasting int16 array to byte array)
+	buf := []int16{left, right}
+	pi := (*[4]byte)(unsafe.Pointer(&buf[0]))
+	write((*pi)[:], 4)
 }
 
 // SampleBatch renders multiple audio frames in one go

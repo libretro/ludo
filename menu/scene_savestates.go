@@ -26,8 +26,8 @@ func buildSavestates() Scene {
 		label: "Save State",
 		icon:  "savestate",
 		callbackOK: func() {
-			name := utils.DatedName(state.Global.GamePath)
-			err := vid.TakeScreenshot(name)
+			name := utils.DatedName(state.GamePath)
+			err := menu.TakeScreenshot(name)
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 			}
@@ -42,7 +42,7 @@ func buildSavestates() Scene {
 		},
 	})
 
-	gameName := utils.FileName(state.Global.GamePath)
+	gameName := utils.FileName(state.GamePath)
 	paths, _ := filepath.Glob(settings.Current.SavestatesDirectory + "/" + gameName + "@*.state")
 	sort.Sort(sort.Reverse(sort.StringSlice(paths)))
 	for _, path := range paths {
@@ -57,7 +57,7 @@ func buildSavestates() Scene {
 				if err != nil {
 					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 				} else {
-					state.Global.MenuActive = false
+					state.MenuActive = false
 
 					ntf.DisplayAndLog(ntf.Success, "Menu", "State loaded.")
 				}
@@ -93,15 +93,15 @@ func (s *sceneSavestates) update(dt float32) {
 // Override rendering
 func (s *sceneSavestates) render() {
 	list := &s.entry
-	w, h := vid.Window.GetFramebufferSize()
+	w, h := menu.GetFramebufferSize()
 
-	vid.BoldFont.SetColor(blue.Alpha(list.alpha))
-	vid.BoldFont.Printf(
+	menu.BoldFont.SetColor(blue.Alpha(list.alpha))
+	menu.BoldFont.Printf(
 		360*menu.ratio,
 		list.y*menu.ratio+230*menu.ratio,
 		0.5*menu.ratio, list.label)
 
-	vid.DrawRect(
+	menu.DrawRect(
 		360*menu.ratio,
 		list.y*menu.ratio+270*menu.ratio,
 		float32(w)-720*menu.ratio,
@@ -109,7 +109,7 @@ func (s *sceneSavestates) render() {
 		0, lightGrey,
 	)
 
-	vid.ScissorStart(
+	menu.ScissorStart(
 		int32(360*menu.ratio-8*menu.ratio), 0,
 		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(272*menu.ratio+list.y*menu.ratio))
 
@@ -128,7 +128,7 @@ func (s *sceneSavestates) render() {
 			list.entryHeight*float32(i)*menu.ratio +
 			list.entryHeight/2*menu.ratio
 
-		vid.DrawRect(
+		menu.DrawRect(
 			360*menu.ratio,
 			y-1*menu.ratio+list.entryHeight/2*menu.ratio,
 			float32(w)-720*menu.ratio,
@@ -150,28 +150,28 @@ func (s *sceneSavestates) render() {
 				1, white.Alpha(e.iconAlpha),
 			)
 			if i == 0 {
-				vid.DrawImage(menu.icons["savestate"],
+				menu.DrawImage(menu.icons["savestate"],
 					480*menu.ratio-25*1*menu.ratio,
 					y-50/2*menu.ratio,
 					50*menu.ratio, 50*menu.ratio,
 					1, 0, white.Alpha(e.iconAlpha))
 			}
 
-			vid.Font.SetColor(black.Alpha(e.labelAlpha))
-			vid.Font.Printf(
+			menu.Font.SetColor(black.Alpha(e.labelAlpha))
+			menu.Font.Printf(
 				600*menu.ratio,
 				y+fontOffset,
 				0.5*menu.ratio, e.label)
 		}
 	}
 
-	vid.ScissorEnd()
+	menu.ScissorEnd()
 }
 
 func (s *sceneSavestates) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+	w, h := menu.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 
@@ -186,7 +186,7 @@ func (s *sceneSavestates) drawHintBar() {
 		stackHintRight(&rstack, a, "Load", h)
 	}
 	stackHintRight(&rstack, b, "Back", h)
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		stackHintRight(&rstack, guide, "Resume", h)
 	}
 }

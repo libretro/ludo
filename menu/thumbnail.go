@@ -79,7 +79,7 @@ func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scal
 		}
 	}
 
-	vid.DrawThumbnail(list.children[i].thumbnail, x, y, w, h, scale, 0.07, c)
+	menu.DrawThumbnail(list.children[i].thumbnail, x, y, w, h, scale, 0.07, c)
 }
 
 // Draws a thumbnail in the savestates scene.
@@ -90,7 +90,7 @@ func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale f
 		}
 	}
 
-	vid.DrawThumbnail(list.children[i].thumbnail, x, y, w, h, scale, 0, c)
+	menu.DrawThumbnail(list.children[i].thumbnail, x, y, w, h, scale, 0, c)
 }
 
 func freeThumbnail(list *entry, i int) {

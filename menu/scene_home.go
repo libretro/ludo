@@ -211,7 +211,7 @@ func (s *sceneHome) segueNext() {
 
 func (s *sceneHome) update(dt float32) {
 	// Right
-	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight], func() {
+	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight] == 1, func() {
 		if s.xptrs[s.yptr] < len(s.children[s.yptr].children)-1 {
 			s.xptrs[s.yptr]++
 			audio.PlayEffect(audio.Effects["down"])
@@ -221,7 +221,7 @@ func (s *sceneHome) update(dt float32) {
 	})
 
 	// Left
-	repeatLeft(dt, input.NewState[0][libretro.DeviceIDJoypadLeft], func() {
+	repeatLeft(dt, input.NewState[0][libretro.DeviceIDJoypadLeft] == 1, func() {
 		if s.xptrs[s.yptr] > 0 {
 			s.xptrs[s.yptr]--
 			audio.PlayEffect(audio.Effects["up"])
@@ -231,7 +231,7 @@ func (s *sceneHome) update(dt float32) {
 	})
 
 	// Down
-	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown], func() {
+	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown] == 1, func() {
 		if s.yptr < len(s.children)-1 {
 			s.yptr++
 			audio.PlayEffect(audio.Effects["down"])
@@ -241,7 +241,7 @@ func (s *sceneHome) update(dt float32) {
 	})
 
 	// Up
-	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp], func() {
+	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp] == 1, func() {
 		if s.yptr > 0 {
 			s.yptr--
 			audio.PlayEffect(audio.Effects["up"])
@@ -256,7 +256,7 @@ func (s *sceneHome) update(dt float32) {
 	})
 
 	// OK
-	if input.Released[0][libretro.DeviceIDJoypadA] {
+	if input.Released[0][libretro.DeviceIDJoypadA] == 1 {
 		if s.children[s.yptr].children[s.xptrs[s.yptr]].callbackOK != nil {
 			audio.PlayEffect(audio.Effects["ok"])
 			s.segueNext()
@@ -265,7 +265,7 @@ func (s *sceneHome) update(dt float32) {
 	}
 
 	// Cancel
-	if input.Released[0][libretro.DeviceIDJoypadB] {
+	if input.Released[0][libretro.DeviceIDJoypadB] == 1 {
 		if len(menu.stack) > 1 {
 			audio.PlayEffect(audio.Effects["cancel"])
 			menu.stack[len(menu.stack)-2].segueBack()
@@ -279,8 +279,8 @@ func (s sceneHome) render() {
 	for j, ve := range s.children {
 		ve := ve
 
-		vid.BoldFont.SetColor(blue.Alpha(ve.labelAlpha * s.alpha))
-		vid.BoldFont.Printf(
+		menu.BoldFont.SetColor(blue.Alpha(ve.labelAlpha * s.alpha))
+		menu.BoldFont.Printf(
 			96*menu.ratio,
 			s.y*menu.ratio+230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
 			0.5*menu.ratio, ve.label)
@@ -308,7 +308,7 @@ func (s sceneHome) render() {
 
 			if menu.focus == 2 && j == s.yptr && i == s.xptrs[s.yptr] {
 				blink := float32(math.Cos(menu.t))
-				vid.DrawImage(
+				menu.DrawImage(
 					menu.icons["selection"],
 					x*menu.ratio-8*menu.ratio,
 					y*menu.ratio-8*menu.ratio,
@@ -324,21 +324,21 @@ func (s sceneHome) render() {
 				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
 				1, white.Alpha(e.iconAlpha*s.alpha))
 
-			vid.DrawImage(
+			menu.DrawImage(
 				menu.icons["border"],
 				x*menu.ratio,
 				y*menu.ratio,
 				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
 				1, 0.07, white.Alpha(e.iconAlpha*s.alpha))
 
-			vid.BoldFont.SetColor(black.Alpha(e.labelAlpha * s.alpha))
-			vid.BoldFont.Printf(
+			menu.BoldFont.SetColor(black.Alpha(e.labelAlpha * s.alpha))
+			menu.BoldFont.Printf(
 				(x+672+32)*menu.ratio,
 				(y+360)*menu.ratio,
 				0.7*menu.ratio, e.label)
 
-			vid.BoldFont.SetColor(mediumGrey.Alpha(e.labelAlpha * s.alpha))
-			vid.BoldFont.Printf(
+			menu.BoldFont.SetColor(mediumGrey.Alpha(e.labelAlpha * s.alpha))
+			menu.BoldFont.Printf(
 				(x+672+32)*menu.ratio,
 				(y+430)*menu.ratio,
 				0.5*menu.ratio, e.subLabel)
@@ -346,10 +346,10 @@ func (s sceneHome) render() {
 			stack := (x + 672 + 32) * menu.ratio
 			for _, tag := range e.tags {
 				if _, ok := menu.icons[tag]; ok {
-					vid.DrawRect(stack-1*menu.ratio, (y+500-35)*menu.ratio-1*menu.ratio,
+					menu.DrawRect(stack-1*menu.ratio, (y+500-35)*menu.ratio-1*menu.ratio,
 						48*menu.ratio+2*menu.ratio, 35*menu.ratio+2*menu.ratio, 0.22,
 						mediumGrey.Alpha(e.labelAlpha*s.alpha))
-					vid.DrawImage(
+					menu.DrawImage(
 						menu.icons[tag],
 						stack, (y+500-35)*menu.ratio,
 						48*menu.ratio, 35*menu.ratio, 1.0, 0.2,
@@ -363,9 +363,9 @@ func (s sceneHome) render() {
 }
 
 func (s sceneHome) drawHintBar() {
-	w, h := vid.Window.GetFramebufferSize()
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
-	vid.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+	w, h := menu.Window.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
 
 	arrows, _, _, a, b, _, _, _, _, guide := hintIcons()
 
@@ -374,7 +374,7 @@ func (s sceneHome) drawHintBar() {
 	stackHintLeft(&lstack, arrows, "Navigate", h)
 	stackHintRight(&rstack, a, "Run", h)
 	stackHintRight(&rstack, b, "Back", h)
-	if state.Global.CoreRunning {
+	if state.CoreRunning {
 		stackHintRight(&rstack, guide, "Resume", h)
 	}
 }
