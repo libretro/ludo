@@ -1,6 +1,9 @@
 package menu
 
 import (
+	"fmt"
+
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
 )
 
@@ -13,24 +16,44 @@ func buildCoreDiscControl() Scene {
 	list.label = "Core Disc Control"
 
 	list.children = append(list.children, entry{
-		label: "Eject State",
+		label: "Disc State",
 		icon:  "subsetting",
 		stringValue: func() string {
 			if state.Core.DiskControlCallback.GetEjectState() {
-				return "True"
+				return "Ejected"
 			}
-			return "False"
+			return "Inserted"
 		},
 	})
 
 	if !state.Core.DiskControlCallback.GetEjectState() {
 		list.children = append(list.children, entry{
 			label: "Eject Disc",
-			icon:  "subsetting",
+			icon:  "close",
 			callbackOK: func() {
 				state.Core.DiskControlCallback.SetEjectState(true)
+				menu.stack[len(menu.stack)-1] = buildCoreDiscControl()
+				menu.tweens.FastForward()
+				ntf.DisplayAndLog(ntf.Success, "Menu", "Disc Ejected.")
 			},
 		})
+
+		list.children = append(list.children, entry{
+			label: "Num Images",
+			icon:  "subsetting",
+			stringValue: func() string {
+				return fmt.Sprintf("%d", state.Core.DiskControlCallback.GetNumImages())
+			},
+		})
+
+		list.children = append(list.children, entry{
+			label: "Image Index",
+			icon:  "subsetting",
+			stringValue: func() string {
+				return fmt.Sprintf("%d", state.Core.DiskControlCallback.GetImageIndex())
+			},
+		})
+
 	}
 
 	list.segueMount()
