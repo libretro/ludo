@@ -102,6 +102,26 @@ void* bridge_retro_get_memory_data(void *f, unsigned id) {
 	return ((void* (*)(unsigned))f)(id);
 }
 
+void bridge_retro_set_eject_state(retro_set_eject_state_t f, bool state) {
+	f(state);
+}
+
+bool bridge_retro_get_eject_state(retro_get_eject_state_t f) {
+	return ((bool (*)())f)();
+}
+
+unsigned bridge_retro_get_image_index(retro_get_image_index_t f) {
+	return ((unsigned (*)())f)();
+}
+
+void bridge_retro_set_image_index(retro_set_image_index_t f, unsigned index) {
+	f(index);
+}
+
+unsigned bridge_retro_get_num_images(retro_get_num_images_t f) {
+	return ((unsigned (*)())f)();
+}
+
 bool coreEnvironment_cgo(unsigned cmd, void *data) {
 	bool coreEnvironment(unsigned, void*);
 	return coreEnvironment(cmd, data);
