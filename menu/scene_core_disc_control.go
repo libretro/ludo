@@ -15,46 +15,31 @@ func buildCoreDiscControl() Scene {
 	var list sceneCoreDiscControl
 	list.label = "Core Disc Control"
 
-	list.children = append(list.children, entry{
-		label: "Disc State",
-		icon:  "subsetting",
-		stringValue: func() string {
-			if state.Core.DiskControlCallback.GetEjectState() {
-				return "Ejected"
-			}
-			return "Inserted"
-		},
-	})
-
-	if !state.Core.DiskControlCallback.GetEjectState() {
+	for i := uint(0); i < state.Core.DiskControlCallback.GetNumImages(); i++ {
+		index := i
 		list.children = append(list.children, entry{
-			label: "Eject Disc",
-			icon:  "close",
+			label: fmt.Sprintf("Disc %d", index+1),
+			icon:  "subsetting",
+			stringValue: func() string {
+				if index == state.Core.DiskControlCallback.GetImageIndex() {
+					return "Active"
+				} else {
+					return ""
+				}
+			},
 			callbackOK: func() {
+				if index == state.Core.DiskControlCallback.GetImageIndex() {
+					return
+				}
 				state.Core.DiskControlCallback.SetEjectState(true)
-				menu.stack[len(menu.stack)-1] = buildCoreDiscControl()
-				menu.tweens.FastForward()
-				ntf.DisplayAndLog(ntf.Success, "Menu", "Disc Ejected.")
+				state.Core.DiskControlCallback.SetImageIndex(index)
+				state.Core.DiskControlCallback.SetEjectState(false)
+				ntf.DisplayAndLog(ntf.Success, "Menu", "Switched to disk %d.", index+1)
+				state.MenuActive = false
 			},
 		})
-
-		list.children = append(list.children, entry{
-			label: "Num Images",
-			icon:  "subsetting",
-			stringValue: func() string {
-				return fmt.Sprintf("%d", state.Core.DiskControlCallback.GetNumImages())
-			},
-		})
-
-		list.children = append(list.children, entry{
-			label: "Image Index",
-			icon:  "subsetting",
-			stringValue: func() string {
-				return fmt.Sprintf("%d", state.Core.DiskControlCallback.GetImageIndex())
-			},
-		})
-
 	}
+	//}
 
 	list.segueMount()
 
