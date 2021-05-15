@@ -37,6 +37,8 @@ void bridge_retro_audio_callback(retro_audio_callback_t f);
 void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
 size_t bridge_retro_get_memory_size(void *f, unsigned id);
 void* bridge_retro_get_memory_data(void *f, unsigned id);
+void bridge_retro_set_eject_state(retro_set_eject_state_t f, bool state);
+bool bridge_retro_get_eject_state(retro_get_eject_state_t f);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -846,4 +848,21 @@ func (core *Core) GetMemorySize(id uint32) uint {
 // See memory constants.
 func (core *Core) GetMemoryData(id uint32) unsafe.Pointer {
 	return C.bridge_retro_get_memory_data(core.symRetroGetMemoryData, C.unsigned(id))
+}
+
+type DiskControlCallback struct {
+	SetEjectState func(bool)
+	GetEjectState func() bool
+}
+
+func (core *Core) SetDiskControlCallback(data unsafe.Pointer) {
+	c := *(*C.struct_retro_disk_control_callback)(data)
+	dcc := &DiskControlCallback{}
+	dcc.SetEjectState = func(state bool) {
+		C.bridge_retro_set_eject_state(c.set_eject_state, C.bool(state))
+	}
+	dcc.GetEjectState = func() bool {
+		return bool(C.bridge_retro_get_eject_state(c.get_eject_state))
+	}
+	core.DiskControlCallback = dcc
 }

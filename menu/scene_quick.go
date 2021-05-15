@@ -65,6 +65,17 @@ func buildQuickMenu() Scene {
 		},
 	})
 
+	if state.Core.DiskControlCallback != nil {
+		list.children = append(list.children, entry{
+			label: "Disc Control",
+			icon:  "core-disk-options",
+			callbackOK: func() {
+				list.segueNext()
+				menu.Push(buildCoreDiscControl())
+			},
+		})
+	}
+
 	list.segueMount()
 
 	return &list

@@ -102,6 +102,14 @@ void* bridge_retro_get_memory_data(void *f, unsigned id) {
 	return ((void* (*)(unsigned))f)(id);
 }
 
+void bridge_retro_set_eject_state(retro_set_eject_state_t f, bool state) {
+	f(state);
+}
+
+bool bridge_retro_get_eject_state(retro_get_eject_state_t f) {
+	return ((bool (*)())f)();
+}
+
 bool coreEnvironment_cgo(unsigned cmd, void *data) {
 	bool coreEnvironment(unsigned, void*);
 	return coreEnvironment(cmd, data);
