@@ -124,7 +124,7 @@ func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) 
 
 	for p := range analogState {
 		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
-		if len(axisState) >= 1 {
+		if len(axisState) > 1 {
 			analogState[p][0] = floatToAnalog(axisState[0])
 			analogState[p][1] = floatToAnalog(axisState[1])
 		}
