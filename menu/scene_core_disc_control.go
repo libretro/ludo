@@ -23,9 +23,8 @@ func buildCoreDiscControl() Scene {
 			stringValue: func() string {
 				if index == state.Core.DiskControlCallback.GetImageIndex() {
 					return "Active"
-				} else {
-					return ""
 				}
+				return ""
 			},
 			callbackOK: func() {
 				if index == state.Core.DiskControlCallback.GetImageIndex() {
@@ -39,7 +38,6 @@ func buildCoreDiscControl() Scene {
 			},
 		})
 	}
-	//}
 
 	list.segueMount()
 
