@@ -29,6 +29,10 @@ func init() {
 
 var frame = 0
 
+func checkAchievements() {
+	memoryPointer := state.Core.GetMemoryData(MemorySystemRAM)
+}
+
 func runLoop(vid *video.Video, m *menu.Menu) {
 	currTime := time.Now()
 	prevTime := time.Now()
@@ -51,6 +55,8 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 				}
 			}
 			vid.Render()
+			checkAchievements()
+
 			frame++
 			if frame%600 == 0 { // save sram about every 10 sec
 				savefiles.SaveSRAM()
