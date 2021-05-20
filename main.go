@@ -12,6 +12,7 @@ import (
 	"github.com/libretro/ludo/core"
 	"github.com/libretro/ludo/history"
 	"github.com/libretro/ludo/input"
+	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/menu"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
@@ -30,7 +31,18 @@ func init() {
 var frame = 0
 
 func checkAchievements() {
-	memoryPointer := state.Core.GetMemoryData(MemorySystemRAM)
+	systemRam := state.Core.GetMemoryData(libretro.MemorySystemRAM)
+
+	uint16 bcdScore := systemRam[0x5FA] << 8 | systemRam[0x5F9]
+	int actualScore := bcdScore & 0xF
+	bcdScore >>= 4
+	actualScore += (bcdScore & 0xF) * 10
+	bcdScore >>= 4
+	actualScore += (bcdScore & 0xF) * 100
+	bcdScore >>= 4
+	actualScore += (bcdScore & 0xF) * 1000
+
+	actualScore *= 100;
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
