@@ -60,6 +60,7 @@ func defaultSettings() Settings {
 			"Nintendo - Game Boy Advance":                    "mgba_libretro",
 			"Nintendo - Game Boy Color":                      "gambatte_libretro",
 			"Nintendo - Game Boy":                            "gambatte_libretro",
+			"Nintendo - Nintendo 64":                         "mupen64plus_next_libretro",
 			"Nintendo - Nintendo Entertainment System":       "fceumm_libretro",
 			"Nintendo - Nintendo DS":                         "melonds_libretro",
 			"Nintendo - Pokemon Mini":                        "pokemini_libretro",
