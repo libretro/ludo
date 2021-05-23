@@ -12,6 +12,10 @@ ifeq ($(ARCH), arm)
 	CORES := $(filter-out melonds,$(CORES))
 endif
 
+ifeq ($(OS), Windows)
+	CORES += mupen64plus_next
+endif
+
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
 DLLS = $(addprefix cores/, $(addsuffix _libretro.dll,$(CORES)))
 SOBJS = $(addprefix cores/, $(addsuffix _libretro.so,$(CORES)))
