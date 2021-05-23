@@ -189,7 +189,7 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		return NewState[port][id]
 	}
 	if device == libretro.DeviceAnalog {
-		if id > uint(libretro.DeviceIDAnalogY) {
+		if id > 1 || index > 1 {
 			// invalid
 			return 0
 		}
