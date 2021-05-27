@@ -47,9 +47,13 @@ func checkAchievements() {
 	bcdScore >>= 4
 	actualScore += (bcdScore & 0xF) * 1000
 
+<<<<<<< HEAD
 	actualScore *= 100
 
 	fmt.Printf("Score is: %d\n", actualScore)
+=======
+	actualScore *= 100;
+>>>>>>> 3fbfa13e78a33b4ef5c962fd086d073d17d22eb8
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
