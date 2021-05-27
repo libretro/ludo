@@ -2,10 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"runtime"
 	"time"
+	"unsafe"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/audio"
@@ -31,10 +33,13 @@ func init() {
 var frame = 0
 
 func checkAchievements() {
-	systemRam := state.Core.GetMemoryData(libretro.MemorySystemRAM)
+	systemRamPointer := state.Core.GetMemoryData(libretro.MemorySystemRAM)
 
-	uint16 bcdScore := systemRam[0x5FA] << 8 | systemRam[0x5F9]
-	int actualScore := bcdScore & 0xF
+	// Micromages - This is where the score is stored, at 0x5FA and 0x5F9
+	var bcdScore uint16 = (uint16)(*(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0x5FA))) << 8)
+	bcdScore |= (uint16)(*(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0x5F9))))
+
+	var actualScore = bcdScore & 0xF
 	bcdScore >>= 4
 	actualScore += (bcdScore & 0xF) * 10
 	bcdScore >>= 4
@@ -42,7 +47,9 @@ func checkAchievements() {
 	bcdScore >>= 4
 	actualScore += (bcdScore & 0xF) * 1000
 
-	actualScore *= 100;
+	actualScore *= 100
+
+	fmt.Printf("Score is: %d\n", actualScore)
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
