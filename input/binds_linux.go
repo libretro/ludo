@@ -11,11 +11,14 @@ var joyBinds = map[string]joybinds{
 	"Sony PLAYSTATION(R)3 Controller":                    ds3JoyBinds,
 	"SHANWAN PS3 GamePad":                                ds3JoyBinds,
 	"8Bitdo NES30 Pro   8Bitdo NES30 Pro":                nes30proJoyBinds,
+	"8Bitdo SN30 Pro":                                    snsf30proJoyBinds,
+	"8Bitdo SF30 Pro   8Bitdo SN30 Pro":                  snsf30proJoyBinds,
 	"SFC30              SFC30 Joystick":                  sfc30JoyBinds,
-	"SNES30             SNES30 Joy    ":                  sfc30JoyBinds,
+	"SNES30             SNES30 Joy":                      sfc30JoyBinds,
+	"USB,2-axis 8-button gamepad":                        iBuffaloClassicBinds,
 }
 
-// Joypad bindings fox Xbox360 pad on Linux
+// Joypad bindings for Xbox360 pad on Linux
 var xbox360JoyBinds = joybinds{
 	bind{btn, 0, 0, 0}:    libretro.DeviceIDJoypadB,
 	bind{btn, 1, 0, 0}:    libretro.DeviceIDJoypadA,
@@ -36,7 +39,7 @@ var xbox360JoyBinds = joybinds{
 	bind{axis, 5, 1, 0.5}: libretro.DeviceIDJoypadR2,
 }
 
-// Joypad bindings fox Xbox One pad on Linux
+// Joypad bindings for Xbox One pad on Linux
 var xboxOneJoyBinds = joybinds{
 	bind{btn, 0, 0, 0}:    libretro.DeviceIDJoypadB,
 	bind{btn, 1, 0, 0}:    libretro.DeviceIDJoypadA,
@@ -57,7 +60,7 @@ var xboxOneJoyBinds = joybinds{
 	bind{axis, 5, 1, 0.5}: libretro.DeviceIDJoypadR2,
 }
 
-// Joypad bindings fox DualShock 4 pad on Linux
+// Joypad bindings for DualShock 4 pad on Linux
 var ds4JoyBinds = joybinds{
 	bind{btn, 0, 0, 0}:  libretro.DeviceIDJoypadB,
 	bind{btn, 1, 0, 0}:  libretro.DeviceIDJoypadA,
@@ -78,7 +81,7 @@ var ds4JoyBinds = joybinds{
 	bind{btn, 15, 0, 0}: libretro.DeviceIDJoypadDown,
 }
 
-// Joypad bindings fox DualShock 3 pad on Linux
+// Joypad bindings for DualShock 3 pad on Linux
 var ds3JoyBinds = joybinds{
 	bind{btn, 0, 0, 0}:  libretro.DeviceIDJoypadB,
 	bind{btn, 1, 0, 0}:  libretro.DeviceIDJoypadA,
@@ -99,7 +102,7 @@ var ds3JoyBinds = joybinds{
 	bind{btn, 16, 0, 0}: libretro.DeviceIDJoypadRight,
 }
 
-// Joypad bindings fox the 8BITDO NES30 PRO GamePad (Wired) on Linux
+// Joypad bindings for the 8BITDO NES30 PRO GamePad (Wired) on Linux
 var nes30proJoyBinds = joybinds{
 	bind{btn, 0, 0, 0}:  libretro.DeviceIDJoypadA,
 	bind{btn, 1, 0, 0}:  libretro.DeviceIDJoypadB,
@@ -119,7 +122,27 @@ var nes30proJoyBinds = joybinds{
 	bind{btn, 15, 0, 0}: libretro.DeviceIDJoypadUp,
 }
 
-// Joypad bindings fox the 8BITDO SFC30 pad (Wired) on Linux
+// Joypad bindings for the 8Bitdo SF30 Pro and SN30 Pro GamePad on Linux
+var snsf30proJoyBinds = joybinds{
+	bind{btn, 0, 0, 0}:  libretro.DeviceIDJoypadA,
+	bind{btn, 1, 0, 0}:  libretro.DeviceIDJoypadB,
+	bind{btn, 3, 0, 0}:  libretro.DeviceIDJoypadX,
+	bind{btn, 4, 0, 0}:  libretro.DeviceIDJoypadY,
+	bind{btn, 6, 0, 0}:  libretro.DeviceIDJoypadL,
+	bind{btn, 7, 0, 0}:  libretro.DeviceIDJoypadR,
+	bind{btn, 8, 0, 0}:  libretro.DeviceIDJoypadL2,
+	bind{btn, 9, 0, 0}:  libretro.DeviceIDJoypadR2,
+	bind{btn, 10, 0, 0}: libretro.DeviceIDJoypadSelect,
+	bind{btn, 11, 0, 0}: libretro.DeviceIDJoypadStart,
+	bind{btn, 13, 0, 0}: libretro.DeviceIDJoypadL3,
+	bind{btn, 14, 0, 0}: libretro.DeviceIDJoypadR3,
+	bind{btn, 16, 0, 0}: libretro.DeviceIDJoypadUp,
+	bind{btn, 17, 0, 0}: libretro.DeviceIDJoypadRight,
+	bind{btn, 18, 0, 0}: libretro.DeviceIDJoypadDown,
+	bind{btn, 19, 0, 0}: libretro.DeviceIDJoypadLeft,
+}
+
+// Joypad bindings for the 8BITDO SFC30 pad (Wired) on Linux
 var sfc30JoyBinds = joybinds{
 	bind{btn, 0, 0, 0}:      libretro.DeviceIDJoypadA,
 	bind{btn, 1, 0, 0}:      libretro.DeviceIDJoypadB,
@@ -134,3 +157,20 @@ var sfc30JoyBinds = joybinds{
 	bind{axis, 0, 1, 0.5}:   libretro.DeviceIDJoypadRight,
 	bind{axis, 1, 1, 0.5}:   libretro.DeviceIDJoypadDown,
 }
+
+// Joypad bindings for the iBuffalo Classic USB Gamepad (Wired) on Linux
+var iBuffaloClassicBinds = joybinds{
+	bind{btn, 0, 0, 0}:      libretro.DeviceIDJoypadA,
+	bind{btn, 1, 0, 0}:      libretro.DeviceIDJoypadB,
+	bind{btn, 2, 0, 0}:      libretro.DeviceIDJoypadX,
+	bind{btn, 3, 0, 0}:      libretro.DeviceIDJoypadY,
+	bind{btn, 4, 0, 0}:      libretro.DeviceIDJoypadL,
+	bind{btn, 5, 0, 0}:      libretro.DeviceIDJoypadR,
+	bind{btn, 6, 0, 0}:      libretro.DeviceIDJoypadSelect,
+	bind{btn, 7, 0, 0}:      libretro.DeviceIDJoypadStart,
+	bind{axis, 0, -1, -0.5}: libretro.DeviceIDJoypadLeft,
+	bind{axis, 1, -1, -0.5}: libretro.DeviceIDJoypadUp,
+	bind{axis, 0, 1, 0.5}:   libretro.DeviceIDJoypadRight,
+	bind{axis, 1, 1, 0.5}:   libretro.DeviceIDJoypadDown,
+}
+

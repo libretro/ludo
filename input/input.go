@@ -9,6 +9,7 @@ import (
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
+	"strings"
 )
 
 // MaxPlayers is the maximum number of players to poll input for
@@ -60,10 +61,11 @@ const (
 func joystickCallback(joy glfw.Joystick, event glfw.PeripheralEvent) {
 	switch event {
 	case glfw.Connected:
+		name := strings.TrimSpace(glfw.Joystick.GetName(joy))
 		if HasBinding(joy) {
-			ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.Joystick.GetName(joy))
+			ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, name)
 		} else {
-			ntf.DisplayAndLog(ntf.Warning, "Input", "Joystick #%d plugged: %s but not configured.", joy, glfw.Joystick.GetName(joy))
+			ntf.DisplayAndLog(ntf.Warning, "Input", "Joystick #%d plugged: %s but not configured.", joy, name)
 		}
 	case glfw.Disconnected:
 		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d unplugged.", joy)
@@ -89,7 +91,7 @@ func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) 
 	for p := range state {
 		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
 		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
-		name := glfw.Joystick.GetName(glfw.Joystick(p))
+		name := strings.TrimSpace(glfw.Joystick.GetName(glfw.Joystick(p)))
 		jb := joyBinds[name]
 		if len(buttonState) > 0 {
 			for k, v := range jb {
@@ -202,7 +204,7 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 
 // HasBinding returns true if the joystick has an autoconfig binding
 func HasBinding(joy glfw.Joystick) bool {
-	name := glfw.Joystick.GetName(joy)
+	name := strings.TrimSpace(glfw.Joystick.GetName(joy))
 	_, ok := joyBinds[name]
 	return ok
 }
