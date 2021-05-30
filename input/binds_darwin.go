@@ -3,12 +3,13 @@ package input
 import "github.com/libretro/ludo/libretro"
 
 var joyBinds = map[string]joybinds{
-	"Xbox 360 Wired Controller":  xbox360JoyBinds,
-	"Xbox One Wired Controller":  xboxOneJoyBinds,
-	"Wireless Controller":        ds4JoyBinds,
-	"PLAYSTATION(R)3 Controller": ds3JoyBinds,
-	"8Bitdo NES30 Pro":           nes30proJoyBinds,
-	"SFC30 Joystick":             sfc30JoyBinds,
+	"Xbox 360 Wired Controller":       xbox360JoyBinds,
+	"Xbox One Wired Controller":       xboxOneJoyBinds,
+	"Wireless Controller":             ds4JoyBinds,
+	"DUALSHOCK 4 Wireless Controller": ds4JoyBinds,
+	"PLAYSTATION(R)3 Controller":      ds3JoyBinds,
+	"8Bitdo NES30 Pro":                nes30proJoyBinds,
+	"SFC30 Joystick":                  sfc30JoyBinds,
 }
 
 // Joypad bindings fox Xbox 360 pad on OSX
@@ -68,7 +69,6 @@ var ds4JoyBinds = joybinds{
 	bind{btn, 10, 0, 0}: libretro.DeviceIDJoypadL3,
 	bind{btn, 11, 0, 0}: libretro.DeviceIDJoypadR3,
 	bind{btn, 12, 0, 0}: ActionMenuToggle,
-	bind{btn, 13, 0, 0}: ActionFullscreenToggle,
 	bind{btn, 14, 0, 0}: libretro.DeviceIDJoypadUp,
 	bind{btn, 15, 0, 0}: libretro.DeviceIDJoypadRight,
 	bind{btn, 16, 0, 0}: libretro.DeviceIDJoypadDown,

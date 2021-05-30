@@ -7,6 +7,7 @@ var joyBinds = map[string]joybinds{
 	"Microsoft X-Box One S pad":                          xboxOneJoyBinds,
 	"Sony Computer Entertainment Wireless Controller":    ds4JoyBinds,
 	"Sony Interactive Entertainment Wireless Controller": ds4JoyBinds,
+	"Wireless Controller":                                ds4JoyBinds,
 	"Sony PLAYSTATION(R)3 Controller":                    ds3JoyBinds,
 	"SHANWAN PS3 GamePad":                                ds3JoyBinds,
 	"8Bitdo NES30 Pro   8Bitdo NES30 Pro":                nes30proJoyBinds,

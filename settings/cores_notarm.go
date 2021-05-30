@@ -2,4 +2,4 @@
 
 package settings
 
-var playstationCore = "duckstation_libretro"
+var playstationCore = "swanstation_libretro"
