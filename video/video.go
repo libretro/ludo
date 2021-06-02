@@ -25,6 +25,7 @@ type Video struct {
 	defaultProgram       uint32 // default program used for the game quad
 	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
 	zfastCRTProgram      uint32 // fast CRT program used for the game quad
+	zfastLCDProgram      uint32 // fast LCD program used for the game quad
 	roundedProgram       uint32 // program to draw rectangles with rounded corners
 	borderProgram        uint32 // program to draw rectangles borders
 	circleProgram        uint32 // program to draw textured circles
@@ -139,6 +140,11 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
+	video.zfastLCDProgram, err = newProgram(vertexShader, zfastLCDFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
 	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
 	if err != nil {
 		panic(err)
@@ -211,6 +217,7 @@ func (video *Video) Configure(fullscreen bool) {
 // Smooth: linear
 // Pixel Perfect: sharp-bilinear
 // CRT: zfast-crt
+// LCD: zfast-lcd
 func (video *Video) UpdateFilter(filter string) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	switch filter {
@@ -226,6 +233,10 @@ func (video *Video) UpdateFilter(filter string) {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.zfastCRTProgram
+	case "LCD":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.zfastLCDProgram
 	case "Raw":
 		fallthrough
 	default:
