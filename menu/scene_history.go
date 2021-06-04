@@ -108,6 +108,7 @@ func removeHistoryEntry(s []entry, game history.Game) []entry {
 func deleteHistoryEntry(list *sceneHistory, game history.Game) {
 	history.List = removeHistoryGame(history.List, game)
 	history.Save()
+	refreshTabs()
 	list.children = removeHistoryEntry(list.children, game)
 
 	if len(history.List) == 0 {
