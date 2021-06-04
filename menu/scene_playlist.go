@@ -124,7 +124,7 @@ func loadPlaylistEntry(list *scenePlaylist, playlist string, game playlists.Game
 	}
 }
 
-func removeGame(s []playlists.Game, game playlists.Game) []playlists.Game {
+func removePlaylistGame(s []playlists.Game, game playlists.Game) []playlists.Game {
 	l := []playlists.Game{}
 	for _, g := range s {
 		if g.Path != game.Path {
@@ -134,7 +134,7 @@ func removeGame(s []playlists.Game, game playlists.Game) []playlists.Game {
 	return l
 }
 
-func removeEntry(s []entry, game playlists.Game) []entry {
+func removePlaylistEntry(s []entry, game playlists.Game) []entry {
 	l := []entry{}
 	for _, g := range s {
 		if g.path != game.Path {
@@ -146,9 +146,9 @@ func removeEntry(s []entry, game playlists.Game) []entry {
 }
 
 func deletePlaylistEntry(list *scenePlaylist, path string, game playlists.Game) {
-	playlists.Playlists[path] = removeGame(playlists.Playlists[path], game)
-	playlists.SavePlaylist(path)
-	list.children = removeEntry(list.children, game)
+	playlists.Playlists[path] = removePlaylistGame(playlists.Playlists[path], game)
+	playlists.Save(path)
+	list.children = removePlaylistEntry(list.children, game)
 
 	if len(playlists.Playlists[path]) == 0 {
 		list.children = append(list.children, entry{

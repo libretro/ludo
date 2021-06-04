@@ -99,7 +99,8 @@ func Count(path string) int {
 	return len(Playlists[filepath.Clean(path)])
 }
 
-func SavePlaylist(path string) {
+// Save will write a playlist to the filesystem
+func Save(path string) {
 	f, _ := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, 0644)
 	defer f.Close()
 	for _, game := range Playlists[path] {
