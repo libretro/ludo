@@ -147,6 +147,7 @@ func removeEntry(s []entry, game playlists.Game) []entry {
 
 func deletePlaylistEntry(list *scenePlaylist, path string, game playlists.Game) {
 	playlists.Playlists[path] = removeGame(playlists.Playlists[path], game)
+	playlists.SavePlaylist(path)
 	list.children = removeEntry(list.children, game)
 
 	if len(playlists.Playlists[path]) == 0 {
