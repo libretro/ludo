@@ -1,3 +1,4 @@
+// Package history manages the list of recently played games
 package history
 
 import (
@@ -13,8 +14,8 @@ import (
 type Game struct {
 	Path      string // Absolute path of the game on the filesystem
 	Name      string // Human readable name of the game, comes from the RDB
-	System    string
-	CorePath  string
+	System    string // Name of the game console
+	CorePath  string // Absolute path to the libretro core
 	Savestate string // Absolute path of the last savestate on this game
 }
 

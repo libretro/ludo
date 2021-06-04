@@ -8,12 +8,16 @@ import (
 
 type sceneDialog struct {
 	entry
+	title, line1, line2 string
 }
 
-func buildDialog(callbackOK func()) Scene {
+func buildYesNoDialog(title, line1, line2 string, callbackOK func()) Scene {
 	var list sceneDialog
-	list.label = "Exit Dialog"
+	list.label = "Confirm Dialog"
 	list.callbackOK = callbackOK
+	list.title = title
+	list.line1 = line1
+	list.line2 = line2
 	audio.PlayEffect(audio.Effects["notice"])
 	return &list
 }
@@ -35,6 +39,8 @@ func (s *sceneDialog) update(dt float32) {
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] == 1 {
 		audio.PlayEffect(audio.Effects["ok"])
+		menu.stack[len(menu.stack)-2].segueBack()
+		menu.stack = menu.stack[:len(menu.stack)-1]
 		s.callbackOK()
 	}
 
@@ -65,16 +71,13 @@ func (s *sceneDialog) render() {
 	)
 
 	menu.Font.SetColor(orange)
-	msg1 := "A game is currently running."
-	lw1 := menu.Font.Width(0.7*menu.ratio, msg1)
-	menu.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 0.7*menu.ratio, msg1)
+	lw1 := menu.Font.Width(0.7*menu.ratio, s.title)
+	menu.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 0.7*menu.ratio, s.title)
 	menu.Font.SetColor(black)
-	msg2 := "If you have not saved yet, your progress will be lost."
-	lw2 := menu.Font.Width(0.5*menu.ratio, msg2)
-	menu.Font.Printf(fw/2-lw2/2, fh/2-30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg2)
-	msg3 := "Do you want to exit Ludo anyway?"
-	lw3 := menu.Font.Width(0.5*menu.ratio, msg3)
-	menu.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, msg3)
+	lw2 := menu.Font.Width(0.5*menu.ratio, s.line1)
+	menu.Font.Printf(fw/2-lw2/2, fh/2-30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, s.line1)
+	lw3 := menu.Font.Width(0.5*menu.ratio, s.line2)
+	menu.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, s.line2)
 
 	menu.Font.SetColor(darkGrey)
 

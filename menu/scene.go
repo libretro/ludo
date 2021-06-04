@@ -20,6 +20,7 @@ type entry struct {
 	tagAlpha        float32
 	subLabelAlpha   float32
 	callbackOK      func() // callback executed when user presses OK
+	callbackX       func() // callback executed when user presses X
 	value           func() interface{}
 	stringValue     func() string
 	widget          func(*entry) // widget draw callback used in settings
@@ -212,6 +213,33 @@ func genericRender(list *entry) {
 	}
 
 	menu.ScissorEnd()
+}
+
+// Displays a confirmation dialog before quitting
+func askQuitConfirmation(cb func()) {
+	if state.CoreRunning {
+		if !state.MenuActive {
+			state.MenuActive = true
+		}
+		menu.Push(buildYesNoDialog(
+			"Confirm before quitting",
+			"If you have not saved yet, your progress will be lost.",
+			"Do you want to exit Ludo anyway?", func() {
+				cb()
+			}))
+	} else {
+		cb()
+	}
+}
+
+// Displays a confirmation dialog before deleting a playlist entry
+func askDeleteConfirmation(cb func()) {
+	menu.Push(buildYesNoDialog(
+		"Confirm before deleting",
+		"You are about to delete a playlist entry.",
+		"The game won't be deleted from your hard drive.", func() {
+			cb()
+		}))
 }
 
 func genericDrawHintBar() {

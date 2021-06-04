@@ -80,7 +80,7 @@ func buildMainMenu() Scene {
 			label: "Reboot",
 			icon:  "subsetting",
 			callbackOK: func() {
-				askConfirmation(func() { cleanReboot() })
+				askQuitConfirmation(func() { cleanReboot() })
 			},
 		})
 
@@ -88,7 +88,7 @@ func buildMainMenu() Scene {
 			label: "Shutdown",
 			icon:  "subsetting",
 			callbackOK: func() {
-				askConfirmation(func() { cleanShutdown() })
+				askQuitConfirmation(func() { cleanShutdown() })
 			},
 		})
 	} else {
@@ -96,7 +96,7 @@ func buildMainMenu() Scene {
 			label: "Quit",
 			icon:  "subsetting",
 			callbackOK: func() {
-				askConfirmation(func() {
+				askQuitConfirmation(func() {
 					menu.SetShouldClose(true)
 				})
 			},
@@ -145,20 +145,6 @@ func cleanReboot() {
 	core.UnloadGame()
 	if err := exec.Command("/usr/sbin/shutdown", "-r", "now").Run(); err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-	}
-}
-
-// Displays a confirmation dialog before performing an irreversible action
-func askConfirmation(cb func()) {
-	if state.CoreRunning {
-		if !state.MenuActive {
-			state.MenuActive = true
-		}
-		menu.Push(buildDialog(func() {
-			cb()
-		}))
-	} else {
-		cb()
 	}
 }
 
