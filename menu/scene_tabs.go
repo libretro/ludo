@@ -320,5 +320,9 @@ func (tabs sceneTabs) drawHintBar() {
 	}
 	stackHint(&stack, leftRight, "NAVIGATE", h)
 	stackHint(&stack, a, "OPEN", h)
-	stackHint(&stack, x, "DELETE", h)
+
+	list := menu.stack[0].Entry()
+	if list.children[list.ptr].callbackX != nil {
+		stackHint(&stack, x, "DELETE", h)
+	}
 }

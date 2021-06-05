@@ -236,8 +236,8 @@ func askQuitConfirmation(cb func()) {
 func askDeleteConfirmation(cb func()) {
 	menu.Push(buildYesNoDialog(
 		"Confirm before deleting",
-		"You are about to delete a playlist entry.",
-		"The game won't be deleted from your hard drive.", func() {
+		"You are about to delete a menu entry.",
+		"Games and game data won't be removed.", func() {
 			cb()
 		}))
 }

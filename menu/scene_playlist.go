@@ -272,5 +272,9 @@ func (s *scenePlaylist) drawHintBar() {
 	stackHint(&stack, upDown, "NAVIGATE", h)
 	stackHint(&stack, b, "BACK", h)
 	stackHint(&stack, a, "RUN", h)
-	stackHint(&stack, x, "DELETE", h)
+
+	list := menu.stack[len(menu.stack)-1].Entry()
+	if list.children[list.ptr].callbackX != nil {
+		stackHint(&stack, x, "DELETE", h)
+	}
 }
