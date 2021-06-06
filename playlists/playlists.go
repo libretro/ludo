@@ -99,6 +99,17 @@ func Count(path string) int {
 	return len(Playlists[filepath.Clean(path)])
 }
 
+// Save will write a playlist to the filesystem
+func Save(path string) {
+	f, _ := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, 0644)
+	defer f.Close()
+	for _, game := range Playlists[path] {
+		f.WriteString(game.Path + "\t")
+		f.WriteString(game.Name + "\t")
+		f.WriteString(strconv.FormatUint(uint64(game.CRC32), 16) + "\n")
+	}
+}
+
 // ShortName shortens the name of some game systems that are too long to be
 // displayed in the menu
 func ShortName(in string) string {
