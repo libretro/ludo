@@ -161,7 +161,7 @@ func deletePlaylist(path string) {
 		ntf.DisplayAndLog(ntf.Error, "Menu", "Could not delete playlist: %s", err.Error())
 		return
 	}
-	menu.stack[0].Entry().ptr += 1
+	menu.stack[0].Entry().ptr++
 	delete(playlists.Playlists, path)
 	refreshTabs()
 }
