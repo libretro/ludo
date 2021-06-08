@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -60,6 +61,7 @@ func buildSavestates() Scene {
 					ntf.DisplayAndLog(ntf.Success, "Menu", "State loaded.")
 				}
 			},
+			callbackX: func() { askDeleteSavestateConfirmation(func() { deleteSavestateEntry(&list, path) }) },
 		})
 	}
 
@@ -86,6 +88,30 @@ func (s *sceneSavestates) segueBack() {
 
 func (s *sceneSavestates) update(dt float32) {
 	genericInput(&s.entry, dt)
+}
+
+func removeSavestateEntry(s []entry, path string) []entry {
+	l := []entry{}
+	for _, e := range s {
+		if e.path != path {
+			l = append(l, e)
+		}
+	}
+
+	return l
+}
+
+func deleteSavestateEntry(list *sceneSavestates, path string) {
+	err := os.Remove(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", "Could not delete savestate: %s", err.Error())
+		return
+	}
+	list.children = removeSavestateEntry(list.children, path)
+	if list.ptr >= len(list.children) {
+		list.ptr = len(list.children) - 1
+	}
+	genericAnimate(&list.entry)
 }
 
 // Override rendering
@@ -140,7 +166,7 @@ func (s *sceneSavestates) drawHintBar() {
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 
-	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
+	_, upDown, _, a, b, x, _, _, _, guide := hintIcons()
 
 	var stack float32
 	if state.CoreRunning {
@@ -152,5 +178,10 @@ func (s *sceneSavestates) drawHintBar() {
 		stackHint(&stack, a, "SAVE", h)
 	} else {
 		stackHint(&stack, a, "LOAD", h)
+	}
+
+	list := menu.stack[len(menu.stack)-1].Entry()
+	if list.children[list.ptr].callbackX != nil {
+		stackHint(&stack, x, "DELETE", h)
 	}
 }

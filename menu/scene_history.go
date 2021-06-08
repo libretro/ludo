@@ -30,7 +30,7 @@ func buildHistory() Scene {
 			system:     game.System,
 			tags:       tags,
 			callbackOK: func() { loadHistoryEntry(&list, game) },
-			callbackX:  func() { askDeleteConfirmation(func() { deleteHistoryEntry(&list, game) }) },
+			callbackX:  func() { askDeleteGameConfirmation(func() { deleteHistoryEntry(&list, game) }) },
 		})
 	}
 

@@ -33,7 +33,7 @@ func buildPlaylist(path string) Scene {
 			tags:       tags,
 			icon:       utils.FileName(path) + "-content",
 			callbackOK: func() { loadPlaylistEntry(&list, list.label, game) },
-			callbackX:  func() { askDeleteConfirmation(func() { deletePlaylistEntry(&list, path, game) }) },
+			callbackX:  func() { askDeleteGameConfirmation(func() { deletePlaylistEntry(&list, path, game) }) },
 		})
 	}
 
