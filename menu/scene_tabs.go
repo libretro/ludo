@@ -149,7 +149,7 @@ func getPlaylists() []entry {
 			callbackOK: func() {
 				menu.Push(buildPlaylist(path))
 			},
-			callbackX: func() { askDeleteConfirmation(func() { deletePlaylist(path) }) },
+			callbackX: func() { askDeletePlaylistConfirmation(func() { deletePlaylist(path) }) },
 		})
 	}
 	return pls

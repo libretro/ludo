@@ -232,12 +232,32 @@ func askQuitConfirmation(cb func()) {
 	}
 }
 
-// Displays a confirmation dialog before deleting a playlist entry
-func askDeleteConfirmation(cb func()) {
+// Displays a confirmation dialog before deleting a playlist game entry
+func askDeleteGameConfirmation(cb func()) {
 	menu.Push(buildYesNoDialog(
 		"Confirm before deleting",
-		"You are about to delete a menu entry.",
+		"You are about to delete a game entry.",
 		"Games and game data won't be removed.", func() {
+			cb()
+		}))
+}
+
+// Displays a confirmation dialog before deleting a playlist
+func askDeletePlaylistConfirmation(cb func()) {
+	menu.Push(buildYesNoDialog(
+		"Confirm before deleting",
+		"You are about to delete a playlist.",
+		"Games and game data won't be removed.", func() {
+			cb()
+		}))
+}
+
+// Displays a confirmation dialog before deleting a savestate
+func askDeleteSavestateConfirmation(cb func()) {
+	menu.Push(buildYesNoDialog(
+		"Confirm before deleting",
+		"You are about to delete a savestate.",
+		"This action is irreversible.", func() {
 			cb()
 		}))
 }
