@@ -32,12 +32,28 @@ func init() {
 
 var frame = 0
 
-func checkAchievements() {
+// Micromage, getPlayer Score
+// playerIndex valid values
+// 0-3 : Player 1 to Player 4
+// 4 : Total Score
+func getScore(playerIndex int) uint16 {
 	systemRamPointer := state.Core.GetMemoryData(libretro.MemorySystemRAM)
 
-	// Micromages - This is where the score is stored, at 0x5FA and 0x5F9
-	var bcdScore uint16 = (uint16)(*(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0x5FA))) << 8)
-	bcdScore |= (uint16)(*(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0x5F9))))
+	// Micromages
+	// 0x5F5 (BYTE) is Player 1 (00-99)
+	// 0x5F6 (BYTE) is Player 2 (00-99)
+	// 0x5F7 (BYTE) is Player 3 (00-99)
+	// 0x5F8 (BYTE) is Player 4 (00-99)
+	// 0x5F9 (BYTE) contains the total score of the team
+
+	// 0x5FA (BYTE) is Player 1 Overflow
+	// 0x5FB (BYTE) is Player 2 Overflow
+	// 0x5FC (BYTE) is Player 3 Overflow
+	// 0x5FD (BYTE) is Player 4 Overflow
+	// 0x5FE (BYTE) is total score overflow
+
+	var bcdScore uint16 = (uint16)(*(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0x5FA+playerIndex))) << 8)
+	bcdScore |= (uint16)(*(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0x5F5+playerIndex))))
 
 	var actualScore = bcdScore & 0xF
 	bcdScore >>= 4
@@ -49,7 +65,15 @@ func checkAchievements() {
 
 	actualScore *= 100
 
-	fmt.Printf("Score is: %d\n", actualScore)
+	return actualScore
+}
+
+func checkAchievements() {
+	fmt.Printf("Player1: %d\n", getScore(0))
+	fmt.Printf("Player2: %d\n", getScore(1))
+	fmt.Printf("Player3: %d\n", getScore(2))
+	fmt.Printf("Player4: %d\n", getScore(3))
+	fmt.Printf("Total: %d\n", getScore(4))
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
