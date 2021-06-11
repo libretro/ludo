@@ -70,6 +70,7 @@ func defaultSettings() Settings {
 			"Sega - Game Gear":                               "genesis_plus_gx_libretro",
 			"Sega - Master System - Mark III":                "genesis_plus_gx_libretro",
 			"Sega - Mega Drive - Genesis":                    "genesis_plus_gx_libretro",
+			"Sega - Mega-CD - Sega CD":                       "genesis_plus_gx_libretro",
 			"Sega - PICO":                                    "picodrive_libretro",
 			"Sega - Saturn":                                  "mednafen_saturn_libretro",
 			"Sega - SG-1000":                                 "genesis_plus_gx_libretro",
