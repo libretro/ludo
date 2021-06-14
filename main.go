@@ -76,13 +76,39 @@ func getNumPlayers() uint8 {
 	return numPlayers + 1
 }
 
+// 0xA4 stores a timer that is used in the score screen.
+// We check if it is higher than 0 and if so, we assume we just reached the score screen
+// Note: This memory value is also used in the main menu and game over when the player is selecting options
+// so it will have false positives there.
+func isInScoreScreen() bool {
+	systemRamPointer := state.Core.GetMemoryData(libretro.MemorySystemRAM)
+	timer := *(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0xA4)))
+
+	return timer > 0
+}
+
+var inScoreScreenGlobal = false
+
+// Check if we just reached the score screen. This function will return true
+// only once. And it will return true again the next time *another* score screen
+// is reached.
+func justReachedScoreScreen() bool {
+	scoreScreenThisFrame := isInScoreScreen()
+	justReachedScoreScreen := scoreScreenThisFrame && !inScoreScreenGlobal
+	inScoreScreenGlobal = scoreScreenThisFrame
+
+	return justReachedScoreScreen
+}
+
 func checkAchievements() {
-	fmt.Printf("Player1: %d\n", getScore(0))
-	fmt.Printf("Player2: %d\n", getScore(1))
-	fmt.Printf("Player3: %d\n", getScore(2))
-	fmt.Printf("Player4: %d\n", getScore(3))
-	fmt.Printf("Total: %d\n", getScore(4))
-	fmt.Printf("Number of Players: %d\n", getNumPlayers())
+	if justReachedScoreScreen() {
+		fmt.Printf("Player1: %d\n", getScore(0))
+		fmt.Printf("Player2: %d\n", getScore(1))
+		fmt.Printf("Player3: %d\n", getScore(2))
+		fmt.Printf("Player4: %d\n", getScore(3))
+		fmt.Printf("Total: %d\n", getScore(4))
+		fmt.Printf("Number of Players: %d\n", getNumPlayers())
+	}
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
