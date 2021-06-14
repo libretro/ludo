@@ -68,12 +68,21 @@ func getScore(playerIndex int) uint16 {
 	return actualScore
 }
 
+// Micromages: Return the number of players playing
+func getNumPlayers() uint8 {
+	systemRamPointer := state.Core.GetMemoryData(libretro.MemorySystemRAM)
+	numPlayers := *(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0x803)))
+
+	return numPlayers + 1
+}
+
 func checkAchievements() {
 	fmt.Printf("Player1: %d\n", getScore(0))
 	fmt.Printf("Player2: %d\n", getScore(1))
 	fmt.Printf("Player3: %d\n", getScore(2))
 	fmt.Printf("Player4: %d\n", getScore(3))
 	fmt.Printf("Total: %d\n", getScore(4))
+	fmt.Printf("Numer of Players: %d\n", getNumPlayers())
 }
 
 func runLoop(vid *video.Video, m *menu.Menu) {
