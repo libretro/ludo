@@ -115,12 +115,14 @@ func tickScoreAchievement() bool {
 		} else if value > 0x80 {
 			MM_State = MM_ScoreScreen
 		}
-	case MM_GameOver: // Bug, if we go from GameOver, to Game, to GameOver again, without finishing a single level, it won't trigger again
+	case MM_GameOver:
 		if value == 0x80 {
 			MM_State = MM_EndGame
 			trigger = true
 		} else if value > 0x80 {
 			MM_State = MM_ScoreScreen
+		} else if value == 0 { // Bug: This will trigger too early when switching between 'Continue' and 'End'
+			MM_State = MM_Init
 		}
 	case MM_EndGame:
 		if value == 0x00 {
