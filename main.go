@@ -76,32 +76,74 @@ func getNumPlayers() uint8 {
 	return numPlayers + 1
 }
 
-// 0xA4 stores a timer that is used in the score screen.
-// We check if it is higher than 0 and if so, we assume we just reached the score screen
-// Note: This memory value is also used in the main menu and game over when the player is selecting options
-// so it will have false positives there.
-func isInScoreScreen() bool {
+// 0xA4 stores a timer that is used in the score screen and other screens
+// Value of 0x80 == End Score Screen
+// Value of 0xFF and going down toward 0 == Score Screen
+// Value of 0, 1, 2, 3, 4, 5, 6 or 7 == Player Select
+// Value of 08 == Game Over Screen
+// Two ways to obtain the Score Screen:
+// Check if the values are constantly going down
+// Check if the value is 0x80
+// Problem with game over screen is the user can toggle between 0x08 and 0x00
+// So the best solution here is to make a state machine
+
+const (
+	MM_Init        int = 0 // Initial/Unknown state
+	MM_GameOver    int = 1 // When in-game over screen
+	MM_EndGame     int = 2 // At the end of the game
+	MM_ScoreScreen int = 3 // In the score Screen
+)
+
+var MM_State = MM_Init
+
+// Tick the Score Achievement system of Micromage
+// Returns true if score achievement should be triggered
+func tickScoreAchievement() bool {
 	systemRamPointer := state.Core.GetMemoryData(libretro.MemorySystemRAM)
-	timer := *(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0xA4)))
+	value := *(*uint8)(unsafe.Pointer(uintptr(systemRamPointer) + uintptr(0xA4)))
 
-	return timer > 0
-}
+	trigger := false
 
-var inScoreScreenGlobal = false
+	switch MM_State {
+	case MM_Init:
+		if value == 0x80 {
+			MM_State = MM_EndGame
+			trigger = true
+		} else if value == 0x8 {
+			MM_State = MM_GameOver
+			trigger = true
+		} else if value > 0x80 {
+			MM_State = MM_ScoreScreen
+		}
+	case MM_GameOver:
+		if value == 0x80 {
+			MM_State = MM_EndGame
+			trigger = true
+		} else if value > 0x80 {
+			MM_State = MM_ScoreScreen
+		} else if value == 0 {
+			MM_State = MM_Init
+		}
+	case MM_EndGame:
+		if value == 0x00 {
+			MM_State = MM_Init
+		} else if value > 0x80 { // This shouldn't happen, but adding it here in case the FSM gets stuck
+			MM_State = MM_ScoreScreen
+		} else if value == 0x8 { // This shouldn't happen, but adding it here in case the FSM gets stuck
+			MM_State = MM_GameOver
+			trigger = true
+		}
+	case MM_ScoreScreen:
+		if value == 0x00 {
+			MM_State = MM_Init
+		}
+	}
 
-// Check if we just reached the score screen. This function will return true
-// only once. And it will return true again the next time *another* score screen
-// is reached.
-func justReachedScoreScreen() bool {
-	scoreScreenThisFrame := isInScoreScreen()
-	justReachedScoreScreen := scoreScreenThisFrame && !inScoreScreenGlobal
-	inScoreScreenGlobal = scoreScreenThisFrame
-
-	return justReachedScoreScreen
+	return trigger
 }
 
 func checkAchievements() {
-	if justReachedScoreScreen() {
+	if tickScoreAchievement() {
 		fmt.Printf("Player1: %d\n", getScore(0))
 		fmt.Printf("Player2: %d\n", getScore(1))
 		fmt.Printf("Player3: %d\n", getScore(2))
