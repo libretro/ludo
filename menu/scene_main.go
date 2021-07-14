@@ -110,20 +110,6 @@ func cleanReboot() {
 	}
 }
 
-// Displays a confirmation dialog before performing an irreversible action
-func askConfirmation(cb func()) {
-	if state.CoreRunning {
-		if !state.MenuActive {
-			state.MenuActive = true
-		}
-		menu.Push(buildDialog(func() {
-			cb()
-		}))
-	} else {
-		cb()
-	}
-}
-
 func (main *sceneMain) Entry() *entry {
 	return &main.entry
 }

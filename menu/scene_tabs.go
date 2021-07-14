@@ -75,21 +75,21 @@ func buildTabs() Scene {
 		list.children = append(list.children, entry{
 			icon: "tab-reboot",
 			callbackOK: func() {
-				askConfirmation(func() { cleanReboot() })
+				askQuitConfirmation(func() { cleanReboot() })
 			},
 		})
 
 		list.children = append(list.children, entry{
 			icon: "tab-shutdown",
 			callbackOK: func() {
-				askConfirmation(func() { cleanShutdown() })
+				askQuitConfirmation(func() { cleanShutdown() })
 			},
 		})
 	} else {
 		list.children = append(list.children, entry{
 			icon: "tab-quit",
 			callbackOK: func() {
-				askConfirmation(func() {
+				askQuitConfirmation(func() {
 					menu.SetShouldClose(true)
 				})
 			},

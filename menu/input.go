@@ -91,6 +91,14 @@ func genericInput(list *entry, dt float32) {
 		}
 	}
 
+	// X
+	if input.Released[0][libretro.DeviceIDJoypadX] == 1 {
+		if list.children[list.ptr].callbackX != nil {
+			audio.PlayEffect(audio.Effects["ok"])
+			list.children[list.ptr].callbackX()
+		}
+	}
+
 	// Right
 	if input.Released[0][libretro.DeviceIDJoypadRight] == 1 {
 		if list.children[list.ptr].incr != nil {
@@ -155,7 +163,7 @@ func indexed(list *entry, offset int) int {
 func (m *Menu) ProcessHotkeys() {
 	// Disable all hot keys on the exit dialog
 	currentScene := m.stack[len(m.stack)-1]
-	if currentScene.Entry().label == "Exit Dialog" {
+	if currentScene.Entry().label == "Confirm Dialog" {
 		return
 	}
 
@@ -196,7 +204,7 @@ func (m *Menu) ProcessHotkeys() {
 	// Close if ActionShouldClose is pressed, but display a confirmation dialog
 	// in case a game is running
 	if input.Pressed[0][input.ActionShouldClose] == 1 {
-		askConfirmation(func() {
+		askQuitConfirmation(func() {
 			m.SetShouldClose(true)
 		})
 	}

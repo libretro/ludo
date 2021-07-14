@@ -28,6 +28,7 @@ type entry struct {
 	subLabelAlpha   float32
 	borderAlpha     float32
 	callbackOK      func() // callback executed when user presses OK
+	callbackX       func() // callback executed when user presses X
 	value           func() interface{}
 	stringValue     func() string
 	widget          func(*entry, *entry, int) // widget draw callback used in settings
@@ -235,6 +236,53 @@ func genericRender(list *entry) {
 	}
 
 	menu.ScissorEnd()
+}
+
+// Displays a confirmation dialog before quitting
+func askQuitConfirmation(cb func()) {
+	if state.CoreRunning {
+		if !state.MenuActive {
+			state.MenuActive = true
+		}
+		menu.Push(buildYesNoDialog(
+			"Confirm before quitting",
+			"If you have not saved yet, your progress will be lost.",
+			"Do you want to exit Ludo anyway?", func() {
+				cb()
+			}))
+	} else {
+		cb()
+	}
+}
+
+// Displays a confirmation dialog before deleting a playlist game entry
+func askDeleteGameConfirmation(cb func()) {
+	menu.Push(buildYesNoDialog(
+		"Confirm before deleting",
+		"You are about to delete a game entry.",
+		"Games and game data won't be removed.", func() {
+			cb()
+		}))
+}
+
+// Displays a confirmation dialog before deleting a playlist
+func askDeletePlaylistConfirmation(cb func()) {
+	menu.Push(buildYesNoDialog(
+		"Confirm before deleting",
+		"You are about to delete a playlist.",
+		"Games and game data won't be removed.", func() {
+			cb()
+		}))
+}
+
+// Displays a confirmation dialog before deleting a savestate
+func askDeleteSavestateConfirmation(cb func()) {
+	menu.Push(buildYesNoDialog(
+		"Confirm before deleting",
+		"You are about to delete a savestate.",
+		"This action is irreversible.", func() {
+			cb()
+		}))
 }
 
 func genericDrawHintBar() {
