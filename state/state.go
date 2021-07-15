@@ -34,6 +34,8 @@ var LudOS bool
 // FastForward will run the core as fast as possible
 var FastForward bool
 
+// Tick is the current frame, used for rollback networking
 var Tick int64
 
+// ForcePause is used to debug rollback networking
 var ForcePause bool
