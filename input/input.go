@@ -190,8 +190,6 @@ func pollJoypads() {
 			NewAnalogState[p][1][1] = floatToAnalog(axisState[3])
 		}
 	}
-
-	return
 }
 
 // pollKeyboard processes keyboard keys
