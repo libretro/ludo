@@ -47,7 +47,7 @@ type PlayerState [ActionLast]int16
 type States [MaxPlayers]PlayerState
 
 // AnalogStates can store the state of analog inputs for all players
-type AnalogStates [MaxPlayers][2]int16
+type AnalogStates [MaxPlayers][2][2]int16
 
 // Input state for all the players
 var (
@@ -183,9 +183,11 @@ func pollJoypads() {
 
 	for p := range NewAnalogState {
 		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
-		if len(axisState) >= 1 {
-			NewAnalogState[p][0] = floatToAnalog(axisState[0])
-			NewAnalogState[p][1] = floatToAnalog(axisState[1])
+		if len(axisState) > 3 {
+			NewAnalogState[p][0][0] = floatToAnalog(axisState[0])
+			NewAnalogState[p][0][1] = floatToAnalog(axisState[1])
+			NewAnalogState[p][1][0] = floatToAnalog(axisState[2])
+			NewAnalogState[p][1][1] = floatToAnalog(axisState[3])
 		}
 	}
 
@@ -247,17 +249,12 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		return currentState(port)[id]
 	}
 	if device == libretro.DeviceAnalog {
-		if id > uint(libretro.DeviceIDAnalogY) {
+		if id > 1 || index > 1 {
 			// invalid
 			return 0
 		}
 
-		switch uint32(index) {
-		case libretro.DeviceIndexAnalogLeft:
-			return NewAnalogState[port][id]
-		case libretro.DeviceIndexAnalogRight:
-			return NewAnalogState[port][id]
-		}
+		return NewAnalogState[port][index][id]
 	}
 
 	return 0

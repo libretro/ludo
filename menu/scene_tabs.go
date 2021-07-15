@@ -2,12 +2,14 @@ package menu
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 	"sort"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/state"
@@ -147,9 +149,21 @@ func getPlaylists() []entry {
 			callbackOK: func() {
 				menu.Push(buildPlaylist(path))
 			},
+			callbackX: func() { askDeletePlaylistConfirmation(func() { deletePlaylist(path) }) },
 		})
 	}
 	return pls
+}
+
+func deletePlaylist(path string) {
+	err := os.Remove(path)
+	if err != nil {
+		ntf.DisplayAndLog(ntf.Error, "Menu", "Could not delete playlist: %s", err.Error())
+		return
+	}
+	menu.stack[0].Entry().ptr++
+	delete(playlists.Playlists, path)
+	refreshTabs()
 }
 
 func (tabs *sceneTabs) Entry() *entry {
@@ -254,6 +268,13 @@ func (tabs *sceneTabs) update(dt float32) {
 			tabs.children[tabs.ptr].callbackOK()
 		}
 	}
+
+	// X
+	if input.Released[0][libretro.DeviceIDJoypadX] == 1 {
+		if tabs.children[tabs.ptr].callbackX != nil {
+			tabs.children[tabs.ptr].callbackX()
+		}
+	}
 }
 
 func (tabs sceneTabs) render() {
@@ -291,7 +312,7 @@ func (tabs sceneTabs) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
-	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
+	_, _, leftRight, a, _, x, _, _, _, guide := hintIcons()
 
 	var stack float32
 	if state.CoreRunning {
@@ -299,4 +320,9 @@ func (tabs sceneTabs) drawHintBar() {
 	}
 	stackHint(&stack, leftRight, "NAVIGATE", h)
 	stackHint(&stack, a, "OPEN", h)
+
+	list := menu.stack[0].Entry()
+	if list.children[list.ptr].callbackX != nil {
+		stackHint(&stack, x, "DELETE", h)
+	}
 }

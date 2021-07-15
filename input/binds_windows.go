@@ -65,7 +65,6 @@ var ds4JoyBinds = joybinds{
 	bind{btn, 10, 0, 0}: libretro.DeviceIDJoypadL3,
 	bind{btn, 11, 0, 0}: libretro.DeviceIDJoypadR3,
 	bind{btn, 12, 0, 0}: ActionMenuToggle,
-	bind{btn, 13, 0, 0}: ActionFullscreenToggle,
 	bind{btn, 14, 0, 0}: libretro.DeviceIDJoypadUp,
 	bind{btn, 15, 0, 0}: libretro.DeviceIDJoypadRight,
 	bind{btn, 16, 0, 0}: libretro.DeviceIDJoypadDown,
