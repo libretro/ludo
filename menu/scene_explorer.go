@@ -17,6 +17,9 @@ type sceneExplorer struct {
 	entry
 }
 
+// NameFilter processes a file name
+type NameFilter func(string) string
+
 func matchesExtensions(f os.FileInfo, exts []string) bool {
 	if len(exts) > 0 {
 		var fileExtension = filepath.Ext(f.Name())
@@ -46,7 +49,7 @@ func getWindowsDrives() (drives []string) {
 	return drives
 }
 
-func appendFolder(list *sceneExplorer, label, newPath string, exts []string, cb func(string), dirAction *entry, filter func(string) string) {
+func appendFolder(list *sceneExplorer, label, newPath string, exts []string, cb func(string), dirAction *entry, filter NameFilter) {
 	list.children = append(list.children, entry{
 		label: label,
 		icon:  "folder",
@@ -69,7 +72,7 @@ func explorerIcon(f os.FileInfo) string {
 	return icon
 }
 
-func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo, exts []string, cb func(string), dirAction *entry, filter func(string) string) {
+func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo, exts []string, cb func(string), dirAction *entry, filter NameFilter) {
 	// Check whether or not we are to display hidden files.
 	if name[:1] == "." && !settings.Current.ShowHiddenFiles {
 		return
@@ -104,7 +107,7 @@ func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo
 	})
 }
 
-func buildExplorer(path string, exts []string, cb func(string), dirAction *entry, filter func(string) string) Scene {
+func buildExplorer(path string, exts []string, cb func(string), dirAction *entry, filter NameFilter) Scene {
 	var list sceneExplorer
 	list.label = "Explorer"
 
