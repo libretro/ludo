@@ -87,37 +87,41 @@ func floatToAnalog(v float32) int16 {
 // pollJoypads process joypads of all players
 func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) {
 	for p := range state {
-		buttonState := glfw.Joystick.GetButtons(glfw.Joystick(p))
-		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
-		name := glfw.Joystick.GetName(glfw.Joystick(p))
-		jb := joyBinds[name]
-		if len(buttonState) > 0 {
-			for k, v := range jb {
-				switch k.kind {
-				case btn:
-					if int(k.index) < len(buttonState) &&
-						glfw.Action(buttonState[k.index]) == glfw.Press {
-						state[p][v] = 1
-					}
-				case axis:
-					if int(k.index) < len(axisState) &&
-						k.direction*axisState[k.index] > k.threshold*k.direction {
-						state[p][v] = 1
-					}
-				}
+		joystik := glfw.Joystick(p)
+		if !joystik.IsGamepad() {
+			continue
+		}
+		pad := glfw.Joystick.GetGamepadState(joystik)
+		if pad == nil {
+			continue
+		}
 
-				if settings.Current.MapAxisToDPad {
-					if axisState[glfw.AxisLeftX] < -0.5 {
-						state[p][lr.DeviceIDJoypadLeft] = 1
-					} else if axisState[glfw.AxisLeftX] > 0.5 {
-						state[p][lr.DeviceIDJoypadRight] = 1
-					}
-					if axisState[glfw.AxisLeftY] > 0.5 {
-						state[p][lr.DeviceIDJoypadDown] = 1
-					} else if axisState[glfw.AxisLeftY] < -0.5 {
-						state[p][lr.DeviceIDJoypadUp] = 1
-					}
-				}
+		// mapping pad buttons
+		for k, v := range joyBinds {
+			if pad.Buttons[k] == glfw.Press {
+				state[p][v] = 1
+			}
+		}
+
+		// mapping pad triggers
+		if pad.Axes[glfw.AxisLeftTrigger] > 0.5 {
+			state[p][lr.DeviceIDJoypadL2] = 1
+		}
+		if pad.Axes[glfw.AxisRightTrigger] > 0.5 {
+			state[p][lr.DeviceIDJoypadR2] = 1
+		}
+
+		// mapping axis to dpad
+		if settings.Current.MapAxisToDPad {
+			if pad.Axes[glfw.AxisLeftX] < -0.5 {
+				state[p][lr.DeviceIDJoypadLeft] = 1
+			} else if pad.Axes[glfw.AxisLeftX] > 0.5 {
+				state[p][lr.DeviceIDJoypadRight] = 1
+			}
+			if pad.Axes[glfw.AxisLeftY] > 0.5 {
+				state[p][lr.DeviceIDJoypadDown] = 1
+			} else if pad.Axes[glfw.AxisLeftY] < -0.5 {
+				state[p][lr.DeviceIDJoypadUp] = 1
 			}
 		}
 	}
@@ -201,7 +205,5 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 
 // HasBinding returns true if the joystick has an autoconfig binding
 func HasBinding(joy glfw.Joystick) bool {
-	name := glfw.Joystick.GetName(joy)
-	_, ok := joyBinds[name]
-	return ok
+	return joy.GetGUID() != ""
 }
