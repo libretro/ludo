@@ -5,7 +5,7 @@ package input
 
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/libretro/ludo/libretro"
+	lr "github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
@@ -45,15 +45,15 @@ var (
 // Hot keys
 const (
 	// ActionMenuToggle toggles the menu UI
-	ActionMenuToggle uint32 = libretro.DeviceIDJoypadR3 + 1
+	ActionMenuToggle uint32 = lr.DeviceIDJoypadR3 + 1
 	// ActionFullscreenToggle switches between fullscreen and windowed mode
-	ActionFullscreenToggle uint32 = libretro.DeviceIDJoypadR3 + 2
+	ActionFullscreenToggle uint32 = lr.DeviceIDJoypadR3 + 2
 	// ActionShouldClose will cause the program to shutdown
-	ActionShouldClose uint32 = libretro.DeviceIDJoypadR3 + 3
+	ActionShouldClose uint32 = lr.DeviceIDJoypadR3 + 3
 	// ActionFastForwardToggle will run the core as fast as possible
-	ActionFastForwardToggle uint32 = libretro.DeviceIDJoypadR3 + 4
+	ActionFastForwardToggle uint32 = lr.DeviceIDJoypadR3 + 4
 	// ActionLast is used for iterating
-	ActionLast uint32 = libretro.DeviceIDJoypadR3 + 5
+	ActionLast uint32 = lr.DeviceIDJoypadR3 + 5
 )
 
 // joystickCallback is triggered when a joypad is plugged.
@@ -107,15 +107,15 @@ func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) 
 				}
 
 				if settings.Current.MapAxisToDPad {
-					if axisState[0] < -0.5 {
-						state[p][libretro.DeviceIDJoypadLeft] = 1
-					} else if axisState[0] > 0.5 {
-						state[p][libretro.DeviceIDJoypadRight] = 1
+					if axisState[glfw.AxisLeftX] < -0.5 {
+						state[p][lr.DeviceIDJoypadLeft] = 1
+					} else if axisState[glfw.AxisLeftX] > 0.5 {
+						state[p][lr.DeviceIDJoypadRight] = 1
 					}
-					if axisState[1] > 0.5 {
-						state[p][libretro.DeviceIDJoypadDown] = 1
-					} else if axisState[1] < -0.5 {
-						state[p][libretro.DeviceIDJoypadUp] = 1
+					if axisState[glfw.AxisLeftY] > 0.5 {
+						state[p][lr.DeviceIDJoypadDown] = 1
+					} else if axisState[glfw.AxisLeftY] < -0.5 {
+						state[p][lr.DeviceIDJoypadUp] = 1
 					}
 				}
 			}
@@ -125,10 +125,10 @@ func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) 
 	for p := range analogState {
 		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
 		if len(axisState) > 3 {
-			analogState[p][0][0] = floatToAnalog(axisState[0])
-			analogState[p][0][1] = floatToAnalog(axisState[1])
-			analogState[p][1][0] = floatToAnalog(axisState[2])
-			analogState[p][1][1] = floatToAnalog(axisState[3])
+			analogState[p][lr.DeviceIndexAnalogLeft][lr.DeviceIDAnalogX] = floatToAnalog(axisState[glfw.AxisLeftX])
+			analogState[p][lr.DeviceIndexAnalogLeft][lr.DeviceIDAnalogY] = floatToAnalog(axisState[glfw.AxisLeftY])
+			analogState[p][lr.DeviceIndexAnalogRight][lr.DeviceIDAnalogX] = floatToAnalog(axisState[glfw.AxisRightX])
+			analogState[p][lr.DeviceIndexAnalogRight][lr.DeviceIDAnalogY] = floatToAnalog(axisState[glfw.AxisRightY])
 		}
 	}
 
@@ -182,15 +182,14 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		return 0
 	}
 
-	if device == libretro.DeviceJoypad {
+	if device == lr.DeviceJoypad {
 		if id >= uint(ActionLast) || index > 0 {
 			return 0
 		}
 		return NewState[port][id]
 	}
-	if device == libretro.DeviceAnalog {
-		if id > 1 || index > 1 {
-			// invalid
+	if device == lr.DeviceAnalog {
+		if index > uint(lr.DeviceIndexAnalogRight) || id > uint(lr.DeviceIDAnalogY) {
 			return 0
 		}
 
