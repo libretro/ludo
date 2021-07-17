@@ -99,7 +99,13 @@ func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) 
 			state[p][lr.DeviceIDJoypadR2] = 1
 		}
 
-		// mapping axis to dpad
+		// mapping analog sticks
+		analogState[p][lr.DeviceIndexAnalogLeft][lr.DeviceIDAnalogX] = floatToAnalog(pad.Axes[glfw.AxisLeftX])
+		analogState[p][lr.DeviceIndexAnalogLeft][lr.DeviceIDAnalogY] = floatToAnalog(pad.Axes[glfw.AxisLeftY])
+		analogState[p][lr.DeviceIndexAnalogRight][lr.DeviceIDAnalogX] = floatToAnalog(pad.Axes[glfw.AxisRightX])
+		analogState[p][lr.DeviceIndexAnalogRight][lr.DeviceIDAnalogY] = floatToAnalog(pad.Axes[glfw.AxisRightY])
+
+		// optionally mapping analog sticks to dpad
 		if settings.Current.MapAxisToDPad {
 			if pad.Axes[glfw.AxisLeftX] < -0.5 {
 				state[p][lr.DeviceIDJoypadLeft] = 1
@@ -111,16 +117,6 @@ func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) 
 			} else if pad.Axes[glfw.AxisLeftY] < -0.5 {
 				state[p][lr.DeviceIDJoypadUp] = 1
 			}
-		}
-	}
-
-	for p := range analogState {
-		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
-		if len(axisState) > 3 {
-			analogState[p][lr.DeviceIndexAnalogLeft][lr.DeviceIDAnalogX] = floatToAnalog(axisState[glfw.AxisLeftX])
-			analogState[p][lr.DeviceIndexAnalogLeft][lr.DeviceIDAnalogY] = floatToAnalog(axisState[glfw.AxisLeftY])
-			analogState[p][lr.DeviceIndexAnalogRight][lr.DeviceIDAnalogX] = floatToAnalog(axisState[glfw.AxisRightX])
-			analogState[p][lr.DeviceIndexAnalogRight][lr.DeviceIDAnalogY] = floatToAnalog(axisState[glfw.AxisRightY])
 		}
 	}
 
