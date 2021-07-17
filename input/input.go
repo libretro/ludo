@@ -14,18 +14,6 @@ import (
 // MaxPlayers is the maximum number of players to poll input for
 const MaxPlayers = 5
 
-type joybinds map[bind]uint32
-
-const btn = 0
-const axis = 1
-
-type bind struct {
-	kind      uint32
-	index     uint32
-	direction float32
-	threshold float32
-}
-
 // States can store the state of inputs for all players
 type States [MaxPlayers][ActionLast]int16
 
