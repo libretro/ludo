@@ -17,7 +17,7 @@ type sceneMain struct {
 	entry
 }
 
-var coreNames = map[string]string{
+var prettyCoreNames = map[string]string{
 	"atari800_libretro":            "Atari 800 (Atari 5200)",
 	"bluemsx_libretro":             "BlueMSX (MSX)",
 	"fbneo_libretro":               "FBNeo (Arcade)",
@@ -51,8 +51,8 @@ var coreNames = map[string]string{
 	"virtualjaguar_libretro":       "Virtual Jaguar (Atari Jaguar)",
 }
 
-func coreName(in string) string {
-	name, ok := coreNames[in]
+func prettifyCoreName(in string) string {
+	name, ok := prettyCoreNames[in]
 	if ok {
 		return name
 	}
@@ -86,7 +86,7 @@ func buildMainMenu() Scene {
 				[]string{".dll", ".dylib", ".so"},
 				coreExplorerCb,
 				nil,
-				coreName,
+				prettifyCoreName,
 			))
 		},
 	})
