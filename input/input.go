@@ -48,7 +48,7 @@ const (
 func joystickCallback(joy glfw.Joystick, event glfw.PeripheralEvent) {
 	switch event {
 	case glfw.Connected:
-		if HasBinding(joy) {
+		if joy.IsGamepad() {
 			ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.Joystick.GetName(joy))
 		} else {
 			ntf.DisplayAndLog(ntf.Warning, "Input", "Joystick #%d plugged: %s but not configured.", joy, glfw.Joystick.GetName(joy))
@@ -186,9 +186,4 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 	}
 
 	return 0
-}
-
-// HasBinding returns true if the joystick has an autoconfig binding
-func HasBinding(joy glfw.Joystick) bool {
-	return joy.GetGUID() != ""
 }
