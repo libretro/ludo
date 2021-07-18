@@ -35,7 +35,7 @@ func buildUpdater() Scene {
 		if len(*rels) > 0 {
 			rel := (*rels)[0]
 
-			if rel.Name == ludos.Version {
+			if rel.Name[1:] == ludos.Version {
 				list.children[0].label = "Up to date"
 				list.children[0].icon = "subsetting"
 				return
