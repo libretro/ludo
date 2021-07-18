@@ -74,12 +74,12 @@ func floatToAnalog(v float32) int16 {
 
 // pollJoypads process joypads of all players
 func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) {
-	for p := range state {
-		joystik := glfw.Joystick(p)
-		if !joystik.IsGamepad() {
+	p := 0
+	for joy := glfw.Joystick(0); joy < glfw.JoystickLast; joy++ {
+		if !joy.IsGamepad() {
 			continue
 		}
-		pad := glfw.Joystick.GetGamepadState(joystik)
+		pad := joy.GetGamepadState()
 		if pad == nil {
 			continue
 		}
@@ -118,6 +118,7 @@ func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) 
 				state[p][lr.DeviceIDJoypadUp] = 1
 			}
 		}
+		p++
 	}
 
 	return state, analogState
