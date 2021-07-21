@@ -548,7 +548,7 @@ func (core *Core) Serialize(size uint) ([]byte, error) {
 
 // Unserialize unserializes internal state from a byte slice.
 func (core *Core) Unserialize(bytes []byte, size uint) error {
-	if size <= 0 {
+	if size == 0 || len(bytes) == 0 {
 		return errors.New("retro_unserialize failed")
 	}
 	ok := bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
