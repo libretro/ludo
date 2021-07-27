@@ -41,8 +41,8 @@ type Video struct {
 	width, height int32 // dimensions set by the refresh callback
 	rot           uint
 
-	need_upload bool
-	data        unsafe.Pointer
+	needUpload bool
+	data       unsafe.Pointer
 }
 
 // Init instanciates the video package
@@ -371,25 +371,7 @@ func (video *Video) Render() {
 
 // Refresh the texture framebuffer
 func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
-	video.width = width
-	video.height = height
-	video.pitch = pitch
-
-	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
-
-	gl.UseProgram(video.program)
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
-
-	if data == nil {
-		return
-	}
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, data)
-}
-
-func (video *Video) RefreshCopy(data unsafe.Pointer, width int32, height int32, pitch int32) {
-	video.need_upload = true
+	video.needUpload = true
 	video.width = width
 	video.height = height
 	video.pitch = pitch
@@ -397,7 +379,7 @@ func (video *Video) RefreshCopy(data unsafe.Pointer, width int32, height int32, 
 }
 
 func (video *Video) UploadTexture() {
-	if !video.need_upload || video.data == nil {
+	if !video.needUpload || video.data == nil {
 		return
 	}
 

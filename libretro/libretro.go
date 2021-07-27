@@ -674,12 +674,9 @@ func coreAudioSample(left C.int16_t, right C.int16_t) {
 //export coreAudioSampleBatch
 func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
 	if audioSampleBatch == nil {
-		// Audio is disabled but we want to notify the core that data were consumed (trashed
-		// actually). Otherwise a core (mesens) might infinite loop on the callback to post data
-		return C.size_t(frames) / 4
+		return 0
 	}
 	return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4*int(frames))), int32(frames))) / 4
-	// return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4*int(frames))), int32(frames)))
 }
 
 //export coreLog

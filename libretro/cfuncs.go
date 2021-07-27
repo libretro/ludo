@@ -23,7 +23,7 @@ package libretro
 #define SEM_WAIT(x) sem_wait(&x)
 #endif
 
-#if 1
+#if 0
 #define print_sema(...) (printf(__VA_ARGS__))
 #else
 #define print_sema(...) do {} while (0)
