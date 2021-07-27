@@ -262,7 +262,7 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 	}
 
 	// PixelStorei also needs to be updated whenever bpp changes
-	// defer gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
+	defer func() { video.needUpload = true }()
 
 	switch format {
 	case libretro.PixelFormat0RGB1555:
