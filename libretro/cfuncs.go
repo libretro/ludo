@@ -6,9 +6,22 @@ package libretro
 #include <stdarg.h>
 #include <stdio.h>
 #include <pthread.h>
+
+#ifdef __APPLE__
 #include <mach/semaphore.h>
 #include <mach/task.h>
 #include <mach/mach_init.h>
+#define SEM_T semaphore_t
+#define SEM_INIT(x) semaphore_create(mach_task_self(), &x, SYNC_POLICY_FIFO, 0);
+#define SEM_POST(x) semaphore_signal(x)
+#define SEM_WAIT(x) semaphore_wait(x)
+#else
+#include <semaphore.h>
+#define SEM_T sem_t
+#define SEM_INIT(x) sem_init(&x, 0, 0)
+#define SEM_POST(x) sem_post(&x)
+#define SEM_WAIT(x) sem_wait(&x)
+#endif
 
 #if 1
 #define print_sema(...) (printf(__VA_ARGS__))
@@ -33,20 +46,20 @@ struct thread_cmd_t {
 
 struct thread_cmd_t s_job;
 static pthread_t s_thread;
-static semaphore_t s_sem_do;
-static semaphore_t s_sem_done;
+static SEM_T s_sem_do;
+static SEM_T s_sem_done;
 static bool s_use_thread = false;
 
 void* emu_thread_loop(void *a0) {
 	print_sema("begin thread\n");
 
-	semaphore_signal(s_sem_done);
+	SEM_POST(s_sem_done);
 
 	print_sema("signal thread\n");
 
 	while (1) {
 		print_sema("wait do\n");
-		semaphore_wait(s_sem_do);
+		SEM_WAIT(s_sem_do);
 
 		print_sema("do\n");
 		switch (s_job.cmd) {
@@ -63,18 +76,18 @@ void* emu_thread_loop(void *a0) {
 		}
 
 		print_sema("signal done\n");
-		semaphore_signal(s_sem_done);
+		SEM_POST(s_sem_done);
 	}
 }
 
 void thread_sync() {
 	// Fire the job
 	print_sema("signal do\n");
-	semaphore_signal(s_sem_do);
+	SEM_POST(s_sem_do);
 
 	// Wait the result
 	print_sema("wait done\n");
-	semaphore_wait(s_sem_done);
+	SEM_WAIT(s_sem_done);
 
 	print_sema("done\n");
 }
@@ -92,14 +105,14 @@ void run_wrapper(void *f) {
 void cothread_init() {
 	s_use_thread = true;
 
-	semaphore_create(mach_task_self(), &s_sem_do, SYNC_POLICY_FIFO, 0);
-	semaphore_create(mach_task_self(), &s_sem_done, SYNC_POLICY_FIFO, 0);
+	SEM_INIT(s_sem_do);
+	SEM_INIT(s_sem_done);
 
 	print_sema("create thread\n");
 	pthread_create(&s_thread, NULL, emu_thread_loop, NULL);
 
 	print_sema("wait thread\n");
-	semaphore_wait(s_sem_done);
+	SEM_WAIT(s_sem_done);
 }
 
 void bridge_retro_init(void *f) {
