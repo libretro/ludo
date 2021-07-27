@@ -13,6 +13,8 @@ package libretro
 #include <stdio.h>
 #include <string.h>
 
+void cothread_init();
+
 void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
 unsigned bridge_retro_api_version(void *f);
@@ -414,6 +416,11 @@ func Load(sofile string) (*Core, error) {
 		return nil, err
 	}
 
+	// Shall be done for N64 but not others emulator
+	// if sofile == "/cores/mupen64plus_next_libretro.so" {
+	C.cothread_init()
+	// }
+
 	core.symRetroInit = core.DlSym("retro_init")
 	core.symRetroDeinit = core.DlSym("retro_deinit")
 	core.symRetroAPIVersion = core.DlSym("retro_api_version")
@@ -667,9 +674,12 @@ func coreAudioSample(left C.int16_t, right C.int16_t) {
 //export coreAudioSampleBatch
 func coreAudioSampleBatch(buf unsafe.Pointer, frames C.size_t) C.size_t {
 	if audioSampleBatch == nil {
-		return 0
+		// Audio is disabled but we want to notify the core that data were consumed (trashed
+		// actually). Otherwise a core (mesens) might infinite loop on the callback to post data
+		return C.size_t(frames) / 4
 	}
 	return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4*int(frames))), int32(frames))) / 4
+	// return C.size_t(audioSampleBatch(C.GoBytes(buf, C.int(4*int(frames))), int32(frames)))
 }
 
 //export coreLog
