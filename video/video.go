@@ -353,7 +353,7 @@ func (video *Video) Render() {
 		return
 	}
 
-	video.UploadTexture()
+	video.uploadTexture()
 
 	fbw, fbh := video.Window.GetFramebufferSize()
 	_, _, w, h := video.coreRatioViewport(fbw, fbh)
@@ -378,7 +378,7 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	video.data = data // maybe need a full copy
 }
 
-func (video *Video) UploadTexture() {
+func (video *Video) uploadTexture() {
 	if !video.needUpload || video.data == nil {
 		return
 	}
