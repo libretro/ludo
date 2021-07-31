@@ -42,7 +42,7 @@ ludo.exe:
 
 cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
 	mkdir -p cores
-	wget $(BUILDBOTURL)/$(@F).zip -O $@.zip
+	wget -c $(BUILDBOTURL)/$(@F).zip -O $@.zip
 	unzip $@.zip -d cores
 	rm $@.zip
 
