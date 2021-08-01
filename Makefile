@@ -42,7 +42,11 @@ ludo.exe:
 
 cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
 	mkdir -p cores
-	wget -c $(BUILDBOTURL)/$(@F).zip -O $@.zip
+	@if [ $(basename $(@F)) = swanstation_libretro ]; then\
+		wget -c https://github.com/kivutar/swanstation/releases/download/v2021-08-01/swanstation-$(OS)-$(ARCH).zip -O $@.zip;\
+	else\
+		wget -c $(BUILDBOTURL)/$(@F).zip -O $@.zip;\
+	fi
 	unzip $@.zip -d cores
 	rm $@.zip
 
