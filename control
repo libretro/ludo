@@ -1,0 +1,7 @@
+Package: ludo
+Version: VERSION
+Architecture: ARCH
+Depends: openal-soft
+Maintainer: Jean-André Santoni jean.andre.santoni@gmail.com
+Description: ludo
+ A minimalist frontend for emulators

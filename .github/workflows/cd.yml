@@ -20,6 +20,7 @@ jobs:
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: OS=Linux ARCH=x86_64 VERSION=$VERSION make tar
+      - run: OS=Linux ARCH=x86_64 VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-x86_64-${VERSION}.tar.gz > Ludo-Linux-x86_64-${VERSION}.tar.gz.sha256
 
       - name: Upload Release Asset
@@ -27,7 +28,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          asset_paths: '["./Ludo-*.tar.gz*"]'
+          asset_paths: '["./Ludo-*.tar.gz*", "./ludo*.deb"]'
 
   build_linux_arm:
     runs-on: ubuntu-18.04

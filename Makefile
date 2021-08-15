@@ -119,5 +119,20 @@ tar: ludo $(SOBJS)
 	cp -r cores $(BUNDLENAME)/
 	tar -zcf $(BUNDLENAME).tar.gz $(BUNDLENAME)\
 
+# For Debian
+deb: ludo $(SOBJS)
+	mkdir -p ludo_$(VERSION)-1_amd64/DEBIAN
+	mkdir -p ludo_$(VERSION)-1_amd64/usr/local/bin
+	mkdir -p ludo_$(VERSION)-1_amd64/usr/local/share/ludo
+	mkdir -p ludo_$(VERSION)-1_amd64/usr/local/lib/ludo
+	cp ludo ludo_$(VERSION)-1_amd64/usr/local/bin
+	cp -r database ludo_$(VERSION)-1_amd64/usr/local/share/ludo
+	cp -r assets ludo_$(VERSION)-1_amd64/usr/local/share/ludo
+	cp -r cores ludo_$(VERSION)-1_amd64/usr/local/lib/ludo
+	cp control ludo_$(VERSION)-1_amd64/DEBIAN
+	sed -i.bak 's/VERSION/$(VERSION)/' ludo_$(VERSION)-1_amd64/DEBIAN/control
+	sed -i.bak 's/ARCH/amd64/' ludo_$(VERSION)-1_amd64/DEBIAN/control
+	dpkg-deb --build ludo_$(VERSION)-1_amd64
+
 clean:
 	rm -rf Ludo.app ludo wc *.dmg $(BUNDLENAME)-* cores/
