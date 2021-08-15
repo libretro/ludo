@@ -151,4 +151,4 @@ deb: ludo $(SOBJS)
 	dpkg-deb --build ludo_$(VERSION)-1_$(DEB_ARCH)
 
 clean:
-	rm -rf Ludo.app ludo wc *.dmg $(BUNDLENAME)-* cores/
+	rm -rf Ludo.app ludo wc *.dmg *.deb $(BUNDLENAME)-* cores/
