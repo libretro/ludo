@@ -147,6 +147,7 @@ deb: ludo $(SOBJS)
 	cp control ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN
 	sed -i.bak 's/VERSION/$(VERSION)/' ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN/control
 	sed -i.bak 's/ARCH/$(DEB_ARCH)/' ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN/control
+	rm ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN/control.bak
 	dpkg-deb --build ludo_$(VERSION)-1_$(DEB_ARCH)
 
 clean:
