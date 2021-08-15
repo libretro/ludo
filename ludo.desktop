@@ -7,6 +7,6 @@ Terminal=false
 StartupNotify=false
 StartupWMClass=ludo
 Type=Application
-Categories=Game;ArcadeGame;
+Categories=Game;Emulator;
 Keywords=libretro;emulator;
 PrefersNonDefaultGPU=true
