@@ -135,7 +135,7 @@ deb: ludo $(SOBJS)
 	cp -r database ludo_$(VERSION)-1_amd64/usr/local/share/ludo
 	cp -r assets ludo_$(VERSION)-1_amd64/usr/local/share/ludo
 	cp -r cores ludo_$(VERSION)-1_amd64/usr/local/lib/ludo
-	cp assets/icon.png ludo_$(VERSION)-1_amd64/usr/share/icons/hicolor/1024x1024/apps/
+	cp assets/icon.png ludo_$(VERSION)-1_amd64/usr/share/icons/hicolor/1024x1024/apps/ludo.png
 	cp ludo.desktop ludo_$(VERSION)-1_amd64/usr/local/share/applications
 	cp control ludo_$(VERSION)-1_amd64/DEBIAN
 	sed -i.bak 's/VERSION/$(VERSION)/' ludo_$(VERSION)-1_amd64/DEBIAN/control
