@@ -121,6 +121,10 @@ tar: ludo $(SOBJS)
 
 # For Debian
 deb: ludo $(SOBJS)
+	sed -i.bak 's/"\.\/assets"/"\/usr\/local\/share\/ludo\/assets"/' settings/defaults.go
+	sed -i.bak 's/"\.\/database"/"\/usr\/local\/share\/ludo\/database"/' settings/defaults.go
+	sed -i.bak 's/"\.\/cores"/"\/usr\/local\/lib\/ludo\/cores"/' settings/defaults.go
+	go build
 	mkdir -p ludo_$(VERSION)-1_amd64/DEBIAN
 	mkdir -p ludo_$(VERSION)-1_amd64/usr/local/bin
 	mkdir -p ludo_$(VERSION)-1_amd64/usr/local/share/ludo
