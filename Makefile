@@ -126,11 +126,12 @@ ifeq ($(ARCH), arm)
 	DEB_ARCH = armhf
 endif
 
-deb: ludo $(SOBJS)
+deb_defaults:
 	sed -i.bak 's/"\.\/assets"/"\/usr\/local\/share\/ludo\/assets"/' settings/defaults.go
 	sed -i.bak 's/"\.\/database"/"\/usr\/local\/share\/ludo\/database"/' settings/defaults.go
 	sed -i.bak 's/"\.\/cores"/"\/usr\/local\/lib\/ludo\/cores"/' settings/defaults.go
-	go build
+
+deb: ludo $(SOBJS)
 	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN
 	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/bin
 	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
