@@ -120,27 +120,33 @@ tar: ludo $(SOBJS)
 	tar -zcf $(BUNDLENAME).tar.gz $(BUNDLENAME)\
 
 # For Debian
+
+DEB_ARCH = amd64
+ifeq ($(ARCH), arm)
+	DEB_ARCH = armhf
+endif
+
 deb: ludo $(SOBJS)
 	sed -i.bak 's/"\.\/assets"/"\/usr\/local\/share\/ludo\/assets"/' settings/defaults.go
 	sed -i.bak 's/"\.\/database"/"\/usr\/local\/share\/ludo\/database"/' settings/defaults.go
 	sed -i.bak 's/"\.\/cores"/"\/usr\/local\/lib\/ludo\/cores"/' settings/defaults.go
 	go build
-	mkdir -p ludo_$(VERSION)-1_amd64/DEBIAN
-	mkdir -p ludo_$(VERSION)-1_amd64/usr/local/bin
-	mkdir -p ludo_$(VERSION)-1_amd64/usr/local/share/ludo
-	mkdir -p ludo_$(VERSION)-1_amd64/usr/local/lib/ludo
-	mkdir -p ludo_$(VERSION)-1_amd64/usr/local/share/applications
-	mkdir -p ludo_$(VERSION)-1_amd64/usr/share/icons/hicolor/1024x1024/apps/
-	cp ludo ludo_$(VERSION)-1_amd64/usr/local/bin
-	cp -r database ludo_$(VERSION)-1_amd64/usr/local/share/ludo
-	cp -r assets ludo_$(VERSION)-1_amd64/usr/local/share/ludo
-	cp -r cores ludo_$(VERSION)-1_amd64/usr/local/lib/ludo
-	cp assets/icon.png ludo_$(VERSION)-1_amd64/usr/share/icons/hicolor/1024x1024/apps/ludo.png
-	cp ludo.desktop ludo_$(VERSION)-1_amd64/usr/local/share/applications
-	cp control ludo_$(VERSION)-1_amd64/DEBIAN
-	sed -i.bak 's/VERSION/$(VERSION)/' ludo_$(VERSION)-1_amd64/DEBIAN/control
-	sed -i.bak 's/ARCH/amd64/' ludo_$(VERSION)-1_amd64/DEBIAN/control
-	dpkg-deb --build ludo_$(VERSION)-1_amd64
+	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN
+	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/bin
+	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
+	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/lib/ludo
+	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/applications
+	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/share/icons/hicolor/1024x1024/apps/
+	cp ludo ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/bin
+	cp -r database ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
+	cp -r assets ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
+	cp -r cores ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/lib/ludo
+	cp assets/icon.png ludo_$(VERSION)-1_$(DEB_ARCH)/usr/share/icons/hicolor/1024x1024/apps/ludo.png
+	cp ludo.desktop ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/applications
+	cp control ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN
+	sed -i.bak 's/VERSION/$(VERSION)/' ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN/control
+	sed -i.bak 's/ARCH/$(DEB_ARCH)/' ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN/control
+	dpkg-deb --build ludo_$(VERSION)-1_$(DEB_ARCH)
 
 clean:
 	rm -rf Ludo.app ludo wc *.dmg $(BUNDLENAME)-* cores/

@@ -28,7 +28,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          asset_paths: '["./Ludo-*.tar.gz*", "./ludo*.deb"]'
+          asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_arm:
     runs-on: ubuntu-18.04
@@ -53,6 +53,7 @@ jobs:
       - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
       - run: OS=Linux ARCH=arm VERSION=$VERSION make tar
+      - run: OS=Linux ARCH=arm VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-arm-${VERSION}.tar.gz > Ludo-Linux-arm-${VERSION}.tar.gz.sha256
 
       - name: Upload Release Asset
@@ -60,7 +61,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          asset_paths: '["./Ludo-*.tar.gz*"]'
+          asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_osx:
     runs-on: macos-latest
