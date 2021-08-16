@@ -129,16 +129,17 @@ DEB_ROOT = ludo_$(VERSION)-1_$(DEB_ARCH)
 
 deb: ludo $(SOBJS)
 	mkdir -p $(DEB_ROOT)/DEBIAN
-	mkdir -p $(DEB_ROOT)/usr/local/bin
-	mkdir -p $(DEB_ROOT)/usr/local/share/ludo
-	mkdir -p $(DEB_ROOT)/usr/local/share/applications
+	mkdir -p $(DEB_ROOT)/usr/bin
+	mkdir -p $(DEB_ROOT)/usr/lib/ludo
+	mkdir -p $(DEB_ROOT)/usr/share/ludo
+	mkdir -p $(DEB_ROOT)/usr/share/applications
 	mkdir -p $(DEB_ROOT)/usr/share/icons/hicolor/1024x1024/apps/
-	cp ludo $(DEB_ROOT)/usr/local/bin
-	cp -r cores $(DEB_ROOT)/usr/local/share/ludo
-	cp -r assets $(DEB_ROOT)/usr/local/share/ludo
-	cp -r database $(DEB_ROOT)/usr/local/share/ludo
+	cp ludo $(DEB_ROOT)/usr/bin
+	cp cores/* $(DEB_ROOT)/usr/lib/ludo
+	cp -r assets $(DEB_ROOT)/usr/share/ludo
+	cp -r database $(DEB_ROOT)/usr/share/ludo
 	cp assets/icon.png $(DEB_ROOT)/usr/share/icons/hicolor/1024x1024/apps/ludo.png
-	cp ludo.desktop $(DEB_ROOT)/usr/local/share/applications
+	cp ludo.desktop $(DEB_ROOT)/usr/share/applications
 	cp control $(DEB_ROOT)/DEBIAN
 	sed -i.bak 's/VERSION/$(VERSION)/' $(DEB_ROOT)/DEBIAN/control
 	sed -i.bak 's/ARCH/$(DEB_ARCH)/' $(DEB_ROOT)/DEBIAN/control
