@@ -125,24 +125,25 @@ DEB_ARCH = amd64
 ifeq ($(ARCH), arm)
 	DEB_ARCH = armhf
 endif
+DEB_ROOT = ludo_$(VERSION)-1_$(DEB_ARCH)
 
 deb: ludo $(SOBJS)
-	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN
-	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/bin
-	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
-	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/applications
-	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/share/icons/hicolor/1024x1024/apps/
-	cp ludo ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/bin
-	cp -r database ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
-	cp -r assets ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
-	cp -r cores ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
-	cp assets/icon.png ludo_$(VERSION)-1_$(DEB_ARCH)/usr/share/icons/hicolor/1024x1024/apps/ludo.png
-	cp ludo.desktop ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/applications
-	cp control ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN
-	sed -i.bak 's/VERSION/$(VERSION)/' ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN/control
-	sed -i.bak 's/ARCH/$(DEB_ARCH)/' ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN/control
-	rm ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN/control.bak
-	dpkg-deb --build ludo_$(VERSION)-1_$(DEB_ARCH)
+	mkdir -p $(DEB_ROOT)/DEBIAN
+	mkdir -p $(DEB_ROOT)/usr/local/bin
+	mkdir -p $(DEB_ROOT)/usr/local/share/ludo
+	mkdir -p $(DEB_ROOT)/usr/local/share/applications
+	mkdir -p $(DEB_ROOT)/usr/share/icons/hicolor/1024x1024/apps/
+	cp ludo $(DEB_ROOT)/usr/local/bin
+	cp -r database $(DEB_ROOT)/usr/local/share/ludo
+	cp -r assets $(DEB_ROOT)/usr/local/share/ludo
+	cp -r cores $(DEB_ROOT)/usr/local/share/ludo
+	cp assets/icon.png $(DEB_ROOT)/usr/share/icons/hicolor/1024x1024/apps/ludo.png
+	cp ludo.desktop $(DEB_ROOT)/usr/local/share/applications
+	cp control $(DEB_ROOT)/DEBIAN
+	sed -i.bak 's/VERSION/$(VERSION)/' $(DEB_ROOT)/DEBIAN/control
+	sed -i.bak 's/ARCH/$(DEB_ARCH)/' $(DEB_ROOT)/DEBIAN/control
+	rm $(DEB_ROOT)/DEBIAN/control.bak
+	dpkg-deb --build $(DEB_ROOT)
 
 clean:
 	rm -rf Ludo.app ludo wc *.dmg *.deb $(BUNDLENAME)-* cores/
