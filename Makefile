@@ -126,22 +126,16 @@ ifeq ($(ARCH), arm)
 	DEB_ARCH = armhf
 endif
 
-deb_defaults:
-	sed -i.bak 's/"\.\/assets"/"\/usr\/local\/share\/ludo\/assets"/' settings/defaults.go
-	sed -i.bak 's/"\.\/database"/"\/usr\/local\/share\/ludo\/database"/' settings/defaults.go
-	sed -i.bak 's/"\.\/cores"/"\/usr\/local\/lib\/ludo\/cores"/' settings/defaults.go
-
 deb: ludo $(SOBJS)
 	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN
 	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/bin
 	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
-	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/lib/ludo
 	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/applications
 	mkdir -p ludo_$(VERSION)-1_$(DEB_ARCH)/usr/share/icons/hicolor/1024x1024/apps/
 	cp ludo ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/bin
 	cp -r database ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
 	cp -r assets ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
-	cp -r cores ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/lib/ludo
+	cp -r cores ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/ludo
 	cp assets/icon.png ludo_$(VERSION)-1_$(DEB_ARCH)/usr/share/icons/hicolor/1024x1024/apps/ludo.png
 	cp ludo.desktop ludo_$(VERSION)-1_$(DEB_ARCH)/usr/local/share/applications
 	cp control ludo_$(VERSION)-1_$(DEB_ARCH)/DEBIAN
