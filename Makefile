@@ -137,7 +137,7 @@ deb: ludo $(SOBJS)
 	touch $(DEB_ROOT)/etc/ludo.toml
 	echo "cores_dir = \"/usr/lib/ludo\"" >> $(DEB_ROOT)/etc/ludo.toml
 	echo "assets_dir = \"/usr/share/ludo/assets\"" >> $(DEB_ROOT)/etc/ludo.toml
-	echo "database_dir = \"/usr/share/ludo/databbase\"" >> $(DEB_ROOT)/etc/ludo.toml
+	echo "database_dir = \"/usr/share/ludo/database\"" >> $(DEB_ROOT)/etc/ludo.toml
 	cp ludo $(DEB_ROOT)/usr/bin
 	cp cores/* $(DEB_ROOT)/usr/lib/ludo
 	cp -r assets $(DEB_ROOT)/usr/share/ludo
