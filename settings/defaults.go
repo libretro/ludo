@@ -1,32 +1,12 @@
 package settings
 
 import (
-	"log"
-	"os"
 	"path/filepath"
-	"runtime"
+
+	"github.com/adrg/xdg"
 )
 
-func coresDir() string {
-	coresDir := "./cores"
-	// with hardened runtime enabled, dylibs can't be loaded from a relative path
-	if runtime.GOOS == "darwin" {
-		exe, err := os.Executable()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		exeDir := filepath.Dir(exe)
-		coresDir = filepath.Join(exeDir, "..", "Frameworks")
-	}
-	return coresDir
-}
-
 func defaultSettings() Settings {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	return Settings{
 		VideoFullscreen:   false,
 		VideoMonitorIndex: 0,
@@ -78,14 +58,14 @@ func defaultSettings() Settings {
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 			"Sony - PlayStation":                             playstationCore,
 		},
-		CoresDirectory:       coresDir(),
+		CoresDirectory:       "./cores",
 		AssetsDirectory:      "./assets",
 		DatabaseDirectory:    "./database",
-		SavestatesDirectory:  filepath.Join(home, ".ludo", "savestates"),
-		SavefilesDirectory:   filepath.Join(home, ".ludo", "savefiles"),
-		ScreenshotsDirectory: filepath.Join(home, ".ludo", "screenshots"),
-		SystemDirectory:      filepath.Join(home, ".ludo", "system"),
-		PlaylistsDirectory:   filepath.Join(home, ".ludo", "playlists"),
-		ThumbnailsDirectory:  filepath.Join(home, ".ludo", "thumbnails"),
+		SavestatesDirectory:  filepath.Join(xdg.DataHome, "ludo", "savestates"),
+		SavefilesDirectory:   filepath.Join(xdg.DataHome, "ludo", "savefiles"),
+		ScreenshotsDirectory: filepath.Join(xdg.DataHome, "ludo", "screenshots"),
+		SystemDirectory:      filepath.Join(xdg.DataHome, "ludo", "system"),
+		PlaylistsDirectory:   filepath.Join(xdg.DataHome, "ludo", "playlists"),
+		ThumbnailsDirectory:  filepath.Join(xdg.DataHome, "ludo", "thumbnails"),
 	}
 }
