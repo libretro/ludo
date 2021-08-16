@@ -134,9 +134,9 @@ deb: ludo $(SOBJS)
 	mkdir -p $(DEB_ROOT)/usr/local/share/applications
 	mkdir -p $(DEB_ROOT)/usr/share/icons/hicolor/1024x1024/apps/
 	cp ludo $(DEB_ROOT)/usr/local/bin
-	cp -r database $(DEB_ROOT)/usr/local/share/ludo
-	cp -r assets $(DEB_ROOT)/usr/local/share/ludo
 	cp -r cores $(DEB_ROOT)/usr/local/share/ludo
+	cp -r assets $(DEB_ROOT)/usr/local/share/ludo
+	cp -r database $(DEB_ROOT)/usr/local/share/ludo
 	cp assets/icon.png $(DEB_ROOT)/usr/share/icons/hicolor/1024x1024/apps/ludo.png
 	cp ludo.desktop $(DEB_ROOT)/usr/local/share/applications
 	cp control $(DEB_ROOT)/DEBIAN
