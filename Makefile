@@ -129,11 +129,16 @@ DEB_ROOT = ludo_$(VERSION)-1_$(DEB_ARCH)
 
 deb: ludo $(SOBJS)
 	mkdir -p $(DEB_ROOT)/DEBIAN
+	mkdir -p $(DEB_ROOT)/etc
 	mkdir -p $(DEB_ROOT)/usr/bin
 	mkdir -p $(DEB_ROOT)/usr/lib/ludo
 	mkdir -p $(DEB_ROOT)/usr/share/ludo
 	mkdir -p $(DEB_ROOT)/usr/share/applications
 	mkdir -p $(DEB_ROOT)/usr/share/icons/hicolor/1024x1024/apps/
+	touch $(DEB_ROOT)/etc/ludo.toml
+	echo "cores_dir = \"/usr/lib/ludo\"" >> $(DEB_ROOT)/etc/ludo.toml
+	echo "assets_dir = \"/usr/share/ludo/assets\"" >> $(DEB_ROOT)/etc/ludo.toml
+	echo "database_dir = \"/usr/share/ludo/databbase\"" >> $(DEB_ROOT)/etc/ludo.toml
 	cp ludo $(DEB_ROOT)/usr/bin
 	cp cores/* $(DEB_ROOT)/usr/lib/ludo
 	cp -r assets $(DEB_ROOT)/usr/share/ludo
