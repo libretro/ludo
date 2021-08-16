@@ -2,9 +2,39 @@ package settings
 
 import (
 	"path/filepath"
+	"runtime"
 
 	"github.com/adrg/xdg"
 )
+
+func coresDir() string {
+	switch runtime.GOOS {
+	case "windows":
+		return "./cores"
+	case "darwin":
+		return "./PlugIns"
+	default:
+		return "/usr/lib/ludo"
+	}
+}
+
+func assetsDir() string {
+	switch runtime.GOOS {
+	case "windows", "darwin":
+		return "./assets"
+	default:
+		return filepath.Join(xdg.DataDirs[0], "ludo", "assets")
+	}
+}
+
+func databaseDir() string {
+	switch runtime.GOOS {
+	case "windows", "darwin":
+		return "./database"
+	default:
+		return filepath.Join(xdg.DataDirs[0], "ludo", "database")
+	}
+}
 
 func defaultSettings() Settings {
 	return Settings{
@@ -58,9 +88,9 @@ func defaultSettings() Settings {
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 			"Sony - PlayStation":                             playstationCore,
 		},
-		CoresDirectory:       filepath.Join(xdg.DataDirs[0], "ludo", "cores"),
-		AssetsDirectory:      filepath.Join(xdg.DataDirs[0], "ludo", "assets"),
-		DatabaseDirectory:    filepath.Join(xdg.DataDirs[0], "ludo", "database"),
+		CoresDirectory:       coresDir(),
+		AssetsDirectory:      assetsDir(),
+		DatabaseDirectory:    databaseDir(),
 		SavestatesDirectory:  filepath.Join(xdg.DataHome, "ludo", "savestates"),
 		SavefilesDirectory:   filepath.Join(xdg.DataHome, "ludo", "savefiles"),
 		ScreenshotsDirectory: filepath.Join(xdg.DataHome, "ludo", "screenshots"),
