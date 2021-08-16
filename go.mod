@@ -1,6 +1,7 @@
 module github.com/libretro/ludo
 
 require (
+	github.com/adrg/xdg v0.3.3 // indirect
 	github.com/cavaliercoder/grab v2.0.0+incompatible
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/disintegration/imaging v1.6.2

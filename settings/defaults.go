@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/adrg/xdg"
 )
 
 func coresDir() string {
@@ -22,11 +24,6 @@ func coresDir() string {
 }
 
 func defaultSettings() Settings {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	return Settings{
 		VideoFullscreen:   false,
 		VideoMonitorIndex: 0,
@@ -79,13 +76,13 @@ func defaultSettings() Settings {
 			"Sony - PlayStation":                             playstationCore,
 		},
 		CoresDirectory:       coresDir(),
-		AssetsDirectory:      "./assets",
-		DatabaseDirectory:    "./database",
-		SavestatesDirectory:  filepath.Join(home, ".ludo", "savestates"),
-		SavefilesDirectory:   filepath.Join(home, ".ludo", "savefiles"),
-		ScreenshotsDirectory: filepath.Join(home, ".ludo", "screenshots"),
-		SystemDirectory:      filepath.Join(home, ".ludo", "system"),
-		PlaylistsDirectory:   filepath.Join(home, ".ludo", "playlists"),
-		ThumbnailsDirectory:  filepath.Join(home, ".ludo", "thumbnails"),
+		AssetsDirectory:      filepath.Join(xdg.DataDirs[0], "ludo", "assets"),
+		DatabaseDirectory:    filepath.Join(xdg.DataDirs[0], "ludo", "database"),
+		SavestatesDirectory:  filepath.Join(xdg.DataHome, "ludo", "savestates"),
+		SavefilesDirectory:   filepath.Join(xdg.DataHome, "ludo", "savefiles"),
+		ScreenshotsDirectory: filepath.Join(xdg.DataHome, "ludo", "screenshots"),
+		SystemDirectory:      filepath.Join(xdg.DataHome, "ludo", "system"),
+		PlaylistsDirectory:   filepath.Join(xdg.DataHome, "ludo", "playlists"),
+		ThumbnailsDirectory:  filepath.Join(xdg.CacheHome, "ludo", "thumbnails"),
 	}
 }
