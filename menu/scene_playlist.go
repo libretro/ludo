@@ -78,12 +78,12 @@ func loadPlaylistEntry(list Scene, playlist string, game playlists.Game) {
 			System:   playlist,
 			CorePath: corePath,
 		})
-		list.segueNext()
-		menu.Push(buildQuickMenu())
-		menu.tweens.FastForward() // position the elements without animating
+		history.Load()
+		menu.WarpToQuickMenu()
 		state.MenuActive = false
 	} else {
 		list.segueNext()
-		menu.Push(buildQuickMenu())
+		menu.WarpToQuickMenu()
+		state.MenuActive = false
 	}
 }

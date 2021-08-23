@@ -39,12 +39,11 @@ func loadHistoryEntry(list Scene, game history.Game) {
 			System:   game.System,
 			CorePath: corePath,
 		})
-		list.segueNext()
-		menu.Push(buildQuickMenu())
-		menu.tweens.FastForward() // position the elements without animating
+		history.Load()
+		menu.WarpToQuickMenu()
 		state.MenuActive = false
 	} else {
-		list.segueNext()
-		menu.Push(buildQuickMenu())
+		menu.WarpToQuickMenu()
+		state.MenuActive = false
 	}
 }
