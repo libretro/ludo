@@ -159,6 +159,8 @@ func indexed(list *entry, offset int) int {
 	return 0
 }
 
+var combo1, combo2 int
+
 // ProcessHotkeys checks if certain keys are pressed and perform corresponding actions
 func (m *Menu) ProcessHotkeys() {
 	// Disable all hot keys on the exit dialog
@@ -167,11 +169,22 @@ func (m *Menu) ProcessHotkeys() {
 		return
 	}
 
-	// Toggle the menu if ActionMenuToggle or the combo L3+R3 is pressed
-	combo := input.NewState[0][libretro.DeviceIDJoypadL3] == 1 && input.Pressed[0][libretro.DeviceIDJoypadR3] == 1
-	combo = combo || input.Pressed[0][libretro.DeviceIDJoypadL3] == 1 && input.NewState[0][libretro.DeviceIDJoypadR3] == 1
+	// First menu combo
+	if input.NewState[0][libretro.DeviceIDJoypadL3] == 1 && input.NewState[0][libretro.DeviceIDJoypadR3] == 1 {
+		combo1++
+	} else {
+		combo1 = 0
+	}
 
-	if (input.Pressed[0][input.ActionMenuToggle] == 1 || combo) && state.CoreRunning {
+	// Second menu combo
+	if input.NewState[0][libretro.DeviceIDJoypadStart] == 1 && input.NewState[0][libretro.DeviceIDJoypadSelect] == 1 {
+		combo2++
+	} else {
+		combo2 = 0
+	}
+
+	// Toggle the menu if ActionMenuToggle or the combo L3+R3 is pressed
+	if (input.Pressed[0][input.ActionMenuToggle] == 1 || combo1 == 1 || combo2 == 1) && state.CoreRunning {
 		state.MenuActive = !state.MenuActive
 		state.FastForward = false
 		if state.MenuActive {

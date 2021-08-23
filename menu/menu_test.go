@@ -120,7 +120,14 @@ func Test_buildExplorer(t *testing.T) {
 	os.Create(tmp + "File 7.txt")
 	os.Mkdir(tmp+"Folder 1", 0777)
 
-	scene := buildExplorer(os.TempDir()+"/Test_buildExplorer/", []string{".img"}, cbMock, dirActionMock)
+	prettify := func(in string) string {
+		if in == "File 4" {
+			return "IMAGE 4"
+		}
+		return in
+	}
+
+	scene := buildExplorer(os.TempDir()+"/Test_buildExplorer/", []string{".img"}, cbMock, dirActionMock, prettify)
 	menu.Push(scene)
 
 	children := scene.Entry().children
@@ -146,7 +153,7 @@ func Test_buildExplorer(t *testing.T) {
 
 	t.Run("Files have file icon", func(t *testing.T) {
 		if children[2].icon != "file" {
-			t.Errorf("buildExplorer = %v, want %v", children[1].icon, "file")
+			t.Errorf("buildExplorer = %v, want %v", children[2].icon, "file")
 		}
 	})
 
@@ -159,7 +166,7 @@ func Test_buildExplorer(t *testing.T) {
 
 	t.Run("Folders have folder icon", func(t *testing.T) {
 		if children[4].icon != "folder" {
-			t.Errorf("buildExplorer = %v, want %v", children[1].icon, "folder")
+			t.Errorf("buildExplorer = %v, want %v", children[4].icon, "folder")
 		}
 	})
 
@@ -170,6 +177,13 @@ func Test_buildExplorer(t *testing.T) {
 		children[4].callbackOK()
 		if len(menu.stack) != 2 {
 			t.Errorf("buildExplorer = %v, want %v", len(menu.stack), 2)
+		}
+	})
+
+	t.Run("Prettifier should work", func(t *testing.T) {
+		want := "IMAGE 4"
+		if children[3].label != want {
+			t.Errorf("buildExplorer = %v, want %v", children[3].label, want)
 		}
 	})
 }

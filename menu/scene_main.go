@@ -19,6 +19,48 @@ type sceneMain struct {
 	entry
 }
 
+var prettyCoreNames = map[string]string{
+	"atari800_libretro":            "Atari 800 (Atari 5200)",
+	"bluemsx_libretro":             "BlueMSX (MSX)",
+	"fbneo_libretro":               "FBNeo (Arcade)",
+	"fceumm_libretro":              "Fceumm (NES)",
+	"gambatte_libretro":            "Gambatte (Game Boy)",
+	"genesis_plus_gx_libretro":     "Genesis Plus GX (Genesis, Master System, Sega CD)",
+	"handy_libretro":               "Handy (Atari Lynx)",
+	"lutro_libretro":               "Lutro (LÖVE)",
+	"mednafen_ngp_libretro":        "Beetle NeoGeo Pocket",
+	"mednafen_pce_fast_libretro":   "Beetle PC-Engine Fast",
+	"mednafen_pce_libretro":        "Beetle PC-Engine",
+	"mednafen_pcfx_libretro":       "Beetle PC-FX",
+	"mednafen_psx_libretro":        "Beetle PlayStation",
+	"mednafen_saturn_libretro":     "Beetle Saturn",
+	"mednafen_supergrafx_libretro": "Beetle SuperGrafx",
+	"mednafen_vb_libretro":         "Beetle VirtualBoy",
+	"mednafen_wswan_libretro":      "Beetle WonderSwan",
+	"melonds_libretro":             "MelonDS (Nintendo DS)",
+	"mgba_libretro":                "mGBA (Game Boy Advance)",
+	"np2kai_libretro":              "NP2Kai (PC-98)",
+	"o2em_libretro":                "O2EM (Odyssey²)",
+	"pcsx_rearmed_libretro":        "PCSX Rearmed (PLayStation)",
+	"picodrive_libretro":           "PicoDrive (Genesis, 32X)",
+	"pokemini_libretro":            "PokeMini (Pokemon Mini)",
+	"prosystem_libretro":           "Prosystem (Atari 7800)",
+	"sameboy_libretro":             "SameBoy (Game Boy)",
+	"snes9x_libretro":              "Snes9x (SNES)",
+	"stella2014_libretro":          "Stella 2014 (Atari 2600)",
+	"swanstation_libretro":         "SwanStation (PlayStation)",
+	"vecx_libretro":                "VecX (Vectrex)",
+	"virtualjaguar_libretro":       "Virtual Jaguar (Atari Jaguar)",
+}
+
+func prettifyCoreName(in string) string {
+	name, ok := prettyCoreNames[in]
+	if ok {
+		return name
+	}
+	return in
+}
+
 func buildMainMenu() Scene {
 	var list sceneMain
 	list.label = "Manual Menu"
@@ -35,6 +77,7 @@ func buildMainMenu() Scene {
 				[]string{".dll", ".dylib", ".so"},
 				coreExplorerCb,
 				nil,
+				prettifyCoreName,
 			))
 		},
 	})
@@ -49,6 +92,7 @@ func buildMainMenu() Scene {
 					usr.HomeDir,
 					nil,
 					gameExplorerCb,
+					nil,
 					nil,
 				))
 			} else {

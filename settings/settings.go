@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/adrg/xdg"
 	"github.com/fatih/structs"
 	"github.com/libretro/ludo/ludos"
 	"github.com/libretro/ludo/utils"
@@ -67,11 +68,6 @@ func Load() error {
 		}
 	}()
 
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
 	// Set default values for settings
 	Current = Defaults
 
@@ -84,7 +80,7 @@ func Load() error {
 		}
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(home, ".ludo", "settings.toml"))
+	b, err := ioutil.ReadFile(filepath.Join(xdg.ConfigHome, "ludo", "settings.toml"))
 	if err != nil {
 		return err
 	}
@@ -102,12 +98,7 @@ func Load() error {
 
 // Save saves the current configuration to the home directory
 func Save() error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	err = os.MkdirAll(filepath.Join(home, ".ludo"), os.ModePerm)
+	err := os.MkdirAll(filepath.Join(xdg.ConfigHome, "ludo"), os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -117,7 +108,7 @@ func Save() error {
 		return err
 	}
 
-	fd, err := os.Create(filepath.Join(home, ".ludo", "settings.toml"))
+	fd, err := os.Create(filepath.Join(xdg.ConfigHome, "ludo", "settings.toml"))
 	if err != nil {
 		return err
 	}

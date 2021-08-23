@@ -72,8 +72,9 @@ func buildSettings() Scene {
 						&entry{
 							label: "<Select this directory>",
 							icon:  "scan",
-						}),
-					)
+						},
+						nil,
+					))
 				},
 			})
 		} else {

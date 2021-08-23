@@ -57,7 +57,9 @@ func buildTabs() Scene {
 				&entry{
 					label: "<Scan this directory>",
 					icon:  "scan",
-				}))
+				},
+				nil,
+			))
 			menu.focus--
 		},
 	})

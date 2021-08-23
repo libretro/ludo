@@ -17,6 +17,9 @@ type sceneExplorer struct {
 	entry
 }
 
+// Prettifier processes a file name
+type Prettifier func(string) string
+
 func matchesExtensions(f os.FileInfo, exts []string) bool {
 	if len(exts) > 0 {
 		var fileExtension = filepath.Ext(f.Name())
@@ -46,7 +49,7 @@ func getWindowsDrives() (drives []string) {
 	return drives
 }
 
-func appendFolder(list *sceneExplorer, label, newPath string, exts []string, cb func(string), dirAction *entry) {
+func appendFolder(list *sceneExplorer, label, newPath string, exts []string, cb func(string), dirAction *entry, prettifier Prettifier) {
 	list.children = append(list.children, entry{
 		label: label,
 		icon:  "folder",
@@ -56,7 +59,7 @@ func appendFolder(list *sceneExplorer, label, newPath string, exts []string, cb 
 			if dirAction != nil {
 				dirAction.callbackOK = func() { cb(newPath) }
 			}
-			menu.Push(buildExplorer(newPath, exts, cb, dirAction))
+			menu.Push(buildExplorer(newPath, exts, cb, dirAction, prettifier))
 		},
 	})
 }
@@ -69,7 +72,7 @@ func explorerIcon(f os.FileInfo) string {
 	return icon
 }
 
-func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo, exts []string, cb func(string), dirAction *entry) {
+func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo, exts []string, cb func(string), dirAction *entry, prettifier Prettifier) {
 	// Check whether or not we are to display hidden files.
 	if name[:1] == "." && !settings.Current.ShowHiddenFiles {
 		return
@@ -80,8 +83,14 @@ func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo
 		return
 	}
 
+	// Process file name if needed, used for user friendly file names
+	displayName := name
+	if prettifier != nil {
+		displayName = prettifier(utils.FileName(name))
+	}
+
 	list.children = append(list.children, entry{
-		label: name,
+		label: displayName,
 		icon:  explorerIcon(f),
 		callbackOK: func() {
 			if f.IsDir() {
@@ -90,7 +99,7 @@ func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo
 				if dirAction != nil {
 					dirAction.callbackOK = func() { cb(newPath) }
 				}
-				menu.Push(buildExplorer(newPath, exts, cb, dirAction))
+				menu.Push(buildExplorer(newPath, exts, cb, dirAction, prettifier))
 			} else if cb != nil && (exts == nil || utils.StringInSlice(filepath.Ext(name), exts)) {
 				cb(filepath.Clean(fullPath))
 			}
@@ -98,7 +107,7 @@ func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo
 	})
 }
 
-func buildExplorer(path string, exts []string, cb func(string), dirAction *entry) Scene {
+func buildExplorer(path string, exts []string, cb func(string), dirAction *entry, prettifier Prettifier) Scene {
 	var list sceneExplorer
 	list.label = path
 
@@ -113,17 +122,17 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		if runtime.GOOS == "windows" {
 			drives := getWindowsDrives()
 			for _, drive := range drives {
-				appendFolder(&list, drive+":\\", drive+":\\", exts, cb, dirAction)
+				appendFolder(&list, drive+":\\", drive+":\\", exts, cb, dirAction, prettifier)
 			}
 			list.segueMount()
 			return &list
 		}
 	} else if isWindowsDrive(path) {
 		// Special .. entry pointing to the list of drives on Windows
-		appendFolder(&list, "..", "/", exts, cb, dirAction)
+		appendFolder(&list, "..", "/", exts, cb, dirAction, prettifier)
 	} else {
 		// Add a first entry for the parent directory.
-		appendFolder(&list, "..", filepath.Clean(path+"/.."), exts, cb, dirAction)
+		appendFolder(&list, "..", filepath.Clean(path+"/.."), exts, cb, dirAction, prettifier)
 	}
 
 	files, err := ioutil.ReadDir(path)
@@ -144,7 +153,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 			log.Println(err)
 			continue
 		}
-		appendNode(&list, fullPath, f.Name(), fi, exts, cb, dirAction)
+		appendNode(&list, fullPath, f.Name(), fi, exts, cb, dirAction, prettifier)
 	}
 	buildIndexes(&list.entry)
 

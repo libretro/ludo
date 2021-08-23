@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/adrg/xdg"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/pelletier/go-toml"
@@ -69,11 +70,6 @@ func (o *Options) Save() error {
 	o.Lock()
 	defer o.Unlock()
 
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
 	m := make(map[string]string)
 	for _, v := range o.Vars {
 		m[strings.Replace(v.Key, ".", "___", 1)] = v.Choices[v.Choice]
@@ -84,7 +80,7 @@ func (o *Options) Save() error {
 	}
 
 	name := utils.FileName(state.CorePath)
-	fd, err := os.Create(filepath.Join(home, ".ludo", name+".toml"))
+	fd, err := os.Create(filepath.Join(xdg.ConfigHome, "ludo", name+".toml"))
 	if err != nil {
 		return err
 	}
@@ -103,13 +99,8 @@ func (o *Options) load() error {
 	o.Lock()
 	defer o.Unlock()
 
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
 	name := utils.FileName(state.CorePath)
-	b, err := ioutil.ReadFile(filepath.Join(home, ".ludo", name+".toml"))
+	b, err := ioutil.ReadFile(filepath.Join(xdg.ConfigHome, "ludo", name+".toml"))
 	if err != nil {
 		return err
 	}
