@@ -90,6 +90,10 @@ func buildHome() Scene {
 		cat++
 	}
 
+	if len(list.children) == 0 {
+		menu.focus--
+	}
+
 	list.segueMount()
 
 	return &list
@@ -257,7 +261,7 @@ func (s *sceneHome) update(dt float32) {
 
 	// OK
 	if input.Released[0][libretro.DeviceIDJoypadA] == 1 {
-		if s.children[s.yptr].children[s.xptrs[s.yptr]].callbackOK != nil {
+		if len(s.children) > 0 && s.children[s.yptr].children[s.xptrs[s.yptr]].callbackOK != nil {
 			audio.PlayEffect(audio.Effects["ok"])
 			s.segueNext()
 			s.children[s.yptr].children[s.xptrs[s.yptr]].callbackOK()
@@ -359,6 +363,17 @@ func (s sceneHome) render() {
 				}
 			}
 		}
+	}
+
+	if len(s.children) == 0 {
+		w, h := menu.Window.GetFramebufferSize()
+		menu.BoldFont.SetColor(black)
+		msg := "Welcome to Ludo, please scan your collection."
+		msgw := menu.BoldFont.Width(0.5*menu.ratio, msg)
+		menu.BoldFont.Printf(
+			float32(w)/2-msgw/2,
+			float32(h)/2,
+			0.5*menu.ratio, msg)
 	}
 }
 
