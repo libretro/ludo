@@ -214,6 +214,12 @@ func (s *sceneHome) segueNext() {
 }
 
 func (s *sceneHome) update(dt float32) {
+	// Empty state
+	if len(s.children) == 0 {
+		menu.focus--
+		return
+	}
+
 	// Right
 	repeatRight(dt, input.NewState[0][libretro.DeviceIDJoypadRight] == 1, func() {
 		if s.xptrs[s.yptr] < len(s.children[s.yptr].children)-1 {
