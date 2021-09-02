@@ -47,8 +47,9 @@ func (s *sceneDialog) update(dt float32) {
 	// Cancel
 	if input.Released[0][libretro.DeviceIDJoypadB] == 1 {
 		audio.PlayEffect(audio.Effects["cancel"])
+		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
-		menu.focus--
+		menu.focus = menu.oldFocus
 	}
 }
 

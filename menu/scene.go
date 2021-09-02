@@ -244,12 +244,14 @@ func askQuitConfirmation(cb func()) {
 		if !state.MenuActive {
 			state.MenuActive = true
 		}
+		menu.oldFocus = menu.focus
 		menu.Push(buildYesNoDialog(
 			"Confirm before quitting",
 			"If you have not saved yet, your progress will be lost.",
 			"Do you want to exit Ludo anyway?", func() {
 				cb()
 			}))
+		menu.focus = len(menu.stack)
 	} else {
 		cb()
 	}
@@ -257,32 +259,38 @@ func askQuitConfirmation(cb func()) {
 
 // Displays a confirmation dialog before deleting a playlist game entry
 func askDeleteGameConfirmation(cb func()) {
+	menu.oldFocus = menu.focus
 	menu.Push(buildYesNoDialog(
 		"Confirm before deleting",
 		"You are about to delete a game entry.",
 		"Games and game data won't be removed.", func() {
 			cb()
 		}))
+	menu.focus = len(menu.stack)
 }
 
 // Displays a confirmation dialog before deleting a playlist
 func askDeletePlaylistConfirmation(cb func()) {
+	menu.oldFocus = menu.focus
 	menu.Push(buildYesNoDialog(
 		"Confirm before deleting",
 		"You are about to delete a playlist.",
 		"Games and game data won't be removed.", func() {
 			cb()
 		}))
+	menu.focus = len(menu.stack)
 }
 
 // Displays a confirmation dialog before deleting a savestate
 func askDeleteSavestateConfirmation(cb func()) {
+	menu.oldFocus = menu.focus
 	menu.Push(buildYesNoDialog(
 		"Confirm before deleting",
 		"You are about to delete a savestate.",
 		"This action is irreversible.", func() {
 			cb()
 		}))
+	menu.focus = len(menu.stack)
 }
 
 func genericDrawHintBar() {

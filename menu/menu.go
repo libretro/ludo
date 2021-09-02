@@ -16,13 +16,14 @@ var menu *Menu
 
 // Menu is a type holding the menu state, the stack of scenes, tweens, etc
 type Menu struct {
-	focus  int // this is a hack to switch focus between top tabs and the other scenes
-	stack  []Scene
-	icons  map[string]uint32
-	tweens Tweens
-	scroll float32
-	ratio  float32
-	t      float64
+	focus    int // this is a hack to switch focus between top tabs and the other scenes
+	oldFocus int // this is used to come back to the previous focus when a dialog is canceled
+	stack    []Scene
+	icons    map[string]uint32
+	tweens   Tweens
+	scroll   float32
+	ratio    float32
+	t        float64
 
 	*video.Video // we embbed video here to have direct access to drawing functions
 }
