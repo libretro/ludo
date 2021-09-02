@@ -70,7 +70,7 @@ func (s *sceneDialog) render() {
 		white,
 	)
 
-	menu.Font.SetColor(blue)
+	menu.Font.SetColor(titleColor)
 	lw1 := menu.Font.Width(0.7*menu.ratio, s.title)
 	menu.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 0.7*menu.ratio, s.title)
 	menu.Font.SetColor(black)

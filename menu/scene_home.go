@@ -289,7 +289,7 @@ func (s sceneHome) render() {
 	for j, ve := range s.children {
 		ve := ve
 
-		menu.BoldFont.SetColor(blue.Alpha(ve.labelAlpha * s.alpha))
+		menu.BoldFont.SetColor(titleColor.Alpha(ve.labelAlpha * s.alpha))
 		menu.BoldFont.Printf(
 			96*menu.ratio,
 			s.y*menu.ratio+230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
@@ -341,7 +341,7 @@ func (s sceneHome) render() {
 				320*e.scale*menu.ratio, 240*e.scale*menu.ratio,
 				1, 0.07, white.Alpha(e.iconAlpha*s.alpha))
 
-			menu.BoldFont.SetColor(black.Alpha(e.labelAlpha * s.alpha))
+			menu.BoldFont.SetColor(textColor.Alpha(e.labelAlpha * s.alpha))
 			menu.BoldFont.Printf(
 				(x+672+32)*menu.ratio,
 				(y+360)*menu.ratio,
@@ -385,8 +385,8 @@ func (s sceneHome) render() {
 
 func (s sceneHome) drawHintBar() {
 	w, h := menu.Window.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	arrows, _, _, a, b, _, _, _, _, guide := hintIcons()
 

@@ -139,7 +139,7 @@ var widgets = map[string]func(*entry, *entry, int){
 			float32(fbw)-400*menu.ratio-128*menu.ratio,
 			list.y+(270+32)*menu.ratio+list.scroll*menu.ratio+100*float32(i)*menu.ratio+50*menu.ratio-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			1.25, 0, black.Alpha(e.iconAlpha))
+			1.25, 0, textColor.Alpha(e.iconAlpha))
 	},
 
 	// Range widget for audio volume and similat float settings
@@ -149,10 +149,10 @@ var widgets = map[string]func(*entry, *entry, int){
 		y := list.y + (270+32)*menu.ratio + list.scroll*menu.ratio + 100*float32(i)*menu.ratio + 50*menu.ratio - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
-		menu.DrawRect(x, y, w, h, 0.9, black.Alpha(e.iconAlpha/4))
+		menu.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha/4))
 		w = 175 * menu.ratio * e.value().(float32)
-		menu.DrawRect(x, y, w, h, 0.9, black.Alpha(e.iconAlpha))
-		menu.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, black.Alpha(e.iconAlpha))
+		menu.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha))
+		menu.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, textColor.Alpha(e.iconAlpha))
 	},
 }
 
@@ -274,8 +274,8 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 

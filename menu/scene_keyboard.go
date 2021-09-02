@@ -157,7 +157,7 @@ func (s *sceneKeyboard) render() {
 	ttw := 10 * ksp
 
 	// Background
-	menu.DrawRect(0, 0, float32(w), float32(h), 0, white.Alpha(s.alpha))
+	menu.DrawRect(0, 0, float32(w), float32(h), 0, bgColor.Alpha(s.alpha))
 
 	// Label
 	menu.Font.SetColor(black)
@@ -204,8 +204,8 @@ func (s *sceneKeyboard) render() {
 
 func (s *sceneKeyboard) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	arrows, _, _, a, b, x, y, start, _, _ := hintIcons()
 

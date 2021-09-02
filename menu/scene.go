@@ -158,7 +158,7 @@ func genericDrawCursor(list *entry, i int) {
 		y,
 		float32(w)-720*menu.ratio,
 		list.entryHeight*menu.ratio, 0.1,
-		white.Alpha(list.alpha))
+		cursorBg.Alpha(list.alpha))
 }
 
 // genericRender renders a vertical list of menu entries
@@ -166,7 +166,7 @@ func genericDrawCursor(list *entry, i int) {
 func genericRender(list *entry) {
 	w, h := menu.GetFramebufferSize()
 
-	menu.BoldFont.SetColor(blue.Alpha(list.alpha))
+	menu.BoldFont.SetColor(titleColor.Alpha(list.alpha))
 	menu.BoldFont.Printf(
 		360*menu.ratio,
 		list.y*menu.ratio+230*menu.ratio,
@@ -177,7 +177,7 @@ func genericRender(list *entry) {
 		list.y*menu.ratio+270*menu.ratio,
 		float32(w)-720*menu.ratio,
 		2*menu.ratio,
-		0, lightGrey.Alpha(list.alpha),
+		0, sepColor.Alpha(list.alpha),
 	)
 
 	menu.ScissorStart(
@@ -203,7 +203,7 @@ func genericRender(list *entry) {
 			y-1*menu.ratio+list.entryHeight/2*menu.ratio,
 			float32(w)-720*menu.ratio,
 			2*menu.ratio,
-			0, lightGrey.Alpha(e.iconAlpha),
+			0, sepColor.Alpha(e.iconAlpha),
 		)
 
 		if i == list.ptr {
@@ -214,10 +214,10 @@ func genericRender(list *entry) {
 			420*menu.ratio-64*0.35*menu.ratio,
 			y-64*0.35*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			0.35, 0, black.Alpha(e.iconAlpha))
+			0.35, 0, textColor.Alpha(e.iconAlpha))
 
 		if e.labelAlpha > 0 {
-			menu.Font.SetColor(black.Alpha(e.labelAlpha))
+			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Printf(
 				480*menu.ratio,
 				y+fontOffset,
@@ -287,8 +287,8 @@ func askDeleteSavestateConfirmation(cb func()) {
 
 func genericDrawHintBar() {
 	w, h := menu.Window.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 

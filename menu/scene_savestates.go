@@ -121,7 +121,7 @@ func (s *sceneSavestates) render() {
 	list := &s.entry
 	w, h := menu.GetFramebufferSize()
 
-	menu.BoldFont.SetColor(blue.Alpha(list.alpha))
+	menu.BoldFont.SetColor(titleColor.Alpha(list.alpha))
 	menu.BoldFont.Printf(
 		360*menu.ratio,
 		list.y*menu.ratio+230*menu.ratio,
@@ -132,7 +132,7 @@ func (s *sceneSavestates) render() {
 		list.y*menu.ratio+270*menu.ratio,
 		float32(w)-720*menu.ratio,
 		2*menu.ratio,
-		0, lightGrey,
+		0, sepColor,
 	)
 
 	menu.ScissorStart(
@@ -159,7 +159,7 @@ func (s *sceneSavestates) render() {
 			y-1*menu.ratio+list.entryHeight/2*menu.ratio,
 			float32(w)-720*menu.ratio,
 			2*menu.ratio,
-			0, lightGrey,
+			0, sepColor,
 		)
 
 		if i == list.ptr {
@@ -183,7 +183,7 @@ func (s *sceneSavestates) render() {
 					1, 0, white.Alpha(e.iconAlpha))
 			}
 
-			menu.Font.SetColor(black.Alpha(e.labelAlpha))
+			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Printf(
 				600*menu.ratio,
 				y+fontOffset,
@@ -196,8 +196,8 @@ func (s *sceneSavestates) render() {
 
 func (s *sceneSavestates) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 

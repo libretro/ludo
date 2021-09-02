@@ -170,7 +170,7 @@ func (s sceneTabs) render() {
 
 	now := time.Now().Format("3:04PM")
 	nowWidth := menu.BoldFont.Width(0.5*menu.ratio, now)
-	menu.BoldFont.SetColor(black)
+	menu.BoldFont.SetColor(textColor)
 	menu.BoldFont.Printf(
 		float32(w)-96*menu.ratio-nowWidth,
 		90*menu.ratio, 0.5*menu.ratio, now)
@@ -194,18 +194,18 @@ func (s sceneTabs) render() {
 		menu.DrawImage(menu.icons["circle"],
 			float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2,
 			32*menu.ratio,
-			96*menu.ratio, 96*menu.ratio, 1, 0, white)
+			96*menu.ratio, 96*menu.ratio, 1, 0, tabBgColor)
 		menu.DrawImage(menu.icons[e.icon],
 			float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2+24*menu.ratio,
 			56*menu.ratio,
-			48*menu.ratio, 48*menu.ratio, 1, 0, blue)
+			48*menu.ratio, 48*menu.ratio, 1, 0, tabTextColor)
 	}
 }
 
 func (s *sceneTabs) drawHintBar() {
 	w, h := menu.Window.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, white)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 

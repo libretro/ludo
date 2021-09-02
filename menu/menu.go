@@ -76,9 +76,9 @@ func (m *Menu) Render(dt float32) {
 	w, h := m.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
 
-	c := white
+	c := bgColor
 	if haveTransparentBackground() {
-		c = white.Alpha(0.85)
+		c = bgColor.Alpha(0.85)
 	}
 	m.DrawImage(menu.icons["bg"], 0, 0, float32(w), float32(h), 1, 0, c)
 
