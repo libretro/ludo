@@ -115,8 +115,8 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 			for _, rom := range z.File {
 				romExt := filepath.Ext(rom.Name)
 				// these 4 systems might have headered or headerless roms and need special logic
-				if romExt == ".nes" || romExt == ".a78" || romExt == ".lnx" || romExt == ".fds" {
-					crc, crcHeaderless, err := checksumHeaderless(rom, headerSizes[romExt])
+				if headerSize, ok := headerSizes[romExt]; ok {
+					crc, crcHeaderless, err := checksumHeaderless(rom, headerSize)
 					if err != nil {
 						n.Update(ntf.Error, err.Error())
 						continue
@@ -141,8 +141,12 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				n.Update(ntf.Error, err.Error())
 				continue
 			}
-			CRC32 := crc32.ChecksumIEEE(bytes)
-			state.DB.FindByCRC(f, utils.FileName(f), CRC32, games)
+			crc := crc32.ChecksumIEEE(bytes)
+			state.DB.FindByCRC(f, utils.FileName(f), crc, games)
+			if headerSize, ok := headerSizes[ext]; ok {
+				crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
+				state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, games)
+			}
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}
 	}
