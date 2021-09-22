@@ -43,7 +43,7 @@ ludo.exe:
 cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
 	mkdir -p cores
 	@if [ $(basename $(@F)) = swanstation_libretro ]; then\
-		wget -c https://github.com/kivutar/swanstation/releases/download/v2021-08-01/swanstation-$(OS)-$(ARCH).zip -O $@.zip;\
+		wget -c https://github.com/kivutar/swanstation/releases/download/v2021-09-22/swanstation-$(OS)-$(ARCH).zip -O $@.zip;\
 	else\
 		wget -c $(BUILDBOTURL)/$(@F).zip -O $@.zip;\
 	fi
@@ -92,7 +92,7 @@ dmg: empty.dmg $(APP).app
 	hdiutil attach empty.dmg -noautoopen -quiet -mountpoint wc
 	rm -rf wc/$(APP).app
 	ditto -rsrc $(APP).app wc/$(APP).app
-	ln -s /Applications wc/Applications
+	ln -sf /Applications wc/Applications
 	WC_DEV=`hdiutil info | grep wc | grep "Apple_HFS" | awk '{print $$1}'` && hdiutil detach $$WC_DEV -quiet -force
 	rm -f $(BUNDLENAME)-*.dmg
 	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
