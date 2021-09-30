@@ -31,9 +31,10 @@ type Core struct {
 	symRetroGetMemorySize           unsafe.Pointer
 	symRetroGetMemoryData           unsafe.Pointer
 
-	AudioCallback     *AudioCallback
-	FrameTimeCallback *FrameTimeCallback
-	HWRenderCallback  *HWRenderCallback
+	AudioCallback       *AudioCallback
+	FrameTimeCallback   *FrameTimeCallback
+	DiskControlCallback *DiskControlCallback
+	HWRenderCallback    *HWRenderCallback
 }
 
 // DlSym loads a symbol from a dynamic library

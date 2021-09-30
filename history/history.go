@@ -1,3 +1,4 @@
+// Package history manages the list of recently played games
 package history
 
 import (
@@ -7,14 +8,16 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/adrg/xdg"
 )
 
 // Game represents a game in the history file
 type Game struct {
 	Path      string // Absolute path of the game on the filesystem
 	Name      string // Human readable name of the game, comes from the RDB
-	System    string
-	CorePath  string
+	System    string // Name of the game console
+	CorePath  string // Absolute path to the libretro core
 	Savestate string // Absolute path of the last savestate on this game
 }
 
@@ -47,12 +50,7 @@ func Push(g Game) {
 
 // Load loads history.csv in memory
 func Load() error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	file, err := os.Open(filepath.Join(home, ".ludo", "history.csv"))
+	file, err := os.Open(filepath.Join(xdg.DataHome, "ludo", "history.csv"))
 	if err != nil {
 		return err
 	}
@@ -82,12 +80,7 @@ func Load() error {
 
 // Save persists the history as a csv file
 func Save() error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	file, err := os.Create(filepath.Join(home, ".ludo", "history.csv"))
+	file, err := os.Create(filepath.Join(xdg.DataHome, "ludo", "history.csv"))
 	if err != nil {
 		return err
 	}

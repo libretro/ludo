@@ -39,6 +39,11 @@ void bridge_retro_audio_callback(retro_audio_callback_t f);
 void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
 size_t bridge_retro_get_memory_size(void *f, unsigned id);
 void* bridge_retro_get_memory_data(void *f, unsigned id);
+void bridge_retro_set_eject_state(retro_set_eject_state_t f, bool state);
+bool bridge_retro_get_eject_state(retro_get_eject_state_t f);
+unsigned bridge_retro_get_image_index(retro_get_image_index_t f);
+void bridge_retro_set_image_index(retro_set_image_index_t f, unsigned index);
+unsigned bridge_retro_get_num_images(retro_get_num_images_t f);
 
 bool coreEnvironment_cgo(unsigned cmd, void *data);
 void coreVideoRefresh_cgo(void *data, unsigned width, unsigned height, size_t pitch);
@@ -585,7 +590,7 @@ func (core *Core) Serialize(size uint) ([]byte, error) {
 
 // Unserialize unserializes internal state from a byte slice.
 func (core *Core) Unserialize(bytes []byte, size uint) error {
-	if size <= 0 {
+	if size == 0 || len(bytes) == 0 {
 		return errors.New("retro_unserialize failed")
 	}
 	ok := bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
@@ -930,4 +935,35 @@ func (core *Core) GetMemorySize(id uint32) uint {
 // See memory constants.
 func (core *Core) GetMemoryData(id uint32) unsafe.Pointer {
 	return C.bridge_retro_get_memory_data(core.symRetroGetMemoryData, C.unsigned(id))
+}
+
+// DiskControlCallback is an interface which frontend can use to eject and insert disk images
+type DiskControlCallback struct {
+	SetEjectState func(bool)
+	GetEjectState func() bool
+	GetImageIndex func() uint
+	SetImageIndex func(uint)
+	GetNumImages  func() uint
+}
+
+// SetDiskControlCallback sets an interface which frontend can use to eject and insert disk images
+func (core *Core) SetDiskControlCallback(data unsafe.Pointer) {
+	c := *(*C.struct_retro_disk_control_callback)(data)
+	dcc := &DiskControlCallback{}
+	dcc.SetEjectState = func(state bool) {
+		C.bridge_retro_set_eject_state(c.set_eject_state, C.bool(state))
+	}
+	dcc.GetEjectState = func() bool {
+		return bool(C.bridge_retro_get_eject_state(c.get_eject_state))
+	}
+	dcc.GetImageIndex = func() uint {
+		return uint(C.bridge_retro_get_image_index(c.get_image_index))
+	}
+	dcc.SetImageIndex = func(index uint) {
+		C.bridge_retro_set_image_index(c.set_image_index, C.uint(index))
+	}
+	dcc.GetNumImages = func() uint {
+		return uint(C.bridge_retro_get_num_images(c.get_num_images))
+	}
+	core.DiskControlCallback = dcc
 }

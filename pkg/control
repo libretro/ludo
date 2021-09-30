@@ -1,0 +1,10 @@
+Package: ludo
+Version: VERSION
+Architecture: ARCH
+Depends: libc6, libopenal1, libgl1
+Maintainer: Jean-André Santoni jean.andre.santoni@gmail.com
+Section: games
+Priority: optional
+Homepage: https://ludo.libretro.com
+Description: ludo
+ A minimalist frontend for emulators

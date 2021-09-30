@@ -72,8 +72,9 @@ func buildSettings() Scene {
 						&entry{
 							label: "<Select this directory>",
 							icon:  "scan",
-						}),
-					)
+						},
+						nil,
+					))
 				},
 			})
 		} else {
@@ -182,7 +183,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		settings.Save()
 	},
 	"VideoFilter": func(f *structs.Field, direction int) {
-		filters := []string{"Raw", "Smooth", "Pixel Perfect", "CRT"}
+		filters := []string{"Raw", "Smooth", "Pixel Perfect", "CRT", "LCD"}
 		v := f.Value().(string)
 		i := utils.IndexOfString(v, filters)
 		i += direction

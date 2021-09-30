@@ -30,6 +30,7 @@ func buildHistory() Scene {
 			system:     game.System,
 			tags:       tags,
 			callbackOK: func() { loadHistoryEntry(&list, game) },
+			callbackX:  func() { askDeleteGameConfirmation(func() { deleteHistoryEntry(&list, game) }) },
 		})
 	}
 
@@ -81,6 +82,48 @@ func loadHistoryEntry(list Scene, game history.Game) {
 		list.segueNext()
 		menu.Push(buildQuickMenu())
 	}
+}
+
+func removeHistoryGame(s []history.Game, game history.Game) []history.Game {
+	l := []history.Game{}
+	for _, g := range s {
+		if g.Path != game.Path {
+			l = append(l, g)
+		}
+	}
+	return l
+}
+
+func removeHistoryEntry(s []entry, game history.Game) []entry {
+	l := []entry{}
+	for _, g := range s {
+		if g.path != game.Path {
+			l = append(l, g)
+		}
+	}
+
+	return l
+}
+
+func deleteHistoryEntry(list *sceneHistory, game history.Game) {
+	history.List = removeHistoryGame(history.List, game)
+	history.Save()
+	refreshTabs()
+	list.children = removeHistoryEntry(list.children, game)
+
+	if len(history.List) == 0 {
+		list.children = append(list.children, entry{
+			label: "Empty history",
+			icon:  "subsetting",
+		})
+	}
+
+	if list.ptr >= len(list.children) {
+		list.ptr = len(list.children) - 1
+	}
+
+	buildIndexes(&list.entry)
+	genericAnimate(&list.entry)
 }
 
 // Generic stuff
@@ -192,7 +235,7 @@ func (s *sceneHistory) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
-	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
+	_, upDown, _, a, b, x, _, _, _, guide := hintIcons()
 
 	var stack float32
 	if state.CoreRunning {
@@ -201,4 +244,9 @@ func (s *sceneHistory) drawHintBar() {
 	stackHint(&stack, upDown, "NAVIGATE", h)
 	stackHint(&stack, b, "BACK", h)
 	stackHint(&stack, a, "RUN", h)
+
+	list := menu.stack[len(menu.stack)-1].Entry()
+	if list.children[list.ptr].callbackX != nil {
+		stackHint(&stack, x, "DELETE", h)
+	}
 }
