@@ -96,6 +96,18 @@ type SystemAVInfo struct {
 	Timing   SystemTiming
 }
 
+// MemoryDescriptor stores information about the emulated memory regions
+type MemoryDescriptor struct {
+	Flags      uint64
+	Ptr        unsafe.Pointer
+	Offset     uintptr
+	Start      uintptr
+	Select     uintptr
+	Disconnect uintptr
+	Len        uintptr
+	Addrspace  string
+}
+
 // Variable is a key value pair that represents a core option
 type Variable C.struct_retro_variable
 
@@ -469,6 +481,7 @@ func (core *Core) APIVersion() uint {
 func (core *Core) Deinit() {
 	C.bridge_retro_deinit(core.symRetroDeinit)
 	DlClose(core.handle)
+	core.MemoryMap = nil
 	environment = nil
 	videoRefresh = nil
 	audioSample = nil
@@ -782,6 +795,28 @@ func GetCoreOptionsIntl(data unsafe.Pointer) []CoreOptionDefinition {
 	}
 
 	return definitions
+}
+
+// GetMemoryMap is an environment callback helper that returns the list of
+// memory regions EnvironmentSetMemoryMap.
+func GetMemoryMap(data unsafe.Pointer) []MemoryDescriptor {
+	c_memmap := (*C.struct_retro_memory_map)(data)
+	descriptors := make([]MemoryDescriptor, int(c_memmap.num_descriptors))
+	for i := 0; i < len(descriptors); i++ {
+		c_descriptor := unsafe.Pointer(uintptr(unsafe.Pointer(c_memmap.descriptors)) + uintptr(i)*unsafe.Sizeof(*c_memmap.descriptors))
+		d := *(*C.struct_retro_memory_descriptor)(c_descriptor)
+
+		descriptors[i] = MemoryDescriptor{
+			Flags:      uint64(d.flags),
+			Ptr:        d.ptr,
+			Offset:     uintptr(d.start),
+			Select:     uintptr(d._select),
+			Disconnect: uintptr(d.disconnect),
+			Len:        uintptr(d.len),
+			Addrspace:  C.GoString(d.addrspace),
+		}
+	}
+	return descriptors
 }
 
 // GetGeometry is an environment callback helper that returns the game geometry
