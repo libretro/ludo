@@ -36,7 +36,7 @@ func Init(v *video.Video) {
 
 // Load loads a libretro core
 func Load(sofile string) error {
-	// In case the a core is already loaded, we need to close it properly
+	// In case a core is already loaded, we need to close it properly
 	// before loading the new core
 	Unload()
 
