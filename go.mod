@@ -11,6 +11,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0
+	github.com/mholt/archiver/v3 v3.5.0
 	github.com/pelletier/go-toml v1.9.1
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tanema/gween v0.0.0-20200427131925-c89ae23cc63c
