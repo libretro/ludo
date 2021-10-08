@@ -14,6 +14,7 @@ require (
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/pelletier/go-toml v1.9.1
 	github.com/tanema/gween v0.0.0-20200427131925-c89ae23cc63c
+	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/youpy/go-wav v0.1.0
 	golang.org/x/image v0.0.0-20210504121937-7319ad40d33e
 	golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08
