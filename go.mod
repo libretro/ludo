@@ -1,7 +1,7 @@
 module github.com/libretro/ludo
 
 require (
-	github.com/adrg/xdg v0.3.3 // indirect
+	github.com/adrg/xdg v0.3.3
 	github.com/cavaliercoder/grab v2.0.0+incompatible
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/disintegration/imaging v1.6.2
@@ -13,7 +13,6 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/pelletier/go-toml v1.9.1
-	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tanema/gween v0.0.0-20200427131925-c89ae23cc63c
 	github.com/youpy/go-wav v0.1.0
 	golang.org/x/image v0.0.0-20210504121937-7319ad40d33e
