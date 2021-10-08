@@ -75,7 +75,6 @@ func Load(sofile string) error {
 // unarchiveGame unarchives a rom to tmpdir and returns the path and size of the extracted ROM.
 // In case the archive contains more than one file, they are all extracted and the
 // first one or a better match (cue for CDrom) is passed to the libretro core.
-
 func unarchiveGame(filename string) (string, int64, error) {
 	path := ""
 	size := int64(0)
@@ -107,7 +106,7 @@ func unarchiveGame(filename string) (string, int64, error) {
 		return path, size, err
 	}
 
-	prefered_ext := []string{".cue"}
+	preferedExts := []string{".cue"}
 	err = archiver.Walk(filename, func(f archiver.File) error {
 		fname := f.Name()
 		ext := filepath.Ext(fname)
@@ -115,7 +114,7 @@ func unarchiveGame(filename string) (string, int64, error) {
 			path = filepath.Join(dst, fname)
 			size = f.Size()
 			log.Println("first file in archive:", path, size)
-		} else if StringInSliceNoCase(ext, prefered_ext) {
+		} else if StringInSliceNoCase(ext, preferedExts) {
 			path = filepath.Join(dst, fname)
 			size = f.Size()
 			log.Println("find a better file in archive:", path, size)
