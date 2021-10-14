@@ -106,15 +106,25 @@ func unarchiveGame(filename string) (string, int64, error) {
 		return path, size, err
 	}
 
-	preferedExts := []string{".cue"}
+	extPriority := 0 // current priority
+	// Give priority of some extensions (use upper case to be case insensitive)
+	extPrefered := make(map[string]int)
+	extPrefered[".cue"] = 1
+	extPrefered[".m3u"] = 2
+
 	err = archiver.Walk(filename, func(f archiver.File) error {
 		fname := f.Name()
 		ext := filepath.Ext(fname)
 		if size == 0 {
+			// By default select the first file of the archive
 			path = filepath.Join(dst, fname)
 			size = f.Size()
 			log.Println("first file in archive:", path, size)
-		} else if StringInSliceNoCase(ext, preferedExts) {
+		}
+		// Check if a file (based on extension) has a higher priority
+		priority, ok := extPrefered[strings.ToLower(ext)]
+		if ok && priority > extPriority {
+			extPriority = priority
 			path = filepath.Join(dst, fname)
 			size = f.Size()
 			log.Println("find a better file in archive:", path, size)
@@ -215,17 +225,6 @@ func UnloadGame() {
 		vid.ResetPitch()
 		vid.ResetRot()
 	}
-}
-
-// StringInSliceNoCase check wether a string is contain in a string slice.
-func StringInSliceNoCase(a string, list []string) bool {
-	a = strings.ToUpper(a)
-	for _, b := range list {
-		if strings.ToUpper(b) == a {
-			return true
-		}
-	}
-	return false
 }
 
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it
