@@ -4,6 +4,8 @@
 package input
 
 import (
+	"log"
+
 	"github.com/go-gl/glfw/v3.3/glfw"
 	lr "github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
@@ -65,6 +67,9 @@ var vid *video.Video
 // Init initializes the input package
 func Init(v *video.Video) {
 	vid = v
+	if !glfw.UpdateGamepadMappings(mappings) {
+		log.Println("Failed to update mappings")
+	}
 	glfw.SetJoystickCallback(joystickCallback)
 }
 
