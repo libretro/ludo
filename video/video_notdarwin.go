@@ -26,7 +26,7 @@ func (video *Video) InitFramebuffer() {
 	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
 	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
 
-	hw := state.Global.Core.HWRenderCallback
+	hw := state.Core.HWRenderCallback
 	if hw.Depth {
 		gl.GenRenderbuffers(1, &video.rboID)
 		gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
