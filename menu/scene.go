@@ -258,7 +258,7 @@ func askQuitConfirmation(cb func()) {
 }
 
 // Displays a confirmation dialog before deleting a playlist game entry
-func askDeleteGameConfirmation(cb func()) {
+/*func askDeleteGameConfirmation(cb func()) {
 	menu.oldFocus = menu.focus
 	menu.Push(buildYesNoDialog(
 		"Confirm before deleting",
@@ -279,7 +279,7 @@ func askDeletePlaylistConfirmation(cb func()) {
 			cb()
 		}))
 	menu.focus = len(menu.stack)
-}
+}*/
 
 // Displays a confirmation dialog before deleting a savestate
 func askDeleteSavestateConfirmation(cb func()) {
