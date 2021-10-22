@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"runtime"
@@ -84,7 +85,18 @@ func main() {
 		log.Println("[Settings]: Using default settings")
 	}
 
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+	// ExitOnError causes flags to quit after displaying help.
+	// (--help counts as an error)
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+	// customize help message
+	flag.CommandLine.Usage = func() {
+		fmt.Printf("Usage: %s [OPTIONS] [content]\n", os.Args[0])
+		fmt.Printf("Options:\n")
+		flag.PrintDefaults()
+	}
+
+	// set arguments
 	flag.StringVar(&state.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Verbose, "v", false, "Verbose logs")
 	flag.BoolVar(&state.LudOS, "ludos", false, "Expose the features related to LudOS")
