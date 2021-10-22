@@ -181,6 +181,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
+	gl.UseProgram(video.program)
 	textureUniform := gl.GetUniformLocation(video.program, gl.Str("Texture\x00"))
 	gl.Uniform1i(textureUniform, 0)
 
