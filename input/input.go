@@ -208,6 +208,9 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		if id == uint(lr.DeviceIDMouseLeft) && vid.Window.GetMouseButton(glfw.MouseButton1) == glfw.Press {
 			return 1
 		}
+		if id == uint(lr.DeviceIDMouseRight) && vid.Window.GetMouseButton(glfw.MouseButton2) == glfw.Press {
+			return 1
+		}
 	}
 
 	return 0
