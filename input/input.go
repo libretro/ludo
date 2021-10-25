@@ -32,6 +32,9 @@ var (
 	NewAnalogState AnalogStates // analog input state for the current frame
 )
 
+var oldMouseX float64
+var oldMouseY float64
+
 // Hot keys
 const (
 	// ActionMenuToggle toggles the menu UI
@@ -188,6 +191,26 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 		}
 
 		return NewAnalogState[port][index][id]
+	}
+
+	if device == lr.DeviceMouse {
+		x, y := vid.Window.GetCursorPos()
+		if id == uint(lr.DeviceIDMouseX) {
+			d := x - oldMouseX
+			oldMouseX = x
+			return int16(d)
+		}
+		if id == uint(lr.DeviceIDMouseY) {
+			d := y - oldMouseY
+			oldMouseY = y
+			return int16(d)
+		}
+		if id == uint(lr.DeviceIDMouseLeft) && vid.Window.GetMouseButton(glfw.MouseButton1) == glfw.Press {
+			return 1
+		}
+		if id == uint(lr.DeviceIDMouseRight) && vid.Window.GetMouseButton(glfw.MouseButton2) == glfw.Press {
+			return 1
+		}
 	}
 
 	return 0

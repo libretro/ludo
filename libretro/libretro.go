@@ -295,13 +295,28 @@ const (
 	DeviceIDJoypadMask = uint32(C.RETRO_DEVICE_ID_JOYPAD_MASK)
 )
 
-// Index / Id values for ANALOG device.
+// Index / Id values for analog device
 const (
 	DeviceIndexAnalogLeft   = uint32(C.RETRO_DEVICE_INDEX_ANALOG_LEFT)
 	DeviceIndexAnalogRight  = uint32(C.RETRO_DEVICE_INDEX_ANALOG_RIGHT)
 	DeviceIndexAnalogButton = uint32(C.RETRO_DEVICE_INDEX_ANALOG_BUTTON)
 	DeviceIDAnalogX         = uint32(C.RETRO_DEVICE_ID_ANALOG_X)
 	DeviceIDAnalogY         = uint32(C.RETRO_DEVICE_ID_ANALOG_Y)
+)
+
+// ID values for the mouse device
+const (
+	DeviceIDMouseX              = uint32(C.RETRO_DEVICE_ID_MOUSE_X)
+	DeviceIDMouseY              = uint32(C.RETRO_DEVICE_ID_MOUSE_Y)
+	DeviceIDMouseLeft           = uint32(C.RETRO_DEVICE_ID_MOUSE_LEFT)
+	DeviceIDMouseRight          = uint32(C.RETRO_DEVICE_ID_MOUSE_RIGHT)
+	DeviceIDMouseWheelUp        = uint32(C.RETRO_DEVICE_ID_MOUSE_WHEELUP)
+	DeviceIDMouseWheelDown      = uint32(C.RETRO_DEVICE_ID_MOUSE_WHEELDOWN)
+	DeviceIDMouseMiddle         = uint32(C.RETRO_DEVICE_ID_MOUSE_MIDDLE)
+	DeviceIDMouseHorizWheelUp   = uint32(C.RETRO_DEVICE_ID_MOUSE_HORIZ_WHEELUP)
+	DeviceIDMouseHorizWheelDown = uint32(C.RETRO_DEVICE_ID_MOUSE_HORIZ_WHEELDOWN)
+	DeviceIDMouseButton4        = uint32(C.RETRO_DEVICE_ID_MOUSE_BUTTON_4)
+	DeviceIDMouseButton5        = uint32(C.RETRO_DEVICE_ID_MOUSE_BUTTON_5)
 )
 
 // Environment callback API. See libretro.h for details
