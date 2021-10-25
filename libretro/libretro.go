@@ -295,7 +295,7 @@ const (
 	DeviceIDJoypadMask = uint32(C.RETRO_DEVICE_ID_JOYPAD_MASK)
 )
 
-// Index / Id values for ANALOG device.
+// Index / Id values for analog device
 const (
 	DeviceIndexAnalogLeft   = uint32(C.RETRO_DEVICE_INDEX_ANALOG_LEFT)
 	DeviceIndexAnalogRight  = uint32(C.RETRO_DEVICE_INDEX_ANALOG_RIGHT)
@@ -304,6 +304,7 @@ const (
 	DeviceIDAnalogY         = uint32(C.RETRO_DEVICE_ID_ANALOG_Y)
 )
 
+// ID values for the mouse device
 const (
 	DeviceIDMouseX              = uint32(C.RETRO_DEVICE_ID_MOUSE_X)
 	DeviceIDMouseY              = uint32(C.RETRO_DEVICE_ID_MOUSE_Y)
