@@ -41,6 +41,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		ntf.Process(dt)
 		vid.ResizeViewport()
 		m.UpdatePalette()
+		input.Poll()
 		if !state.MenuActive {
 			if state.CoreRunning {
 				state.Core.Run()
@@ -57,7 +58,6 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 				savefiles.SaveSRAM()
 			}
 		} else {
-			input.Poll()
 			m.Update(dt)
 			vid.Render()
 			m.Render(dt)
