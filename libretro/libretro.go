@@ -480,7 +480,7 @@ func (core *Core) APIVersion() uint {
 // Deinit takes care of the library global deinitialization
 func (core *Core) Deinit() {
 	C.bridge_retro_deinit(core.symRetroDeinit)
-	DlClose(core.handle)
+	//DlClose(core.handle) // this causes an error.
 	core.MemoryMap = nil
 	environment = nil
 	videoRefresh = nil
