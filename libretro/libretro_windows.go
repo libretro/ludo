@@ -46,3 +46,9 @@ func (core *Core) DlSym(name string) unsafe.Pointer {
 func DlOpen(path string) (*syscall.DLL, error) {
 	return syscall.LoadDLL(path)
 }
+
+// DlClose closes a dynamic library
+func (core *Core) DlClose() {
+	core.handle.Release()
+}
+

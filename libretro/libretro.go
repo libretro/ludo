@@ -476,6 +476,7 @@ func (core *Core) Deinit() {
 	inputState = nil
 	log = nil
 	getTimeUsec = nil
+	core.DlClose()
 }
 
 // Run runs the game for one video frame.

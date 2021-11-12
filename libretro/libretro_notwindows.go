@@ -63,3 +63,9 @@ func DlOpen(path string) (unsafe.Pointer, error) {
 	}
 	return h, nil
 }
+
+// DlClose closes a dynamic library
+func (core *Core) DlClose() {
+	C.dlclose(core.handle)
+}
+
