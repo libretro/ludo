@@ -480,7 +480,7 @@ func (core *Core) APIVersion() uint {
 // Deinit takes care of the library global deinitialization
 func (core *Core) Deinit() {
 	C.bridge_retro_deinit(core.symRetroDeinit)
-	//DlClose(core.handle) // this causes an error.
+	DlClose(core.handle)
 	core.MemoryMap = nil
 	environment = nil
 	videoRefresh = nil
@@ -490,7 +490,6 @@ func (core *Core) Deinit() {
 	inputState = nil
 	log = nil
 	getTimeUsec = nil
-	core.DlClose()
 }
 
 // Run runs the game for one video frame.
@@ -800,11 +799,11 @@ func GetCoreOptionsIntl(data unsafe.Pointer) []CoreOptionDefinition {
 // GetMemoryMap is an environment callback helper that returns the list of
 // memory regions EnvironmentSetMemoryMap.
 func GetMemoryMap(data unsafe.Pointer) []MemoryDescriptor {
-	c_memmap := (*C.struct_retro_memory_map)(data)
-	descriptors := make([]MemoryDescriptor, int(c_memmap.num_descriptors))
+	cMemmap := (*C.struct_retro_memory_map)(data)
+	descriptors := make([]MemoryDescriptor, int(cMemmap.num_descriptors))
 	for i := 0; i < len(descriptors); i++ {
-		c_descriptor := unsafe.Pointer(uintptr(unsafe.Pointer(c_memmap.descriptors)) + uintptr(i)*unsafe.Sizeof(*c_memmap.descriptors))
-		d := *(*C.struct_retro_memory_descriptor)(c_descriptor)
+		cDescriptor := unsafe.Pointer(uintptr(unsafe.Pointer(cMemmap.descriptors)) + uintptr(i)*unsafe.Sizeof(*cMemmap.descriptors))
+		d := *(*C.struct_retro_memory_descriptor)(cDescriptor)
 
 		descriptors[i] = MemoryDescriptor{
 			Flags:      uint64(d.flags),

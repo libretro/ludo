@@ -36,6 +36,7 @@ func DlOpen(path string) (DlHandle, error) {
 	return h, nil
 }
 
+// DlClose closes a dynamic library
 func DlClose(handle DlHandle) error {
 	result := C.dlclose(handle)
 	if int(result) != 0 {

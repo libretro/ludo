@@ -1,6 +1,3 @@
-//go:build windows
-// +build windows
-
 package libretro
 
 import (
@@ -22,14 +19,7 @@ func DlOpen(path string) (DlHandle, error) {
 	return syscall.LoadDLL(path)
 }
 
-<<<<<<< HEAD
 // DlClose closes a dynamic library
-func (core *Core) DlClose() {
-	core.handle.Release()
-}
-
-=======
 func DlClose(handle DlHandle) error {
 	return handle.Release()
 }
->>>>>>> encapsulation of dl* calls apart from Core struct
