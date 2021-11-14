@@ -23,6 +23,7 @@ var prettyCoreNames = map[string]string{
 	"fbneo_libretro":               "FBNeo (Arcade)",
 	"fceumm_libretro":              "Fceumm (NES)",
 	"gambatte_libretro":            "Gambatte (Game Boy)",
+	"gearsystem_libretro":          "GearSystem (Master System)",
 	"genesis_plus_gx_libretro":     "Genesis Plus GX (Genesis, Master System, Sega CD)",
 	"handy_libretro":               "Handy (Atari Lynx)",
 	"lutro_libretro":               "Lutro (LÖVE)",
