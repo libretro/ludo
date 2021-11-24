@@ -56,8 +56,7 @@ func Test_coreLoad(t *testing.T) {
 		}
 	})
 
-	state.Core.UnloadGame()
-	state.Core.Deinit()
+	Unload()
 	state.GamePath = ""
 	state.Verbose = false
 }

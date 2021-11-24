@@ -5,44 +5,21 @@ import (
 	"unsafe"
 )
 
-// Core is an instance of a dynalically loaded libretro core
-type Core struct {
-	handle *syscall.DLL
-
-	symRetroInit                    unsafe.Pointer
-	symRetroDeinit                  unsafe.Pointer
-	symRetroAPIVersion              unsafe.Pointer
-	symRetroGetSystemInfo           unsafe.Pointer
-	symRetroGetSystemAVInfo         unsafe.Pointer
-	symRetroSetEnvironment          unsafe.Pointer
-	symRetroSetVideoRefresh         unsafe.Pointer
-	symRetroSetControllerPortDevice unsafe.Pointer
-	symRetroSetInputPoll            unsafe.Pointer
-	symRetroSetInputState           unsafe.Pointer
-	symRetroSetAudioSample          unsafe.Pointer
-	symRetroSetAudioSampleBatch     unsafe.Pointer
-	symRetroRun                     unsafe.Pointer
-	symRetroReset                   unsafe.Pointer
-	symRetroLoadGame                unsafe.Pointer
-	symRetroUnloadGame              unsafe.Pointer
-	symRetroSerializeSize           unsafe.Pointer
-	symRetroSerialize               unsafe.Pointer
-	symRetroUnserialize             unsafe.Pointer
-	symRetroGetMemorySize           unsafe.Pointer
-	symRetroGetMemoryData           unsafe.Pointer
-
-	AudioCallback       *AudioCallback
-	FrameTimeCallback   *FrameTimeCallback
-	DiskControlCallback *DiskControlCallback
-}
+// DlHandle is a handle to a dynamic library
+type DlHandle = *syscall.DLL
 
 // DlSym loads a symbol from a dynamic library
-func (core *Core) DlSym(name string) unsafe.Pointer {
-	proc := core.handle.MustFindProc(name)
+func DlSym(handle DlHandle, name string) unsafe.Pointer {
+	proc := handle.MustFindProc(name)
 	return unsafe.Pointer(proc.Addr())
 }
 
 // DlOpen opens a dynamic library
-func DlOpen(path string) (*syscall.DLL, error) {
+func DlOpen(path string) (DlHandle, error) {
 	return syscall.LoadDLL(path)
+}
+
+// DlClose closes a dynamic library
+func DlClose(handle DlHandle) error {
+	return handle.Release()
 }

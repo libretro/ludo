@@ -38,8 +38,8 @@ void bridge_retro_get_system_av_info(void *f, struct retro_system_av_info *si) {
   return ((void (*)(struct retro_system_av_info *))f)(si);
 }
 
-bool bridge_retro_set_environment(void *f, void *callback) {
-	return ((bool (*)(retro_environment_t))f)((retro_environment_t)callback);
+void bridge_retro_set_environment(void *f, void *callback) {
+	return ((void (*)(retro_environment_t))f)((retro_environment_t)callback);
 }
 
 void bridge_retro_set_video_refresh(void *f, void *callback) {

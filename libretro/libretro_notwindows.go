@@ -14,44 +14,16 @@ import (
 */
 import "C"
 
-// Core is an instance of a dynalically loaded libretro core
-type Core struct {
-	handle unsafe.Pointer
-
-	symRetroInit                    unsafe.Pointer
-	symRetroDeinit                  unsafe.Pointer
-	symRetroAPIVersion              unsafe.Pointer
-	symRetroGetSystemInfo           unsafe.Pointer
-	symRetroGetSystemAVInfo         unsafe.Pointer
-	symRetroSetEnvironment          unsafe.Pointer
-	symRetroSetVideoRefresh         unsafe.Pointer
-	symRetroSetControllerPortDevice unsafe.Pointer
-	symRetroSetInputPoll            unsafe.Pointer
-	symRetroSetInputState           unsafe.Pointer
-	symRetroSetAudioSample          unsafe.Pointer
-	symRetroSetAudioSampleBatch     unsafe.Pointer
-	symRetroRun                     unsafe.Pointer
-	symRetroReset                   unsafe.Pointer
-	symRetroLoadGame                unsafe.Pointer
-	symRetroUnloadGame              unsafe.Pointer
-	symRetroSerializeSize           unsafe.Pointer
-	symRetroSerialize               unsafe.Pointer
-	symRetroUnserialize             unsafe.Pointer
-	symRetroGetMemorySize           unsafe.Pointer
-	symRetroGetMemoryData           unsafe.Pointer
-
-	AudioCallback       *AudioCallback
-	FrameTimeCallback   *FrameTimeCallback
-	DiskControlCallback *DiskControlCallback
-}
+// DlHandle is a handle to a dynamic library
+type DlHandle = unsafe.Pointer
 
 // DlSym loads a symbol from a dynamic library
-func (core *Core) DlSym(name string) unsafe.Pointer {
-	return C.dlsym(core.handle, C.CString(name))
+func DlSym(handle DlHandle, name string) unsafe.Pointer {
+	return C.dlsym(handle, C.CString(name))
 }
 
 // DlOpen opens a dynamic library
-func DlOpen(path string) (unsafe.Pointer, error) {
+func DlOpen(path string) (DlHandle, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
@@ -62,4 +34,17 @@ func DlOpen(path string) (unsafe.Pointer, error) {
 		return nil, errors.New(err)
 	}
 	return h, nil
+}
+
+// DlClose closes a dynamic library
+func DlClose(handle DlHandle) error {
+	result := C.dlclose(handle)
+	if int(result) != 0 {
+		cerr := C.dlerror()
+		if cerr != nil {
+			err := C.GoString(cerr)
+			return errors.New(err)
+		}
+	}
+	return nil
 }
