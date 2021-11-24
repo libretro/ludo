@@ -622,6 +622,9 @@ func (core *Core) Unserialize(bytes []byte, size uint) error {
 	if size == 0 || len(bytes) == 0 {
 		return errors.New("retro_unserialize failed")
 	}
+	if uint(len(bytes)) > size {
+		size = uint(len(bytes))
+	}
 	ok := bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
 	if !ok {
 		return errors.New("retro_unserialize failed")
