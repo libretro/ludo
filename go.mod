@@ -7,7 +7,7 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/structs v1.1.0
 	github.com/go-gl/gl v0.0.0-20210813123233-e4099ee2221f
-	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20210727001814-0db043d8d5be
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20211213063430-748e38ca8aec
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0
