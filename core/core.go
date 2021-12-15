@@ -36,7 +36,7 @@ func Init(v *video.Video) {
 
 // Load loads a libretro core
 func Load(sofile string) error {
-	// In case the a core is already loaded, we need to close it properly
+	// In case a core is already loaded, we need to close it properly
 	// before loading the new core
 	Unload()
 
@@ -51,7 +51,7 @@ func Load(sofile string) error {
 	state.Core.SetEnvironment(environment)
 	state.Core.Init()
 	state.Core.SetVideoRefresh(vid.Refresh)
-	state.Core.SetInputPoll(input.Poll)
+	state.Core.SetInputPoll(func() {})
 	state.Core.SetInputState(input.State)
 	state.Core.SetAudioSample(audio.Sample)
 	state.Core.SetAudioSampleBatch(audio.SampleBatch)
