@@ -168,6 +168,12 @@ var incrCallbacks = map[string]callbackIncrement{
 		menu.ContextReset()
 		settings.Save()
 	},
+	"VideoIntScaling": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+		settings.Save()
+	},
 	"VideoMonitorIndex": func(f *structs.Field, direction int) {
 		v := f.Value().(int)
 		v += direction

@@ -309,12 +309,41 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 		aspectRatio = float32(video.Geom.BaseWidth) / float32(video.Geom.BaseHeight)
 	}
 
-	h = fbh
-	w = fbh * aspectRatio
-	if w > fbw {
-		h = fbw / aspectRatio
-		w = fbw
+	// (C) donmor 2022 patch-1 BEGIN
+	if settings.Current.VideoIntScaling {
+		gh := video.Geom.BaseHeight
+		if gh == 0 {
+			gh = fbHeight
+		}
+		scale := fbHeight / gh
+		h = float32(gh * scale)
+		if scale == 0 {
+			h = fbh
+		}
+		w = h * aspectRatio
+		if w > fbw {
+			gw := video.Geom.BaseWidth
+			if gw == 0 {
+				gw = fbWidth
+			}
+			scale = fbWidth / int(float32(gh)*aspectRatio)
+			h = float32(gh * scale)
+			if scale == 0 {
+				h = fbw / aspectRatio
+				w = fbw
+			} else {
+				w = h * aspectRatio
+			}
+		}
+	} else {
+		h = fbh
+		w = fbh * aspectRatio
+		if w > fbw {
+			h = fbw / aspectRatio
+			w = fbw
+		}
 	}
+	// (C) donmor 2022 patch-1 END
 
 	// Place the content in the middle of the window.
 	x = (fbw - w) / 2
@@ -350,7 +379,10 @@ func (video *Video) Render() {
 		return
 	}
 
+	// (C) donmor 2022 patch-1 BEGIN
+	//	fbw, fbh := video.Window.GetFramebufferSize()
 	fbw, fbh := video.Window.GetFramebufferSize()
+	// (C) donmor 2022 patch-1 END
 	_, _, w, h := video.coreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
