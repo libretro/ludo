@@ -320,7 +320,15 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 		if scale == 0 {
 			h = fbh
 		}
-		w = h * aspectRatio
+		if settings.Current.VideoSuperRes && scale > 0 {
+			srScale := fbWidth / (int(float32(gh)*aspectRatio) * scale)
+			if srScale == 0 {
+				srScale = 1
+			}
+			w = h * aspectRatio * float32(srScale)
+		} else {
+			w = h * aspectRatio
+		}
 		if w > fbw {
 			scale = fbWidth / int(float32(gh)*aspectRatio)
 			h = float32(gh * scale)
@@ -333,7 +341,11 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 		}
 	} else {
 		h = fbh
-		w = fbh * aspectRatio
+		if settings.Current.VideoSuperRes {
+			w = fbw
+		} else {
+			w = fbh * aspectRatio
+		}
 		if w > fbw {
 			h = fbw / aspectRatio
 			w = fbw

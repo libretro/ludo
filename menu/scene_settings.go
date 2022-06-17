@@ -174,6 +174,12 @@ var incrCallbacks = map[string]callbackIncrement{
 		f.Set(v)
 		settings.Save()
 	},
+	"VideoSuperRes": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+		settings.Save()
+	},
 	"VideoMonitorIndex": func(f *structs.Field, direction int) {
 		v := f.Value().(int)
 		v += direction
