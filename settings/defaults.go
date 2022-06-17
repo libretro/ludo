@@ -9,6 +9,8 @@ import (
 func defaultSettings() Settings {
 	return Settings{
 		VideoFullscreen:   false,
+		VideoIntScaling:   false,
+		VideoSuperRes:     false,
 		VideoMonitorIndex: 0,
 		VideoFilter:       "Pixel Perfect",
 		MapAxisToDPad:     false,
