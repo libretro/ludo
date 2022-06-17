@@ -322,10 +322,6 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 		}
 		w = h * aspectRatio
 		if w > fbw {
-			gw := video.Geom.BaseWidth
-			if gw == 0 {
-				gw = fbWidth
-			}
 			scale = fbWidth / int(float32(gh)*aspectRatio)
 			h = float32(gh * scale)
 			if scale == 0 {
