@@ -38,8 +38,10 @@ func Init(v *video.Video) *Menu {
 	menu.stack = []Scene{}
 	menu.tweens = make(Tweens)
 	menu.ratio = float32(w) / 1920
-	if settings.Current.VideoSuperRes {
+	if settings.Current.VideoSuperRes == "16:9" {
 		menu.ratio2 = float32(h) / 1080
+	} else if settings.Current.VideoSuperRes == "4:3" {
+		menu.ratio2 = float32(h) / 1440
 	} else {
 		menu.ratio2 = menu.ratio
 	}
@@ -69,8 +71,10 @@ func (m *Menu) Render(dt float32) {
 	m.t += float64(dt * 8)
 	w, h := m.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
-	if settings.Current.VideoSuperRes {
+	if settings.Current.VideoSuperRes == "16:9" {
 		menu.ratio2 = float32(h) / 1080
+	} else if settings.Current.VideoSuperRes == "4:3" {
+		menu.ratio2 = float32(h) / 1440
 	} else {
 		menu.ratio2 = menu.ratio
 	}

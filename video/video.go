@@ -314,6 +314,7 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 
 	// (C) donmor 2022 patch-1 BEGIN
 	if settings.Current.VideoIntScaling {
+		gw := video.Geom.BaseWidth
 		gh := video.Geom.BaseHeight
 		if gh == 0 {
 			gh = fbHeight
@@ -323,35 +324,46 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 		if scale == 0 {
 			h = fbh
 		}
-		if settings.Current.VideoSuperRes && scale > 0 {
-			srScale := fbWidth / (int(float32(gh)*aspectRatio) * scale)
-			if srScale == 0 {
-				srScale = 1
-			}
-			w = h * aspectRatio * float32(srScale)
+		if settings.Current.VideoSuperRes == "16:9" {
+			w = aspectRatio * h * fbw * 9 / 16 / fbh
+		} else if settings.Current.VideoSuperRes == "4:3" {
+			w = aspectRatio * h * fbw * 3 / 4 / fbh
 		} else {
-			w = h * aspectRatio
+			w = h * float32(gw) / float32(gh)
 		}
-		if w > fbw {
-			scale = fbWidth / int(float32(gh)*aspectRatio)
+		for w > fbw {
+			scale -= 1
 			h = float32(gh * scale)
 			if scale == 0 {
-				h = fbw / aspectRatio
-				w = fbw
+				h = float32(gh)
+			}
+			if settings.Current.VideoSuperRes == "16:9" && scale > 0 {
+				w = aspectRatio * h * fbw * 9 / 16 / fbh
+			} else if settings.Current.VideoSuperRes == "4:3" && scale > 0 {
+				w = aspectRatio * h * fbw * 3 / 4 / fbh
 			} else {
-				w = h * aspectRatio
+				w = fbw
+				h = fbw * float32(gh) / float32(gw)
 			}
 		}
 	} else {
 		h = fbh
-		if settings.Current.VideoSuperRes {
-			w = fbw
+		if settings.Current.VideoSuperRes == "16:9" {
+			w = aspectRatio * fbw * 9 / 16
+		} else if settings.Current.VideoSuperRes == "4:3" {
+			w = aspectRatio * fbw * 3 / 4
 		} else {
 			w = fbh * aspectRatio
 		}
 		if w > fbw {
-			h = fbw / aspectRatio
 			w = fbw
+			if settings.Current.VideoSuperRes == "16:9" {
+				h = fbh * 16 / 9 / aspectRatio
+			} else if settings.Current.VideoSuperRes == "4:3" {
+				h = fbh * 16 / 9 / aspectRatio
+			} else {
+				h = fbw / aspectRatio
+			}
 		}
 	}
 	// (C) donmor 2022 patch-1 END

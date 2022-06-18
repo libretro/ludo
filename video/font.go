@@ -352,9 +352,12 @@ func (f *Font) UpdateResolution(windowWidth int, windowHeight int) {
 	gl.Uniform2f(resUniform, float32(windowWidth), float32(windowHeight))
 	gl.UseProgram(0)
 	f.xScale = float32(1)
-	if settings.Current.VideoSuperRes {
+	if settings.Current.VideoSuperRes == "16:9" {
 		bw, bh := float32(windowWidth), float32(windowHeight)
 		f.xScale = (bw / bh) / (16.0 / 9.0)
+	} else if settings.Current.VideoSuperRes == "4:3" {
+		bw, bh := float32(windowWidth), float32(windowHeight)
+		f.xScale = (bw / bh) / (4.0 / 3.0)
 	}
 }
 

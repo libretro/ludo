@@ -10,7 +10,7 @@ func defaultSettings() Settings {
 	return Settings{
 		VideoFullscreen:   false,
 		VideoIntScaling:   false,
-		VideoSuperRes:     false,
+		VideoSuperRes:     "Disabled",
 		VideoMonitorIndex: 0,
 		VideoFilter:       "Pixel Perfect",
 		VideoUniFont:      false,
