@@ -2,6 +2,7 @@ package menu
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 
@@ -137,8 +138,8 @@ var widgets = map[string]func(*entry){
 		w, h := menu.GetFramebufferSize()
 		menu.DrawImage(menu.icons[icon],
 			float32(w)-128*menu.ratio-128*menu.ratio,
-			float32(h)*e.yp-64*1.25*menu.ratio,
-			128*menu.ratio, 128*menu.ratio,
+			float32(h)*e.yp-64*1.25*menu.ratio2,
+			128*menu.ratio, 128*menu.ratio2,
 			1.25, textColor.Alpha(e.iconAlpha))
 	},
 
@@ -146,13 +147,13 @@ var widgets = map[string]func(*entry){
 	"range": func(e *entry) {
 		fbw, fbh := menu.GetFramebufferSize()
 		x := float32(fbw) - 128*menu.ratio - 175*menu.ratio
-		y := float32(fbh)*e.yp - 4*menu.ratio
+		y := float32(fbh)*e.yp - 4*menu.ratio2
 		w := 175 * menu.ratio
-		h := 8 * menu.ratio
+		h := 8 * menu.ratio2
 		menu.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha/4))
 		w = 175 * menu.ratio * e.value().(float32)
 		menu.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha))
-		menu.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, textColor.Alpha(e.iconAlpha))
+		menu.DrawCircle(x+w, y+4*menu.ratio2, 38*float32(math.Sqrt(float64(menu.ratio*menu.ratio2))), textColor.Alpha(e.iconAlpha))
 	},
 }
 
@@ -286,7 +287,7 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-70*menu.ratio2, float32(w), 70*menu.ratio2, 0, lightGrey)
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 

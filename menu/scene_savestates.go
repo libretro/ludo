@@ -127,27 +127,27 @@ func (s *sceneSavestates) render() {
 			continue
 		}
 
-		fontOffset := 64 * 0.7 * menu.ratio * 0.3
+		fontOffset := 64 * 0.7 * menu.ratio2 * 0.3
 
 		if e.labelAlpha > 0 {
 			drawSavestateThumbnail(
 				list, i,
 				filepath.Join(settings.Current.ScreenshotsDirectory, utils.FileName(e.path)+".png"),
 				680*menu.ratio-85*e.scale*menu.ratio,
-				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-				170*menu.ratio, 128*menu.ratio,
+				float32(h)*e.yp-14*menu.ratio2-64*e.scale*menu.ratio2+fontOffset,
+				170*menu.ratio, 128*menu.ratio2,
 				e.scale, textColor.Alpha(e.iconAlpha),
 			)
 			menu.DrawBorder(
 				680*menu.ratio-85*e.scale*menu.ratio,
-				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
+				float32(h)*e.yp-14*menu.ratio2-64*e.scale*menu.ratio2+fontOffset,
+				170*menu.ratio*e.scale, 128*menu.ratio2*e.scale, 0.02/e.scale,
 				textColor.Alpha(e.iconAlpha))
 			if i == 0 {
 				menu.DrawImage(menu.icons["savestate"],
 					680*menu.ratio-25*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
-					50*menu.ratio, 50*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio2-25*e.scale*menu.ratio2+fontOffset,
+					50*menu.ratio, 50*menu.ratio2,
 					e.scale, textColor.Alpha(e.iconAlpha))
 			}
 
@@ -155,14 +155,14 @@ func (s *sceneSavestates) render() {
 			menu.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.5*menu.ratio, e.label)
+				0.5*menu.ratio2, e.label)
 		}
 	}
 }
 
 func (s *sceneSavestates) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-70*menu.ratio2, float32(w), 70*menu.ratio2, 0, lightGrey)
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 

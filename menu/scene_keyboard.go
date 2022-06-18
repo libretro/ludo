@@ -152,7 +152,7 @@ func (s *sceneKeyboard) render() {
 	w, h := menu.GetFramebufferSize()
 	lines := float32(4)
 	kbh := float32(h) * 0.6
-	ksp := (kbh - (50 * menu.ratio)) / (lines + 1)
+	ksp := (kbh - (50 * menu.ratio2)) / (lines + 1)
 	ksz := ksp * 0.9
 	ttw := 10 * ksp
 
@@ -205,7 +205,7 @@ func (s *sceneKeyboard) render() {
 
 func (s *sceneKeyboard) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-70*menu.ratio2, float32(w), 70*menu.ratio2, 0, lightGrey)
 
 	arrows, _, _, a, b, x, y, start, _, _ := hintIcons()
 

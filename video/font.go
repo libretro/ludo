@@ -11,6 +11,7 @@ import (
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
+	"github.com/libretro/ludo/settings"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
 )
@@ -44,6 +45,7 @@ type Font struct {
 	color       Color
 	atlasWidth  float32
 	atlasHeight float32
+	xScale      float32
 }
 
 type point [4]float32
@@ -241,6 +243,11 @@ func (f *Font) UpdateResolution(windowWidth int, windowHeight int) {
 	resUniform := gl.GetUniformLocation(f.program, gl.Str("resolution\x00"))
 	gl.Uniform2f(resUniform, float32(windowWidth), float32(windowHeight))
 	gl.UseProgram(0)
+	f.xScale = float32(1)
+	if settings.Current.VideoSuperRes {
+		bw, bh := float32(windowWidth), float32(windowHeight)
+		f.xScale = (bw / bh) / (16.0 / 9.0)
+	}
 }
 
 // Printf draws a string to the screen, takes a list of arguments like printf
@@ -280,9 +287,9 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		}
 
 		// Calculate position and size for current rune
-		xpos := x - 1 + float32(ch.bearingH)*scale
+		xpos := x - 1 + float32(ch.bearingH)*scale*f.xScale
 		ypos := y - 2 - float32(ch.height-ch.bearingV)*scale
-		w := float32(ch.width+2) * scale
+		w := float32(ch.width+2) * scale * f.xScale
 		h := float32(ch.height+2) * scale
 
 		// Set quad positions
@@ -299,7 +306,7 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		coords = append(coords, point{x2, y2, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		x += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+		x += float32((ch.advance >> 6)) * scale * f.xScale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
 	}
 
 	bindVertexArray(f.vao)

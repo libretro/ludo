@@ -8,9 +8,9 @@ import (
 func stackHint(stack *float32, icon uint32, label string, h int) {
 	menu.Font.SetColor(darkGrey)
 	*stack += 30 * menu.ratio
-	menu.DrawImage(icon, *stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, darkGrey)
+	menu.DrawImage(icon, *stack, float32(h)-70*menu.ratio2, 70*menu.ratio, 70*menu.ratio2, 1.0, darkGrey)
 	*stack += 70 * menu.ratio
-	menu.Font.Printf(*stack, float32(h)-23*menu.ratio, 0.4*menu.ratio, label)
+	menu.Font.Printf(*stack, float32(h)-23*menu.ratio2, 0.4*menu.ratio2, label)
 	*stack += menu.Font.Width(0.4*menu.ratio, label)
 }
 

@@ -295,24 +295,24 @@ func (tabs sceneTabs) render() {
 		if e.labelAlpha > 0 {
 			menu.Font.SetColor(c.Alpha(e.labelAlpha))
 			lw := menu.Font.Width(0.5*menu.ratio, e.label)
-			menu.Font.Printf(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), 0.5*menu.ratio, e.label)
+			menu.Font.Printf(x-lw/2, float32(int(float32(h)/2+250*menu.ratio2)), 0.5*menu.ratio2, e.label)
 			lw = menu.Font.Width(0.4*menu.ratio, e.subLabel)
-			menu.Font.Printf(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), 0.4*menu.ratio, e.subLabel)
+			menu.Font.Printf(x-lw/2, float32(int(float32(h)/2+330*menu.ratio2)), 0.4*menu.ratio2, e.subLabel)
 		}
 
 		menu.DrawImage(menu.icons["hexagon"],
-			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio,
-			440*menu.ratio, 440*menu.ratio, e.scale, c)
+			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio2,
+			440*menu.ratio, 440*menu.ratio2, e.scale, c)
 
 		menu.DrawImage(menu.icons[e.icon],
-			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, white.Alpha(e.iconAlpha))
+			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio2,
+			256*menu.ratio, 256*menu.ratio2, e.scale, white.Alpha(e.iconAlpha))
 	}
 }
 
 func (tabs sceneTabs) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-70*menu.ratio2, float32(w), 70*menu.ratio2, 0, lightGrey)
 
 	_, _, leftRight, a, _, x, _, _, _, guide := hintIcons()
 

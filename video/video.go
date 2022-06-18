@@ -387,10 +387,7 @@ func (video *Video) Render() {
 		return
 	}
 
-	// (C) donmor 2022 patch-1 BEGIN
-	//	fbw, fbh := video.Window.GetFramebufferSize()
 	fbw, fbh := video.Window.GetFramebufferSize()
-	// (C) donmor 2022 patch-1 END
 	_, _, w, h := video.coreRatioViewport(fbw, fbh)
 
 	gl.UseProgram(video.program)
