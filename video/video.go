@@ -119,6 +119,9 @@ func (video *Video) Configure(fullscreen bool) {
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	fontPath := filepath.Join(settings.Current.AssetsDirectory, "font.ttf")
+	if settings.Current.VideoUniFont {
+		fontPath = filepath.Join(settings.Current.AssetsDirectory, "unifont.png")
+	}
 	video.Font, err = LoadFont(fontPath, int32(36*2), fbw, fbh)
 	if err != nil {
 		panic(err)

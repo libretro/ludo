@@ -13,6 +13,7 @@ func defaultSettings() Settings {
 		VideoSuperRes:     false,
 		VideoMonitorIndex: 0,
 		VideoFilter:       "Pixel Perfect",
+		VideoUniFont:      false,
 		MapAxisToDPad:     false,
 		AudioVolume:       0.5,
 		MenuAudioVolume:   0.25,

@@ -216,6 +216,14 @@ var incrCallbacks = map[string]callbackIncrement{
 		f.Set(v)
 		settings.Save()
 	},
+	"VideoUniFont": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+		menu.Reconfigure(settings.Current.VideoFullscreen)
+		menu.ContextReset()
+		settings.Save()
+	},
 	"MapAxisToDPad": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v
