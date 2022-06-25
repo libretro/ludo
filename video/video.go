@@ -84,12 +84,10 @@ func (video *Video) SetShouldClose(b bool) {
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
 	var width, height int
-	var m *glfw.Monitor
 
 	if fullscreen {
-		m = glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
-		vms := m.GetVideoModes()
-		vm := vms[len(vms)-1]
+		m := glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
+		vm := m.GetVideoMode()
 		width = vm.Width
 		height = vm.Height
 	} else {
@@ -98,7 +96,7 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	var err error
-	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
+	video.Window, err = glfw.CreateWindow(width, height, "Ludo", nil, nil)
 	if err != nil {
 		panic("Window creation failed:" + err.Error())
 	}
