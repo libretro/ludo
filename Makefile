@@ -14,10 +14,7 @@ endif
 
 ifeq ($(ARCH), arm64)
 	CORES := $(filter-out swanstation,$(CORES))
-	CORES := $(filter-out mednafen_pcfx,$(CORES))
-	CORES := $(filter-out mednafen_saturn,$(CORES))
 	CORES := $(filter-out mednafen_wswan,$(CORES))
-	CORES := $(filter-out melonds,$(CORES))
 	CORES := $(filter-out handy,$(CORES))
 	CORES := $(filter-out np2kai,$(CORES))
 endif
