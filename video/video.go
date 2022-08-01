@@ -93,8 +93,8 @@ func (video *Video) Configure(fullscreen bool) {
 		width = vm.Width
 		height = vm.Height
 	} else {
-		width = 320 * 3
-		height = 180 * 3
+		width = 384 * 2
+		height = 240 * 2
 	}
 
 	var err error
