@@ -31,7 +31,7 @@ func init() {
 var frame = 0
 
 func runLoop(vid *video.Video, m *menu.Menu) {
-	currTime := time.Now()
+	var currTime time.Time
 	prevTime := time.Now()
 	for !vid.Window.ShouldClose() {
 		currTime = time.Now()

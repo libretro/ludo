@@ -614,6 +614,7 @@ func (core *Core) Serialize(size uint) ([]byte, error) {
 		return nil, errors.New("retro_serialize failed")
 	}
 	bytes := C.GoBytes(data, C.int(size))
+	C.free(data)
 	return bytes, nil
 }
 
