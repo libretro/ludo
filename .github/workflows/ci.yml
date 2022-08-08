@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
       - run: sudo apt-get install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
       - run: echo "" | sudo tee /etc/apt/sources.list
@@ -58,7 +58,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
@@ -76,7 +76,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
       - run: echo "/c/Users/runneradmin/go/bin" >> $GITHUB_PATH
       - run: go get golang.org/x/lint/golint
       - run: go get honnef.co/go/tools/cmd/staticcheck
