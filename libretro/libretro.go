@@ -33,6 +33,8 @@ void bridge_retro_unload_game(void *f);
 void bridge_retro_run(void *f);
 void bridge_retro_reset(void *f);
 void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_t usec);
+void bridge_retro_hw_context_reset(retro_hw_context_reset_t f);
+void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f);
 void bridge_retro_audio_callback(retro_audio_callback_t f);
 void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
 size_t bridge_retro_get_memory_size(void *f, unsigned id);
@@ -51,6 +53,8 @@ size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames);
 int16_t coreInputState_cgo(unsigned port, unsigned device, unsigned index, unsigned id);
 void coreLog_cgo(enum retro_log_level level, const char *msg);
 int64_t coreGetTimeUsec_cgo();
+uintptr_t coreGetCurrentFramebuffer_cgo();
+uintptr_t coreGetProcAddress_cgo(const char *sym);
 */
 import "C"
 import (
@@ -214,6 +218,20 @@ func (cod *CoreOptionDefinition) DefaultValue() string {
 type FrameTimeCallback struct {
 	Callback  func(int64)
 	Reference int64
+}
+
+// HWRenderCallback sets an interface to let a libretro core render with
+// hardware acceleration.
+type HWRenderCallback struct {
+	HWContextType              uint32
+	ContextReset               func()
+	Depth                      bool
+	Stencil                    bool
+	BottomLeftOrigin           bool
+	VersionMajor, VersionMinor uint
+	CacheContext               bool
+	ContextDestroy             func()
+	DebugContext               bool
 }
 
 // AudioCallback stores the audio callback itself and the SetState callback
@@ -409,26 +427,48 @@ const (
 	MemoryVideoRAM  = uint32(C.RETRO_MEMORY_VIDEO_RAM)
 )
 
+// Hardware contexts
+const (
+	HWContextNone            = uint32(C.RETRO_HW_CONTEXT_NONE)
+	HWContextOpenGL          = uint32(C.RETRO_HW_CONTEXT_OPENGL)
+	HWContextOpenGLES2       = uint32(C.RETRO_HW_CONTEXT_OPENGLES2)
+	HWContextOpenGLCore      = uint32(C.RETRO_HW_CONTEXT_OPENGL_CORE)
+	HWContextOpenGLES3       = uint32(C.RETRO_HW_CONTEXT_OPENGLES3)
+	HWContextOpenGLESVersion = uint32(C.RETRO_HW_CONTEXT_OPENGLES_VERSION)
+	HWContextVulkan          = uint32(C.RETRO_HW_CONTEXT_VULKAN)
+	HWContextDummy           = uint32(C.RETRO_HW_CONTEXT_DUMMY)
+)
+
+// Pass this to retro_video_refresh_t if rendering to hardware.
+// Passing NULL to retro_video_refresh_t is still a frame dupe as normal.
+var (
+	HWFrameBufferValid = unsafe.Pointer(C.RETRO_HW_FRAME_BUFFER_VALID)
+)
+
 type (
-	environmentFunc      func(uint32, unsafe.Pointer) bool
-	videoRefreshFunc     func(unsafe.Pointer, int32, int32, int32)
-	audioSampleFunc      func(int16, int16)
-	audioSampleBatchFunc func([]byte, int32) int32
-	inputPollFunc        func()
-	inputStateFunc       func(uint, uint32, uint, uint) int16
-	logFunc              func(uint32, string)
-	getTimeUsecFunc      func() int64
+	environmentFunc           func(uint32, unsafe.Pointer) bool
+	videoRefreshFunc          func(unsafe.Pointer, int32, int32, int32)
+	audioSampleFunc           func(int16, int16)
+	audioSampleBatchFunc      func([]byte, int32) int32
+	inputPollFunc             func()
+	inputStateFunc            func(uint, uint32, uint, uint) int16
+	logFunc                   func(uint32, string)
+	getTimeUsecFunc           func() int64
+	getCurrentFramebufferFunc func() uintptr
+	getProcAddressFunc        func(string) uintptr
 )
 
 var (
-	environment      environmentFunc
-	videoRefresh     videoRefreshFunc
-	audioSample      audioSampleFunc
-	audioSampleBatch audioSampleBatchFunc
-	inputPoll        inputPollFunc
-	inputState       inputStateFunc
-	log              logFunc
-	getTimeUsec      getTimeUsecFunc
+	environment           environmentFunc
+	videoRefresh          videoRefreshFunc
+	audioSample           audioSampleFunc
+	audioSampleBatch      audioSampleBatchFunc
+	inputPoll             inputPollFunc
+	inputState            inputStateFunc
+	log                   logFunc
+	getTimeUsec           getTimeUsecFunc
+	getCurrentFramebuffer getCurrentFramebufferFunc
+	getProcAddress        getProcAddressFunc
 )
 
 // Load dynamically loads a libretro core at the given path and returns a Core instance
@@ -490,6 +530,8 @@ func (core *Core) Deinit() {
 	inputState = nil
 	log = nil
 	getTimeUsec = nil
+	getCurrentFramebuffer = nil
+	getProcAddress = nil
 }
 
 // Run runs the game for one video frame.
@@ -721,6 +763,16 @@ func coreGetTimeUsec() C.uint64_t {
 	return C.uint64_t(getTimeUsec())
 }
 
+//export coreGetCurrentFramebuffer
+func coreGetCurrentFramebuffer() C.uintptr_t {
+	return C.uintptr_t(getCurrentFramebuffer())
+}
+
+//export coreGetProcAddress
+func coreGetProcAddress(sym *C.char) C.uintptr_t {
+	return C.uintptr_t(getProcAddress(C.GoString(sym)))
+}
+
 // SetData is a setter for the data of a GameInfo type
 func (gi *GameInfo) SetData(bytes []byte) {
 	cstr := C.CString(string(bytes))
@@ -881,6 +933,38 @@ func (core *Core) SetFrameTimeCallback(data unsafe.Pointer) {
 		C.bridge_retro_frame_time_callback(c.callback, C.retro_usec_t(usec))
 	}
 	core.FrameTimeCallback = ftc
+}
+
+// SetHWRenderCallback is an environment callback helper to set the HWRenderCallback
+func SetHWRenderCallback(
+	data unsafe.Pointer,
+	currentFramebuffer getCurrentFramebufferFunc,
+	procAddress getProcAddressFunc,
+) *HWRenderCallback {
+	c := (*C.struct_retro_hw_render_callback)(data)
+	hwrc := HWRenderCallback{}
+	hwrc.HWContextType = uint32(c.context_type)
+
+	getCurrentFramebuffer = currentFramebuffer
+	getProcAddress = procAddress
+	c.get_current_framebuffer = (C.retro_hw_get_current_framebuffer_t)(C.coreGetCurrentFramebuffer_cgo)
+	c.get_proc_address = (C.retro_hw_get_proc_address_t)(C.coreGetProcAddress_cgo)
+
+	hwrc.ContextReset = func() {
+		C.bridge_retro_hw_context_reset((C.retro_hw_context_reset_t)(c.context_reset))
+	}
+
+	hwrc.Depth = bool(c.depth)
+	hwrc.Stencil = bool(c.stencil)
+	hwrc.BottomLeftOrigin = bool(c.bottom_left_origin)
+	hwrc.VersionMajor = uint(c.version_major)
+	hwrc.VersionMinor = uint(c.version_minor)
+	hwrc.CacheContext = bool(c.cache_context)
+	hwrc.ContextDestroy = func() {
+		C.bridge_retro_hw_context_destroy((C.retro_hw_context_reset_t)(c.context_destroy))
+	}
+	hwrc.DebugContext = bool(c.debug_context)
+	return &hwrc
 }
 
 // SetAudioCallback is an environment callback helper to set the AudioCallback

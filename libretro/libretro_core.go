@@ -31,6 +31,7 @@ type Core struct {
 	AudioCallback       *AudioCallback
 	FrameTimeCallback   *FrameTimeCallback
 	DiskControlCallback *DiskControlCallback
+	HWRenderCallback    *HWRenderCallback
 
 	MemoryMap []MemoryDescriptor
 }

@@ -201,6 +201,11 @@ func LoadGame(gamePath string) error {
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
 
+	if state.Core.HWRenderCallback != nil {
+		vid.InitFramebuffer()
+		state.Core.HWRenderCallback.ContextReset()
+	}
+
 	return nil
 }
 

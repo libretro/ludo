@@ -22,6 +22,14 @@ void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_
 	f(usec);
 }
 
+void bridge_retro_hw_context_reset(retro_hw_context_reset_t f) {
+	f();
+}
+
+void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f) {
+	f();
+}
+
 void bridge_retro_audio_callback(retro_audio_callback_t f) {
 	f();
 }
@@ -166,6 +174,16 @@ void coreLog_cgo(enum retro_log_level level, const char *fmt, ...) {
 int64_t coreGetTimeUsec_cgo() {
 	uint64_t coreGetTimeUsec();
 	return coreGetTimeUsec();
+}
+
+uintptr_t coreGetCurrentFramebuffer_cgo() {
+	uintptr_t coreGetCurrentFramebuffer();
+	return coreGetCurrentFramebuffer();
+}
+
+uintptr_t coreGetProcAddress_cgo(const char *sym) {
+	uintptr_t coreGetProcAddress(const char *sym);
+	return coreGetProcAddress(sym);
 }
 
 */

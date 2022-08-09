@@ -143,6 +143,13 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		state.Core.SetFrameTimeCallback(data)
 	case libretro.EnvironmentSetAudioCallback:
 		state.Core.SetAudioCallback(data)
+	case libretro.EnvironmentSetHWRender:
+		state.Core.HWRenderCallback = libretro.SetHWRenderCallback(
+			data,
+			vid.CurrentFramebuffer,
+			vid.ProcAddress)
+		log.Println("[Env]: HWContextType:", state.Core.HWRenderCallback.HWContextType)
+		return true
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:
@@ -151,6 +158,9 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		return environmentGetSystemDirectory(data)
 	case libretro.EnvironmentGetSaveDirectory:
 		return environmentGetSaveDirectory(data)
+	case libretro.EnvironmentGetPrefferedHWRender:
+		log.Println("[Env]: EnvironmentGetPrefferedHWRenderer: 1")
+		libretro.SetUint(data, uint(libretro.HWContextOpenGL))
 	case libretro.EnvironmentShutdown:
 		vid.SetShouldClose(true)
 	case libretro.EnvironmentGetCoreOptionsVersion:

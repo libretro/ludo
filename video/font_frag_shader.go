@@ -6,7 +6,7 @@ var fontFragmentShader = `
 #define COMPAT_ATTRIBUTE in
 #define COMPAT_TEXTURE texture
 #define COMPAT_FRAGCOLOR FragColor
-out vec4 FragColor;
+out vec4 COMPAT_FRAGCOLOR;
 #else
 #define COMPAT_VARYING varying
 #define COMPAT_ATTRIBUTE attribute
@@ -14,12 +14,13 @@ out vec4 FragColor;
 #define COMPAT_FRAGCOLOR gl_FragColor
 #endif
 
-uniform sampler2D tex;
-uniform vec4 textColor;
+uniform sampler2D Texture;
+uniform vec4 color;
+
 COMPAT_VARYING vec2 fragTexCoord;
 
 void main() {
-	vec4 sampled = vec4(1.0, 1.0, 1.0, COMPAT_TEXTURE(tex, fragTexCoord).r);
-	COMPAT_FRAGCOLOR = min(textColor, vec4(1.0, 1.0, 1.0, 1.0)) * sampled;
+	vec4 sampled = vec4(1.0, 1.0, 1.0, COMPAT_TEXTURE(Texture, fragTexCoord).r);
+	COMPAT_FRAGCOLOR = min(color, vec4(1.0, 1.0, 1.0, 1.0)) * sampled;
 }
 ` + "\x00"
