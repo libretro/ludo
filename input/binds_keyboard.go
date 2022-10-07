@@ -18,7 +18,6 @@ var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyRight:      libretro.DeviceIDJoypadRight,
 	glfw.KeyEnter:      libretro.DeviceIDJoypadStart,
 	glfw.KeyRightShift: libretro.DeviceIDJoypadSelect,
-	glfw.KeyTab:        ActionSwitchPads,
 	glfw.KeySpace:      ActionFastForwardToggle,
 	glfw.KeyP:          ActionMenuToggle,
 	glfw.KeyF:          ActionFullscreenToggle,

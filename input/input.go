@@ -45,10 +45,8 @@ const (
 	ActionShouldClose uint32 = lr.DeviceIDJoypadR3 + 3
 	// ActionFastForwardToggle will run the core as fast as possible
 	ActionFastForwardToggle uint32 = lr.DeviceIDJoypadR3 + 4
-	// ActionSwitchPads
-	ActionSwitchPads uint32 = lr.DeviceIDJoypadR3 + 5
 	// ActionLast is used for iterating
-	ActionLast uint32 = lr.DeviceIDJoypadR3 + 6
+	ActionLast uint32 = lr.DeviceIDJoypadR3 + 5
 )
 
 // joystickCallback is triggered when a joypad is plugged.
@@ -74,8 +72,6 @@ func Init(v *video.Video) {
 	vid = v
 	if !glfw.UpdateGamepadMappings(mappings) {
 		log.Println("Failed to update mappings")
-	} else {
-		log.Println("Updated mappings")
 	}
 	glfw.SetJoystickCallback(joystickCallback)
 }
@@ -136,13 +132,11 @@ func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) 
 	return state, analogState
 }
 
-var KbdPort int = 0
-
 // pollKeyboard processes keyboard keys
 func pollKeyboard(state States) States {
 	for k, v := range keyBinds {
 		if vid.Window.GetKey(k) == glfw.Press {
-			state[KbdPort][v] = 1
+			state[0][v] = 1
 		}
 	}
 	return state
