@@ -213,6 +213,11 @@ func (m *Menu) ProcessHotkeys() {
 		}
 	}
 
+	if input.Released[input.KbdPort][input.ActionSwitchPads] == 1 {
+		input.KbdPort = (input.KbdPort + 1) % 2
+		ntf.DisplayAndLog(ntf.Info, "Menu", "Switched pads")
+	}
+
 	// Close if ActionShouldClose is pressed, but display a confirmation dialog
 	// in case a game is running
 	if input.Pressed[0][input.ActionShouldClose] == 1 {
