@@ -321,7 +321,7 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 		aspectRatio = float32(video.Geom.BaseWidth) / float32(video.Geom.BaseHeight)
 	}
 
-	// (C) donmor 2022 patch-1 BEGIN
+	// donmor: 2022 patch-1 BEGIN
 	if settings.Current.VideoIntScaling {
 		gw := video.Geom.BaseWidth
 		gh := video.Geom.BaseHeight
@@ -375,7 +375,8 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 			}
 		}
 	}
-	// (C) donmor 2022 patch-1 END
+	// donmor: 2022 patch-1 END
+	// Now only God knows what I wrote here <:-/
 
 	// Place the content in the middle of the window.
 	x = (fbw - w) / 2

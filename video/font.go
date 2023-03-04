@@ -211,21 +211,23 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	return f, nil
 }
 
-// LoadUniFont builds a set of textures based on a ttf files gylphs
+// donmor: LoadUniFont builds a set of textures out of a png gylphs
 func LoadUniFont(program uint32, r io.Reader, scale int32) (*Font, error) {
 	var bMap image.Image
 	var err error
+	// PNG image decoded here
 	bMap, err = png.Decode(r)
 	if err != nil {
 		return nil, err
 	}
 
-	low, high := 1, 65536 // 131072 if with plane 1 in the future
+	// 131072 if with plane 1 in the future
+	low, high := 1, 65536
 
 	// Make Font stuct type
 	f := new(Font)
 	f.fontChar = make([]*character, 0, high-low+1)
-	f.program = program                       // Set shader program
+	f.program = program                       // TODO: Can we use a basic one here? It looks blurry under super resolution
 	f.SetColor(Color{R: 1, G: 1, B: 1, A: 1}) // Set default white
 
 	hOffset, vOffset := 32, 64 // Blanking in unifont glyphs
@@ -351,6 +353,7 @@ func (f *Font) UpdateResolution(windowWidth int, windowHeight int) {
 	resUniform := gl.GetUniformLocation(f.program, gl.Str("resolution\x00"))
 	gl.Uniform2f(resUniform, float32(windowWidth), float32(windowHeight))
 	gl.UseProgram(0)
+	// donmor: Stretch the glyphs for super resolution
 	f.xScale = float32(1)
 	if settings.Current.VideoSuperRes == "16:9" {
 		bw, bh := float32(windowWidth), float32(windowHeight)
@@ -370,6 +373,7 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		return nil
 	}
 
+	// donmor: Unifont allows char below 32, doesn't make much sense though
 	lowChar := rune(0)
 	if !unifont {
 		lowChar = rune(32)
@@ -386,6 +390,7 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 
 	var coords []point
 
+	// donmor: Unifont is always integer-scaled
 	uniScale := int(scale*5 + 0.01)
 	uniXScale := int(f.xScale + 0.75)
 	if f.xScale < 0.8 {
@@ -438,6 +443,7 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		var x2 = xpos + w
 		var y1 = ypos
 		var y2 = ypos + h
+		// donmor: No padding for unifont
 		padding := 0
 		if !unifont {
 			padding = 1

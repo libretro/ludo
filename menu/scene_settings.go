@@ -153,6 +153,7 @@ var widgets = map[string]func(*entry){
 		menu.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha/4))
 		w = 175 * menu.ratio * e.value().(float32)
 		menu.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha))
+		// donmor: TODO: Another place that needs an oval
 		menu.DrawCircle(x+w, y+4*menu.ratio2, 38*float32(math.Sqrt(float64(menu.ratio*menu.ratio2))), textColor.Alpha(e.iconAlpha))
 	},
 }
@@ -169,12 +170,16 @@ var incrCallbacks = map[string]callbackIncrement{
 		menu.ContextReset()
 		settings.Save()
 	},
+	// donmor:
+	// New option for integer scaling here
 	"VideoIntScaling": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
 		settings.Save()
 	},
+	// donmor:
+	// New option for aspect correction here (mostly used under super resolution)
 	"VideoSuperRes": func(f *structs.Field, direction int) {
 		filters := []string{"Disabled", "4:3", "16:9"}
 		v := f.Value().(string)
@@ -224,6 +229,8 @@ var incrCallbacks = map[string]callbackIncrement{
 		f.Set(v)
 		settings.Save()
 	},
+	// donmor:
+	// New option for unicode font here (Can we get rid of this somedays by using unifont by default? It needs polishing, though)
 	"VideoUniFont": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v

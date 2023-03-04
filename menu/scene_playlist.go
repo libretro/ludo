@@ -221,6 +221,7 @@ func (s *scenePlaylist) render() {
 				170*menu.ratio*e.scale, 128*menu.ratio2*e.scale, 0.02/e.scale,
 				textColor.Alpha(e.iconAlpha))
 			if e.path == state.GamePath && e.path != "" {
+				// donmor: TODO: Another place that needs an oval
 				menu.DrawCircle(
 					680*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio2+fontOffset,
