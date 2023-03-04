@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/go-gl/glfw/v3.3/glfw"
 
-	"github.com/libretro/ludo/audio"
+	// "github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/ludos"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
@@ -219,7 +219,7 @@ var incrCallbacks = map[string]callbackIncrement{
 			v = 1
 		}
 		f.Set(v)
-		audio.SetVolume(v)
+		// audio.SetVolume(v)
 		settings.Save()
 	},
 	"MenuAudioVolume": func(f *structs.Field, direction int) {
@@ -232,7 +232,7 @@ var incrCallbacks = map[string]callbackIncrement{
 			v = 1
 		}
 		f.Set(v)
-		audio.SetEffectsVolume(v)
+		// audio.SetEffectsVolume(v)
 		settings.Save()
 	},
 	"ShowHiddenFiles": func(f *structs.Field, direction int) {
