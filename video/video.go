@@ -83,13 +83,17 @@ func (video *Video) SetShouldClose(b bool) {
 
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
-	var width, height int
+	var width, height, refresh int
+	var m *glfw.Monitor
 
 	if fullscreen {
-		m := glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
+		m = glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
+		// donmor: Just get the correct video mode here
 		vm := m.GetVideoMode()
 		width = vm.Width
 		height = vm.Height
+		// donmor: Now we have refresh rate
+		refresh = vm.RefreshRate
 	} else {
 		width = 320 * 3
 		height = 180 * 3
@@ -97,6 +101,13 @@ func (video *Video) Configure(fullscreen bool) {
 
 	var err error
 	video.Window, err = glfw.CreateWindow(width, height, "Ludo", nil, nil)
+	if fullscreen {
+		// donmor:
+		// Set full screen mode separately with correct video mode
+		// Is it possible to set color bit depth?
+		mx, my := video.Window.GetPos()
+		video.Window.SetMonitor(m, mx, my, width, height, refresh)
+	}
 	if err != nil {
 		panic("Window creation failed:" + err.Error())
 	}
