@@ -28,6 +28,7 @@ var (
 	paSeLen    int
 	paStream   *portaudio.Stream
 	paSeStream *portaudio.Stream
+	paUp       = false
 )
 
 // Effects are sound effects
@@ -64,6 +65,9 @@ func NewParameters(out *portaudio.DeviceInfo) (p portaudio.StreamParameters) {
 
 // Init initializes the audio device
 func Init() {
+	if paUp {
+		return
+	}
 	err1 := portaudio.Initialize()
 	if err1 != nil {
 		log.Println(err1)
@@ -75,11 +79,18 @@ func Init() {
 	paSePtr = 0
 	paSeLen = 0
 
-	h, _ := portaudio.DefaultOutputDevice()
-	paStream, _ = portaudio.OpenStream(NewParameters(h), paCallback)
-	paStream.Start()
-
-	paSeStream, _ = portaudio.OpenStream(NewParameters(h), func(out []int32) {
+	h, err := portaudio.DefaultOutputDevice()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	paStream, err = portaudio.OpenStream(NewParameters(h), paCallback)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if err = paStream.Start(); err != nil {
+		log.Fatalln(err)
+	}
+	paSeStream, err = portaudio.OpenStream(NewParameters(h), func(out []int32) {
 		for i := range out {
 			if paSePtr < paSeLen {
 				out[i] = int32(settings.Current.MenuAudioVolume * float32(paSeBuf[paSePtr]))
@@ -90,7 +101,12 @@ func Init() {
 
 		}
 	})
-	paSeStream.Start()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if err = paSeStream.Start(); err != nil {
+		log.Fatalln(err)
+	}
 	Effects = map[string]*Effect{}
 
 	assets := settings.Current.AssetsDirectory
@@ -109,10 +125,22 @@ func Reconfigure(r int32) {
 	paBuf = [bufSize]int32{}
 	paPtr = 0
 	paPlayPtr = 0
-	paStream.Close()
-	h, _ := portaudio.DefaultOutputDevice()
-	paStream, _ = portaudio.OpenStream(NewParameters(h), paCallback)
-	paStream.Start()
+	if paStream != nil {
+		if err := paStream.Close(); err != nil {
+			log.Fatalln(err)
+		}
+	}
+	h, err := portaudio.DefaultOutputDevice()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	paStream, err = portaudio.OpenStream(NewParameters(h), paCallback)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if err = paStream.Start(); err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func min(a, b int32) int32 {
