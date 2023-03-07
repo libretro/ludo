@@ -24,7 +24,7 @@ jobs:
       - run: go install golang.org/x/lint/golint@latest
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: sudo apt-get update -q
-      - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
+      - run: sudo apt-get install portaudio19-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: go get .
       - run: xvfb-run -a go test -v -race ./...
       - run: go vet ./...
@@ -52,7 +52,7 @@ jobs:
       - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
       - run: sudo apt update -q
-      - run: sudo apt install -f libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
+      - run: sudo apt install -f libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf portaudio19-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
       - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
 
@@ -68,7 +68,7 @@ jobs:
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install golang.org/x/lint/golint@latest
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
-      - run: brew install openal-soft
+      - run: brew install portaudio
       - run: go get .
       - run: go test -v -race ./...
       - run: go vet ./...
@@ -89,10 +89,12 @@ jobs:
       - run: go install golang.org/x/lint/golint@latest
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: choco install wget --ignore-checksums
-      - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
-      - run: 7z x openal-soft-1.21.0-bin.zip -o/c/
-      - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
-      - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
+      - run: wget --no-check-certificate http://files.portaudio.com/archives/pa_stable_v190700_20210406.tgz
+      - run: tar -xf pa_stable_v190700_20210406.tgzopenal-soft-1.21.0-bin.zip -C/c/
+      # Not sure if this work on windows; Build portaudio because it has no binary dists
+      - run: sh -c 'cd /c/portaudio/; ./configure; make'
+      - run: echo "CGO_CFLAGS=-I/c/portaudio/include/" >> $GITHUB_ENV
+      - run: echo "CGO_LDFLAGS=-L/c/portaudio/lib/" >> $GITHUB_ENV
       - run: go get .
       #- run: go test -v -race ./...
       #- run: go vet ./...
