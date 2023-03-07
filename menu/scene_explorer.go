@@ -138,6 +138,15 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	}
 
 	files, err := ioutil.ReadDir(path)
+
+	// Sort entries by their labels, ignoring case.
+	sort.SliceStable(files, func(i, j int) bool {
+		if prettifier != nil {
+			return strings.ToLower(prettifier(utils.FileName(files[i].Name()))) < strings.ToLower(prettifier(utils.FileName(files[j].Name())))
+		}
+		return strings.ToLower(utils.FileName(files[i].Name())) < strings.ToLower(utils.FileName(files[j].Name()))
+	})
+
 	if err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}
@@ -157,11 +166,6 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		}
 		appendNode(&list, fullPath, f.Name(), fi, exts, cb, dirAction, prettifier)
 	}
-
-	// Sort entries by their labels, ignoring case.
-	sort.SliceStable(list.children, func(i, j int) bool {
-		return strings.ToLower(list.children[i].label) < strings.ToLower(list.children[j].label)
-	})
 
 	buildIndexes(&list.entry)
 
