@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
+	"strings"
 
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
@@ -155,6 +157,12 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		}
 		appendNode(&list, fullPath, f.Name(), fi, exts, cb, dirAction, prettifier)
 	}
+
+	// Sort entries by their labels, ignoring case.
+	sort.SliceStable(list.children, func(i, j int) bool {
+		return strings.ToLower(list.children[i].label) < strings.ToLower(list.children[j].label)
+	})
+
 	buildIndexes(&list.entry)
 
 	if len(files) == 0 {
