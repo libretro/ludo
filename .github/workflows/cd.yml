@@ -115,7 +115,7 @@ jobs:
       - run: choco install wget make hashdeep --ignore-checksums
       - run: wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe
       - run: wget --no-check-certificate http://files.portaudio.com/archives/pa_stable_v190700_20210406.tgz
-      - run: tar -xf pa_stable_v190700_20210406.tgzopenal-soft-1.21.0-bin.zip -C/c/
+      - run: tar -xf pa_stable_v190700_20210406.tgz -C/c/
       # Not sure if this work on windows; Build portaudio because it has no binary dists
       - run: sh -c 'cd /c/portaudio/; ./configure; make'- run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
       - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
