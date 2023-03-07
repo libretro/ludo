@@ -90,7 +90,7 @@ jobs:
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: choco install wget --ignore-checksums
       - run: wget --no-check-certificate http://files.portaudio.com/archives/pa_stable_v190700_20210406.tgz
-      - run: tar -xf pa_stable_v190700_20210406.tgzopenal-soft-1.21.0-bin.zip -C/c/
+      - run: tar -xf pa_stable_v190700_20210406.tgz -C/c/
       # Not sure if this work on windows; Build portaudio because it has no binary dists
       - run: sh -c 'cd /c/portaudio/; ./configure; make'
       - run: echo "CGO_CFLAGS=-I/c/portaudio/include/" >> $GITHUB_ENV
