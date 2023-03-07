@@ -72,8 +72,8 @@ jobs:
       - uses: actions/setup-go@v2
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
-      - run: go get golang.org/x/lint/golint
-      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: go install golang.org/x/lint/golint@latest
+      - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
       - run: echo ${{ secrets.OSXCERT }} | base64 --decode > dev.p12
       - run: security create-keychain -p github build.keychain

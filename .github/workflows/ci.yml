@@ -19,8 +19,8 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v3
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
-      - run: go get golang.org/x/lint/golint
-      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: go install golang.org/x/lint/golint@latest
+      - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
       - run: go get .
@@ -60,8 +60,8 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v3
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
-      - run: go get golang.org/x/lint/golint
-      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: go install golang.org/x/lint/golint@latest
+      - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
       - run: go get .
       - run: go test -v -race ./...
@@ -78,8 +78,8 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v3
       - run: echo "/c/Users/runneradmin/go/bin" >> $GITHUB_PATH
-      - run: go get golang.org/x/lint/golint
-      - run: go get honnef.co/go/tools/cmd/staticcheck
+      - run: go install golang.org/x/lint/golint@latest
+      - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: choco install wget --ignore-checksums
       - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
       - run: 7z x openal-soft-1.21.0-bin.zip -o/c/
