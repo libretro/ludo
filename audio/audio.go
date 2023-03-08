@@ -175,7 +175,7 @@ func write(buf []byte, size int32) int32 {
 	}
 
 	// Reset ptr into single range
-	paPtr -= (paPtr-paPlayPtr) / bufSize
+	paPtr -= (paPtr - paPlayPtr) / bufSize
 
 	return written
 }
