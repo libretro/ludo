@@ -145,7 +145,7 @@ func Reconfigure(r int32) {
 	}
 }
 
-func min(a, b int32) int32 {
+func min(a, b int) int {
 	if a < b {
 		return a
 	}
