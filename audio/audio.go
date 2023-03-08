@@ -155,19 +155,27 @@ func min(a, b int32) int32 {
 func write(buf []byte, size int32) int32 {
 	written := int32(0)
 
+	bufOff := paPtr - paPlayPtr
+	bufDiv := 1
 	if state.FastForward {
-		return size
+		bufOff = 0
+		bufDiv = 2
+	} else {
+		time.Sleep(time.Millisecond * time.Duration((paPtr-paPlayPtr)/bufThreshold*(bufBlock/int(paRate))))
 	}
 
-	time.Sleep(time.Millisecond * time.Duration((paPtr-paPlayPtr)/bufThreshold*(bufBlock/paRate)))
+	// time.Sleep(time.Millisecond * time.Duration((paPtr-paPlayPtr)/bufThreshold*(bufBlock/int(paRate))))
 
-	mm := int(min(size/4, (bufSize-(paPtr-paPlayPtr)))
+	mm := int(min(size/4, bufSize - bufOff)
 	for i := 0; i < mm; i++ {
 		p := 4 * (int32(i))
-		paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p : p+4]))
+		paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p : p+4])/bufDiv)
 		paPtr++
 		written += 4
 	}
+
+	// Reset ptr into single range
+	paPtr -= (paPtr-paPlayPtr)/bufSize
 
 	return written
 }
