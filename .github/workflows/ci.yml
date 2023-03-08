@@ -92,9 +92,11 @@ jobs:
       - run: wget --no-check-certificate http://files.portaudio.com/archives/pa_stable_v190700_20210406.tgz
       - run: tar -xf pa_stable_v190700_20210406.tgz -C/c/
       # Not sure if this work on windows; Build portaudio because it has no binary dists
-      - run: sh -c 'cd /c/portaudio/; ./configure; make'
+      - run: cmake -G "MinGW Makefiles" -S/c/portaudio/ -B/c/portaudio/
+      - run: make -C/c/portaudio/
+      #- run: sh -c 'cd /c/portaudio/; ./configure; make'
       - run: echo "CGO_CFLAGS=-I/c/portaudio/include/" >> $GITHUB_ENV
-      - run: echo "CGO_LDFLAGS=-L/c/portaudio/lib/" >> $GITHUB_ENV
+      - run: echo "CGO_LDFLAGS=-L/c/portaudio/" >> $GITHUB_ENV
       - run: go get .
       #- run: go test -v -race ./...
       #- run: go vet ./...
