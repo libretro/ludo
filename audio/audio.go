@@ -60,7 +60,7 @@ func NewParameters(out *portaudio.DeviceInfo) (p portaudio.StreamParameters) {
 		}
 		p.Latency = out.DefaultLowOutputLatency
 	}
-	p.SampleRate = float64(paRate/2)
+	p.SampleRate = float64(paRate / 2)
 	p.FramesPerBuffer = portaudio.FramesPerBufferUnspecified
 	return p
 }
@@ -166,16 +166,16 @@ func write(buf []byte, size int32) int32 {
 
 	// time.Sleep(time.Millisecond * time.Duration((paPtr-paPlayPtr)/bufThreshold*(bufBlock/int(paRate))))
 
-	mm := min(int(size/4), int(bufSize - bufOff))
+	mm := min(int(size/4), int(bufSize-bufOff))
 	for i := 0; i < mm; i++ {
 		p := 4 * (int32(i))
-		paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p : p+4]))/int32(bufDiv)
+		paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p : p+4])) / int32(bufDiv)
 		paPtr++
 		written += 4
 	}
 
 	// Reset ptr into single range
-	paPtr -= (paPtr-paPlayPtr)/bufSize
+	paPtr -= (paPtr-paPlayPtr) / bufSize
 
 	return written
 }
