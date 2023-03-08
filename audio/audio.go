@@ -15,9 +15,10 @@ import (
 	"github.com/libretro/ludo/utils"
 )
 
-const bufSize = 1024 * 4
-const bufThreshold = 1024 * 3
-const bufBlock = 1024 * 2 * 1000
+const bufSize = 256 * 32
+const bufThreshold = 256 * 24
+const bufThreshold2 = 256 * 8
+const bufBlock = 256 * 8 * 1000
 const maxSeLen = 44100 * 8
 
 var (
@@ -36,16 +37,36 @@ var (
 // Effects are sound effects
 var Effects map[string]*Effect
 
+func paInterleave(in uint32) uint32 {
+	var bin uint32 = 0b11111111111111111111111111111111
+	return in & bin
+}
+
 // PortAudio Callback
+// func paCallback(out [][]int16) {
 func paCallback(out []int32) {
+	// log.Println("X", len(out), len(out[0]))
 	for i := range out {
-		if paPlayPtr <= paPtr {
-			out[i] = int32(settings.Current.AudioVolume * float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))
-			paPlayPtr++
+		if !state.MenuActive {
+			if paPlayPtr < paPtr {
+				out[i] = int32(paInterleave(uint32(settings.Current.AudioVolume * float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))))
+				// out[0][i] = int16(paInterleave(uint32(settings.Current.AudioVolume*float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))) << 16)
+				// out[1][i] = int16(paInterleave(uint32(settings.Current.AudioVolume*float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))) & 0xFFFF)
+				paPlayPtr++
+				if paPtr-paPlayPtr < bufThreshold2 {
+					// We have no choice but block pa here (can we speed up the core for a little?)
+					time.Sleep(time.Millisecond * time.Duration(int64(bufBlock/int(paRate))))
+				}
+			} else {
+				out[i] = 0
+				// out[0][i] = 0
+				// out[1][i] = 0
+			}
 		} else {
 			out[i] = 0
+			// out[0][i] = 0
+			// out[1][i] = 0
 		}
-
 	}
 }
 
@@ -56,11 +77,13 @@ func NewParameters(out *portaudio.DeviceInfo) (p portaudio.StreamParameters) {
 		p.Device = out
 		p.Channels = 2
 		if out.MaxOutputChannels < 2 {
+			log.Println("[PA]Output is mono")
 			p.Channels = out.MaxOutputChannels
 		}
 		p.Latency = out.DefaultLowOutputLatency
 	}
-	p.SampleRate = float64(paRate / 2)
+	// p.SampleRate = float64(paRate)
+	p.SampleRate = float64(paRate / int32(p.Output.Channels))
 	p.FramesPerBuffer = portaudio.FramesPerBufferUnspecified
 	return p
 }
@@ -95,7 +118,7 @@ func Init() {
 	paSeStream, err = portaudio.OpenStream(NewParameters(h), func(out []int32) {
 		for i := range out {
 			if paSePtr < paSeLen {
-				out[i] = int32(settings.Current.MenuAudioVolume * float32(paSeBuf[paSePtr]))
+				out[i] = int32(settings.Current.MenuAudioVolume * float32(int32(paSeBuf[paSePtr])))
 				paSePtr++
 			} else {
 				out[i] = 0
@@ -159,23 +182,32 @@ func write(buf []byte, size int32) int32 {
 	bufDiv := 1
 	if state.FastForward {
 		bufOff = 0
-		bufDiv = 2
+		bufDiv = 4
 	} else {
-		time.Sleep(time.Millisecond * time.Duration((paPtr-paPlayPtr)/bufThreshold*int64(bufBlock/int(paRate))))
+		blk := (paPtr - paPlayPtr) / bufThreshold
+		if blk > 0 {
+			log.Println("[PA]Core goes too fast, slowing down")
+			time.Sleep(time.Millisecond * time.Duration(blk*int64(bufBlock/int(paRate))))
+		}
 	}
-
-	// time.Sleep(time.Millisecond * time.Duration((paPtr-paPlayPtr)/bufThreshold*(bufBlock/int(paRate))))
 
 	mm := min(int(size/4), int(bufSize-bufOff))
 	for i := 0; i < mm; i++ {
 		p := 4 * (int32(i))
+		// paBuf[paPtr-(paPtr/bufSize)*bufSize] = binary.LittleEndian.Uint32(buf[p:p+4]) / uint32(bufDiv)
 		paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p:p+4])) / int32(bufDiv)
 		paPtr++
 		written += 4
 	}
 
 	// Reset ptr into single range
-	paPtr -= (paPtr - paPlayPtr) / bufSize
+	for {
+		if paPtr-paPlayPtr < bufSize*2 {
+			break
+		}
+		log.Println("[PA]Buffer bit the tail! Are we fast-forwarding?")
+		paPtr -= int64(bufSize)
+	}
 
 	return written
 }

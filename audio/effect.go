@@ -41,7 +41,7 @@ func LoadEffect(filename string) (*Effect, error) {
 	samples := len(wav) / 4
 	e.paBuf = make([]int32, samples)
 	for i := 0; i < samples; i++ {
-		p := 4 * int32(i)
+		p := 4 * i
 		e.paBuf[i] = int32(binary.LittleEndian.Uint32(wav[p : p+4]))
 	}
 
