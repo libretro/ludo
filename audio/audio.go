@@ -17,7 +17,7 @@ import (
 
 const bufSize = 1024 * 4
 const bufThreshold = 1024 * 3
-const bufBlock = 1024 * 1 * 1000
+const bufBlock = 1024 * 2 * 1000
 const maxSeLen = 44100 * 8
 
 var (
@@ -169,7 +169,7 @@ func write(buf []byte, size int32) int32 {
 	mm := min(int(size/4), int(bufSize-bufOff))
 	for i := 0; i < mm; i++ {
 		p := 4 * (int32(i))
-		paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p : p+4])) / int32(bufDiv)
+		paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p:p+4])) / int32(bufDiv)
 		paPtr++
 		written += 4
 	}
