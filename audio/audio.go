@@ -16,12 +16,14 @@ import (
 )
 
 const bufSize = 1024 * 4
+const bufThreshold = 1024 * 3
+const bufBlock = 1024 * 1 * 1000
 const maxSeLen = 44100 * 8
 
 var (
 	paBuf      [bufSize]int32
 	paSeBuf    [maxSeLen]int32
-	paRate     float64
+	paRate     int32
 	paPtr      int64
 	paPlayPtr  int64
 	paSePtr    int
@@ -58,7 +60,7 @@ func NewParameters(out *portaudio.DeviceInfo) (p portaudio.StreamParameters) {
 		}
 		p.Latency = out.DefaultLowOutputLatency
 	}
-	p.SampleRate = paRate / 2
+	p.SampleRate = float64(paRate/2)
 	p.FramesPerBuffer = portaudio.FramesPerBufferUnspecified
 	return p
 }
@@ -121,7 +123,7 @@ func Init() {
 // Reconfigure initializes the audio package. It sets the number of buffers, the
 // volume and the source for the games.
 func Reconfigure(r int32) {
-	paRate = float64(r)
+	paRate = r
 	paBuf = [bufSize]int32{}
 	paPtr = 0
 	paPlayPtr = 0
@@ -157,9 +159,9 @@ func write(buf []byte, size int32) int32 {
 		return size
 	}
 
-	time.Sleep(time.Millisecond * time.Duration((paPtr-paPlayPtr)/(bufSize/4)*8))
+	time.Sleep(time.Millisecond * time.Duration((paPtr-paPlayPtr)/bufThreshold*(bufBlock/paRate)))
 
-	mm := int(min(size/4, bufSize))
+	mm := int(min(size/4, (bufSize-(paPtr-paPlayPtr)))
 	for i := 0; i < mm; i++ {
 		p := 4 * (int32(i))
 		paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p : p+4]))
