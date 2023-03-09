@@ -37,7 +37,7 @@ var (
 // Effects are sound effects
 var Effects map[string]*Effect
 
-func paAudProc(in int32) int32 {
+func paAudProc(in int32) int16 {
 	pi := (*[2]int16)(unsafe.Pointer(&in))
 	var mt float32 = 1.0
 	if state.FastForward {
@@ -45,16 +45,20 @@ func paAudProc(in int32) int32 {
 	}
 	pi[0] = int16(float32(pi[0]) * settings.Current.AudioVolume * mt)
 	pi[1] = int16(float32(pi[1]) * settings.Current.AudioVolume * mt)
+	var bin1 uint16 = 0b1111111111111111
+	k := *(*uint16)(unsafe.Pointer(&pi[0])) & bin1
+	return *(*int16)(unsafe.Pointer(&k))
 	// var bin int32 = -0b1111111111111111111111111111111
 	// return pi & bin
-	return *(*int32)(unsafe.Pointer(&pi[0]))
+	// return *(*int32)(unsafe.Pointer(&pi[0]))
+	// return pi[0]
 }
 
 // PortAudio Callback
 // func paCallback(out [][]int16) {
-func paCallback(out []int32) {
+func paCallback(out []int16) {
 	for i := range out {
-		if !state.MenuActive {
+		if i%2 == 0 && !state.MenuActive {
 			if paPlayPtr < paPtr {
 				out[i] = paAudProc(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize])
 				// out[0][i] = int16(paInterleave(uint32(settings.Current.AudioVolume*float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))) << 16)
@@ -90,7 +94,7 @@ func NewParameters(out *portaudio.DeviceInfo) (p portaudio.StreamParameters) {
 		p.Latency = out.DefaultLowOutputLatency
 	}
 	// p.SampleRate = float64(paRate)
-	p.SampleRate = float64(paRate / int32(p.Output.Channels))
+	p.SampleRate = float64(paRate)
 	p.FramesPerBuffer = portaudio.FramesPerBufferUnspecified
 	return p
 }
