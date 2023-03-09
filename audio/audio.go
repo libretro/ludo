@@ -3,7 +3,6 @@
 package audio
 
 import (
-	"encoding/binary"
 	"log"
 	"path/filepath"
 	"time"
@@ -180,10 +179,10 @@ func write(buf []byte, size int32) int32 {
 	written := int32(0)
 
 	bufOff := paPtr - paPlayPtr
-	bufDiv := 1
+	// bufDiv := 1
 	if state.FastForward {
 		bufOff = 0
-		bufDiv = 4
+		// bufDiv = 4
 	} else {
 		blk := (paPtr - paPlayPtr) / bufThreshold
 		if blk > 0 {
@@ -198,7 +197,9 @@ func write(buf []byte, size int32) int32 {
 		// paBuf[paPtr-(paPtr/bufSize)*bufSize] = binary.LittleEndian.Uint32(buf[p:p+4]) / uint32(bufDiv)
 		// paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p:p+4])) / int32(bufDiv)
 		// I wonder how the stereo audio data is organized... Should I change to this?
-		paBuf[paPtr-(paPtr/bufSize)*bufSize] = (*int32)(unsafe.Pointer(buf[p])) // / int32(bufDiv) // we have to change vol in another way
+		// ps := (*int32)(unsafe.Pointer(&buf[p])) // / int32(bufDiv) // we have to change vol in another way
+		// paBuf[paPtr-(paPtr/bufSize)*bufSize] = *ps // / int32(bufDiv) // we have to change vol in another way
+		paBuf[paPtr-(paPtr/bufSize)*bufSize] = *(*int32)(unsafe.Pointer(&buf[p])) // / int32(bufDiv) // we have to change vol in another way
 		written += 4
 	}
 
