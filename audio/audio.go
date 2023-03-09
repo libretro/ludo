@@ -49,7 +49,8 @@ func paCallback(out []int32) {
 	for i := range out {
 		if !state.MenuActive {
 			if paPlayPtr < paPtr {
-				out[i] = int32(paInterleave(uint32(settings.Current.AudioVolume * float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))))
+				out[i] = paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize] // I'll do volume stuff later
+				// out[i] = int32(paInterleave(uint32(settings.Current.AudioVolume * float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))))
 				// out[0][i] = int16(paInterleave(uint32(settings.Current.AudioVolume*float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))) << 16)
 				// out[1][i] = int16(paInterleave(uint32(settings.Current.AudioVolume*float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))) & 0xFFFF)
 				paPlayPtr++
@@ -195,8 +196,9 @@ func write(buf []byte, size int32) int32 {
 	for i := 0; i < mm; i++ {
 		p := 4 * (int32(i))
 		// paBuf[paPtr-(paPtr/bufSize)*bufSize] = binary.LittleEndian.Uint32(buf[p:p+4]) / uint32(bufDiv)
-		paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p:p+4])) / int32(bufDiv)
-		paPtr++
+		// paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p:p+4])) / int32(bufDiv)
+		// I wonder how the stereo audio data is organized... Should I change to this?
+		paBuf[paPtr-(paPtr/bufSize)*bufSize] = (*int32)(unsafe.Pointer(buf[p])) // / int32(bufDiv) // we have to change vol in another way
 		written += 4
 	}
 
