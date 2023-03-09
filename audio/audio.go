@@ -19,6 +19,7 @@ const bufThreshold = 256 * 24
 const bufThreshold2 = 256 * 8
 const bufBlock = 256 * 8 * 1000
 const maxSeLen = 44100 * 8
+const ffMult = 0.25
 
 var (
 	paBuf      [bufSize]int32
@@ -36,20 +37,26 @@ var (
 // Effects are sound effects
 var Effects map[string]*Effect
 
-func paInterleave(in uint32) uint32 {
-	var bin uint32 = 0b11111111111111111111111111111111
-	return in & bin
+func paAudProc(in int32) int32 {
+	pi := (*[2]int16)(unsafe.Pointer(&in))
+	var mt float32 = 1.0
+	if state.FastForward {
+		mt = ffMult
+	}
+	pi[0] = int16(float32(pi[0]) * settings.Current.AudioVolume * mt)
+	pi[1] = int16(float32(pi[1]) * settings.Current.AudioVolume * mt)
+	// var bin int32 = -0b1111111111111111111111111111111
+	// return pi & bin
+	return *(*int32)(unsafe.Pointer(&pi[0]))
 }
 
 // PortAudio Callback
 // func paCallback(out [][]int16) {
 func paCallback(out []int32) {
-	// log.Println("X", len(out), len(out[0]))
 	for i := range out {
 		if !state.MenuActive {
 			if paPlayPtr < paPtr {
-				out[i] = paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize] // I'll do volume stuff later
-				// out[i] = int32(paInterleave(uint32(settings.Current.AudioVolume * float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))))
+				out[i] = paAudProc(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize])
 				// out[0][i] = int16(paInterleave(uint32(settings.Current.AudioVolume*float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))) << 16)
 				// out[1][i] = int16(paInterleave(uint32(settings.Current.AudioVolume*float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))) & 0xFFFF)
 				paPlayPtr++
@@ -179,10 +186,8 @@ func write(buf []byte, size int32) int32 {
 	written := int32(0)
 
 	bufOff := paPtr - paPlayPtr
-	// bufDiv := 1
 	if state.FastForward {
 		bufOff = 0
-		// bufDiv = 4
 	} else {
 		blk := (paPtr - paPlayPtr) / bufThreshold
 		if blk > 0 {
@@ -193,13 +198,9 @@ func write(buf []byte, size int32) int32 {
 
 	mm := min(int(size/4), int(bufSize-bufOff))
 	for i := 0; i < mm; i++ {
-		p := 4 * (int32(i))
-		// paBuf[paPtr-(paPtr/bufSize)*bufSize] = binary.LittleEndian.Uint32(buf[p:p+4]) / uint32(bufDiv)
-		// paBuf[paPtr-(paPtr/bufSize)*bufSize] = int32(binary.LittleEndian.Uint32(buf[p:p+4])) / int32(bufDiv)
-		// I wonder how the stereo audio data is organized... Should I change to this?
-		// ps := (*int32)(unsafe.Pointer(&buf[p])) // / int32(bufDiv) // we have to change vol in another way
-		// paBuf[paPtr-(paPtr/bufSize)*bufSize] = *ps // / int32(bufDiv) // we have to change vol in another way
-		paBuf[paPtr-(paPtr/bufSize)*bufSize] = *(*int32)(unsafe.Pointer(&buf[p])) // / int32(bufDiv) // we have to change vol in another way
+		p := 4 * i
+		paBuf[paPtr-(paPtr/bufSize)*bufSize] = *(*int32)(unsafe.Pointer(&buf[p]))
+		paPtr++
 		written += 4
 	}
 
