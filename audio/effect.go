@@ -2,25 +2,20 @@ package audio
 
 import (
 	"os"
+	"unsafe"
 
-	"github.com/libretro/ludo/settings"
 	wav "github.com/youpy/go-wav"
-	"golang.org/x/mobile/exp/audio/al"
 )
 
 // Effect is a static sound effect
 type Effect struct {
 	Format *wav.WavFormat
-	source al.Source
+	paBuf  []int32
 }
 
-// LoadEffect loads a wav into memory and prepare the buffer and source in OpenAL
+// LoadEffect loads a wav into memory and prepare the buffer
 func LoadEffect(filename string) (*Effect, error) {
 	var e Effect
-	e.source = al.GenSources(1)[0]
-	buffer := al.GenBuffers(1)[0]
-	e.source.SetGain(settings.Current.MenuAudioVolume)
-
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -43,21 +38,29 @@ func LoadEffect(filename string) (*Effect, error) {
 		wav = append(wav, data[:]...)
 	}
 
-	buffer.BufferData(al.FormatStereo16, wav, int32(e.Format.SampleRate))
-	e.source.QueueBuffers(buffer)
-	al.DeleteBuffers(buffer)
+	var step int = int(e.Format.NumChannels) * 2
+	samples := len(wav) / step
+	e.paBuf = make([]int32, samples)
+	for i := 0; i < samples; i++ {
+		if e.Format.NumChannels == 2 {
+			e.paBuf[i] = *(*int32)(unsafe.Pointer(&wav[step*i]))
+		} else {
+			var s *[2]int16
+			s[0] = *(*int16)(unsafe.Pointer(&wav[step*i]))
+			s[1] = s[0]
+			e.paBuf[i] = *(*int32)(unsafe.Pointer(&s[0]))
+		}
+	}
 
 	return &e, nil
 }
 
 // PlayEffect plays a sound effect
 func PlayEffect(e *Effect) {
-	al.PlaySources(e.source)
-}
-
-// SetEffectsVolume sets the audio volume of sound effects
-func SetEffectsVolume(vol float32) {
-	for _, e := range Effects {
-		e.source.SetGain(vol)
+	if len(e.paBuf) > 0 && len(e.paBuf) < maxSeLen {
+		paSeBuf = [maxSeLen]int32{}
+		copy(paSeBuf[:], e.paBuf)
+		paSeLen = len(e.paBuf)
+		paSePtr = 0
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 
@@ -14,6 +15,7 @@ import (
 
 func Test_WarpToQuickMenu(t *testing.T) {
 	m := Init(&video.Video{})
+	audio.Init()
 
 	t.Run("Starts with a single scene if no game is running", func(t *testing.T) {
 		got := len(menu.stack)

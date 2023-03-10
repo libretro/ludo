@@ -1,7 +1,7 @@
 Package: ludo
 Version: VERSION
 Architecture: ARCH
-Depends: libc6, libopenal1, libgl1
+Depends: libc6, libportaudio2, libgl1
 Maintainer: Jean-André Santoni jean.andre.santoni@gmail.com
 Section: games
 Priority: optional
