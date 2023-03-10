@@ -13,7 +13,7 @@ type Effect struct {
 	paBuf  []int32
 }
 
-// LoadEffect loads a wav into memory and prepare the buffer and source in OpenAL
+// LoadEffect loads a wav into memory and prepare the buffer
 func LoadEffect(filename string) (*Effect, error) {
 	var e Effect
 	file, err := os.Open(filename)

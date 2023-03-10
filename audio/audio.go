@@ -1,4 +1,4 @@
-// Package audio uses OpenAL to play game audio by exposing the two audio
+// Package audio uses PortAudio to play game audio by exposing the two audio
 // callbacks Sample and SampleBatch for the libretro implementation.
 package audio
 

@@ -119,11 +119,14 @@ jobs:
       # Not sure if this work on windows; Build portaudio because it has no binary dists
       - run: cmake -G "MinGW Makefiles" -S/c/portaudio/ -B/c/portaudio/
       - run: make -C/c/portaudio/
-      #- run: sh -c 'cd /c/portaudio/; ./configure; make'- run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
-      - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
+      - run: echo "CGO_CFLAGS=-I/c/portaudio/include/" >> $GITHUB_ENV
+      - run: echo "CGO_LDFLAGS=-L/c/portaudio/" >> $GITHUB_ENV
+      #- run: sh -c 'cd /c/portaudio/; ./configure; make'
+      #- run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
+      #- run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
       - run: cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/libwinpthread* .
       # I'm not sure about this... Digged from configure, Needs more tests
-      - run: cp /c/portaudio/libportaudio.dll PortAudio.dll
+      - run: cp /c/portaudio/libportaudio.dll libportaudio.dll
       - run: cp /c/Windows/System32/VCRUNTIME140.dll .
       - run: mkdir -p ./Ludo-Windows-x86_64-${VERSION}/
       - run: cp *.dll ./Ludo-Windows-x86_64-${VERSION}/

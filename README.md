@@ -12,31 +12,31 @@ It works on OSX, Linux, Linux ARM and Windows. You can download releases [here](
 
 - GLFW 3.3
 - OpenGL >= 2.1
-- OpenAL
+- PortAudio
 
 #### On OSX
 
 You can execute the following command and follow the instructions about exporting PKG_CONFIG
 
-    brew install openal-soft
+    brew install portaudio
 
 #### On Debian or Ubuntu
 
-    sudo apt-get install libopenal-dev xorg-dev golang
+    sudo apt-get install portaudio19-dev xorg-dev golang
 
 #### On Raspbian
 
 You need to enable the experimental VC4 OpenGL support (Full KMS) in raspi-config.
 
-    sudo apt-get install libopenal-dev xorg-dev
+    sudo apt-get install portaudio19-dev xorg-dev
 
 #### On Alpine / postmarketOS
 
-    sudo apk add musl-dev gcc openal-soft-dev libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev mesa-dev
+    sudo apk add musl-dev gcc portaudio-dev libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev mesa-dev
 
 #### On Windows
 
-Setup openal headers and dll in mingw-w64 `include` and `lib` folders.
+Setup portaudio headers and dll in mingw-w64 `include` and `lib` folders.
 
 ## Building
 
