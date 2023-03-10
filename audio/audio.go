@@ -38,7 +38,7 @@ var (
 // Effects are sound effects
 var Effects map[string]*Effect
 
-func st2mono(in int32) int16 {
+func st2mono(in [2]int16) [2]int16 {
 	return [2]int16{in[0]/2 + in[1]/2, 0}
 }
 
