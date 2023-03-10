@@ -1,8 +1,8 @@
 package audio
 
 import (
-	"encoding/binary"
 	"os"
+	"unsafe"
 
 	wav "github.com/youpy/go-wav"
 )
@@ -38,11 +38,18 @@ func LoadEffect(filename string) (*Effect, error) {
 		wav = append(wav, data[:]...)
 	}
 
-	samples := len(wav) / 4
+	var step int = int(e.Format.NumChannels) * 2
+	samples := len(wav) / step
 	e.paBuf = make([]int32, samples)
 	for i := 0; i < samples; i++ {
-		p := 4 * i
-		e.paBuf[i] = int32(binary.LittleEndian.Uint32(wav[p : p+4]))
+		if e.Format.NumChannels == 2 {
+			e.paBuf[i] = *(*int32)(unsafe.Pointer(&wav[step*i]))
+		} else {
+			var s *[2]int16
+			s[0] = *(*int16)(unsafe.Pointer(&wav[step*i]))
+			s[1] = s[0]
+			e.paBuf[i] = *(*int32)(unsafe.Pointer(&s[0]))
+		}
 	}
 
 	return &e, nil
