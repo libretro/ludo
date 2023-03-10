@@ -29,6 +29,7 @@ var (
 	paPlayPtr  int64
 	paSePtr    int
 	paSeLen    int
+	paCh       int
 	paStream   *portaudio.Stream
 	paSeStream *portaudio.Stream
 	paUp       = false
@@ -37,7 +38,11 @@ var (
 // Effects are sound effects
 var Effects map[string]*Effect
 
-func paAudProc(in int32) int16 {
+func st2mono(in int32) int16 {
+	return [2]int16{in[0]/2 + in[1]/2, 0}
+}
+
+func paAudProc(in int32) [2]int16 {
 	pi := (*[2]int16)(unsafe.Pointer(&in))
 	var mt float32 = 1.0
 	if state.FastForward {
@@ -45,38 +50,47 @@ func paAudProc(in int32) int16 {
 	}
 	pi[0] = int16(float32(pi[0]) * settings.Current.AudioVolume * mt)
 	pi[1] = int16(float32(pi[1]) * settings.Current.AudioVolume * mt)
-	var bin1 uint16 = 0b1111111111111111
-	k := *(*uint16)(unsafe.Pointer(&pi[0])) & bin1
-	return *(*int16)(unsafe.Pointer(&k))
-	// var bin int32 = -0b1111111111111111111111111111111
-	// return pi & bin
-	// return *(*int32)(unsafe.Pointer(&pi[0]))
-	// return pi[0]
+	if paCh == 1 {
+		return st2mono(*pi)
+	}
+	return *pi
+}
+
+func paSeProc(in int32) [2]int16 {
+	pi := (*[2]int16)(unsafe.Pointer(&in))
+	pi[0] = int16(float32(pi[0]) * settings.Current.MenuAudioVolume)
+	pi[1] = int16(float32(pi[1]) * settings.Current.MenuAudioVolume)
+	if paCh == 1 {
+		return st2mono(*pi)
+	}
+	return *pi
 }
 
 // PortAudio Callback
-// func paCallback(out [][]int16) {
 func paCallback(out []int16) {
 	for i := range out {
-		if i%2 == 0 && !state.MenuActive {
-			if paPlayPtr < paPtr {
-				out[i] = paAudProc(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize])
-				// out[0][i] = int16(paInterleave(uint32(settings.Current.AudioVolume*float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))) << 16)
-				// out[1][i] = int16(paInterleave(uint32(settings.Current.AudioVolume*float32(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize]))) & 0xFFFF)
-				paPlayPtr++
-				if paPtr-paPlayPtr < bufThreshold2 {
-					// We have no choice but block pa here (can we speed up the core for a little?)
-					time.Sleep(time.Millisecond * time.Duration(int64(bufBlock/int(paRate))))
+		if i%paCh == paCh-1 {
+			if !state.MenuActive {
+				if paPlayPtr < paPtr {
+					s := paAudProc(paBuf[paPlayPtr-(paPlayPtr/bufSize)*bufSize])
+					for j := 0; j < paCh; j++ {
+						out[i-(paCh-1)+j] = s[j]
+					}
+					paPlayPtr++
+					if paPtr-paPlayPtr < bufThreshold2 {
+						// We have no choice but block pa here (can we speed up the core for a little?)
+						time.Sleep(time.Millisecond * time.Duration(int64(bufBlock/int(paRate))))
+					}
+				} else {
+					for j := 0; j < paCh; j++ {
+						out[i-(paCh-1)+j] = 0
+					}
 				}
 			} else {
-				out[i] = 0
-				// out[0][i] = 0
-				// out[1][i] = 0
+				for j := 0; j < paCh; j++ {
+					out[i-(paCh-1)+j] = 0
+				}
 			}
-		} else {
-			out[i] = 0
-			// out[0][i] = 0
-			// out[1][i] = 0
 		}
 	}
 }
@@ -88,12 +102,12 @@ func NewParameters(out *portaudio.DeviceInfo) (p portaudio.StreamParameters) {
 		p.Device = out
 		p.Channels = 2
 		if out.MaxOutputChannels < 2 {
-			log.Println("[PA]Output is mono")
+			log.Println("[PA]Output device is mono")
 			p.Channels = out.MaxOutputChannels
 		}
+		paCh = p.Channels
 		p.Latency = out.DefaultLowOutputLatency
 	}
-	// p.SampleRate = float64(paRate)
 	p.SampleRate = float64(paRate)
 	p.FramesPerBuffer = portaudio.FramesPerBufferUnspecified
 	return p
@@ -126,13 +140,20 @@ func Init() {
 	if err = paStream.Start(); err != nil {
 		log.Fatalln(err)
 	}
-	paSeStream, err = portaudio.OpenStream(NewParameters(h), func(out []int32) {
+	paSeStream, err = portaudio.OpenStream(NewParameters(h), func(out []int16) {
 		for i := range out {
-			if paSePtr < paSeLen {
-				out[i] = int32(settings.Current.MenuAudioVolume * float32(int32(paSeBuf[paSePtr])))
-				paSePtr++
-			} else {
-				out[i] = 0
+			if i%paCh == paCh-1 {
+				if paSePtr < paSeLen {
+					s := paSeProc(paSeBuf[paSePtr])
+					for j := 0; j < paCh; j++ {
+						out[i-(paCh-1)+j] = s[j]
+					}
+					paSePtr++
+				} else {
+					for j := 0; j < paCh; j++ {
+						out[i-(paCh-1)+j] = 0
+					}
+				}
 			}
 
 		}
