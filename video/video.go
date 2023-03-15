@@ -138,6 +138,9 @@ func (video *Video) Configure(fullscreen bool) {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
+	shversion := gl.GoStr(gl.GetString(gl.SHADING_LANGUAGE_VERSION))
+	fmt.Println("OpenGL shading version", shversion)
+
 	fbw, fbh := video.Window.GetFramebufferSize()
 
 	// LoadFont (fontfile, font scale, window width, window height)

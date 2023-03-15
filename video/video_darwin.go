@@ -21,26 +21,27 @@ func (video *Video) InitFramebuffer() {
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, width, height)
 
-	gl.GenFramebuffersEXT(1, &video.fboID)
-	gl.BindFramebufferEXT(gl.FRAMEBUFFER_EXT, video.fboID)
-	gl.FramebufferTexture2DEXT(gl.FRAMEBUFFER_EXT, gl.COLOR_ATTACHMENT0_EXT, gl.TEXTURE_2D, video.texID, 0)
+	gl.GenFramebuffers(1, &video.fboID)
+	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
+	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
 
 	hw := state.Core.HWRenderCallback
 	if hw.Depth {
-		gl.GenRenderbuffersEXT(1, &video.rboID)
-		gl.BindRenderbufferEXT(gl.RENDERBUFFER_EXT, video.rboID)
+		gl.GenRenderbuffers(1, &video.rboID)
+		gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
 		format := gl.DEPTH_COMPONENT16
 		if hw.Stencil {
-			format = gl.DEPTH24_STENCIL8_EXT
+			format = gl.DEPTH24_STENCIL8
 		}
-		gl.RenderbufferStorageEXT(gl.RENDERBUFFER_EXT, uint32(format), width, height)
-		gl.BindRenderbufferEXT(gl.RENDERBUFFER_EXT, 0)
+		gl.RenderbufferStorage(gl.RENDERBUFFER, uint32(format), width, height)
+		gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
 
-		gl.FramebufferRenderbufferEXT(gl.FRAMEBUFFER_EXT, gl.DEPTH_ATTACHMENT_EXT, gl.RENDERBUFFER_EXT, video.rboID)
 		if hw.Stencil {
-			gl.FramebufferRenderbufferEXT(gl.FRAMEBUFFER_EXT, gl.STENCIL_ATTACHMENT_EXT, gl.RENDERBUFFER_EXT, video.rboID)
+			gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
+		} else {
+			gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
 		}
 	}
 
@@ -50,7 +51,7 @@ func (video *Video) InitFramebuffer() {
 		video.orthoMat = mgl32.Ortho2D(-1, 1, 1, -1)
 	}
 
-	if st := gl.CheckFramebufferStatusEXT(gl.FRAMEBUFFER_EXT); st != gl.FRAMEBUFFER_COMPLETE_EXT {
+	if st := gl.CheckFramebufferStatus(gl.FRAMEBUFFER); st != gl.FRAMEBUFFER_COMPLETE {
 		log.Fatalf("[Video] Framebuffer is not complete. Error: %v\n", st)
 	}
 
@@ -67,13 +68,13 @@ func (video *Video) InitFramebuffer() {
 }
 
 func bindBackbuffer() {
-	gl.BindFramebufferEXT(gl.FRAMEBUFFER_EXT, 0)
+	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 }
 
 func genVertexArrays(n int32, arrays *uint32) {
-	gl.GenVertexArraysAPPLE(n, arrays)
+	gl.GenVertexArrays(n, arrays)
 }
 
 func bindVertexArray(array uint32) {
-	gl.BindVertexArrayAPPLE(array)
+	gl.BindVertexArray(array)
 }
