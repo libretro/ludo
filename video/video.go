@@ -4,11 +4,12 @@
 package video
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 	"unsafe"
 
-	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/libretro/ludo/libretro"
@@ -111,6 +112,11 @@ func (video *Video) Configure(fullscreen bool) {
 		height = 240 * 2
 	}
 
+	glfw.WindowHint(glfw.ContextVersionMajor, 4)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+
 	var err error
 	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
 	if err != nil {
@@ -128,6 +134,9 @@ func (video *Video) Configure(fullscreen bool) {
 	if err := gl.Init(); err != nil {
 		panic(err)
 	}
+
+	version := gl.GoStr(gl.GetString(gl.VERSION))
+	fmt.Println("OpenGL version", version)
 
 	fbw, fbh := video.Window.GetFramebufferSize()
 

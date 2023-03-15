@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
 )
