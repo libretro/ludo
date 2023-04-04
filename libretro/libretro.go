@@ -18,7 +18,7 @@ void bridge_retro_deinit(void *f);
 unsigned bridge_retro_api_version(void *f);
 void bridge_retro_get_system_info(void *f, struct retro_system_info *si);
 void bridge_retro_get_system_av_info(void *f, struct retro_system_av_info *si);
-bool bridge_retro_set_environment(void *f, void *callback);
+void bridge_retro_set_environment(void *f, void *callback);
 void bridge_retro_set_video_refresh(void *f, void *callback);
 void bridge_retro_set_controller_port_device(void *f, unsigned port, unsigned device);
 void bridge_retro_set_input_poll(void *f, void *callback);
@@ -94,6 +94,18 @@ type SystemTiming struct {
 type SystemAVInfo struct {
 	Geometry GameGeometry
 	Timing   SystemTiming
+}
+
+// MemoryDescriptor stores information about the emulated memory regions
+type MemoryDescriptor struct {
+	Flags      uint64
+	Ptr        unsafe.Pointer
+	Offset     uintptr
+	Start      uintptr
+	Select     uintptr
+	Disconnect uintptr
+	Len        uintptr
+	Addrspace  string
 }
 
 // Variable is a key value pair that represents a core option
@@ -295,13 +307,28 @@ const (
 	DeviceIDJoypadMask = uint32(C.RETRO_DEVICE_ID_JOYPAD_MASK)
 )
 
-// Index / Id values for ANALOG device.
+// Index / Id values for analog device
 const (
 	DeviceIndexAnalogLeft   = uint32(C.RETRO_DEVICE_INDEX_ANALOG_LEFT)
 	DeviceIndexAnalogRight  = uint32(C.RETRO_DEVICE_INDEX_ANALOG_RIGHT)
 	DeviceIndexAnalogButton = uint32(C.RETRO_DEVICE_INDEX_ANALOG_BUTTON)
 	DeviceIDAnalogX         = uint32(C.RETRO_DEVICE_ID_ANALOG_X)
 	DeviceIDAnalogY         = uint32(C.RETRO_DEVICE_ID_ANALOG_Y)
+)
+
+// ID values for the mouse device
+const (
+	DeviceIDMouseX              = uint32(C.RETRO_DEVICE_ID_MOUSE_X)
+	DeviceIDMouseY              = uint32(C.RETRO_DEVICE_ID_MOUSE_Y)
+	DeviceIDMouseLeft           = uint32(C.RETRO_DEVICE_ID_MOUSE_LEFT)
+	DeviceIDMouseRight          = uint32(C.RETRO_DEVICE_ID_MOUSE_RIGHT)
+	DeviceIDMouseWheelUp        = uint32(C.RETRO_DEVICE_ID_MOUSE_WHEELUP)
+	DeviceIDMouseWheelDown      = uint32(C.RETRO_DEVICE_ID_MOUSE_WHEELDOWN)
+	DeviceIDMouseMiddle         = uint32(C.RETRO_DEVICE_ID_MOUSE_MIDDLE)
+	DeviceIDMouseHorizWheelUp   = uint32(C.RETRO_DEVICE_ID_MOUSE_HORIZ_WHEELUP)
+	DeviceIDMouseHorizWheelDown = uint32(C.RETRO_DEVICE_ID_MOUSE_HORIZ_WHEELDOWN)
+	DeviceIDMouseButton4        = uint32(C.RETRO_DEVICE_ID_MOUSE_BUTTON_4)
+	DeviceIDMouseButton5        = uint32(C.RETRO_DEVICE_ID_MOUSE_BUTTON_5)
 )
 
 // Environment callback API. See libretro.h for details
@@ -414,27 +441,27 @@ func Load(sofile string) (*Core, error) {
 		return nil, err
 	}
 
-	core.symRetroInit = core.DlSym("retro_init")
-	core.symRetroDeinit = core.DlSym("retro_deinit")
-	core.symRetroAPIVersion = core.DlSym("retro_api_version")
-	core.symRetroGetSystemInfo = core.DlSym("retro_get_system_info")
-	core.symRetroGetSystemAVInfo = core.DlSym("retro_get_system_av_info")
-	core.symRetroSetEnvironment = core.DlSym("retro_set_environment")
-	core.symRetroSetVideoRefresh = core.DlSym("retro_set_video_refresh")
-	core.symRetroSetControllerPortDevice = core.DlSym("retro_set_controller_port_device")
-	core.symRetroSetInputPoll = core.DlSym("retro_set_input_poll")
-	core.symRetroSetInputState = core.DlSym("retro_set_input_state")
-	core.symRetroSetAudioSample = core.DlSym("retro_set_audio_sample")
-	core.symRetroSetAudioSampleBatch = core.DlSym("retro_set_audio_sample_batch")
-	core.symRetroRun = core.DlSym("retro_run")
-	core.symRetroReset = core.DlSym("retro_reset")
-	core.symRetroLoadGame = core.DlSym("retro_load_game")
-	core.symRetroUnloadGame = core.DlSym("retro_unload_game")
-	core.symRetroSerializeSize = core.DlSym("retro_serialize_size")
-	core.symRetroSerialize = core.DlSym("retro_serialize")
-	core.symRetroUnserialize = core.DlSym("retro_unserialize")
-	core.symRetroGetMemorySize = core.DlSym("retro_get_memory_size")
-	core.symRetroGetMemoryData = core.DlSym("retro_get_memory_data")
+	core.symRetroInit = DlSym(core.handle, "retro_init")
+	core.symRetroDeinit = DlSym(core.handle, "retro_deinit")
+	core.symRetroAPIVersion = DlSym(core.handle, "retro_api_version")
+	core.symRetroGetSystemInfo = DlSym(core.handle, "retro_get_system_info")
+	core.symRetroGetSystemAVInfo = DlSym(core.handle, "retro_get_system_av_info")
+	core.symRetroSetEnvironment = DlSym(core.handle, "retro_set_environment")
+	core.symRetroSetVideoRefresh = DlSym(core.handle, "retro_set_video_refresh")
+	core.symRetroSetControllerPortDevice = DlSym(core.handle, "retro_set_controller_port_device")
+	core.symRetroSetInputPoll = DlSym(core.handle, "retro_set_input_poll")
+	core.symRetroSetInputState = DlSym(core.handle, "retro_set_input_state")
+	core.symRetroSetAudioSample = DlSym(core.handle, "retro_set_audio_sample")
+	core.symRetroSetAudioSampleBatch = DlSym(core.handle, "retro_set_audio_sample_batch")
+	core.symRetroRun = DlSym(core.handle, "retro_run")
+	core.symRetroReset = DlSym(core.handle, "retro_reset")
+	core.symRetroLoadGame = DlSym(core.handle, "retro_load_game")
+	core.symRetroUnloadGame = DlSym(core.handle, "retro_unload_game")
+	core.symRetroSerializeSize = DlSym(core.handle, "retro_serialize_size")
+	core.symRetroSerialize = DlSym(core.handle, "retro_serialize")
+	core.symRetroUnserialize = DlSym(core.handle, "retro_unserialize")
+	core.symRetroGetMemorySize = DlSym(core.handle, "retro_get_memory_size")
+	core.symRetroGetMemoryData = DlSym(core.handle, "retro_get_memory_data")
 
 	return &core, nil
 }
@@ -453,6 +480,8 @@ func (core *Core) APIVersion() uint {
 // Deinit takes care of the library global deinitialization
 func (core *Core) Deinit() {
 	C.bridge_retro_deinit(core.symRetroDeinit)
+	DlClose(core.handle)
+	core.MemoryMap = nil
 	environment = nil
 	videoRefresh = nil
 	audioSample = nil
@@ -543,13 +572,17 @@ func (core *Core) Serialize(size uint) ([]byte, error) {
 		return nil, errors.New("retro_serialize failed")
 	}
 	bytes := C.GoBytes(data, C.int(size))
+	C.free(data)
 	return bytes, nil
 }
 
 // Unserialize unserializes internal state from a byte slice.
 func (core *Core) Unserialize(bytes []byte, size uint) error {
-	if size <= 0 {
+	if size == 0 || len(bytes) == 0 {
 		return errors.New("retro_unserialize failed")
+	}
+	if uint(len(bytes)) > size {
+		size = uint(len(bytes))
 	}
 	ok := bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
 	if !ok {
@@ -765,6 +798,28 @@ func GetCoreOptionsIntl(data unsafe.Pointer) []CoreOptionDefinition {
 	}
 
 	return definitions
+}
+
+// GetMemoryMap is an environment callback helper that returns the list of
+// memory regions EnvironmentSetMemoryMap.
+func GetMemoryMap(data unsafe.Pointer) []MemoryDescriptor {
+	cMemmap := (*C.struct_retro_memory_map)(data)
+	descriptors := make([]MemoryDescriptor, int(cMemmap.num_descriptors))
+	for i := 0; i < len(descriptors); i++ {
+		cDescriptor := unsafe.Pointer(uintptr(unsafe.Pointer(cMemmap.descriptors)) + uintptr(i)*unsafe.Sizeof(*cMemmap.descriptors))
+		d := *(*C.struct_retro_memory_descriptor)(cDescriptor)
+
+		descriptors[i] = MemoryDescriptor{
+			Flags:      uint64(d.flags),
+			Ptr:        d.ptr,
+			Offset:     uintptr(d.start),
+			Select:     uintptr(d._select),
+			Disconnect: uintptr(d.disconnect),
+			Len:        uintptr(d.len),
+			Addrspace:  C.GoString(d.addrspace),
+		}
+	}
+	return descriptors
 }
 
 // GetGeometry is an environment callback helper that returns the game geometry

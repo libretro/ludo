@@ -17,7 +17,7 @@
 	<key>CFBundleVersion</key>
 	<string>0.1.0</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.libretro.ludo</string>
+	<string>com.libretro.ludo</string>
 	<key>CFBundleDisplayName</key>
 	<string>Ludo</string>
 	<key>CFBundleName</key>

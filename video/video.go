@@ -93,8 +93,8 @@ func (video *Video) Configure(fullscreen bool) {
 		width = vm.Width
 		height = vm.Height
 	} else {
-		width = 320 * 3
-		height = 180 * 3
+		width = 384 * 2
+		height = 240 * 2
 	}
 
 	var err error
@@ -180,11 +180,11 @@ func (video *Video) Configure(fullscreen bool) {
 
 	vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
 	gl.EnableVertexAttribArray(vertAttrib)
-	gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
+	gl.VertexAttribPointerWithOffset(vertAttrib, 2, gl.FLOAT, false, 4*4, 0)
 
 	texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
 	gl.EnableVertexAttribArray(texCoordAttrib)
-	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
+	gl.VertexAttribPointerWithOffset(texCoordAttrib, 2, gl.FLOAT, false, 4*4, 2*4)
 
 	// Some cores won't call SetPixelFormat, provide default values
 	if video.pixFmt == 0 {

@@ -166,6 +166,8 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetVariableUpdate:
 		libretro.SetBool(data, Options.Updated)
 		Options.Updated = false
+	case libretro.EnvironmentSetMemoryMaps:
+		state.Core.MemoryMap = libretro.GetMemoryMap(data)
 	case libretro.EnvironmentSetGeometry:
 		vid.Geom = libretro.GetGeometry(data)
 	case libretro.EnvironmentSetSystemAVInfo:

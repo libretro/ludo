@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Ludo
+Icon=ludo
+GenericName=A minimalist frontend for emulators
+Exec=ludo
+Terminal=false
+StartupNotify=false
+StartupWMClass=Ludo
+Type=Application
+Categories=Game;Emulator;
+Keywords=libretro;emulator;
+PrefersNonDefaultGPU=true

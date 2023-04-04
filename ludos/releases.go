@@ -20,7 +20,12 @@ var client = grab.NewClient()
 var downloading bool
 var progress float64
 var done bool
-var libreELECArch = os.Getenv("LIBREELEC_ARCH")
+
+// Arch is the cpu architecture of LudOS
+var Arch = os.Getenv("LIBREELEC_ARCH")
+
+// Version is the version tag of LudOS
+var Version = os.Getenv("VERSION")
 
 // GHAsset is an asset attached to a github release
 type GHAsset struct {
@@ -51,7 +56,7 @@ func GetReleases() (*[]GHRelease, error) {
 // FilterAssets finds and return the asset matching the LIBREELEC_ARCH
 func FilterAssets(assets []GHAsset) *GHAsset {
 	for _, asset := range assets {
-		if strings.Contains(asset.Name, libreELECArch) {
+		if strings.Contains(asset.Name, Arch) {
 			return &asset
 		}
 	}

@@ -3,13 +3,20 @@ ARCH ?= x86_64
 VERSION ?= dev
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 
-CORES = atari800 bluemsx swanstation fbneo fceumm gambatte genesis_plus_gx handy lutro mednafen_ngp mednafen_pce mednafen_pce_fast mednafen_pcfx mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba melonds np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella2014 vecx virtualjaguar
+CORES = atari800 bluemsx swanstation fbneo fceumm gambatte gearsystem genesis_plus_gx handy lutro mednafen_ngp mednafen_pce mednafen_pce_fast mednafen_pcfx mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba melonds np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella2014 vecx virtualjaguar
 
 ifeq ($(ARCH), arm)
 	CORES := $(filter-out swanstation,$(CORES))
 	CORES := $(filter-out mednafen_pcfx,$(CORES))
 	CORES := $(filter-out mednafen_saturn,$(CORES))
 	CORES := $(filter-out melonds,$(CORES))
+endif
+
+ifeq ($(ARCH), arm64)
+	CORES := $(filter-out swanstation,$(CORES))
+	CORES := $(filter-out mednafen_wswan,$(CORES))
+	CORES := $(filter-out handy,$(CORES))
+	CORES := $(filter-out np2kai,$(CORES))
 endif
 
 ifeq ($(OS), Windows)
@@ -42,23 +49,22 @@ ludo.exe:
 
 cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
 	mkdir -p cores
-	wget $(BUILDBOTURL)/$(@F).zip -O $@.zip
+	wget -c $(BUILDBOTURL)/$(@F).zip -O $@.zip;\
 	unzip $@.zip -d cores
 	rm $@.zip
 
 $(APP).app: ludo $(DYLIBS)
 	mkdir -p $(APP).app/Contents/MacOS
-	mkdir -p $(APP).app/Contents/Frameworks
 	mkdir -p $(APP).app/Contents/Resources/$(APP).iconset
-	cp Info.plist $(APP).app/Contents/
+	cp pkg/Info.plist $(APP).app/Contents/
 	sed -i.bak 's/0.1.0/$(VERSION)/' $(APP).app/Contents/Info.plist
 	rm $(APP).app/Contents/Info.plist.bak
 	echo "APPL????" > $(APP).app/Contents/PkgInfo
 	cp -r database $(APP).app/Contents/Resources
 	cp -r assets $(APP).app/Contents/Resources
-	cp cores/* $(APP).app/Contents/Frameworks
+	cp -r cores $(APP).app/Contents/Resources
 	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
-		--entitlements entitlements.xml $(APP).app/Contents/Frameworks/*.dylib
+		--entitlements pkg/entitlements.xml $(APP).app/Contents/Resources/cores/*.dylib
 	rm -rf $(APP).app/Contents/Resources/database/.git
 	rm -rf $(APP).app/Contents/Resources/assets/.git
 	sips -z 16 16   assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_16x16.png
@@ -72,11 +78,11 @@ $(APP).app: ludo $(DYLIBS)
 	sips -z 512 512 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_512x512.png
 	cp ludo $(APP).app/Contents/MacOS
 	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
-		--entitlements entitlements.xml $(APP).app/Contents/MacOS/ludo
+		--entitlements pkg/entitlements.xml $(APP).app/Contents/MacOS/ludo
 	iconutil -c icns -o $(APP).app/Contents/Resources/$(APP).icns $(APP).app/Contents/Resources/$(APP).iconset
 	rm -rf $(APP).app/Contents/Resources/$(APP).iconset
 	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
-		--entitlements entitlements.xml $(APP).app
+		--entitlements pkg/entitlements.xml $(APP).app
 
 empty.dmg:
 	mkdir -p template
@@ -89,12 +95,12 @@ dmg: empty.dmg $(APP).app
 	hdiutil attach empty.dmg -noautoopen -quiet -mountpoint wc
 	rm -rf wc/$(APP).app
 	ditto -rsrc $(APP).app wc/$(APP).app
-	ln -s /Applications wc/Applications
+	ln -sf /Applications wc/Applications
 	WC_DEV=`hdiutil info | grep wc | grep "Apple_HFS" | awk '{print $$1}'` && hdiutil detach $$WC_DEV -quiet -force
 	rm -f $(BUNDLENAME)-*.dmg
 	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
 	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
-		--entitlements entitlements.xml $(BUNDLENAME).dmg
+		--entitlements pkg/entitlements.xml $(BUNDLENAME).dmg
 
 # For Windows
 zip: ludo.exe $(DLLS)
@@ -115,5 +121,37 @@ tar: ludo $(SOBJS)
 	cp -r cores $(BUNDLENAME)/
 	tar -zcf $(BUNDLENAME).tar.gz $(BUNDLENAME)\
 
+# For Debian
+
+DEB_ARCH = amd64
+ifeq ($(ARCH), arm)
+	DEB_ARCH = armhf
+endif
+DEB_ROOT = ludo_$(VERSION)-1_$(DEB_ARCH)
+
+deb: ludo $(SOBJS)
+	mkdir -p $(DEB_ROOT)/DEBIAN
+	mkdir -p $(DEB_ROOT)/etc
+	mkdir -p $(DEB_ROOT)/usr/bin
+	mkdir -p $(DEB_ROOT)/usr/lib/ludo
+	mkdir -p $(DEB_ROOT)/usr/share/ludo
+	mkdir -p $(DEB_ROOT)/usr/share/applications
+	mkdir -p $(DEB_ROOT)/usr/share/icons/hicolor/1024x1024/apps/
+	touch $(DEB_ROOT)/etc/ludo.toml
+	echo "cores_dir = \"/usr/lib/ludo\"" >> $(DEB_ROOT)/etc/ludo.toml
+	echo "assets_dir = \"/usr/share/ludo/assets\"" >> $(DEB_ROOT)/etc/ludo.toml
+	echo "database_dir = \"/usr/share/ludo/database\"" >> $(DEB_ROOT)/etc/ludo.toml
+	cp ludo $(DEB_ROOT)/usr/bin
+	cp cores/* $(DEB_ROOT)/usr/lib/ludo
+	cp -r assets $(DEB_ROOT)/usr/share/ludo
+	cp -r database $(DEB_ROOT)/usr/share/ludo
+	cp assets/icon.png $(DEB_ROOT)/usr/share/icons/hicolor/1024x1024/apps/ludo.png
+	cp pkg/ludo.desktop $(DEB_ROOT)/usr/share/applications
+	cp pkg/control $(DEB_ROOT)/DEBIAN
+	sed -i.bak 's/VERSION/$(VERSION)/' $(DEB_ROOT)/DEBIAN/control
+	sed -i.bak 's/ARCH/$(DEB_ARCH)/' $(DEB_ROOT)/DEBIAN/control
+	rm $(DEB_ROOT)/DEBIAN/control.bak
+	dpkg-deb --build $(DEB_ROOT)
+
 clean:
-	rm -rf Ludo.app ludo wc *.dmg $(BUNDLENAME)-* cores/
+	rm -rf Ludo.app ludo wc *.dmg *.deb $(BUNDLENAME)-* cores/

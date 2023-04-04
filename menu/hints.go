@@ -2,7 +2,6 @@ package menu
 
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/libretro/ludo/input"
 )
 
 // Used to easily compose different hint bars based on the context.
@@ -16,7 +15,7 @@ func stackHint(stack *float32, icon uint32, label string, h int) {
 }
 
 func hintIcons() (arrows, upDown, leftRight, a, b, x, y, start, slct, guide uint32) {
-	if glfw.Joystick(0).Present() && input.HasBinding(glfw.Joystick(0)) {
+	if glfw.Joystick(0).IsGamepad() {
 		return menu.icons["pad-arrows"],
 			menu.icons["pad-up-down"],
 			menu.icons["pad-left-right"],

@@ -4,10 +4,11 @@
 package input
 
 import (
+	"log"
+
 	deepcopy "github.com/barkimedes/go-deepcopy"
 	"github.com/go-gl/glfw/v3.3/glfw"
-
-	"github.com/libretro/ludo/libretro"
+	lr "github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -59,18 +60,21 @@ var (
 	NewAnalogState AnalogStates // analog input state for the current frame
 )
 
+var oldMouseX float64
+var oldMouseY float64
+
 // Hot keys
 const (
 	// ActionMenuToggle toggles the menu UI
-	ActionMenuToggle uint32 = libretro.DeviceIDJoypadR3 + 1
+	ActionMenuToggle uint32 = lr.DeviceIDJoypadR3 + 1
 	// ActionFullscreenToggle switches between fullscreen and windowed mode
-	ActionFullscreenToggle uint32 = libretro.DeviceIDJoypadR3 + 2
+	ActionFullscreenToggle uint32 = lr.DeviceIDJoypadR3 + 2
 	// ActionShouldClose will cause the program to shutdown
-	ActionShouldClose uint32 = libretro.DeviceIDJoypadR3 + 3
+	ActionShouldClose uint32 = lr.DeviceIDJoypadR3 + 3
 	// ActionFastForwardToggle will run the core as fast as possible
-	ActionFastForwardToggle uint32 = libretro.DeviceIDJoypadR3 + 4
+	ActionFastForwardToggle uint32 = lr.DeviceIDJoypadR3 + 4
 	// ActionLast is used for iterating
-	ActionLast uint32 = libretro.DeviceIDJoypadR3 + 5
+	ActionLast uint32 = lr.DeviceIDJoypadR3 + 5
 )
 
 func index(offset int64) int64 {
@@ -117,7 +121,7 @@ func SetState(port uint, st PlayerState) {
 func joystickCallback(joy glfw.Joystick, event glfw.PeripheralEvent) {
 	switch event {
 	case glfw.Connected:
-		if HasBinding(joy) {
+		if joy.IsGamepad() {
 			ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.Joystick.GetName(joy))
 		} else {
 			ntf.DisplayAndLog(ntf.Warning, "Input", "Joystick #%d plugged: %s but not configured.", joy, glfw.Joystick.GetName(joy))
@@ -134,6 +138,9 @@ var vid *video.Video
 // Init initializes the input package
 func Init(v *video.Video) {
 	vid = v
+	if !glfw.UpdateGamepadMappings(mappings) {
+		log.Println("Failed to update mappings")
+	}
 	glfw.SetJoystickCallback(joystickCallback)
 }
 
@@ -142,52 +149,51 @@ func floatToAnalog(v float32) int16 {
 }
 
 // pollJoypads process joypads of all players
+// pollJoypads process joypads of all players
 func pollJoypads() {
 	p := LocalPlayerPort
-	buttonState := glfw.Joystick.GetButtons(glfw.Joystick(0))
-	axisState := glfw.Joystick.GetAxes(glfw.Joystick(0))
-	name := glfw.Joystick.GetName(glfw.Joystick(0))
-	jb := joyBinds[name]
-	if len(buttonState) > 0 {
-		for k, v := range jb {
-			switch k.kind {
-			case btn:
-				if int(k.index) < len(buttonState) &&
-					glfw.Action(buttonState[k.index]) == glfw.Press {
-					NewState[p][v] = 1
-				}
-			case axis:
-				if int(k.index) < len(axisState) &&
-					k.direction*axisState[k.index] > k.threshold*k.direction {
-					NewState[p][v] = 1
-				}
-			}
+	joy := glfw.Joystick(0)
 
-			if !settings.Current.MapAxisToDPad {
-				continue
-			}
-			switch {
-			case axisState[0] < -0.5:
-				NewState[p][libretro.DeviceIDJoypadLeft] = 1
-			case axisState[0] > 0.5:
-				NewState[p][libretro.DeviceIDJoypadRight] = 1
-			}
-			switch {
-			case axisState[1] > 0.5:
-				NewState[p][libretro.DeviceIDJoypadDown] = 1
-			case axisState[1] < -0.5:
-				NewState[p][libretro.DeviceIDJoypadUp] = 1
-			}
+	if !joy.IsGamepad() {
+		return
+	}
+	pad := joy.GetGamepadState()
+	if pad == nil {
+		return
+	}
+
+	// mapping pad buttons
+	for k, v := range joyBinds {
+		if pad.Buttons[k] == glfw.Press {
+			NewState[p][v] = 1
 		}
 	}
 
-	for p := range NewAnalogState {
-		axisState := glfw.Joystick.GetAxes(glfw.Joystick(p))
-		if len(axisState) > 3 {
-			NewAnalogState[p][0][0] = floatToAnalog(axisState[0])
-			NewAnalogState[p][0][1] = floatToAnalog(axisState[1])
-			NewAnalogState[p][1][0] = floatToAnalog(axisState[2])
-			NewAnalogState[p][1][1] = floatToAnalog(axisState[3])
+	// mapping pad triggers
+	if pad.Axes[glfw.AxisLeftTrigger] > 0.5 {
+		NewState[p][lr.DeviceIDJoypadL2] = 1
+	}
+	if pad.Axes[glfw.AxisRightTrigger] > 0.5 {
+		NewState[p][lr.DeviceIDJoypadR2] = 1
+	}
+
+	// mapping analog sticks
+	NewAnalogState[p][lr.DeviceIndexAnalogLeft][lr.DeviceIDAnalogX] = floatToAnalog(pad.Axes[glfw.AxisLeftX])
+	NewAnalogState[p][lr.DeviceIndexAnalogLeft][lr.DeviceIDAnalogY] = floatToAnalog(pad.Axes[glfw.AxisLeftY])
+	NewAnalogState[p][lr.DeviceIndexAnalogRight][lr.DeviceIDAnalogX] = floatToAnalog(pad.Axes[glfw.AxisRightX])
+	NewAnalogState[p][lr.DeviceIndexAnalogRight][lr.DeviceIDAnalogY] = floatToAnalog(pad.Axes[glfw.AxisRightY])
+
+	// optionally mapping analog sticks to dpad
+	if settings.Current.MapAxisToDPad {
+		if pad.Axes[glfw.AxisLeftX] < -0.5 {
+			NewState[p][lr.DeviceIDJoypadLeft] = 1
+		} else if pad.Axes[glfw.AxisLeftX] > 0.5 {
+			NewState[p][lr.DeviceIDJoypadRight] = 1
+		}
+		if pad.Axes[glfw.AxisLeftY] > 0.5 {
+			NewState[p][lr.DeviceIDJoypadDown] = 1
+		} else if pad.Axes[glfw.AxisLeftY] < -0.5 {
+			NewState[p][lr.DeviceIDJoypadUp] = 1
 		}
 	}
 }
@@ -240,27 +246,39 @@ func State(port uint, device uint32, index uint, id uint) int16 {
 	}
 
 	// log.Println("input:", port, id, currentState(port)[id], state.Tick)
-	if device == libretro.DeviceJoypad {
+	if device == lr.DeviceJoypad {
 		if id >= uint(ActionLast) || index > 0 {
 			return 0
 		}
 		return currentState(port)[id]
 	}
-	if device == libretro.DeviceAnalog {
-		if id > 1 || index > 1 {
-			// invalid
+	if device == lr.DeviceAnalog {
+		if index > uint(lr.DeviceIndexAnalogRight) || id > uint(lr.DeviceIDAnalogY) {
 			return 0
 		}
 
 		return NewAnalogState[port][index][id]
 	}
 
-	return 0
-}
+	if device == lr.DeviceMouse {
+		x, y := vid.Window.GetCursorPos()
+		if id == uint(lr.DeviceIDMouseX) {
+			d := x - oldMouseX
+			oldMouseX = x
+			return int16(d)
+		}
+		if id == uint(lr.DeviceIDMouseY) {
+			d := y - oldMouseY
+			oldMouseY = y
+			return int16(d)
+		}
+		if id == uint(lr.DeviceIDMouseLeft) && vid.Window.GetMouseButton(glfw.MouseButton1) == glfw.Press {
+			return 1
+		}
+		if id == uint(lr.DeviceIDMouseRight) && vid.Window.GetMouseButton(glfw.MouseButton2) == glfw.Press {
+			return 1
+		}
+	}
 
-// HasBinding returns true if the joystick has an autoconfig binding
-func HasBinding(joy glfw.Joystick) bool {
-	name := glfw.Joystick.GetName(joy)
-	_, ok := joyBinds[name]
-	return ok
+	return 0
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"runtime"
@@ -31,7 +32,7 @@ func init() {
 var frame = 0
 
 func runLoop(vid *video.Video, m *menu.Menu) {
-	currTime := time.Now()
+	var currTime time.Time
 	prevTime := time.Now()
 	for !vid.Window.ShouldClose() {
 		currTime = time.Now()
@@ -42,6 +43,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		vid.ResizeViewport()
 		m.UpdatePalette()
 
+		input.Poll()
 		state.ForcePause = vid.Window.GetKey(glfw.KeySpace) == glfw.Press
 
 		if !state.MenuActive {
@@ -54,7 +56,6 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 				savefiles.SaveSRAM()
 			}
 		} else {
-			input.Poll()
 			m.Update(dt)
 			vid.Render()
 			m.Render(dt)
@@ -78,7 +79,18 @@ func main() {
 		log.Println("[Settings]: Using default settings")
 	}
 
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+	// ExitOnError causes flags to quit after displaying help.
+	// (--help counts as an error)
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+	// customize help message
+	flag.CommandLine.Usage = func() {
+		fmt.Printf("Usage: %s [OPTIONS] [content]\n", os.Args[0])
+		fmt.Printf("Options:\n")
+		flag.PrintDefaults()
+	}
+
+	// set arguments
 	flag.StringVar(&state.CorePath, "L", "", "Path to the libretro core")
 	flag.BoolVar(&state.Verbose, "v", false, "Verbose logs")
 	flag.BoolVar(&state.LudOS, "ludos", false, "Expose the features related to LudOS")

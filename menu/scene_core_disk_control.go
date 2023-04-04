@@ -7,18 +7,18 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-type sceneCoreDiscControl struct {
+type sceneCoreDiskControl struct {
 	entry
 }
 
-func buildCoreDiscControl() Scene {
-	var list sceneCoreDiscControl
-	list.label = "Core Disc Control"
+func buildCoreDiskControl() Scene {
+	var list sceneCoreDiskControl
+	list.label = "Core Disk Control"
 
 	for i := uint(0); i < state.Core.DiskControlCallback.GetNumImages(); i++ {
 		index := i
 		list.children = append(list.children, entry{
-			label: fmt.Sprintf("Disc %d", index+1),
+			label: fmt.Sprintf("Disk %d", index+1),
 			icon:  "subsetting",
 			stringValue: func() string {
 				if index == state.Core.DiskControlCallback.GetImageIndex() {
@@ -39,36 +39,43 @@ func buildCoreDiscControl() Scene {
 		})
 	}
 
+	if len(list.children) == 0 {
+		list.children = append(list.children, entry{
+			label: "No disk",
+			icon:  "subsetting",
+		})
+	}
+
 	list.segueMount()
 
 	return &list
 }
 
-func (s *sceneCoreDiscControl) Entry() *entry {
+func (s *sceneCoreDiskControl) Entry() *entry {
 	return &s.entry
 }
 
-func (s *sceneCoreDiscControl) segueMount() {
+func (s *sceneCoreDiskControl) segueMount() {
 	genericSegueMount(&s.entry)
 }
 
-func (s *sceneCoreDiscControl) segueNext() {
+func (s *sceneCoreDiskControl) segueNext() {
 	genericSegueNext(&s.entry)
 }
 
-func (s *sceneCoreDiscControl) segueBack() {
+func (s *sceneCoreDiskControl) segueBack() {
 	genericAnimate(&s.entry)
 }
 
-func (s *sceneCoreDiscControl) update(dt float32) {
+func (s *sceneCoreDiskControl) update(dt float32) {
 	genericInput(&s.entry, dt)
 }
 
-func (s *sceneCoreDiscControl) render() {
+func (s *sceneCoreDiskControl) render() {
 	genericRender(&s.entry)
 }
 
-func (s *sceneCoreDiscControl) drawHintBar() {
+func (s *sceneCoreDiskControl) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
