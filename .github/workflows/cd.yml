@@ -21,6 +21,7 @@ jobs:
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
+      - run: go build -tags wayland -v
       - run: OS=Linux ARCH=x86_64 VERSION=$VERSION make tar
       - run: OS=Linux ARCH=x86_64 VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-x86_64-${VERSION}.tar.gz > Ludo-Linux-x86_64-${VERSION}.tar.gz.sha256
@@ -55,7 +56,7 @@ jobs:
       - run: sudo apt update -q
       - run: sudo apt install -f libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
       - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
+      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
       - run: OS=Linux ARCH=arm VERSION=$VERSION make tar
       - run: OS=Linux ARCH=arm VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-arm-${VERSION}.tar.gz > Ludo-Linux-arm-${VERSION}.tar.gz.sha256

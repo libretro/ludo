@@ -30,7 +30,7 @@ jobs:
       - run: go vet ./...
       - run: staticcheck ./...
       - run: golint -set_exit_status ./...
-      - run: go build -v
+      - run: go build -tags wayland -v
 
   build_linux_arm:
     runs-on: ubuntu-18.04
@@ -54,7 +54,7 @@ jobs:
       - run: sudo apt update -q
       - run: sudo apt install -f libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
       - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -v
+      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
 
   build_osx:
     runs-on: macos-latest
