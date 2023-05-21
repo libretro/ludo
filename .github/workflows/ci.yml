@@ -24,7 +24,7 @@ jobs:
       - run: go install golang.org/x/lint/golint@latest
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: sudo apt-get update -q
-      - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
+      - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev wayland-protocols -y --allow-unauthenticated
       - run: go get .
       - run: xvfb-run -a go test -v -race ./...
       - run: go vet ./...
@@ -52,7 +52,7 @@ jobs:
       - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
       - run: sudo apt update -q
-      - run: sudo apt install -f libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
+      - run: sudo apt install -f libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf wayland-protocols:armhf -y --allow-unauthenticated
       - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
 
