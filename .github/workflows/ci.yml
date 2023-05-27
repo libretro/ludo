@@ -56,7 +56,6 @@ jobs:
       - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
 
-jobs:
   build_linux_x11_x86_64:
     runs-on: ubuntu-latest
     steps:
