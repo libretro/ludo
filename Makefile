@@ -2,6 +2,12 @@ APP ?= Ludo
 ARCH ?= x86_64
 VERSION ?= dev
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
+DISPDRIVER ?= x11
+
+ifeq ($(OS), Linux)
+	TAGS = -tags=$(DISPDRIVER)
+	BUNDLENAME = $(APP)-$(OS)-$(DISPDRIVER)-$(ARCH)-$(VERSION)
+endif
 
 CORES = atari800 bluemsx swanstation fbneo fceumm gambatte gearsystem genesis_plus_gx handy lutro mednafen_ngp mednafen_pce mednafen_pce_fast mednafen_pcfx mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba melonds np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella2014 vecx virtualjaguar
 
@@ -42,7 +48,7 @@ ifeq ($(OS), Windows)
 endif
 
 ludo:
-	go build
+	go build $(TAGS)
 
 ludo.exe:
 	go build -ldflags '-H=windowsgui'
