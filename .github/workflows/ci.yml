@@ -87,6 +87,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: '1.19.5'
+      - run: sudo apt update -q
       - run: sudo apt-get install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
       - run: echo "" | sudo tee /etc/apt/sources.list
