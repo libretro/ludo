@@ -41,7 +41,8 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: '1.19.5'
-      - run: sudo apt-get install binutils-multiarch
+      - run: sudo apt update -q
+      - run: sudo apt install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
       - run: echo "" | sudo tee /etc/apt/sources.list
       - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
