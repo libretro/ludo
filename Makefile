@@ -133,7 +133,7 @@ DEB_ARCH = amd64
 ifeq ($(ARCH), arm)
 	DEB_ARCH = armhf
 endif
-DEB_ROOT = ludo_$(VERSION)-1_$(DEB_ARCH)
+DEB_ROOT = ludo-$(DISPDRIVER)_$(VERSION)-1_$(DEB_ARCH)
 
 deb: ludo $(SOBJS)
 	mkdir -p $(DEB_ROOT)/DEBIAN
