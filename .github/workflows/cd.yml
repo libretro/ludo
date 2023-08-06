@@ -21,6 +21,7 @@ jobs:
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev libwayland-dev libxkbcommon-dev -y --allow-unauthenticated
+      - run: go build -tags wayland -v
       - run: OS=Linux ARCH=x86_64 DISPDRIVER=wayland VERSION=$VERSION make tar
       - run: OS=Linux ARCH=x86_64 DISPDRIVER=wayland VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-wayland-x86_64-${VERSION}.tar.gz > Ludo-Linux-wayland-x86_64-${VERSION}.tar.gz.sha256
@@ -80,6 +81,7 @@ jobs:
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
+      - run: go build -tags x11 -v
       - run: OS=Linux ARCH=x86_64 DISPDRIVER=x11 VERSION=$VERSION make tar
       - run: OS=Linux ARCH=x86_64 DISPDRIVER=x11 VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-x11-x86_64-${VERSION}.tar.gz > Ludo-Linux-x11-x86_64-${VERSION}.tar.gz.sha256
@@ -116,9 +118,9 @@ jobs:
       - run: sudo apt install -f libgl1-mesa-dev:amd64 libxxf86vm-dev:armhf libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
       - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
-      - run: OS=Linux ARCH=arm DISPDRIVER=wayland VERSION=$VERSION make tar
-      - run: OS=Linux ARCH=arm DISPDRIVER=wayland VERSION=$VERSION make deb
-      - run: sha256sum Ludo-Linux-wayland-arm-${VERSION}.tar.gz > Ludo-Linux-wayland-arm-${VERSION}.tar.gz.sha256
+      - run: OS=Linux ARCH=arm DISPDRIVER=x11 VERSION=$VERSION make tar
+      - run: OS=Linux ARCH=arm DISPDRIVER=x11 VERSION=$VERSION make deb
+      - run: sha256sum Ludo-Linux-x11-arm-${VERSION}.tar.gz > Ludo-Linux-x11-arm-${VERSION}.tar.gz.sha256
 
       - name: Upload Release Asset
         uses: alexellis/upload-assets@0.2.2
