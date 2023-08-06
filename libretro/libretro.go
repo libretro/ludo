@@ -4,7 +4,8 @@ Package libretro is a cgo binding for the libretro API.
 Libretro is a simple but powerful development interface that allows for the easy creation of
 emulators, games and multimedia applications that can plug straight into any libretro-compatible
 frontend. This development interface is open to others so that they can run these pluggable emulator
-and game cores also in their own programs or devices. */
+and game cores also in their own programs or devices.
+*/
 package libretro
 
 /*
@@ -12,6 +13,8 @@ package libretro
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+void cothread_init();
 
 void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
@@ -441,6 +444,8 @@ func Load(sofile string) (*Core, error) {
 		return nil, err
 	}
 
+	C.cothread_init()
+
 	core.symRetroInit = DlSym(core.handle, "retro_init")
 	core.symRetroDeinit = DlSym(core.handle, "retro_deinit")
 	core.symRetroAPIVersion = DlSym(core.handle, "retro_api_version")
@@ -572,6 +577,7 @@ func (core *Core) Serialize(size uint) ([]byte, error) {
 		return nil, errors.New("retro_serialize failed")
 	}
 	bytes := C.GoBytes(data, C.int(size))
+	C.free(data)
 	return bytes, nil
 }
 

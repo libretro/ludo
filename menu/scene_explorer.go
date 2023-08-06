@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
+	"strings"
 
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
@@ -136,6 +138,15 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 	}
 
 	files, err := ioutil.ReadDir(path)
+
+	// Sort entries by their labels, ignoring case.
+	sort.SliceStable(files, func(i, j int) bool {
+		if prettifier != nil {
+			return strings.ToLower(prettifier(utils.FileName(files[i].Name()))) < strings.ToLower(prettifier(utils.FileName(files[j].Name())))
+		}
+		return strings.ToLower(utils.FileName(files[i].Name())) < strings.ToLower(utils.FileName(files[j].Name()))
+	})
+
 	if err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}
@@ -155,6 +166,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		}
 		appendNode(&list, fullPath, f.Name(), fi, exts, cb, dirAction, prettifier)
 	}
+
 	buildIndexes(&list.entry)
 
 	if len(files) == 0 {
