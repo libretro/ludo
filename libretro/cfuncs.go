@@ -5,13 +5,122 @@ package libretro
 #include <stdbool.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <pthread.h>
+
+#ifdef __APPLE__
+#include <mach/semaphore.h>
+#include <mach/task.h>
+#include <mach/mach_init.h>
+#define SEM_T semaphore_t
+#define SEM_INIT(x) semaphore_create(mach_task_self(), &x, SYNC_POLICY_FIFO, 0);
+#define SEM_POST(x) semaphore_signal(x)
+#define SEM_WAIT(x) semaphore_wait(x)
+#else
+#include <semaphore.h>
+#define SEM_T sem_t
+#define SEM_INIT(x) sem_init(&x, 0, 0)
+#define SEM_POST(x) sem_post(&x)
+#define SEM_WAIT(x) sem_wait(&x)
+#endif
+
+#if 0
+#define print_sema(...) (printf(__VA_ARGS__))
+#else
+#define print_sema(...) do {} while (0)
+#endif
+
+enum {
+	CMD_F,
+	CMD_SERIALIZE,
+};
+
+struct thread_cmd_t {
+	int   cmd;
+	void* f;
+	void* arg1;
+	void* arg2;
+	void* arg3;
+	void* arg4;
+	void* res;
+};
+
+struct thread_cmd_t s_job;
+static pthread_t s_thread;
+static SEM_T s_sem_do;
+static SEM_T s_sem_done;
+static bool s_use_thread = false;
+
+void* emu_thread_loop(void *a0) {
+	print_sema("begin thread\n");
+
+	SEM_POST(s_sem_done);
+
+	print_sema("signal thread\n");
+
+	while (1) {
+		print_sema("wait do\n");
+		SEM_WAIT(s_sem_do);
+
+		print_sema("do\n");
+		switch (s_job.cmd) {
+		case CMD_F:
+			((void (*)(void))s_job.f)();
+			break;
+		case CMD_SERIALIZE: {
+			bool res = ((bool (*)(void*, size_t))s_job.f)(s_job.arg1, *(size_t*)s_job.arg2);
+			*(bool*)s_job.res = res;
+			break;
+		}
+		default:
+			break;
+		}
+
+		print_sema("signal done\n");
+		SEM_POST(s_sem_done);
+	}
+}
+
+void thread_sync() {
+	// Fire the job
+	print_sema("signal do\n");
+	SEM_POST(s_sem_do);
+
+	// Wait the result
+	print_sema("wait done\n");
+	SEM_WAIT(s_sem_done);
+
+	print_sema("done\n");
+}
+
+void run_wrapper(void *f) {
+	if (s_use_thread) {
+		s_job.cmd = CMD_F;
+		s_job.f = f;
+		thread_sync();
+	} else {
+		((void (*)(void))f)();
+	}
+}
+
+void cothread_init() {
+	s_use_thread = true;
+
+	SEM_INIT(s_sem_do);
+	SEM_INIT(s_sem_done);
+
+	print_sema("create thread\n");
+	pthread_create(&s_thread, NULL, emu_thread_loop, NULL);
+
+	print_sema("wait thread\n");
+	SEM_WAIT(s_sem_done);
+}
 
 void bridge_retro_init(void *f) {
-	return ((void (*)(void))f)();
+	run_wrapper(f);
 }
 
 void bridge_retro_deinit(void *f) {
-	return ((void (*)(void))f)();
+	run_wrapper(f);
 }
 
 unsigned bridge_retro_api_version(void *f) {
@@ -75,23 +184,49 @@ size_t bridge_retro_serialize_size(void *f) {
 }
 
 bool bridge_retro_serialize(void *f, void *data, size_t size) {
-  return ((bool (*)(void*, size_t))f)(data, size);
+	if (s_use_thread) {
+		bool res;
+		s_job.cmd = CMD_SERIALIZE;
+		s_job.f = f;
+		s_job.arg1 = data;
+		s_job.arg2 = &size;
+		s_job.res  = &res;
+
+		thread_sync();
+
+		return s_job.res;
+	} else {
+		return ((bool (*)(void*, size_t))f)(data, size);
+	}
 }
 
 bool bridge_retro_unserialize(void *f, void *data, size_t size) {
-  return ((bool (*)(void*, size_t))f)(data, size);
+	if (s_use_thread) {
+		bool res;
+		s_job.cmd = CMD_SERIALIZE; // Same command format for both serialize & unserialize
+		s_job.f = f;
+		s_job.arg1 = data;
+		s_job.arg2 = &size;
+		s_job.res  = &res;
+
+		thread_sync();
+
+		return s_job.res;
+	} else {
+		return ((bool (*)(void*, size_t))f)(data, size);
+	}
 }
 
 void bridge_retro_unload_game(void *f) {
-	return ((void (*)(void))f)();
+	run_wrapper(f);
 }
 
 void bridge_retro_run(void *f) {
-	return ((void (*)(void))f)();
+	run_wrapper(f);
 }
 
 void bridge_retro_reset(void *f) {
-	return ((void (*)(void))f)();
+	run_wrapper(f);
 }
 
 size_t bridge_retro_get_memory_size(void *f, unsigned id) {
