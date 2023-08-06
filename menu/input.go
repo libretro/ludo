@@ -193,8 +193,8 @@ func (m *Menu) ProcessHotkeys() {
 		}
 	}
 
-	// Toggle fullscreen if ActionFullscreenToggle is pressed
-	if input.Pressed[0][input.ActionFullscreenToggle] == 1 {
+	// Toggle fullscreen if ActionFullscreenToggle is released
+	if input.Released[0][input.ActionFullscreenToggle] == 1 {
 		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
 		m.Reconfigure(settings.Current.VideoFullscreen)
 		m.ContextReset()
