@@ -4,7 +4,8 @@ Package libretro is a cgo binding for the libretro API.
 Libretro is a simple but powerful development interface that allows for the easy creation of
 emulators, games and multimedia applications that can plug straight into any libretro-compatible
 frontend. This development interface is open to others so that they can run these pluggable emulator
-and game cores also in their own programs or devices. */
+and game cores also in their own programs or devices.
+*/
 package libretro
 
 /*
@@ -443,10 +444,7 @@ func Load(sofile string) (*Core, error) {
 		return nil, err
 	}
 
-	// Shall be done for N64 but not others emulator
-	// if sofile == "/cores/mupen64plus_next_libretro.so" {
 	C.cothread_init()
-	// }
 
 	core.symRetroInit = DlSym(core.handle, "retro_init")
 	core.symRetroDeinit = DlSym(core.handle, "retro_deinit")
