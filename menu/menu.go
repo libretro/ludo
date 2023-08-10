@@ -117,10 +117,14 @@ func (m *Menu) ContextReset() {
 		m.icons[filename] = video.NewImage(path)
 	}
 
-	currentScreenIndex := len(m.stack) - 1
-	curList := m.stack[currentScreenIndex].Entry()
-	for i := range curList.children {
-		curList.children[i].thumbnail = 0
+	for h := 0; h < len(m.stack); h++ {
+		list := m.stack[h].Entry()
+		for i := range list.children {
+			list.children[i].thumbnail = 0
+			for j := range list.children[i].children {
+				list.children[i].children[j].thumbnail = 0
+			}
+		}
 	}
 }
 
