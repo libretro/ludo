@@ -17,8 +17,8 @@ var lightBlue = video.Color{R: 0.329, G: 0.641, B: 0.884, A: 1}
 
 var lightGrey = video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1}
 var mediumGrey = video.Color{R: 0.5, G: 0.5, B: 0.5, A: 1}
-// var darkGrey = video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
-var darkerGrey = video.Color{R: 0.10, G: 0.10, B: 0.10, A: 1}
+var darkGrey = video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
+// var darkerGrey = video.Color{R: 0.10, G: 0.10, B: 0.10, A: 1}
 // var ultraDarkerGrey = video.Color{R: 0.05, G: 0.05, B: 0.05, A: 1}
 var ultraDarkerBlue = video.Color{R: 0, G: 0.05, B: 0.15, A: 1}
 
