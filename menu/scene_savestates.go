@@ -44,6 +44,8 @@ func buildSavestates() Scene {
 	})
 
 	gameName := utils.FileName(state.GamePath)
+	gameName = strings.Replace(gameName, "[", "\\[", -1)
+	gameName = strings.Replace(gameName, "]", "\\]", -1)
 	paths, _ := filepath.Glob(settings.Current.SavestatesDirectory + "/" + gameName + "@*.state")
 	sort.Sort(sort.Reverse(sort.StringSlice(paths)))
 	for _, path := range paths {
