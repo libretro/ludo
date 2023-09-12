@@ -86,22 +86,31 @@ func (video *Video) SetShouldClose(b bool) {
 
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
-	var width, height int
+	var width, height, refresh int
 	var m *glfw.Monitor
 
 	if fullscreen {
 		m = glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
-		vms := m.GetVideoModes()
-		vm := vms[len(vms)-1]
+		// donmor: Just get the correct video mode here
+		vm := m.GetVideoMode()
 		width = vm.Width
 		height = vm.Height
+		// donmor: Now we have refresh rate
+		refresh = vm.RefreshRate
 	} else {
 		width = 384 * 2
 		height = 240 * 2
 	}
 
 	var err error
-	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
+	video.Window, err = glfw.CreateWindow(width, height, "Ludo", nil, nil)
+	if fullscreen {
+		// donmor:
+		// Set full screen mode separately with correct video mode
+		// Is it possible to set color bit depth?
+		mx, my := video.Window.GetPos()
+		video.Window.SetMonitor(m, mx, my, width, height, refresh)
+	}
 	if err != nil {
 		panic("Window creation failed:" + err.Error())
 	}
@@ -122,6 +131,9 @@ func (video *Video) Configure(fullscreen bool) {
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	fontPath := filepath.Join(settings.Current.AssetsDirectory, "font.ttf")
+	if settings.Current.VideoUniFont {
+		fontPath = filepath.Join(settings.Current.AssetsDirectory, "unifont.png")
+	}
 	video.Font, err = LoadFont(fontPath, int32(36*2), fbw, fbh)
 	if err != nil {
 		panic(err)
@@ -312,12 +324,62 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 		aspectRatio = float32(video.Geom.BaseWidth) / float32(video.Geom.BaseHeight)
 	}
 
-	h = fbh
-	w = fbh * aspectRatio
-	if w > fbw {
-		h = fbw / aspectRatio
-		w = fbw
+	// donmor: 2022 patch-1 BEGIN
+	if settings.Current.VideoIntScaling {
+		gw := video.Geom.BaseWidth
+		gh := video.Geom.BaseHeight
+		if gh == 0 {
+			gh = fbHeight
+		}
+		scale := fbHeight / gh
+		h = float32(gh * scale)
+		if scale == 0 {
+			h = fbh
+		}
+		if settings.Current.VideoSuperRes == "16:9" {
+			w = aspectRatio * h * fbw * 9 / 16 / fbh
+		} else if settings.Current.VideoSuperRes == "4:3" {
+			w = aspectRatio * h * fbw * 3 / 4 / fbh
+		} else {
+			w = h * float32(gw) / float32(gh)
+		}
+		for w > fbw {
+			scale -= 1
+			h = float32(gh * scale)
+			if scale == 0 {
+				h = float32(gh)
+			}
+			if settings.Current.VideoSuperRes == "16:9" && scale > 0 {
+				w = aspectRatio * h * fbw * 9 / 16 / fbh
+			} else if settings.Current.VideoSuperRes == "4:3" && scale > 0 {
+				w = aspectRatio * h * fbw * 3 / 4 / fbh
+			} else {
+				w = fbw
+				h = fbw * float32(gh) / float32(gw)
+			}
+		}
+	} else {
+		h = fbh
+		if settings.Current.VideoSuperRes == "16:9" {
+			w = aspectRatio * fbw * 9 / 16
+		} else if settings.Current.VideoSuperRes == "4:3" {
+			w = aspectRatio * fbw * 3 / 4
+		} else {
+			w = fbh * aspectRatio
+		}
+		if w > fbw {
+			w = fbw
+			if settings.Current.VideoSuperRes == "16:9" {
+				h = fbh * 16 / 9 / aspectRatio
+			} else if settings.Current.VideoSuperRes == "4:3" {
+				h = fbh * 16 / 9 / aspectRatio
+			} else {
+				h = fbw / aspectRatio
+			}
+		}
 	}
+	// donmor: 2022 patch-1 END
+	// Now only God knows what I wrote here <:-/
 
 	// Place the content in the middle of the window.
 	x = (fbw - w) / 2

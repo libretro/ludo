@@ -15,6 +15,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mholt/archiver/v3 v3.5.1
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/nwaples/rardecode v1.1.2 // indirect
 	github.com/pelletier/go-toml v1.9.4
 	github.com/pierrec/lz4/v4 v4.1.12 // indirect

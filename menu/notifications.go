@@ -36,8 +36,8 @@ func (m *Menu) RenderNotifications() {
 		bg := severityBgColor[n.Severity]
 		m.DrawRect(
 			25*m.ratio,
-			(stack+offset-46)*m.ratio,
-			lw+40*m.ratio,
+			(stack+offset-46)*m.ratio2,
+			lw+40*m.ratio2,
 			70*m.ratio,
 			0.25,
 			bg.Alpha(fading),
@@ -45,8 +45,8 @@ func (m *Menu) RenderNotifications() {
 		m.Font.SetColor(fg.Alpha(fading))
 		m.Font.Printf(
 			45*m.ratio,
-			(stack+offset)*m.ratio,
-			0.5*m.ratio,
+			(stack+offset)*m.ratio2,
+			0.5*m.ratio2,
 			n.Message,
 		)
 		stack += h + offset

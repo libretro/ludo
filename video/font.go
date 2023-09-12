@@ -4,13 +4,17 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
+	"image/png"
 	"io"
 	"io/ioutil"
+	"math"
 	"os"
 
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
+	"github.com/libretro/ludo/settings"
+	"github.com/nfnt/resize"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
 )
@@ -44,6 +48,7 @@ type Font struct {
 	color       Color
 	atlasWidth  float32
 	atlasHeight float32
+	xScale      float32
 }
 
 type point [4]float32
@@ -206,6 +211,109 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 	return f, nil
 }
 
+// donmor: LoadUniFont builds a set of textures out of a png gylphs
+func LoadUniFont(program uint32, r io.Reader, scale int32) (*Font, error) {
+	var bMap image.Image
+	var err error
+	// PNG image decoded here
+	bMap, err = png.Decode(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// 131072 if with plane 1 in the future
+	low, high := 1, 65536
+
+	// Make Font stuct type
+	f := new(Font)
+	f.fontChar = make([]*character, 0, high-low+1)
+	f.program = program                       // TODO: Can we use a basic one here? It looks blurry under super resolution
+	f.SetColor(Color{R: 1, G: 1, B: 1, A: 1}) // Set default white
+
+	hOffset, vOffset := 32, 64 // Blanking in unifont glyphs
+	iScale := int(scale)
+	lineHeight := 16 * iScale
+	f.atlasWidth = float32(16 * 256 * iScale)
+	f.atlasHeight = float32(16 * 256 * iScale)
+	rect := image.Rect(0, 0, 16*256, int(16*256))
+	rgba := image.NewRGBA(rect)
+	draw.Draw(rgba, rgba.Bounds(), bMap, image.Pt(hOffset, vOffset), draw.Over)
+	rgba = resize.Resize(uint(16*256*iScale), uint(16*256*iScale), rgba, resize.NearestNeighbor).(*image.RGBA)
+	x := 0
+	y := 0
+
+	// Make each gylph
+	for ch := low; ch <= high; ch++ {
+		char := new(character)
+		char.x = x
+		char.y = y
+		char.width = 8 * iScale
+		char.height = 16 * iScale
+		char.advance = char.width << 6
+		char.bearingV = char.height
+		char.bearingH = char.width
+
+		// Check if is full-widthed
+		sRune := image.NewRGBA(image.Rect(0, 0, 16*iScale, 16*iScale))
+		draw.Draw(sRune, sRune.Bounds(), rgba, image.Pt(x, y), draw.Over)
+		isFW := false
+		for i := 0; i < 8*iScale; i++ {
+			for j := 0; j < 16*iScale; j++ {
+				r, g, b, _ := sRune.At(8*iScale+i, j).RGBA()
+				isFW = r != 0 || g != 0 || b != 0
+				if isFW {
+					char.width *= 2
+					char.advance = char.width << 6
+					char.bearingV = char.height
+					char.bearingH = char.width
+					break
+				}
+			}
+			if isFW {
+				break
+			}
+		}
+
+		x += 16 * iScale
+		if x+16*iScale > int(f.atlasWidth) {
+			x = 0
+			y += lineHeight
+		}
+		f.fontChar = append(f.fontChar, char)
+	}
+
+	// Generate texture
+	gl.GenTextures(1, &f.textureID)
+	gl.BindTexture(gl.TEXTURE_2D, f.textureID)
+	gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(rgba.Rect.Dx()), int32(rgba.Rect.Dy()), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
+
+	gl.GenerateMipmap(gl.TEXTURE_2D)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+
+	// Configure VAO/VBO for texture quads
+	genVertexArrays(1, &f.vao)
+	gl.GenBuffers(1, &f.vbo)
+	bindVertexArray(f.vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, f.vbo)
+
+	vertAttrib := uint32(gl.GetAttribLocation(f.program, gl.Str("vert\x00")))
+	gl.EnableVertexAttribArray(vertAttrib)
+	gl.VertexAttribPointerWithOffset(vertAttrib, 2, gl.FLOAT, false, 4*4, 0)
+
+	texCoordAttrib := uint32(gl.GetAttribLocation(f.program, gl.Str("vertTexCoord\x00")))
+	gl.EnableVertexAttribArray(texCoordAttrib)
+	gl.VertexAttribPointerWithOffset(texCoordAttrib, 2, gl.FLOAT, false, 4*4, 2*4)
+
+	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	bindVertexArray(0)
+
+	return f, nil
+}
+
 // LoadFont loads the specified font at the given scale.
 func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Font, error) {
 	fd, err := os.Open(file)
@@ -227,7 +335,11 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Fon
 	resUniform := gl.GetUniformLocation(program, gl.Str("resolution\x00"))
 	gl.Uniform2f(resUniform, float32(windowWidth), float32(windowHeight))
 
-	return LoadTrueTypeFont(program, fd, scale, 32, 256, LeftToRight)
+	if settings.Current.VideoUniFont {
+		return LoadUniFont(program, fd, 1) // 16x16, for performance
+	} else {
+		return LoadTrueTypeFont(program, fd, scale, 32, 256, LeftToRight)
+	}
 }
 
 // SetColor allows you to set the text color to be used when you draw the text
@@ -241,17 +353,31 @@ func (f *Font) UpdateResolution(windowWidth int, windowHeight int) {
 	resUniform := gl.GetUniformLocation(f.program, gl.Str("resolution\x00"))
 	gl.Uniform2f(resUniform, float32(windowWidth), float32(windowHeight))
 	gl.UseProgram(0)
+	// donmor: Stretch the glyphs for super resolution
+	f.xScale = float32(1)
+	if settings.Current.VideoSuperRes == "16:9" {
+		bw, bh := float32(windowWidth), float32(windowHeight)
+		f.xScale = (bw / bh) / (16.0 / 9.0)
+	} else if settings.Current.VideoSuperRes == "4:3" {
+		bw, bh := float32(windowWidth), float32(windowHeight)
+		f.xScale = (bw / bh) / (4.0 / 3.0)
+	}
 }
 
 // Printf draws a string to the screen, takes a list of arguments like printf
 func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{}) error {
 	indices := []rune(fmt.Sprintf(fs, argv...))
+	unifont := settings.Current.VideoUniFont
 
 	if len(indices) == 0 {
 		return nil
 	}
 
-	lowChar := rune(32)
+	// donmor: Unifont allows char below 32, doesn't make much sense though
+	lowChar := rune(0)
+	if !unifont {
+		lowChar = rune(32)
+	}
 
 	// Setup blending mode
 	gl.Enable(gl.BLEND)
@@ -263,6 +389,19 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 	gl.Uniform4f(gl.GetUniformLocation(f.program, gl.Str("textColor\x00")), f.color.R, f.color.G, f.color.B, f.color.A)
 
 	var coords []point
+
+	// donmor: Unifont is always integer-scaled
+	uniScale := int(scale*5 + 0.01)
+	uniXScale := int(f.xScale + 0.75)
+	if f.xScale < 0.8 {
+		uniScale -= int(1 / f.xScale)
+	}
+	if uniScale <= 0 {
+		uniScale = 1
+	}
+	if uniXScale <= 0 {
+		uniXScale = 1
+	}
 
 	// Iterate through all characters in string
 	for i := range indices {
@@ -280,26 +419,49 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		}
 
 		// Calculate position and size for current rune
-		xpos := x - 1 + float32(ch.bearingH)*scale
-		ypos := y - 2 - float32(ch.height-ch.bearingV)*scale
-		w := float32(ch.width+2) * scale
-		h := float32(ch.height+2) * scale
+		var xpos float32
+		var ypos float32
+		if unifont {
+			xpos = x
+			ypos = y - float32(ch.height*uniScale)
+		} else {
+			xpos = x - 1 + float32(ch.bearingH)*scale*f.xScale
+			ypos = y - 2 - float32(ch.height-ch.bearingV)*scale
+		}
+		var w float32
+		var h float32
+		if unifont {
+			w = float32(ch.width * uniScale * uniXScale)
+			h = float32(ch.height * uniScale)
+		} else {
+			w = float32(ch.width+2) * scale * f.xScale
+			h = float32(ch.height+2) * scale
+		}
 
 		// Set quad positions
 		var x1 = xpos
 		var x2 = xpos + w
 		var y1 = ypos
 		var y2 = ypos + h
+		// donmor: No padding for unifont
+		padding := 0
+		if !unifont {
+			padding = 1
+		}
 
-		coords = append(coords, point{x1, y1, float32(ch.x-1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
-		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
-		coords = append(coords, point{x1, y2, float32(ch.x-1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
-		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y-1) / f.atlasHeight})
-		coords = append(coords, point{x1, y2, float32(ch.x-1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
-		coords = append(coords, point{x2, y2, float32(ch.x+ch.width+1) / f.atlasWidth, float32(ch.y+ch.height+1) / f.atlasHeight})
+		coords = append(coords, point{x1, y1, float32(ch.x-padding) / f.atlasWidth, float32(ch.y-padding) / f.atlasHeight})
+		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+padding) / f.atlasWidth, float32(ch.y-padding) / f.atlasHeight})
+		coords = append(coords, point{x1, y2, float32(ch.x-padding) / f.atlasWidth, float32(ch.y+ch.height+padding) / f.atlasHeight})
+		coords = append(coords, point{x2, y1, float32(ch.x+ch.width+padding) / f.atlasWidth, float32(ch.y-padding) / f.atlasHeight})
+		coords = append(coords, point{x1, y2, float32(ch.x-padding) / f.atlasWidth, float32(ch.y+ch.height+padding) / f.atlasHeight})
+		coords = append(coords, point{x2, y2, float32(ch.x+ch.width+padding) / f.atlasWidth, float32(ch.y+ch.height+padding) / f.atlasHeight})
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		x += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+		if unifont {
+			x += float32(ch.width * uniScale * uniXScale)
+		} else {
+			x += float32((ch.advance >> 6)) * scale * f.xScale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+		}
 	}
 
 	bindVertexArray(f.vao)
@@ -321,12 +483,28 @@ func (f *Font) Width(scale float32, fs string, argv ...interface{}) float32 {
 	var width float32
 
 	indices := []rune(fmt.Sprintf(fs, argv...))
+	unifont := settings.Current.VideoUniFont
 
 	if len(indices) == 0 {
 		return 0
 	}
 
-	lowChar := rune(32)
+	lowChar := rune(0)
+	if !unifont {
+		lowChar = rune(32)
+	}
+
+	uniScale := int(scale*5 + 0.01)
+	uniXScale := int(math.Sqrt(float64(f.xScale + 0.75)))
+	if f.xScale < 0.8 {
+		uniScale -= int(1 / f.xScale)
+	}
+	if uniScale <= 0 {
+		uniScale = 1
+	}
+	if uniXScale <= 0 {
+		uniXScale = 1
+	}
 
 	// Iterate through all characters in string
 	for i := range indices {
@@ -344,7 +522,11 @@ func (f *Font) Width(scale float32, fs string, argv ...interface{}) float32 {
 		ch := f.fontChar[runeIndex-lowChar]
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		width += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+		if unifont {
+			width += float32(ch.width * uniScale * uniXScale)
+		} else {
+			width += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+		}
 
 	}
 

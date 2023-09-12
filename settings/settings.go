@@ -23,9 +23,12 @@ import (
 // Widget sets the graphical representation of the value.
 type Settings struct {
 	VideoFullscreen   bool   `hide:"ludos" toml:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
+	VideoIntScaling   bool   `toml:"video_int_scaling" label:"Video Integer Scaling" fmt:"%t" widget:"switch"`
+	VideoSuperRes     string `toml:"video_super_res" label:"Video Aspect Correction" fmt:"<%s>"`
 	VideoMonitorIndex int    `toml:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
 	VideoFilter       string `toml:"video_filter" label:"Video Filter" fmt:"<%s>"`
 	VideoDarkMode     bool   `toml:"video_dark_mode" label:"Video Dark Mode" fmt:"%t" widget:"switch"`
+	VideoUniFont      bool   `toml:"video_uni_font" label:"Video Enable Unicode Font" fmt:"%t" widget:"switch"`
 
 	AudioVolume float32 `toml:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
 

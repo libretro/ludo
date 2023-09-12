@@ -8,9 +8,13 @@ import (
 
 func defaultSettings() Settings {
 	return Settings{
-		VideoFullscreen:   false,
+		VideoFullscreen: false,
+		// donmor: All new features disabled by default
+		VideoIntScaling:   false,
+		VideoSuperRes:     "Disabled",
 		VideoMonitorIndex: 0,
 		VideoFilter:       "Pixel Perfect",
+		VideoUniFont:      false,
 		MapAxisToDPad:     false,
 		AudioVolume:       0.5,
 		MenuAudioVolume:   0.25,

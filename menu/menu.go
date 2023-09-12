@@ -21,6 +21,7 @@ type Menu struct {
 	tweens Tweens
 	scroll float32
 	ratio  float32
+	ratio2 float32
 	t      float64
 
 	*video.Video // we embbed video here to have direct access to drawing functions
@@ -30,13 +31,23 @@ type Menu struct {
 // If a game is already running, it will warp the user to the quick menu.
 // If not, it will display the menu tabs.
 func Init(v *video.Video) *Menu {
-	w, _ := v.GetFramebufferSize()
+	// donmor: Now the h value is getting in use
+	w, h := v.GetFramebufferSize()
 
 	menu = &Menu{}
 	menu.Video = v
 	menu.stack = []Scene{}
 	menu.tweens = make(Tweens)
 	menu.ratio = float32(w) / 1920
+	// donmor: Added ratio2 for all HEIGHT values if we are under superres and using aspect correction
+	if settings.Current.VideoSuperRes == "16:9" {
+		menu.ratio2 = float32(h) / 1080
+	} else if settings.Current.VideoSuperRes == "4:3" {
+		menu.ratio2 = float32(h) / 1440
+	} else {
+		// donmor: Just give a same value if aspect correction is disabled
+		menu.ratio2 = menu.ratio
+	}
 	menu.icons = map[string]uint32{}
 
 	menu.Push(buildTabs())
@@ -63,6 +74,14 @@ func (m *Menu) Render(dt float32) {
 	m.t += float64(dt * 8)
 	w, h := m.GetFramebufferSize()
 	m.ratio = float32(w) / 1920
+	// donmor: Don't forget the recalculation :)
+	if settings.Current.VideoSuperRes == "16:9" {
+		menu.ratio2 = float32(h) / 1080
+	} else if settings.Current.VideoSuperRes == "4:3" {
+		menu.ratio2 = float32(h) / 1440
+	} else {
+		menu.ratio2 = menu.ratio
+	}
 
 	if state.CoreRunning {
 		m.DrawRect(0, 0, float32(w), float32(h), 0, bgColor.Alpha(0.85))

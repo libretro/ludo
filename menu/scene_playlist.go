@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"math"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -203,32 +204,33 @@ func (s *scenePlaylist) render() {
 			continue
 		}
 
-		fontOffset := 64 * 0.7 * menu.ratio * 0.3
+		fontOffset := 64 * 0.7 * menu.ratio2 * 0.3
 
 		if e.labelAlpha > 0 {
 			drawThumbnail(
 				list, i,
 				list.label, e.gameName,
 				680*menu.ratio-85*e.scale*menu.ratio,
-				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-				170*menu.ratio, 128*menu.ratio,
+				float32(h)*e.yp-14*menu.ratio2-64*e.scale*menu.ratio2+fontOffset,
+				170*menu.ratio, 128*menu.ratio2,
 				e.scale, white.Alpha(e.iconAlpha),
 			)
 			menu.DrawBorder(
 				680*menu.ratio-85*e.scale*menu.ratio,
-				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
+				float32(h)*e.yp-14*menu.ratio2-64*e.scale*menu.ratio2+fontOffset,
+				170*menu.ratio*e.scale, 128*menu.ratio2*e.scale, 0.02/e.scale,
 				textColor.Alpha(e.iconAlpha))
 			if e.path == state.GamePath && e.path != "" {
+				// donmor: TODO: Another place that needs an oval
 				menu.DrawCircle(
 					680*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio+fontOffset,
-					90*menu.ratio*e.scale,
+					float32(h)*e.yp-14*menu.ratio2+fontOffset,
+					90*float32(math.Sqrt(float64(menu.ratio*menu.ratio2)))*e.scale,
 					black.Alpha(e.iconAlpha))
 				menu.DrawImage(menu.icons["resume"],
 					680*menu.ratio-25*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
-					50*menu.ratio, 50*menu.ratio,
+					float32(h)*e.yp-14*menu.ratio2-25*e.scale*menu.ratio2+fontOffset,
+					50*menu.ratio, 50*menu.ratio2,
 					e.scale, white.Alpha(e.iconAlpha))
 			}
 
@@ -237,7 +239,7 @@ func (s *scenePlaylist) render() {
 			menu.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.5*menu.ratio, e.label)
+				0.5*menu.ratio2, e.label)
 			stack += float32(int(menu.Font.Width(0.5*menu.ratio, e.label)))
 			stack += 10
 
@@ -246,10 +248,10 @@ func (s *scenePlaylist) render() {
 					stack += 20
 					menu.DrawImage(
 						menu.icons[tag],
-						stack, float32(h)*e.yp-22*menu.ratio,
-						60*menu.ratio, 44*menu.ratio, 1.0, white.Alpha(e.tagAlpha))
-					menu.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
-						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, black.Alpha(e.tagAlpha/4))
+						stack, float32(h)*e.yp-22*menu.ratio2,
+						60*menu.ratio, 44*menu.ratio2, 1.0, white.Alpha(e.tagAlpha))
+					menu.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio2,
+						60*menu.ratio, 44*menu.ratio2, 0.05/menu.ratio, black.Alpha(e.tagAlpha/4))
 					stack += 60 * menu.ratio
 				}
 			}
@@ -261,7 +263,7 @@ func (s *scenePlaylist) render() {
 
 func (s *scenePlaylist) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-70*menu.ratio2, float32(w), 70*menu.ratio2, 0, lightGrey)
 
 	_, upDown, _, a, b, x, _, _, _, guide := hintIcons()
 

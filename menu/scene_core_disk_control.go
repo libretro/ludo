@@ -77,7 +77,7 @@ func (s *sceneCoreDiskControl) render() {
 
 func (s *sceneCoreDiskControl) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-70*menu.ratio2, float32(w), 70*menu.ratio2, 0, lightGrey)
 
 	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()
 
