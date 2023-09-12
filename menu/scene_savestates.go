@@ -1,7 +1,6 @@
 package menu
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
