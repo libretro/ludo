@@ -50,7 +50,6 @@ func buildSavestates() Scene {
 	for _, path := range paths {
 		path := path
 		date := strings.Replace(utils.FileName(path), gameName+"@", "", 1)
-		log.Println(date)
 		list.children = append(list.children, entry{
 			label: "Load " + date,
 			icon:  "loadstate",
