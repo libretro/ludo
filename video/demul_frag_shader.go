@@ -20,7 +20,7 @@ uniform vec4 color;
 COMPAT_VARYING vec2 fragTexCoord;
 
 vec4 demultiply(vec4 c) {
-  return vec4(c.rgb/c.a, c.a);
+  return vec4(c.rgb/c.a, max(0.0, c.a));
 }
 
 void main() {

@@ -17,10 +17,12 @@ import (
 
 // Video holds the state of the video package
 type Video struct {
-	Window *glfw.Window
-	Geom   libretro.GameGeometry
-	Font   *Font
+	Window   *glfw.Window
+	Geom     libretro.GameGeometry
+	Font     *Font
+	BoldFont *Font
 
+	white                uint32 // white texture for sampler2D
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
 	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
@@ -126,6 +128,11 @@ func (video *Video) Configure(fullscreen bool) {
 	if err != nil {
 		panic(err)
 	}
+	boldFontPath := filepath.Join(settings.Current.AssetsDirectory, "boldfont.ttf")
+	video.BoldFont, err = LoadFont(boldFontPath, int32(36*2), fbw, fbh)
+	if err != nil {
+		panic(err)
+	}
 
 	// Configure the vertex and fragment shaders
 	video.defaultProgram, err = newProgram(vertexShader, defaultFragmentShader)
@@ -208,6 +215,8 @@ func (video *Video) Configure(fullscreen bool) {
 	video.UpdateFilter(settings.Current.VideoFilter)
 
 	video.coreRatioViewport(fbw, fbh)
+
+	video.white = newWhite()
 
 	if e := gl.GetError(); e != gl.NO_ERROR {
 		log.Printf("[Video] OpenGL error: %d\n", e)

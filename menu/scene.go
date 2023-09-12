@@ -1,6 +1,8 @@
 package menu
 
 import (
+	"math"
+
 	"github.com/libretro/ludo/state"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -9,8 +11,13 @@ import (
 // entry is a menu entry. It can also represent a scene.
 // The menu data is a tree of entries.
 type entry struct {
-	yp, scale       float32
-	width, margin   float32
+	alpha           float32
+	scale           float32
+	scroll          float32
+	y               float32
+	entryHeight     float32
+	height          float32
+	margin          float32
 	label, subLabel string
 	path            string // full path of the rom linked to the entry
 	system          string // name of the game system
@@ -19,22 +26,19 @@ type entry struct {
 	iconAlpha       float32
 	tagAlpha        float32
 	subLabelAlpha   float32
+	borderAlpha     float32
 	callbackOK      func() // callback executed when user presses OK
 	callbackX       func() // callback executed when user presses X
 	value           func() interface{}
 	stringValue     func() string
-	widget          func(*entry) // widget draw callback used in settings
-	incr            func(int)    // increment callback used in settings
-	tags            []string     // flags extracted from game title
-	thumbnail       uint32       // thumbnail texture id
-	gameName        string       // title of the game in db, used for thumbnails
-	cursor          struct {
-		alpha float32
-		yp    float32
-	}
-	children []entry // children entries
-	ptr      int     // index of the active child
-	indexes  []struct {
+	widget          func(*entry, *entry, int) // widget draw callback used in settings
+	incr            func(int)                 // increment callback used in settings
+	tags            []string                  // flags extracted from game title
+	thumbnail       uint32                    // thumbnail texture id
+	gameName        string                    // title of the game in db, used for thumbnails
+	children        []entry                   // children entries
+	ptr             int                       // index of the active child
+	indexes         []struct {
 		Char  byte
 		Index int
 	}
@@ -55,26 +59,12 @@ type Scene interface {
 
 // genericSegueMount is the smooth transition of the menu entries first appearance
 func genericSegueMount(list *entry) {
-	for i := range list.children {
-		e := &list.children[i]
-
-		if i == list.ptr {
-			e.yp = 0.5 + 0.3
-			e.scale = 1.5
-		} else if i < list.ptr {
-			e.yp = 0.4 + 0.3 + 0.08*float32(i-list.ptr)
-			e.scale = 0.5
-		} else if i > list.ptr {
-			e.yp = 0.6 + 0.3 + 0.08*float32(i-list.ptr)
-			e.scale = 0.5
-		}
-		e.labelAlpha = 0
-		e.iconAlpha = 0
-		e.tagAlpha = 0
-		e.subLabelAlpha = 0
+	if list.entryHeight == 0 {
+		list.entryHeight = 100
 	}
-	list.cursor.alpha = 0
-	list.cursor.yp = 0.5 + 0.3
+
+	list.scroll = -float32(list.ptr) * list.entryHeight
+	list.y = 300
 
 	genericAnimate(list)
 }
@@ -85,90 +75,90 @@ func genericAnimate(list *entry) {
 		e := &list.children[i]
 
 		// performance improvement
-		// if math.Abs(float64(i-list.ptr)) > 6 && i > 6 && i < len(list.children)-6 {
-		// 	continue
-		// }
-
-		var yp, tagAlpha, subLabelAlpha, scale float32
-		if i == list.ptr {
-			yp = 0.5
-			tagAlpha = 1
-			subLabelAlpha = 1
-			scale = 1.5
-		} else if i < list.ptr {
-			yp = 0.4 + 0.08*float32(i-list.ptr)
-			tagAlpha = 0
-			subLabelAlpha = 0
-			scale = 0.5
-		} else if i > list.ptr {
-			yp = 0.6 + 0.08*float32(i-list.ptr)
-			tagAlpha = 0
-			subLabelAlpha = 0
-			scale = 0.5
+		if math.Abs(float64(i-list.ptr)) > 8 {
+			continue
 		}
 
-		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
+		var tagAlpha, subLabelAlpha float32
+		if i == list.ptr {
+			tagAlpha = 1
+			subLabelAlpha = 1
+		} else if i < list.ptr {
+			tagAlpha = 0
+			subLabelAlpha = 0
+		} else if i > list.ptr {
+			tagAlpha = 0
+			subLabelAlpha = 0
+		}
+
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, 1, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 1, 0.15, ease.OutSine)
 		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, tagAlpha, 0.15, ease.OutSine)
 		menu.tweens[&e.subLabelAlpha] = gween.New(e.subLabelAlpha, subLabelAlpha, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
-	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 1, 0.15, ease.OutSine)
-	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5, 0.15, ease.OutSine)
+
+	margin := 32
+	containerHeight := float32(1080 - 88 - 270 - margin*2)
+	contentHeight := float32(len(list.children)) * list.entryHeight
+
+	scroll := float32(0)
+	if list.ptr >= 3 {
+		scroll = -float32(list.ptr-3) * list.entryHeight
+	}
+
+	if -scroll > contentHeight-containerHeight {
+		scroll = -(contentHeight - containerHeight)
+	}
+
+	if contentHeight < containerHeight {
+		scroll = 0
+	}
+
+	menu.tweens[&list.scroll] = gween.New(list.scroll, scroll, 0.15, ease.OutSine)
+	menu.tweens[&list.y] = gween.New(list.y, 0, 0.15, ease.OutSine)
+	menu.tweens[&list.alpha] = gween.New(list.alpha, 1, 0.15, ease.OutSine)
 }
 
 // genericSegueNext is a smooth transition that fades out the current list
 // to leave room for the next list to appear
 func genericSegueNext(list *entry) {
 	for i := range list.children {
-		e := &list.children[i]
-
-		var yp, scale float32
-		if i == list.ptr {
-			yp = 0.5 - 0.3
-			scale = 1.5
-		} else if i < list.ptr {
-			yp = 0.4 - 0.3 + 0.08*float32(i-list.ptr)
-			scale = 0.5
-		} else if i > list.ptr {
-			yp = 0.6 - 0.3 + 0.08*float32(i-list.ptr)
-			scale = 0.5
+		// performance improvement
+		if math.Abs(float64(i-list.ptr)) > 8 {
+			continue
 		}
 
-		menu.tweens[&e.yp] = gween.New(e.yp, yp, 0.15, ease.OutSine)
+		e := &list.children[i]
 		menu.tweens[&e.labelAlpha] = gween.New(e.labelAlpha, 0, 0.15, ease.OutSine)
 		menu.tweens[&e.iconAlpha] = gween.New(e.iconAlpha, 0, 0.15, ease.OutSine)
 		menu.tweens[&e.tagAlpha] = gween.New(e.tagAlpha, 0, 0.15, ease.OutSine)
 		menu.tweens[&e.subLabelAlpha] = gween.New(e.subLabelAlpha, 0, 0.15, ease.OutSine)
-		menu.tweens[&e.scale] = gween.New(e.scale, scale, 0.15, ease.OutSine)
 	}
-	menu.tweens[&list.cursor.alpha] = gween.New(list.cursor.alpha, 0, 0.15, ease.OutSine)
-	menu.tweens[&list.cursor.yp] = gween.New(list.cursor.yp, 0.5-0.3, 0.15, ease.OutSine)
+	menu.tweens[&list.alpha] = gween.New(list.alpha, 0, 0.15, ease.OutSine)
+	menu.tweens[&list.y] = gween.New(list.y, -300, 0.15, ease.OutSine)
 }
 
 // genericDrawCursor draws the blinking rectangular background of the active
 // menu entry
-func genericDrawCursor(list *entry) {
-	w, h := menu.GetFramebufferSize()
-	menu.DrawImage(menu.icons["arrow"],
-		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
+func genericDrawCursor(list *entry, i int) {
+	w, _ := menu.Window.GetFramebufferSize()
+	y := list.y + (270+32)*menu.ratio + list.scroll*menu.ratio + list.entryHeight*float32(i)*menu.ratio
+	if menu.focus > 1 {
+		blink := float32(math.Cos(menu.t))
+		menu.DrawImage(
+			menu.icons["selection"],
+			360*menu.ratio-8*menu.ratio,
+			y-8*menu.ratio,
+			float32(w)-720*menu.ratio+16*menu.ratio,
+			list.entryHeight*menu.ratio+16*menu.ratio,
+			1, 0.15, white.Alpha(list.alpha-list.alpha*blink))
+	}
 	menu.DrawRect(
-		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-630*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
-}
-
-// thumbnailDrawCursor draws the blinking rectangular background of the active
-// menu entry when there is a thumbnail
-func thumbnailDrawCursor(list *entry) {
-	w, h := menu.GetFramebufferSize()
-	menu.DrawImage(menu.icons["arrow"],
-		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		100*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
-	menu.DrawRect(
-		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
-		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, cursorBg.Alpha(list.cursor.alpha))
+		360*menu.ratio,
+		y,
+		float32(w)-720*menu.ratio,
+		list.entryHeight*menu.ratio, 0.1,
+		cursorBg.Alpha(list.alpha))
 }
 
 // genericRender renders a vertical list of menu entries
@@ -176,37 +166,70 @@ func thumbnailDrawCursor(list *entry) {
 func genericRender(list *entry) {
 	w, h := menu.GetFramebufferSize()
 
-	genericDrawCursor(list)
+	menu.BoldFont.SetColor(titleColor.Alpha(list.alpha))
+	menu.BoldFont.Printf(
+		360*menu.ratio,
+		list.y*menu.ratio+230*menu.ratio,
+		0.5*menu.ratio, list.label)
 
-	menu.ScissorStart(int32(530*menu.ratio), 0, int32(1310*menu.ratio), int32(h))
+	menu.DrawRect(
+		360*menu.ratio,
+		list.y*menu.ratio+270*menu.ratio,
+		float32(w)-720*menu.ratio,
+		2*menu.ratio,
+		0, sepColor.Alpha(list.alpha),
+	)
 
-	for _, e := range list.children {
-		if e.yp < -0.1 || e.yp > 1.1 {
+	menu.ScissorStart(
+		int32(360*menu.ratio-8*menu.ratio), 0,
+		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(272*menu.ratio+list.y*menu.ratio))
+
+	fontOffset := 12 * menu.ratio
+
+	for i, e := range list.children {
+		// performance improvement
+		if math.Abs(float64(i-list.ptr)) > 8 {
 			continue
 		}
 
-		fontOffset := 64 * 0.7 * menu.ratio * 0.3
+		y := list.y*menu.ratio +
+			(270+32)*menu.ratio +
+			list.scroll*menu.ratio +
+			list.entryHeight*float32(i)*menu.ratio +
+			list.entryHeight/2*menu.ratio
+
+		menu.DrawRect(
+			360*menu.ratio,
+			y-1*menu.ratio+list.entryHeight/2*menu.ratio,
+			float32(w)-720*menu.ratio,
+			2*menu.ratio,
+			0, sepColor.Alpha(e.iconAlpha),
+		)
+
+		if i == list.ptr {
+			genericDrawCursor(list, i)
+		}
 
 		menu.DrawImage(menu.icons[e.icon],
-			610*menu.ratio-64*0.5*menu.ratio,
-			float32(h)*e.yp-14*menu.ratio-64*0.5*menu.ratio+fontOffset,
+			420*menu.ratio-64*0.35*menu.ratio,
+			y-64*0.35*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			0.5, textColor.Alpha(e.iconAlpha))
+			0.35, 0, textColor.Alpha(e.iconAlpha))
 
 		if e.labelAlpha > 0 {
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Printf(
-				670*menu.ratio,
-				float32(h)*e.yp+fontOffset,
+				480*menu.ratio,
+				y+fontOffset,
 				0.5*menu.ratio, e.label)
 
 			if e.widget != nil {
-				e.widget(&e)
+				e.widget(list, &e, i)
 			} else if e.stringValue != nil {
 				lw := menu.Font.Width(0.5*menu.ratio, e.stringValue())
 				menu.Font.Printf(
-					float32(w)-lw-128*menu.ratio,
-					float32(h)*e.yp+fontOffset,
+					float32(w)-lw-400*menu.ratio,
+					y+fontOffset,
 					0.5*menu.ratio, e.stringValue())
 			}
 		}
@@ -221,58 +244,68 @@ func askQuitConfirmation(cb func()) {
 		if !state.MenuActive {
 			state.MenuActive = true
 		}
+		menu.oldFocus = menu.focus
 		menu.Push(buildYesNoDialog(
 			"Confirm before quitting",
 			"If you have not saved yet, your progress will be lost.",
 			"Do you want to exit Ludo anyway?", func() {
 				cb()
 			}))
+		menu.focus = len(menu.stack)
 	} else {
 		cb()
 	}
 }
 
 // Displays a confirmation dialog before deleting a playlist game entry
-func askDeleteGameConfirmation(cb func()) {
+/*func askDeleteGameConfirmation(cb func()) {
+	menu.oldFocus = menu.focus
 	menu.Push(buildYesNoDialog(
 		"Confirm before deleting",
 		"You are about to delete a game entry.",
 		"Games and game data won't be removed.", func() {
 			cb()
 		}))
+	menu.focus = len(menu.stack)
 }
 
 // Displays a confirmation dialog before deleting a playlist
 func askDeletePlaylistConfirmation(cb func()) {
+	menu.oldFocus = menu.focus
 	menu.Push(buildYesNoDialog(
 		"Confirm before deleting",
 		"You are about to delete a playlist.",
 		"Games and game data won't be removed.", func() {
 			cb()
 		}))
-}
+	menu.focus = len(menu.stack)
+}*/
 
 // Displays a confirmation dialog before deleting a savestate
 func askDeleteSavestateConfirmation(cb func()) {
+	menu.oldFocus = menu.focus
 	menu.Push(buildYesNoDialog(
 		"Confirm before deleting",
 		"You are about to delete a savestate.",
 		"This action is irreversible.", func() {
 			cb()
 		}))
+	menu.focus = len(menu.stack)
 }
 
 func genericDrawHintBar() {
-	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	w, h := menu.Window.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
-	var stack float32
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, upDown, "Navigate", h)
+	stackHintRight(&rstack, a, "Ok", h)
+	stackHintRight(&rstack, b, "Back", h)
 	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, a, "OK", h)
 }

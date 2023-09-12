@@ -15,7 +15,7 @@ func buildWiFi() Scene {
 
 	list.children = append(list.children, entry{
 		label: "Looking for networks",
-		icon:  "reload",
+		icon:  "reset",
 	})
 
 	list.segueMount()
@@ -32,7 +32,7 @@ func buildWiFi() Scene {
 				network := network
 				list.children = append(list.children, entry{
 					label:       network.SSID,
-					icon:        "menu_network",
+					icon:        "wifi",
 					stringValue: func() string { return ludos.NetworkStatus(network) },
 					callbackOK: func() {
 						list.segueNext()
@@ -85,15 +85,17 @@ func (s *sceneWiFi) render() {
 }
 
 func (s *sceneWiFi) drawHintBar() {
-	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	w, h := menu.Window.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, upDown, _, a, b, _, _, _, _, _ := hintIcons()
 
-	var stack float32
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, upDown, "Navigate", h)
 	if s.children[0].callbackOK != nil {
-		stackHint(&stack, a, "CONNECT", h)
+		stackHintRight(&rstack, a, "Connect", h)
 	}
+	stackHintRight(&rstack, b, "Back", h)
 }

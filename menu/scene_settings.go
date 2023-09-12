@@ -126,27 +126,27 @@ func dirExplorerCb(path string, f *structs.Field) {
 }
 
 // Widgets to display settings values
-var widgets = map[string]func(*entry){
+var widgets = map[string]func(*entry, *entry, int){
 
 	// On/Off switch for boolean settings
-	"switch": func(e *entry) {
+	"switch": func(list, e *entry, i int) {
 		icon := "off"
 		if e.value().(bool) {
 			icon = "on"
 		}
-		w, h := menu.GetFramebufferSize()
+		fbw, _ := menu.GetFramebufferSize()
 		menu.DrawImage(menu.icons[icon],
-			float32(w)-128*menu.ratio-128*menu.ratio,
-			float32(h)*e.yp-64*1.25*menu.ratio,
+			float32(fbw)-400*menu.ratio-128*menu.ratio,
+			list.y+(270+32)*menu.ratio+list.scroll*menu.ratio+100*float32(i)*menu.ratio+50*menu.ratio-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
-			1.25, textColor.Alpha(e.iconAlpha))
+			1.25, 0, textColor.Alpha(e.iconAlpha))
 	},
 
 	// Range widget for audio volume and similat float settings
-	"range": func(e *entry) {
-		fbw, fbh := menu.GetFramebufferSize()
-		x := float32(fbw) - 128*menu.ratio - 175*menu.ratio
-		y := float32(fbh)*e.yp - 4*menu.ratio
+	"range": func(list, e *entry, i int) {
+		fbw, _ := menu.GetFramebufferSize()
+		x := float32(fbw) - 400*menu.ratio - 175*menu.ratio
+		y := list.y + (270+32)*menu.ratio + list.scroll*menu.ratio + 100*float32(i)*menu.ratio + 50*menu.ratio - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
 		menu.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha/4))
@@ -274,20 +274,22 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 
-	var stack float32
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
 	list := menu.stack[len(menu.stack)-1].Entry()
-	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
+	stackHintLeft(&lstack, upDown, "Navigate", h)
 	if list.children[list.ptr].callbackOK != nil {
-		stackHint(&stack, a, "SET", h)
+		stackHintRight(&rstack, a, "Set", h)
 	} else {
-		stackHint(&stack, leftRight, "SET", h)
+		stackHintLeft(&lstack, leftRight, "Set", h)
+	}
+	stackHintRight(&rstack, b, "Back", h)
+	if state.CoreRunning {
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
 }

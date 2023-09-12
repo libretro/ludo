@@ -15,9 +15,9 @@ import (
 func Test_WarpToQuickMenu(t *testing.T) {
 	m := Init(&video.Video{})
 
-	t.Run("Starts with a single scene if no game is running", func(t *testing.T) {
+	t.Run("Starts with 2 scenes if no game is running", func(t *testing.T) {
 		got := len(menu.stack)
-		want := 1
+		want := 2
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
 		}
@@ -25,7 +25,7 @@ func Test_WarpToQuickMenu(t *testing.T) {
 
 	t.Run("Starts on the tabs scene if no game is running", func(t *testing.T) {
 		got := menu.stack[0].Entry().label
-		want := "Ludo"
+		want := "Tabs"
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
 		}

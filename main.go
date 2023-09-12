@@ -11,6 +11,7 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/dat"
 	"github.com/libretro/ludo/history"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/menu"
@@ -20,6 +21,7 @@ import (
 	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 )
 
@@ -40,6 +42,9 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		m.ProcessHotkeys()
 		ntf.Process(dt)
 		vid.ResizeViewport()
+		w, h := vid.Window.GetFramebufferSize()
+		vid.Font.UpdateResolution(w, h)
+		vid.BoldFont.UpdateResolution(w, h)
 		m.UpdatePalette()
 		input.Poll()
 		if !state.MenuActive {
@@ -135,7 +140,20 @@ func main() {
 				if err != nil {
 					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 				} else {
-					m.WarpToQuickMenu()
+					scanner.ScanFile(gamePath, func(game dat.Game) {
+						name := game.Name
+						if name == "" {
+							name = utils.FileName(gamePath)
+						}
+						history.Push(history.Game{
+							Path:     gamePath,
+							Name:     name,
+							System:   game.System,
+							CorePath: state.CorePath,
+						})
+						history.Load()
+						m.WarpToQuickMenu()
+					})
 				}
 			}
 		} else {
