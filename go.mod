@@ -21,9 +21,8 @@ require (
 	github.com/tanema/gween v0.0.0-20200427131925-c89ae23cc63c
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/youpy/go-wav v0.3.0
-	golang.org/x/image v0.5.0
+	golang.org/x/image v0.10.0
 	golang.org/x/mobile v0.0.0-20211207041440-4e6c2922fdee
-	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
