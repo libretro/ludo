@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
 	"github.com/libretro/ludo/dat"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
@@ -131,7 +130,7 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				}
 			}
 			z.Close()
-		case ".cue", ".pbp":
+		case ".cue", ".pbp", ".m3u":
 			// Look for a matching game entry in the database
 			state.DB.FindByROMName(f, filepath.Base(f), 0, games)
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
