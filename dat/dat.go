@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
-	"container/list"
 )
 
 // DB is a database that contains many Dats, mapped to their system name
@@ -105,21 +104,21 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 
 // FindByROMName loops over the Dats in the DB and concurrently matches ROM names.
 // I'm going to update this to do fuzzy matching. To me that means:
-// * try to build a list with a mutex,
-// * if there is an exact name match use that
-// * otherwise at the end look through the potential matches with a few
-//   adjustments for country codes (hoping for exact match)
-// * finally try to find a match without country code
-// * before failing
+//   - try to build a list with a mutex,
+//   - if there is an exact name match use that
+//   - otherwise at the end look through the potential matches with a few
+//     adjustments for country codes (hoping for exact match)
+//   - finally try to find a match without country code
+//   - before failing
+type SafeLookup struct {
+	mu    sync.Mutex
+	options []string
+	found bool
+}
+game_found := SafeLookup{options: [], found: false}
 func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games chan (Game)) {
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
-	type SafeList struct {
-		mu    sync.Mutex
-		results []string
-		bool found
-	}
-	game_found := SafeList{results: []}
 	// For every Dat in the DB
 	for system, dat := range *db {
 		go func(dat Dat, crc uint32, system string) {
@@ -134,8 +133,10 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 						game.Path = romPath
 						game.System = system
 						games <- game
+						game_found.mu.Lock()
+						game_found.found = true
+						game_found.mu.Unlock()
 					}
-					// element is the element from someSlice for where we are
 				}
 			}
 			wg.Done()
