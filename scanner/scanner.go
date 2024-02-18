@@ -141,10 +141,15 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				continue
 			}
 			crc := crc32.ChecksumIEEE(bytes)
-			state.DB.FindByCRC(f, utils.FileName(f), crc, games)
-			if headerSize, ok := headerSizes[ext]; ok {
-				crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
-				state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, games)
+			if !state.DB.FindByCRC(f, utils.FileName(f), crc, games) {
+				if headerSize, ok := headerSizes[ext]; ok {
+					crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
+					if !state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, games) {
+						state.DB.FindByROMName(f, filepath.Base(f), 0, games)
+					}
+				} else {
+					state.DB.FindByROMName(f, filepath.Base(f), 0, games)
+				}
 			}
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}

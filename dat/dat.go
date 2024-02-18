@@ -10,7 +10,7 @@ import (
 	"sort"
 	//"github.com/kr/pretty"
 	"log"
-	"path/filepath"
+	//"path/filepath"
 	"strconv"
 	"sync"
 )
@@ -69,9 +69,10 @@ func Parse(dat []byte) Dat {
 }
 
 // FindByCRC loops over the Dats in the DB and concurrently matches CRC checksums.
-func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (Game)) {
+func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (Game)) (bool) {
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
+	// this structure and subsequent object are remade ever run.
 	type SafeBool struct {
 		mu    sync.Mutex
 		found bool
@@ -87,11 +88,11 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 				}
 				// If the checksums match
 				if crc == uint32(game.ROMs[0].CRC) {
-					fmt.Printf("CRC match: %s -> %s\n", romName, game.Name)
 					game.Path = romPath
 					game.System = system
 					games <- game
 					game_found.mu.Lock()
+					fmt.Printf("CRC match: %s -> %s\n", romName, game.Name)
 					game_found.found = true
 					game_found.mu.Unlock()
 				}
@@ -101,9 +102,13 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 	}
 	// Synchronize all the goroutines
 	wg.Wait()
-	if !game_found.found {
-		db.FindByROMName(romPath, filepath.Base(romPath), crc, games)
-	}
+	// then check if the game was found or not. If it wasn't pass it to
+	// FindByROMName. For some reason this isn't consistently working.
+	//fmt.Printf("%s: %v\n", romName, game_found.found)
+	return game_found.found
+	// if !game_found.found {
+	// 	db.FindByROMName(romPath, filepath.Base(romPath), crc, games)
+	// }
 }
 
 // FindByROMName loops over the Dats in the DB and concurrently matches ROM names.
@@ -114,7 +119,7 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 //     adjustments for country codes (hoping for exact match)
 //   - finally try to find a match without country code
 //   - before failing
-func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games chan (Game)) {
+func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games chan (Game)) (bool) {
 	type SafeLookup struct {
 		mu    sync.Mutex
 		options []string
@@ -143,14 +148,14 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 						game_found.mu.Unlock()
 					} else {
 						var gameName = strings.Split(romName, ".")[0]
-						if strings.Contains(ROM.Name, gameName){
-							if slices.Contains(game_found.options, game.Name) == false {
+						if (strings.Contains(ROM.Name, gameName)) &&
+							!(slices.Contains(game_found.options, game.Name)) {
 								game_found.mu.Lock()
 								//fmt.Println(romName, game.Name)
 								game_found.options = append(game_found.options, game.Name)
 								game_found.mu.Unlock()
 							}
-						}
+						
 					}
 				}
 			}
@@ -169,5 +174,7 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 			fmt.Printf("Fuzzy match: %s -> %s\n", romName, option)
 			break
 		}
+		fmt.Printf("No match: %s\n", romName)
 	}
+	return game_found.found
 }
