@@ -6,7 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"strings"
-	"slices"
+	//"slices"
 	"sort"
 	//"github.com/kr/pretty"
 	"log"
@@ -122,7 +122,7 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games chan (Game)) (bool) {
 	type SafeLookup struct {
 		mu    sync.Mutex
-		options []string
+		options []Game
 		found bool
 	}
 	game_found := SafeLookup{found: false}
@@ -148,14 +148,23 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 						game_found.mu.Unlock()
 					} else {
 						var gameName = strings.Split(romName, ".")[0]
-						if (strings.Contains(ROM.Name, gameName)) &&
-							!(slices.Contains(game_found.options, game.Name)) {
+						if (strings.Contains(ROM.Name, gameName)) {
+							var option_has bool
+							for _, option := range game_found.options {
+								fmt.Println(romName, option.Name)
+								if strings.Contains(option.Name, game.Name) {
+									option_has = true
+								} 
+							}
+							if !(option_has) {
 								game_found.mu.Lock()
 								//fmt.Println(romName, game.Name)
-								game_found.options = append(game_found.options, game.Name)
+								game.Path = romPath
+								game.System = system
+								game_found.options = append(game_found.options, game)
 								game_found.mu.Unlock()
 							}
-						
+						}
 					}
 				}
 			}
@@ -167,17 +176,15 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 	if game_found.found == false {
 		if len(game_found.options) > 0 {
 			game_found.found = true
-			slices.Sort(game_found.options)
-			game_found.options = slices.Compact(game_found.options)
 			sort.SliceStable(game_found.options, func(i, j int) bool {
-				return len(game_found.options[i]) < len(game_found.options[j])
+				return len(game_found.options[i].Name) < len(game_found.options[j].Name)
 			})
 			for _, option := range game_found.options {
-				fmt.Printf("Fuzzy match: %s -> %s\n", romName, option)
+				fmt.Printf("Fuzzy match option: %s -> %s\n", romName, option.Name)
 				break
 			}
 		}
-		if !game_found.found {
+		if game_found.found == false {
 			fmt.Printf("No match: %s\n", romName)
 		}
 	}
