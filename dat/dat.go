@@ -13,6 +13,7 @@ import (
 	//"path/filepath"
 	"strconv"
 	"sync"
+	"path/filepath"
 	//"github.com/libretro/ludo/utils"
 )
 
@@ -183,14 +184,14 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 				return len(game_found.options[i].Name) < len(game_found.options[j].Name)
 			})
 			for _, option := range game_found.options {
-				fmt.Printf("Fuzzy match: %s -> %s for %s\n", romName, option.Name, option.System)
+				fmt.Printf("Fuzzy match: %s -> %s for %s\n", filepath.Base(romPath), option.Name, option.System)
 				games <- option
 				break
 			}
 		}
-		if game_found.found == false {
-			fmt.Printf("No match: %s\n", romName)
-		}
+		//if game_found.found == false {
+		//	fmt.Printf("No match: %s\n", romName)
+		//}
 	}
 	return game_found.found
 }

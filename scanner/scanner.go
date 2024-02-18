@@ -162,13 +162,15 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				} else {
 					if !state.DB.FindByROMName(f, filepath.Base(f), 0, games) {
 						//strippedName, tags := utils.ExtractTags(filepath.Base(f))
-						fmt.Println(strippedName)
+						//fmt.Println(strippedName)
 						for _, tag := range tags {
 							if state.DB.FindByROMName(f, strippedName + " " + "(" + tag + ")" + gameExt, 0, games) {
 								break
 							}
 						}
-						state.DB.FindByROMName(f, strippedName + gameExt, 0, games)
+						if !state.DB.FindByROMName(f, strippedName + gameExt, 0, games) {
+							fmt.Printf("No match: %s\n", filepath.Base(f))
+						}
 					}
 				}
 			}
