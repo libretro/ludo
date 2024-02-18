@@ -58,6 +58,7 @@ func defaultSettings() Settings {
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 			"Sony - PlayStation":                             playstationCore,
 		},
+		FileDirectory:        xdg.DataHome,
 		CoresDirectory:       "./cores",
 		AssetsDirectory:      "./assets",
 		DatabaseDirectory:    "./database",
