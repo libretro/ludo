@@ -165,16 +165,21 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 	// Synchronize all the goroutines
 	wg.Wait()
 	if game_found.found == false {
-		slices.Sort(game_found.options)
-		game_found.options = slices.Compact(game_found.options)
-		sort.SliceStable(game_found.options, func(i, j int) bool {
-			return len(game_found.options[i]) < len(game_found.options[j])
-		})
-		for _, option := range game_found.options {
-			fmt.Printf("Fuzzy match: %s -> %s\n", romName, option)
-			break
+		if len(game_found.options) > 0 {
+			game_found.found = true
+			slices.Sort(game_found.options)
+			game_found.options = slices.Compact(game_found.options)
+			sort.SliceStable(game_found.options, func(i, j int) bool {
+				return len(game_found.options[i]) < len(game_found.options[j])
+			})
+			for _, option := range game_found.options {
+				fmt.Printf("Fuzzy match: %s -> %s\n", romName, option)
+				break
+			}
 		}
-		fmt.Printf("No match: %s\n", romName)
+		if !game_found.found {
+			fmt.Printf("No match: %s\n", romName)
+		}
 	}
 	return game_found.found
 }
