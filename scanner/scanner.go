@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"fmt"
 	"github.com/libretro/ludo/dat"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
@@ -145,10 +146,29 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				if headerSize, ok := headerSizes[ext]; ok {
 					crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
 					if !state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, games) {
-						state.DB.FindByROMName(f, filepath.Base(f), 0, games)
+						if !state.DB.FindByROMName(f, filepath.Base(f), 0, games) {
+							strippedName, tags := utils.ExtractTags(filepath.Base(f))
+							fmt.Println(strippedName)
+							for _, tag := range tags {
+								if state.DB.FindByROMName(f, strippedName + " " + "(" + tag + ")", 0, games) {
+									break
+								}
+							}
+							state.DB.FindByROMName(f, strippedName, 0, games)
+						}
 					}
 				} else {
-					state.DB.FindByROMName(f, filepath.Base(f), 0, games)
+					if !state.DB.FindByROMName(f, filepath.Base(f), 0, games) {
+						// var gameExt = strings.Split(filepath.Base(f), ".")[-1]
+						strippedName, tags := utils.ExtractTags(filepath.Base(f))
+						fmt.Println(strippedName)
+						for _, tag := range tags {
+							if state.DB.FindByROMName(f, strippedName + " " + "(" + tag + ")", 0, games) {
+								break
+							}
+						}
+						state.DB.FindByROMName(f, strippedName, 0, games)
+					}
 				}
 			}
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
