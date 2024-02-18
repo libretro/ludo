@@ -5,6 +5,10 @@ package dat
 import (
 	"encoding/xml"
 	"fmt"
+	"strings"
+	"slices"
+	"sort"
+	//"github.com/kr/pretty"
 	"log"
 	"path/filepath"
 	"strconv"
@@ -83,6 +87,7 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 				}
 				// If the checksums match
 				if crc == uint32(game.ROMs[0].CRC) {
+					fmt.Printf("CRC match: %s -> %s\n", romName, game.Name)
 					game.Path = romPath
 					game.System = system
 					games <- game
@@ -97,7 +102,6 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 	// Synchronize all the goroutines
 	wg.Wait()
 	if !game_found.found {
-		fmt.Println(romName)
 		db.FindByROMName(romPath, filepath.Base(romPath), crc, games)
 	}
 }
@@ -110,13 +114,13 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 //     adjustments for country codes (hoping for exact match)
 //   - finally try to find a match without country code
 //   - before failing
-type SafeLookup struct {
-	mu    sync.Mutex
-	options []string
-	found bool
-}
-game_found := SafeLookup{options: [], found: false}
 func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games chan (Game)) {
+	type SafeLookup struct {
+		mu    sync.Mutex
+		options []string
+		found bool
+	}
+	game_found := SafeLookup{found: false}
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
 	// For every Dat in the DB
@@ -130,12 +134,23 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 				// If the checksums match
 				for _, ROM := range game.ROMs {
 					if romName == ROM.Name {
+						fmt.Printf("Exact match: %s -> %s\n", romName, game.Name)
 						game.Path = romPath
 						game.System = system
 						games <- game
 						game_found.mu.Lock()
 						game_found.found = true
 						game_found.mu.Unlock()
+					} else {
+						var gameName = strings.Split(romName, ".")[0]
+						if strings.Contains(ROM.Name, gameName){
+							if slices.Contains(game_found.options, game.Name) == false {
+								game_found.mu.Lock()
+								//fmt.Println(romName, game.Name)
+								game_found.options = append(game_found.options, game.Name)
+								game_found.mu.Unlock()
+							}
+						}
 					}
 				}
 			}
@@ -144,4 +159,15 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 	}
 	// Synchronize all the goroutines
 	wg.Wait()
+	if game_found.found == false {
+		slices.Sort(game_found.options)
+		game_found.options = slices.Compact(game_found.options)
+		sort.SliceStable(game_found.options, func(i, j int) bool {
+			return len(game_found.options[i]) < len(game_found.options[j])
+		})
+		for _, option := range game_found.options {
+			fmt.Printf("Fuzzy match: %s -> %s\n", romName, option)
+			break
+		}
+	}
 }
