@@ -140,7 +140,7 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 				// If the checksums match
 				for _, ROM := range game.ROMs {
 					if romName == ROM.Name {
-						fmt.Printf("Exact match: %s -> %s\n", romName, game.Name)
+						fmt.Printf("Exact match: %s -> %s\n", romName, ROM.Name)
 						game.Path = romPath
 						game.System = system
 						games <- game
@@ -149,7 +149,9 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 						game_found.mu.Unlock()
 					} else {
 						var gameName = strings.Split(romName, ".")[0]
-						if (strings.Contains(ROM.Name, gameName)) {
+						var gameExt  = strings.Split(romName, ".")[1]
+						if (strings.Contains(ROM.Name, gameName)) &&
+						   (strings.Contains(ROM.Name, gameExt)) {
 							var option_has bool
 							for _, option := range game_found.options {
 								//fmt.Println(romName, option.Name)
@@ -181,7 +183,7 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 				return len(game_found.options[i].Name) < len(game_found.options[j].Name)
 			})
 			for _, option := range game_found.options {
-				fmt.Printf("Fuzzy match: %s -> %s\n", romName, option.Name)
+				fmt.Printf("Fuzzy match: %s -> %s for %s\n", romName, option.Name, option.System)
 				games <- option
 				break
 			}
