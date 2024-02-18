@@ -151,8 +151,8 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 						if (strings.Contains(ROM.Name, gameName)) {
 							var option_has bool
 							for _, option := range game_found.options {
-								fmt.Println(romName, option.Name)
-								if strings.Contains(option.Name, game.Name) {
+								//fmt.Println(romName, option.Name)
+								if option.Name == game.Name {
 									option_has = true
 								} 
 							}
@@ -180,7 +180,8 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 				return len(game_found.options[i].Name) < len(game_found.options[j].Name)
 			})
 			for _, option := range game_found.options {
-				fmt.Printf("Fuzzy match option: %s -> %s\n", romName, option.Name)
+				fmt.Printf("Fuzzy match: %s -> %s\n", romName, option.Name)
+				games <- option
 				break
 			}
 		}
