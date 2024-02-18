@@ -141,33 +141,34 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				n.Update(ntf.Error, err.Error())
 				continue
 			}
+			var gameParts = strings.Split(filepath.Base(f), ".")
+			var gameExt = "." + gameParts[1]
+			strippedName, tags := utils.ExtractTags(filepath.Base(f))
 			crc := crc32.ChecksumIEEE(bytes)
 			if !state.DB.FindByCRC(f, utils.FileName(f), crc, games) {
 				if headerSize, ok := headerSizes[ext]; ok {
 					crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
 					if !state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, games) {
 						if !state.DB.FindByROMName(f, filepath.Base(f), 0, games) {
-							strippedName, tags := utils.ExtractTags(filepath.Base(f))
-							fmt.Println(strippedName)
+							//fmt.Println(strippedName)
 							for _, tag := range tags {
-								if state.DB.FindByROMName(f, strippedName + " " + "(" + tag + ")", 0, games) {
+								if state.DB.FindByROMName(f, strippedName + " " + "(" + tag + ")" + gameExt, 0, games) {
 									break
 								}
 							}
-							state.DB.FindByROMName(f, strippedName, 0, games)
+							state.DB.FindByROMName(f, strippedName + gameExt, 0, games)
 						}
 					}
 				} else {
 					if !state.DB.FindByROMName(f, filepath.Base(f), 0, games) {
-						// var gameExt = strings.Split(filepath.Base(f), ".")[-1]
-						strippedName, tags := utils.ExtractTags(filepath.Base(f))
+						//strippedName, tags := utils.ExtractTags(filepath.Base(f))
 						fmt.Println(strippedName)
 						for _, tag := range tags {
-							if state.DB.FindByROMName(f, strippedName + " " + "(" + tag + ")", 0, games) {
+							if state.DB.FindByROMName(f, strippedName + " " + "(" + tag + ")" + gameExt, 0, games) {
 								break
 							}
 						}
-						state.DB.FindByROMName(f, strippedName, 0, games)
+						state.DB.FindByROMName(f, strippedName + gameExt, 0, games)
 					}
 				}
 			}

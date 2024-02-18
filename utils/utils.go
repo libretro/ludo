@@ -27,7 +27,14 @@ func ExtractTags(name string) (string, []string) {
 			tags = append(tags, strings.TrimSpace(result))
 		}
 	}
-	name = strings.TrimSpace(name)
+	namePart, extPart, result := strings.Cut(name, ".")
+	if result {
+		_ = extPart
+		name = strings.TrimSpace(namePart)
+		//fmt.Println(name + "." + extPart)
+	} else {
+		name = strings.TrimSpace(name)
+	}
 	return name, tags
 }
 
