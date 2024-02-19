@@ -284,9 +284,20 @@ func (s *sceneSettings) drawHintBar() {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
+
+	if settings.Current.SwapConfirm {
+        stackHint(&stack, a, "BACK", h)
+	} else {
+        stackHint(&stack, b, "BACK", h)
+	}
+
+
 	if list.children[list.ptr].callbackOK != nil {
-		stackHint(&stack, a, "SET", h)
+		if settings.Current.SwapConfirm {
+			stackHint(&stack, b, "SET", h)
+		} else {
+			stackHint(&stack, a, "SET", h)
+		}
 	} else {
 		stackHint(&stack, leftRight, "SET", h)
 	}

@@ -33,6 +33,7 @@ type Settings struct {
 	ShowHiddenFiles bool    `toml:"menu_showhiddenfiles" label:"Show Hidden Files" fmt:"%t" widget:"switch"`
 
 	MapAxisToDPad bool `toml:"input_map_axis_to_dpad" label:"Map Sticks To DPad" fmt:"%t" widget:"switch"`
+	SwapConfirm bool `toml:"input_swap_confirm" label:"Swap Confirm and Cancel" fmt:"%t" widget:"switch"`
 
 	CoreForPlaylist map[string]string `hide:"always" toml:"core_for_playlist"`
 

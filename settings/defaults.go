@@ -12,6 +12,7 @@ func defaultSettings() Settings {
 		VideoMonitorIndex: 0,
 		VideoFilter:       "Pixel Perfect",
 		MapAxisToDPad:     false,
+		SwapConfirm:       false,
 		AudioVolume:       0.5,
 		MenuAudioVolume:   0.25,
 		ShowHiddenFiles:   false,
