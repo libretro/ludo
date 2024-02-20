@@ -16,10 +16,10 @@ jobs:
   build_linux_wayland_x86_64:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
@@ -35,10 +35,10 @@ jobs:
   build_linux_wayland_arm:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: sudo apt update -q
@@ -60,10 +60,10 @@ jobs:
   build_linux_x11_x86_64:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
@@ -79,10 +79,10 @@ jobs:
   build_linux_x11_arm:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: sudo apt update -q
@@ -104,10 +104,10 @@ jobs:
   build_osx:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
@@ -122,10 +122,10 @@ jobs:
   build_windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "/c/Users/runneradmin/go/bin" >> $GITHUB_PATH
