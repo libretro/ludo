@@ -1,6 +1,8 @@
 name: CD
 
 on:
+  workflow_dispatch:
+    types: [created]
   release:
     types: [created]
 
