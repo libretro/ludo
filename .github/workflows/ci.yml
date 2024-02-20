@@ -131,12 +131,14 @@ jobs:
       - run: echo "/c/Users/runneradmin/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: choco install wget --ignore-checksums
+      - run: curl -L -o mingw64.zip https://github.com/brechtsanders/winlibs_mingw/releases/download/13.2.0posix-17.0.6-11.0.1-ucrt-r5/winlibs-x86_64-posix-seh-gcc-13.2.0-llvm-17.0.6-mingw-w64ucrt-11.0.1-r5.zip
+      - run: unzip mingw64.zip
       - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
       - run: 7z x openal-soft-1.21.0-bin.zip -o/c/
       - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
       - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
-      - run: WINPTHREAD=$(find /c/ -name libwinpthread-1.dll)
-      - run: cp "$WINTHREAD" .
+      - run: cp "mingw64/bin/libwinpthread-1.dll" .
+      - run: PATH="/c/mingw64/bin:$PATH"
       - run: go get .
       #- run: go test -v -race ./...
       #- run: go vet ./...
