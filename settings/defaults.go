@@ -2,11 +2,12 @@ package settings
 
 import (
 	"path/filepath"
-
+	"os/user"
 	"github.com/adrg/xdg"
 )
 
 func defaultSettings() Settings {
+	usr, _ := user.Current()
 	return Settings{
 		VideoFullscreen:   false,
 		VideoMonitorIndex: 0,
@@ -59,7 +60,7 @@ func defaultSettings() Settings {
 			"SNK - Neo Geo Pocket":                           "mednafen_ngp_libretro",
 			"Sony - PlayStation":                             playstationCore,
 		},
-		FileDirectory:        xdg.DataHome,
+		FileDirectory:        usr.HomeDir,
 		CoresDirectory:       "./cores",
 		AssetsDirectory:      "./assets",
 		DatabaseDirectory:    "./database",
