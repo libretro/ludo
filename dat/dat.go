@@ -177,7 +177,7 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 	}
 	// Synchronize all the goroutines
 	wg.Wait()
-	if game_found.found == false {
+	if !game_found.found {
 		if len(game_found.options) > 0 {
 			game_found.found = true
 			sort.SliceStable(game_found.options, func(i, j int) bool {
