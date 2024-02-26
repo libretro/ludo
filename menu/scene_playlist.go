@@ -26,6 +26,11 @@ func buildPlaylist(path string) Scene {
 	for _, game := range playlists.Playlists[path] {
 		game := game // needed for callbackOK
 		strippedName, tags := extractTags(game.Name)
+		if strings.Contains(game.Name, "Disc") {
+			re := regexp.MustCompile(`\((Disc [1-9]?)\)`)
+			match := re.FindStringSubmatch(game.Name)
+			strippedName = strippedName + " (" + match[1] + ")"
+		}
 		list.children = append(list.children, entry{
 			label:      strippedName,
 			gameName:   game.Name,

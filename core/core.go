@@ -111,6 +111,7 @@ func unarchiveGame(filename string) (string, int64, error) {
 	extPrefered := make(map[string]int)
 	extPrefered[".cue"] = 1
 	extPrefered[".m3u"] = 2
+	extPrefered[".pbp"] = 3
 
 	err = archiver.Walk(filename, func(f archiver.File) error {
 		fname := f.Name()
