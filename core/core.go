@@ -4,13 +4,12 @@
 package core
 
 import (
-	"archive/zip"
 	"errors"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
@@ -20,6 +19,8 @@ import (
 	"github.com/libretro/ludo/savefiles"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
+
+	"github.com/mholt/archiver/v3"
 )
 
 var vid *video.Video
@@ -35,7 +36,7 @@ func Init(v *video.Video) {
 
 // Load loads a libretro core
 func Load(sofile string) error {
-	// In case the a core is already loaded, we need to close it properly
+	// In case a core is already loaded, we need to close it properly
 	// before loading the new core
 	Unload()
 
@@ -50,7 +51,7 @@ func Load(sofile string) error {
 	state.Core.SetEnvironment(environment)
 	state.Core.Init()
 	state.Core.SetVideoRefresh(vid.Refresh)
-	state.Core.SetInputPoll(input.Poll)
+	state.Core.SetInputPoll(func() {})
 	state.Core.SetInputState(input.State)
 	state.Core.SetAudioSample(audio.Sample)
 	state.Core.SetAudioSampleBatch(audio.SampleBatch)
@@ -71,54 +72,67 @@ func Load(sofile string) error {
 	return nil
 }
 
-// unzipGame unzips a rom to tmpdir and returns the path and size of the extracted ROM.
-// In case the zip contains more than one file, they are all extracted and the
-// first one is passed to the libretro core.
-func unzipGame(filename string) (string, int64, error) {
-	r, err := zip.OpenReader(filename)
+// unarchiveGame unarchives a rom to tmpdir and returns the path and size of the extracted ROM.
+// In case the archive contains more than one file, they are all extracted and the
+// first one or a better match (cue for CDrom) is passed to the libretro core.
+func unarchiveGame(filename string) (string, int64, error) {
+	path := ""
+	size := int64(0)
+	dst := os.TempDir()
+
+	var err error
+	// What a wonderful API, all this boilerplate to set an option
+	switch filepath.Ext(filename) {
+	case ".zip":
+		un := archiver.Zip{
+			OverwriteExisting: true,
+		}
+		err = un.Unarchive(filename, dst)
+	case ".tar":
+		un := archiver.Tar{
+			OverwriteExisting: true,
+		}
+		err = un.Unarchive(filename, dst)
+	case ".rar":
+		un := archiver.Rar{
+			OverwriteExisting: true,
+		}
+		err = un.Unarchive(filename, dst)
+	default:
+		// Unarchive with default option
+		err = archiver.Unarchive(filename, dst)
+	}
 	if err != nil {
-		return "", 0, err
-	}
-	defer r.Close()
-
-	var mainPath string
-	var mainSize int64
-	for i, cf := range r.File {
-		size := int64(cf.UncompressedSize)
-		rc, err := cf.Open()
-		if err != nil {
-			return "", 0, err
-		}
-
-		path := filepath.Join(os.TempDir(), cf.Name)
-
-		if cf.FileInfo().IsDir() {
-			os.MkdirAll(path, os.ModePerm)
-			continue
-		}
-
-		if err = os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
-			return "", 0, err
-		}
-
-		outFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, cf.Mode())
-		if err != nil {
-			return "", 0, err
-		}
-
-		if _, err = io.Copy(outFile, rc); err != nil {
-			return "", 0, err
-		}
-		outFile.Close()
-		rc.Close()
-
-		if i == 0 {
-			mainPath = path
-			mainSize = size
-		}
+		return path, size, err
 	}
 
-	return mainPath, mainSize, nil
+	extPriority := 0 // current priority
+	// Give priority of some extensions (use upper case to be case insensitive)
+	extPrefered := make(map[string]int)
+	extPrefered[".cue"] = 1
+	extPrefered[".m3u"] = 2
+	extPrefered[".pbp"] = 3
+
+	err = archiver.Walk(filename, func(f archiver.File) error {
+		fname := f.Name()
+		ext := filepath.Ext(fname)
+		if size == 0 {
+			// By default select the first file of the archive
+			path = filepath.Join(dst, fname)
+			size = f.Size()
+			log.Println("first file in archive:", path, size)
+		}
+		// Check if a file (based on extension) has a higher priority
+		priority, ok := extPrefered[strings.ToLower(ext)]
+		if ok && priority > extPriority {
+			extPriority = priority
+			path = filepath.Join(dst, fname)
+			size = f.Size()
+			log.Println("find a better file in archive:", path, size)
+		}
+		return nil
+	})
+	return path, size, err
 }
 
 // LoadGame loads a game. A core has to be loaded first.
@@ -226,12 +240,16 @@ func getGameInfo(filename string, blockExtract bool) (*libretro.GameInfo, error)
 		return nil, err
 	}
 
-	if filepath.Ext(filename) == ".zip" && !blockExtract {
-		path, size, err := unzipGame(filename)
-		if err != nil {
-			return nil, err
+	if !blockExtract {
+		switch filepath.Ext(filename) {
+		case ".zip", ".zst", ".rar", ".tar":
+			path, size, err := unarchiveGame(filename)
+			if err != nil {
+				return nil, err
+			}
+			return &libretro.GameInfo{Path: path, Size: size}, nil
 		}
-		return &libretro.GameInfo{Path: path, Size: size}, nil
 	}
+
 	return &libretro.GameInfo{Path: filename, Size: fi.Size()}, nil
 }

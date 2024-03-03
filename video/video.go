@@ -25,6 +25,7 @@ type Video struct {
 	defaultProgram       uint32 // default program used for the game quad
 	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
 	zfastCRTProgram      uint32 // fast CRT program used for the game quad
+	zfastLCDProgram      uint32 // fast LCD program used for the game quad
 	roundedProgram       uint32 // program to draw rectangles with rounded corners
 	borderProgram        uint32 // program to draw rectangles borders
 	circleProgram        uint32 // program to draw textured circles
@@ -39,6 +40,9 @@ type Video struct {
 	bpp           int32
 	width, height int32 // dimensions set by the refresh callback
 	rot           uint
+
+	needUpload bool
+	data       unsafe.Pointer
 }
 
 // Init instanciates the video package
@@ -92,8 +96,8 @@ func (video *Video) Configure(fullscreen bool) {
 		width = vm.Width
 		height = vm.Height
 	} else {
-		width = 320 * 3
-		height = 180 * 3
+		width = 384 * 2
+		height = 240 * 2
 	}
 
 	var err error
@@ -139,6 +143,11 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
+	video.zfastLCDProgram, err = newProgram(vertexShader, zfastLCDFragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
 	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
 	if err != nil {
 		panic(err)
@@ -174,11 +183,11 @@ func (video *Video) Configure(fullscreen bool) {
 
 	vertAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vert\x00")))
 	gl.EnableVertexAttribArray(vertAttrib)
-	gl.VertexAttribPointer(vertAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(0))
+	gl.VertexAttribPointerWithOffset(vertAttrib, 2, gl.FLOAT, false, 4*4, 0)
 
 	texCoordAttrib := uint32(gl.GetAttribLocation(video.program, gl.Str("vertTexCoord\x00")))
 	gl.EnableVertexAttribArray(texCoordAttrib)
-	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 4*4, gl.PtrOffset(2*4))
+	gl.VertexAttribPointerWithOffset(texCoordAttrib, 2, gl.FLOAT, false, 4*4, 2*4)
 
 	// Some cores won't call SetPixelFormat, provide default values
 	if video.pixFmt == 0 {
@@ -211,6 +220,7 @@ func (video *Video) Configure(fullscreen bool) {
 // Smooth: linear
 // Pixel Perfect: sharp-bilinear
 // CRT: zfast-crt
+// LCD: zfast-lcd
 func (video *Video) UpdateFilter(filter string) {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	switch filter {
@@ -226,6 +236,10 @@ func (video *Video) UpdateFilter(filter string) {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 		video.program = video.zfastCRTProgram
+	case "LCD":
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		video.program = video.zfastLCDProgram
 	case "Raw":
 		fallthrough
 	default:
@@ -248,7 +262,7 @@ func (video *Video) SetPixelFormat(format uint32) bool {
 	}
 
 	// PixelStorei also needs to be updated whenever bpp changes
-	defer gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
+	defer func() { video.needUpload = true }()
 
 	switch format {
 	case libretro.PixelFormat0RGB1555:
@@ -339,6 +353,8 @@ func (video *Video) Render() {
 		return
 	}
 
+	video.uploadTexture()
+
 	fbw, fbh := video.Window.GetFramebufferSize()
 	_, _, w, h := video.coreRatioViewport(fbw, fbh)
 
@@ -355,21 +371,26 @@ func (video *Video) Render() {
 
 // Refresh the texture framebuffer
 func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitch int32) {
+	video.needUpload = true
 	video.width = width
 	video.height = height
 	video.pitch = pitch
+	video.data = data // maybe need a full copy
+}
+
+func (video *Video) uploadTexture() {
+	if !video.needUpload || video.data == nil {
+		return
+	}
 
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
 	gl.UseProgram(video.program)
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(width), float32(height))
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(width), float32(height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.width), float32(video.height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
 
-	if data == nil {
-		return
-	}
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, data)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, video.width, video.height, 0, video.pixType, video.pixFmt, video.data)
 }
 
 // SetRotation rotates the game image as requested by the core

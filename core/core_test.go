@@ -56,8 +56,7 @@ func Test_coreLoad(t *testing.T) {
 		}
 	})
 
-	state.Core.UnloadGame()
-	state.Core.Deinit()
+	Unload()
 	state.GamePath = ""
 	state.Verbose = false
 }
@@ -139,7 +138,7 @@ func Test_getGameInfo(t *testing.T) {
 	}
 }
 
-func Test_unzipGame(t *testing.T) {
+func Test_unarchiveGame(t *testing.T) {
 	type args struct {
 		filename string
 	}
@@ -174,16 +173,16 @@ func Test_unzipGame(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := unzipGame(tt.args.filename)
+			got, got1, err := unarchiveGame(tt.args.filename)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("unzipGame() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("unarchiveGame() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("unzipGame() got = %v, want %v", got, tt.want)
+				t.Errorf("unarchiveGame() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("unzipGame() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("unarchiveGame() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
