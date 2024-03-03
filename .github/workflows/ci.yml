@@ -138,6 +138,8 @@ jobs:
       - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
       - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
       - run: cp "mingw64/bin/libwinpthread-1.dll" .
+      - run: cp /c/openal-soft-1.21.0-bin/bin/Win64/soft_oal.dll OpenAL32.dll
+      - run: cp /c/Windows/System32/VCRUNTIME140.dll .
       - run: PATH="/c/mingw64/bin:$PATH"
       - run: go get .
       - run: go test -v -race ./...
