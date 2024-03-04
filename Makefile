@@ -118,6 +118,11 @@ zip: ludo.exe $(DLLS)
 	cp -r cores $(BUNDLENAME)/
 	7z a $(BUNDLENAME).zip $(BUNDLENAME)\
 
+# this command only works in windows
+ludowin:
+	go build
+	./rcedit-x64 ludo.exe --set-icon assets/icon.ico
+
 # For Linux
 tar: ludo $(SOBJS)
 	mkdir -p $(BUNDLENAME)/
@@ -161,3 +166,5 @@ deb: ludo $(SOBJS)
 
 clean:
 	rm -rf Ludo.app ludo wc *.dmg *.deb $(BUNDLENAME)-* cores/
+
+.PHONY: ludo.exe

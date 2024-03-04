@@ -4,23 +4,40 @@
 package input
 
 import (
-	"log"
-
+	"fmt"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	lr "github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/video"
+	"log"
+	"strings"
 )
 
 // MaxPlayers is the maximum number of players to poll input for
-const MaxPlayers = 5
+const MaxPlayers = 8
 
 // States can store the state of inputs for all players
 type States [MaxPlayers][ActionLast]int16
 
 // AnalogStates can store the state of analog inputs for all players
 type AnalogStates [MaxPlayers][2][2]int16
+
+var printCount int64
+
+func (s States) PrintStates() {
+	fmt.Printf("{\n")
+	for p := range s {
+		fmt.Printf("\tp%d:[", p)
+		a := make([]string, len(s[p]))
+		for k := range s[p] {
+			a[k] = fmt.Sprintf("%d", s[p][k])
+		}
+		fmt.Print(strings.Join(a, ","))
+		fmt.Printf("]\n")
+	}
+	fmt.Printf("}\n")
+}
 
 // Input state for all the players
 var (
@@ -144,6 +161,10 @@ func pollKeyboard(state States) States {
 
 // Compute the keys pressed or released during this frame
 func getPressedReleased(new States, old States) (States, States) {
+	if printCount%60 == 0 {
+		new.PrintStates()
+	}
+	printCount++
 	for p := range new {
 		for k := range new[p] {
 			if new[p][k] == 1 && old[p][k] == 0 {
