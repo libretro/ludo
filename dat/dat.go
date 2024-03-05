@@ -101,10 +101,13 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 					continue
 				}
 				// If the checksums match
-				if romName == game.ROMs[0].Name {
-					game.Path = romPath
-					game.System = system
-					games <- game
+				for _, ROM := range game.ROMs {
+					if romName == ROM.Name {
+						game.Path = romPath
+						game.System = system
+						games <- game
+					}
+					// element is the element from someSlice for where we are
 				}
 			}
 			wg.Done()

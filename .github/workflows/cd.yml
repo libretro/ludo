@@ -1,6 +1,8 @@
 name: CD
 
 on:
+  workflow_dispatch:
+    types: [created]
   release:
     types: [created]
 
@@ -12,10 +14,10 @@ jobs:
   build_linux_wayland_x86_64:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
@@ -36,10 +38,10 @@ jobs:
   build_linux_wayland_arm:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
@@ -72,10 +74,10 @@ jobs:
   build_linux_x11_x86_64:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
@@ -96,10 +98,10 @@ jobs:
   build_linux_x11_arm:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
@@ -132,10 +134,10 @@ jobs:
   build_osx:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
@@ -166,22 +168,25 @@ jobs:
   build_windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.19.5'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: choco install wget make hashdeep --ignore-checksums
       - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
       - run: wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe
+      - run: curl -L -o mingw64.zip https://github.com/brechtsanders/winlibs_mingw/releases/download/13.2.0posix-17.0.6-11.0.1-ucrt-r5/winlibs-x86_64-posix-seh-gcc-13.2.0-llvm-17.0.6-mingw-w64ucrt-11.0.1-r5.zip
+      - run: unzip mingw64.zip
       - run: 7z x openal-soft-1.21.0-bin.zip -o/c/
       - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
       - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
-      - run: cp /c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/libwinpthread-1.dll .
+      - run: cp "mingw64/bin/libwinpthread-1.dll" .
       - run: cp /c/openal-soft-1.21.0-bin/bin/Win64/soft_oal.dll OpenAL32.dll
       - run: cp /c/Windows/System32/VCRUNTIME140.dll .
+      - run: PATH="/c/mingw64/bin:$PATH"
       - run: mkdir -p ./Ludo-Windows-x86_64-${VERSION}/
       - run: cp *.dll ./Ludo-Windows-x86_64-${VERSION}/
       - run: OS=Windows ARCH=x86_64 VERSION=$VERSION make zip
