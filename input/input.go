@@ -161,10 +161,10 @@ func pollKeyboard(state States) States {
 
 // Compute the keys pressed or released during this frame
 func getPressedReleased(new States, old States) (States, States) {
-	if printCount%60 == 0 {
+	/*if printCount%60 == 0 {
 		new.PrintStates()
 	}
-	printCount++
+	printCount++*/
 	for p := range new {
 		for k := range new[p] {
 			if new[p][k] == 1 && old[p][k] == 0 {

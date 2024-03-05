@@ -120,7 +120,7 @@ zip: ludo.exe $(DLLS)
 
 # this command only works in windows
 ludowin:
-	go build
+	go build -ldflags '-H=windowsgui'
 	./rcedit-x64 ludo.exe --set-icon assets/icon.ico
 
 # For Linux
