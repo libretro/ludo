@@ -23,7 +23,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/klauspost/compress v1.17.6 // indirect
+	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/nwaples/rardecode v1.1.3 // indirect
@@ -33,6 +33,10 @@ require (
 	github.com/youpy/go-riff v0.1.0 // indirect
 	github.com/zaf/g711 v1.4.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/image v0.15.0
+	golang.org/x/mobile v0.0.0-20240213143359-d1f7d3436075
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
 
