@@ -4,9 +4,17 @@ package dat
 
 import (
 	"encoding/xml"
+	"fmt"
+	"strings"
+	//"slices"
+	"sort"
+	//"github.com/kr/pretty"
 	"log"
+	//"path/filepath"
 	"strconv"
 	"sync"
+	"path/filepath"
+	//"github.com/libretro/ludo/utils"
 )
 
 // DB is a database that contains many Dats, mapped to their system name
@@ -63,9 +71,15 @@ func Parse(dat []byte) Dat {
 }
 
 // FindByCRC loops over the Dats in the DB and concurrently matches CRC checksums.
-func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (Game)) {
+func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (Game)) (bool) {
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
+	// this structure and subsequent object are remade ever run.
+	type SafeBool struct {
+		mu    sync.Mutex
+		found bool
+	}
+	game_found := SafeBool{found: false}
 	// For every Dat in the DB
 	for system, dat := range *db {
 		go func(dat Dat, crc uint32, system string) {
@@ -79,6 +93,10 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 					game.Path = romPath
 					game.System = system
 					games <- game
+					game_found.mu.Lock()
+					fmt.Printf("CRC match: %s -> %s\n", romName, game.Name)
+					game_found.found = true
+					game_found.mu.Unlock()
 				}
 			}
 			wg.Done()
@@ -86,10 +104,30 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 	}
 	// Synchronize all the goroutines
 	wg.Wait()
+	// then check if the game was found or not. If it wasn't pass it to
+	// FindByROMName. For some reason this isn't consistently working.
+	//fmt.Printf("%s: %v\n", romName, game_found.found)
+	return game_found.found
+	// if !game_found.found {
+	// 	db.FindByROMName(romPath, filepath.Base(romPath), crc, games)
+	// }
 }
 
 // FindByROMName loops over the Dats in the DB and concurrently matches ROM names.
-func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games chan (Game)) {
+// I'm going to update this to do fuzzy matching. To me that means:
+//   - try to build a list with a mutex,
+//   - if there is an exact name match use that
+//   - otherwise at the end look through the potential matches with a few
+//     adjustments for country codes (hoping for exact match)
+//   - finally try to find a match without country code
+//   - before failing
+func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games chan (Game)) (bool) {
+	type SafeLookup struct {
+		mu    sync.Mutex
+		options []Game
+		found bool
+	}
+	game_found := SafeLookup{found: false}
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
 	// For every Dat in the DB
@@ -103,11 +141,35 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 				// If the checksums match
 				for _, ROM := range game.ROMs {
 					if romName == ROM.Name {
+						fmt.Printf("Exact match: %s -> %s\n", romName, ROM.Name)
 						game.Path = romPath
 						game.System = system
 						games <- game
+						game_found.mu.Lock()
+						game_found.found = true
+						game_found.mu.Unlock()
+					} else {
+						var gameName = strings.Split(romName, ".")[0]
+						var gameExt  = strings.Split(romName, ".")[1]
+						if (strings.Contains(ROM.Name, gameName)) &&
+						   (strings.Contains(ROM.Name, gameExt)) {
+							var option_has bool
+							for _, option := range game_found.options {
+								//fmt.Println(romName, option.Name)
+								if option.Name == game.Name {
+									option_has = true
+								} 
+							}
+							if !(option_has) {
+								game_found.mu.Lock()
+								//fmt.Println(romName, game.Name)
+								game.Path = romPath
+								game.System = system
+								game_found.options = append(game_found.options, game)
+								game_found.mu.Unlock()
+							}
+						}
 					}
-					// element is the element from someSlice for where we are
 				}
 			}
 			wg.Done()
@@ -115,4 +177,21 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 	}
 	// Synchronize all the goroutines
 	wg.Wait()
+	if !game_found.found {
+		if len(game_found.options) > 0 {
+			game_found.found = true
+			sort.SliceStable(game_found.options, func(i, j int) bool {
+				return len(game_found.options[i].Name) < len(game_found.options[j].Name)
+			})
+			for _, option := range game_found.options {
+				fmt.Printf("Fuzzy match: %s -> %s for %s\n", filepath.Base(romPath), option.Name, option.System)
+				games <- option
+				break
+			}
+		}
+		//if game_found.found == false {
+		//	fmt.Printf("No match: %s\n", romName)
+		//}
+	}
+	return game_found.found
 }

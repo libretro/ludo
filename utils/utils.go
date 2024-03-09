@@ -11,7 +11,32 @@ import (
 	"runtime"
 	"strings"
 	"time"
+	"regexp"
 )
+
+func ExtractTags(name string) (string, []string) {
+	re := regexp.MustCompile(`\(.*?\)`)
+	pars := re.FindAllString(name, -1)
+	var tags []string
+	for _, par := range pars {
+		name = strings.Replace(name, par, "", -1)
+		par = strings.Replace(par, "(", "", -1)
+		par = strings.Replace(par, ")", "", -1)
+		results := strings.Split(par, ",")
+		for _, result := range results {
+			tags = append(tags, strings.TrimSpace(result))
+		}
+	}
+	namePart, extPart, result := strings.Cut(name, ".")
+	if result {
+		_ = extPart
+		name = strings.TrimSpace(namePart)
+		//fmt.Println(name + "." + extPart)
+	} else {
+		name = strings.TrimSpace(name)
+	}
+	return name, tags
+}
 
 // StringInSlice check wether a string is contain in a string slice.
 func StringInSlice(a string, list []string) bool {

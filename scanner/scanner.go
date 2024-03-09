@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"fmt"
 	"github.com/libretro/ludo/dat"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
@@ -134,17 +135,44 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 			// Look for a matching game entry in the database
 			state.DB.FindByROMName(f, filepath.Base(f), 0, games)
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
-		case ".32x", ".a26", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc":
+		case ".32x", ".a26", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc", ".z64":
 			bytes, err := ioutil.ReadFile(f)
 			if err != nil {
 				n.Update(ntf.Error, err.Error())
 				continue
 			}
+			var gameParts = strings.Split(filepath.Base(f), ".")
+			var gameExt = "." + gameParts[1]
+			strippedName, tags := utils.ExtractTags(filepath.Base(f))
 			crc := crc32.ChecksumIEEE(bytes)
-			state.DB.FindByCRC(f, utils.FileName(f), crc, games)
-			if headerSize, ok := headerSizes[ext]; ok {
-				crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
-				state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, games)
+			if !state.DB.FindByCRC(f, utils.FileName(f), crc, games) {
+				if headerSize, ok := headerSizes[ext]; ok {
+					crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
+					if !state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, games) {
+						if !state.DB.FindByROMName(f, filepath.Base(f), 0, games) {
+							//fmt.Println(strippedName)
+							for _, tag := range tags {
+								if state.DB.FindByROMName(f, strippedName + " " + "(" + tag + ")" + gameExt, 0, games) {
+									break
+								}
+							}
+							state.DB.FindByROMName(f, strippedName + gameExt, 0, games)
+						}
+					}
+				} else {
+					if !state.DB.FindByROMName(f, filepath.Base(f), 0, games) {
+						//strippedName, tags := utils.ExtractTags(filepath.Base(f))
+						//fmt.Println(strippedName)
+						for _, tag := range tags {
+							if state.DB.FindByROMName(f, strippedName + " " + "(" + tag + ")" + gameExt, 0, games) {
+								break
+							}
+						}
+						if !state.DB.FindByROMName(f, strippedName + gameExt, 0, games) {
+							fmt.Printf("No match: %s\n", filepath.Base(f))
+						}
+					}
+				}
 			}
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}
