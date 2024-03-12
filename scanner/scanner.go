@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
 	"github.com/libretro/ludo/dat"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
@@ -113,6 +114,7 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 			}
 			for _, rom := range z.File {
 				romExt := filepath.Ext(rom.Name)
+				size := int64(rom.UncompressedSize64)
 				// these 4 systems might have headered or headerless roms and need special logic
 				if headerSize, ok := headerSizes[romExt]; ok {
 					crc, crcHeaderless, err := checksumHeaderless(rom, headerSize)
@@ -120,12 +122,12 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 						n.Update(ntf.Error, err.Error())
 						continue
 					}
-					state.DB.FindByCRC(f, rom.Name, crc, games)
-					state.DB.FindByCRC(f, rom.Name, crcHeaderless, games)
+					state.DB.FindByCRC(f, rom.Name, crc, size, games)
+					state.DB.FindByCRC(f, rom.Name, crcHeaderless, size-int64(headerSize), games)
 					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				} else if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
-					state.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
+					state.DB.FindByCRC(f, rom.Name, rom.CRC32, size, games)
 					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				}
 			}
@@ -140,11 +142,16 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				n.Update(ntf.Error, err.Error())
 				continue
 			}
+			s, err := os.Stat(f)
+			if err != nil {
+				n.Update(ntf.Error, err.Error())
+				continue
+			}
 			crc := crc32.ChecksumIEEE(bytes)
-			state.DB.FindByCRC(f, utils.FileName(f), crc, games)
+			state.DB.FindByCRC(f, utils.FileName(f), crc, s.Size(), games)
 			if headerSize, ok := headerSizes[ext]; ok {
 				crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
-				state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, games)
+				state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, s.Size()-int64(headerSize), games)
 			}
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}
