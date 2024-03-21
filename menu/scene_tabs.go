@@ -263,8 +263,17 @@ func (tabs *sceneTabs) update(dt float32) {
 		tabs.animate()
 	})
 
+	var confirmKey uint32
+
+	confirmKey = libretro.DeviceIDJoypadA
+
+	// Optionally swap confirm and cancel
+	if settings.Current.SwapConfirm {
+		confirmKey = libretro.DeviceIDJoypadB
+	}
+
 	// OK
-	if input.Released[0][libretro.DeviceIDJoypadA] == 1 {
+	if input.Released[0][confirmKey] == 1 {
 		if tabs.children[tabs.ptr].callbackOK != nil {
 			audio.PlayEffect(audio.Effects["ok"])
 			tabs.segueNext()
@@ -315,15 +324,18 @@ func (tabs sceneTabs) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
-	_, _, leftRight, a, _, x, _, _, _, guide := hintIcons()
+	_, _, leftRight, a, b, x, _, _, _, guide := hintIcons()
 
 	var stack float32
 	if state.CoreRunning {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, leftRight, "NAVIGATE", h)
-	stackHint(&stack, a, "OPEN", h)
-
+	if settings.Current.SwapConfirm {
+		stackHint(&stack, b, "OPEN", h)
+	} else {
+		stackHint(&stack, a, "OPEN", h)
+	}
 	list := menu.stack[0].Entry()
 	if list.children[list.ptr].callbackX != nil {
 		stackHint(&stack, x, "DELETE", h)

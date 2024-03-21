@@ -8,6 +8,7 @@ import (
 	"github.com/libretro/ludo/history"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/settings"
 )
 
 type sceneHistory struct {
@@ -242,8 +243,14 @@ func (s *sceneHistory) drawHintBar() {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, a, "RUN", h)
+	
+	if settings.Current.SwapConfirm {
+		stackHint(&stack, b, "RUN", h)
+        stackHint(&stack, a, "BACK", h)
+	} else {
+		stackHint(&stack, a, "RUN", h)
+        stackHint(&stack, b, "BACK", h)
+	}
 
 	list := menu.stack[len(menu.stack)-1].Entry()
 	if list.children[list.ptr].callbackX != nil {
