@@ -70,6 +70,7 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, size int64, 
 		return
 	}
 
+	once := sync.Once{}
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
 	// For every Dat in the DB
@@ -82,9 +83,11 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, size int64, 
 				}
 				// If the checksums and sizes match
 				if crc == uint32(game.ROMs[0].CRC) && size == game.ROMs[0].Size {
-					game.Path = romPath
-					game.System = system
-					games <- game
+					once.Do(func() {
+						game.Path = romPath
+						game.System = system
+						games <- game
+					})
 				}
 			}
 			wg.Done()
