@@ -19,9 +19,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.19.5'
+          go-version: '1.22.3'
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: sudo apt-get update -q
@@ -38,9 +38,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.19.5'
+          go-version: '1.22.3'
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
@@ -63,9 +63,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.19.5'
+          go-version: '1.22.3'
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: sudo apt-get update -q
@@ -82,9 +82,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.19.5'
+          go-version: '1.22.3'
       - run: sudo apt update -q
       - run: sudo apt-get install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
@@ -102,14 +102,14 @@ jobs:
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
 
   build_osx:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.19.5'
+          go-version: '1.22.3'
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
@@ -125,9 +125,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.19.5'
+          go-version: '1.22.3'
       - run: echo "/c/Users/runneradmin/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: choco install wget --ignore-checksums
