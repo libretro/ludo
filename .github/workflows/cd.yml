@@ -132,7 +132,7 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_osx:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
         with:

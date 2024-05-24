@@ -102,7 +102,7 @@ jobs:
       - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
 
   build_osx:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
         with:
