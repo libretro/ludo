@@ -21,7 +21,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '2.22.3'
+          go-version: '1.22.3'
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: sudo apt-get update -q
@@ -40,7 +40,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '2.22.3'
+          go-version: '1.22.3'
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
@@ -65,7 +65,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '2.22.3'
+          go-version: '1.22.3'
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: sudo apt-get update -q
@@ -84,7 +84,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '2.22.3'
+          go-version: '1.22.3'
       - run: sudo apt update -q
       - run: sudo apt-get install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
@@ -109,7 +109,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '2.22.3'
+          go-version: '1.22.3'
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
@@ -127,7 +127,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '2.22.3'
+          go-version: '1.22.3'
       - run: echo "/c/Users/runneradmin/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: choco install wget --ignore-checksums
