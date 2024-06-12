@@ -2,6 +2,7 @@ package menu
 
 import (
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/settings"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )
@@ -273,6 +274,12 @@ func genericDrawHintBar() {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, a, "OK", h)
+
+	if settings.Current.SwapConfirm {
+		stackHint(&stack, b, "OK", h)
+        stackHint(&stack, a, "BACK", h)
+	} else {
+		stackHint(&stack, a, "OPEN", h)
+        stackHint(&stack, b, "OK", h)
+	}
 }
