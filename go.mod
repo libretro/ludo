@@ -23,9 +23,8 @@ require (
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	github.com/youpy/go-wav v0.3.2
 	github.com/zaf/g711 v1.4.0 // indirect
-	golang.org/x/image v0.16.0
+	golang.org/x/image v0.18.0
 	golang.org/x/mobile v0.0.0-20240520174638-fa72addaaa1b
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
