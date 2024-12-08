@@ -48,18 +48,20 @@ jobs:
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
+      - run: sudo rm -rf /etc/apt/sources.list.d/*s
       - run: echo "" | sudo tee /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
       - run: sudo apt update -q
-      - run: sudo apt install -f libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf libwayland-dev:armhf libxkbcommon-dev:armhf -y --allow-unauthenticated
-      - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
+      - run: sudo apt install -f libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf libwayland-dev:armhf libxkbcommon-dev:armhf -y --allow-unauthenticated
+      - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
       - run: OS=Linux ARCH=arm DISPDRIVER=wayland VERSION=$VERSION make tar
       - run: OS=Linux ARCH=arm DISPDRIVER=wayland VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-wayland-arm-${VERSION}.tar.gz > Ludo-Linux-wayland-arm-${VERSION}.tar.gz.sha256
@@ -108,18 +110,20 @@ jobs:
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
+      - run: sudo rm -rf /etc/apt/sources.list.d/*s
       - run: echo "" | sudo tee /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
       - run: sudo apt update -q
-      - run: sudo apt install -f libgl1-mesa-dev:amd64 libxxf86vm-dev:armhf libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
-      - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
+      - run: sudo apt install -f libxxf86vm-dev:armhf libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
+      - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
       - run: OS=Linux ARCH=arm DISPDRIVER=x11 VERSION=$VERSION make tar
       - run: OS=Linux ARCH=arm DISPDRIVER=x11 VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-x11-arm-${VERSION}.tar.gz > Ludo-Linux-x11-arm-${VERSION}.tar.gz.sha256
