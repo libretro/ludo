@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -74,14 +73,14 @@ func Load() error {
 
 	// If /etc/ludo.toml exists, override the defaults
 	if _, err := os.Stat("/etc/ludo.toml"); !os.IsNotExist(err) {
-		b, _ := ioutil.ReadFile("/etc/ludo.toml")
+		b, _ := os.ReadFile("/etc/ludo.toml")
 		err = toml.Unmarshal(b, &Current)
 		if err != nil {
 			return err
 		}
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(xdg.ConfigHome, "ludo", "settings.toml"))
+	b, err := os.ReadFile(filepath.Join(xdg.ConfigHome, "ludo", "settings.toml"))
 	if err != nil {
 		return err
 	}

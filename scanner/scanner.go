@@ -6,7 +6,7 @@ package scanner
 import (
 	"archive/zip"
 	"hash/crc32"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -22,7 +22,7 @@ import (
 
 // LoadDB loops over the RDBs in a given directory and parses them
 func LoadDB(dir string) (dat.DB, error) {
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return dat.DB{}, err
 	}
@@ -33,7 +33,7 @@ func LoadDB(dir string) (dat.DB, error) {
 			continue
 		}
 		system := name[0 : len(name)-4]
-		bytes, _ := ioutil.ReadFile(filepath.Join(dir, name))
+		bytes, _ := os.ReadFile(filepath.Join(dir, name))
 		db[system] = dat.Parse(bytes)
 	}
 	return db, nil
@@ -82,7 +82,7 @@ func checksumHeaderless(rom *zip.File, headerSize uint) (uint32, uint32, error) 
 		return 0, 0, err
 	}
 	defer h.Close()
-	bytes, err := ioutil.ReadAll(h)
+	bytes, err := io.ReadAll(h)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -137,7 +137,7 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 			state.DB.FindByROMName(f, filepath.Base(f), 0, games)
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		case ".32x", ".a26", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc", ".z64":
-			bytes, err := ioutil.ReadFile(f)
+			bytes, err := os.ReadFile(f)
 			if err != nil {
 				n.Update(ntf.Error, err.Error())
 				continue
