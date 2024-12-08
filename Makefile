@@ -13,6 +13,7 @@ CORES = atari800 bluemsx swanstation fbneo fceumm gambatte gearsystem genesis_pl
 
 ifeq ($(ARCH), arm)
 	CORES := $(filter-out swanstation,$(CORES))
+	CORES := $(filter-out mupen64plus_next,$(CORES))
 	CORES := $(filter-out mednafen_pcfx,$(CORES))
 	CORES := $(filter-out mednafen_saturn,$(CORES))
 	CORES := $(filter-out melonds,$(CORES))
@@ -20,6 +21,7 @@ endif
 
 ifeq ($(ARCH), arm64)
 	CORES := $(filter-out swanstation,$(CORES))
+	CORES := $(filter-out mupen64plus_next,$(CORES))
 	CORES := $(filter-out mednafen_wswan,$(CORES))
 	CORES := $(filter-out handy,$(CORES))
 	CORES := $(filter-out np2kai,$(CORES))

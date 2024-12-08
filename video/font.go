@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/draw"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/go-gl/gl/v2.1/gl"
@@ -57,7 +56,7 @@ func max(a, b float32) float32 {
 
 // LoadTrueTypeFont builds a set of textures based on a ttf files gylphs
 func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, dir Direction) (*Font, error) {
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}

@@ -19,7 +19,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22.3'
+          go-version: '1.23.4'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev libwayland-dev libxkbcommon-dev -y --allow-unauthenticated
@@ -36,30 +36,32 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_wayland_arm:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22.3'
+          go-version: '1.23.4'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
+      - run: sudo rm -rf /etc/apt/sources.list.d/*s
       - run: echo "" | sudo tee /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
       - run: sudo apt update -q
-      - run: sudo apt install -f libgl1-mesa-dev:amd64 libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf libwayland-dev:armhf libxkbcommon-dev:armhf -y --allow-unauthenticated
-      - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
+      - run: sudo apt install -f libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf libwayland-dev:armhf libxkbcommon-dev:armhf -y --allow-unauthenticated
+      - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
       - run: OS=Linux ARCH=arm DISPDRIVER=wayland VERSION=$VERSION make tar
       - run: OS=Linux ARCH=arm DISPDRIVER=wayland VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-wayland-arm-${VERSION}.tar.gz > Ludo-Linux-wayland-arm-${VERSION}.tar.gz.sha256
@@ -79,7 +81,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22.3'
+          go-version: '1.23.4'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
@@ -96,30 +98,32 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_x11_arm:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22.3'
+          go-version: '1.23.4'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
+      - run: sudo rm -rf /etc/apt/sources.list.d/*s
       - run: echo "" | sudo tee /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
       - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
       - run: sudo apt update -q
-      - run: sudo apt install -f libgl1-mesa-dev:amd64 libxxf86vm-dev:armhf libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
-      - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
+      - run: sudo apt install -f libxxf86vm-dev:armhf libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
+      - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
       - run: OS=Linux ARCH=arm DISPDRIVER=x11 VERSION=$VERSION make tar
       - run: OS=Linux ARCH=arm DISPDRIVER=x11 VERSION=$VERSION make deb
       - run: sha256sum Ludo-Linux-x11-arm-${VERSION}.tar.gz > Ludo-Linux-x11-arm-${VERSION}.tar.gz.sha256
@@ -139,7 +143,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22.3'
+          go-version: '1.23.4'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
@@ -173,7 +177,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22.3'
+          go-version: '1.23.4'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: choco install wget make hashdeep --ignore-checksums
       - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip

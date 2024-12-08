@@ -5,7 +5,6 @@ package core
 
 import (
 	"errors"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -155,7 +154,7 @@ func LoadGame(gamePath string) error {
 	}
 
 	if !si.NeedFullpath {
-		bytes, err := ioutil.ReadFile(gi.Path)
+		bytes, err := os.ReadFile(gi.Path)
 		if err != nil {
 			return err
 		}

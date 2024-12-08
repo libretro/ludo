@@ -1,7 +1,6 @@
 package menu
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -137,7 +136,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		appendFolder(&list, "..", filepath.Clean(path+"/.."), exts, cb, dirAction, prettifier)
 	}
 
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 
 	// Sort entries by their labels, ignoring case.
 	sort.SliceStable(files, func(i, j int) bool {
