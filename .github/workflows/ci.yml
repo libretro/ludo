@@ -57,9 +57,7 @@ jobs:
       - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
       - run: sudo apt update -q
       - run: sudo apt install -f libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf libwayland-dev:armhf libxkbcommon-dev:armhf -y --allow-unauthenticated
-      - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
-      - run: du -a /usr | grep gl.pc
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
+      - run: /usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
 
   build_linux_x11_x86_64:
     runs-on: ubuntu-latest
@@ -105,8 +103,7 @@ jobs:
       - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
       - run: sudo apt update -q
       - run: sudo apt install -f libxxf86vm-dev:armhf libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
-      - run: export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/
-      - run: GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
+      - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
 
   build_osx:
     runs-on: macos-13
