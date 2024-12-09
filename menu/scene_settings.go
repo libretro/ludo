@@ -209,6 +209,12 @@ var incrCallbacks = map[string]callbackIncrement{
 		f.Set(v)
 		settings.Save()
 	},
+	"SwapConfirm": func(f *structs.Field, direction int) {
+		v := f.Value().(bool)
+		v = !v
+		f.Set(v)
+		settings.Save()
+	},
 	"AudioVolume": func(f *structs.Field, direction int) {
 		v := f.Value().(float32)
 		v += 0.1 * float32(direction)
@@ -284,9 +290,20 @@ func (s *sceneSettings) drawHintBar() {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
+
+	if settings.Current.SwapConfirm {
+        stackHint(&stack, a, "BACK", h)
+	} else {
+        stackHint(&stack, b, "BACK", h)
+	}
+
+
 	if list.children[list.ptr].callbackOK != nil {
-		stackHint(&stack, a, "SET", h)
+		if settings.Current.SwapConfirm {
+			stackHint(&stack, b, "SET", h)
+		} else {
+			stackHint(&stack, a, "SET", h)
+		}
 	} else {
 		stackHint(&stack, leftRight, "SET", h)
 	}

@@ -2,6 +2,7 @@ package menu
 
 import (
 	"github.com/libretro/ludo/ludos"
+	"github.com/libretro/ludo/settings"
 	ntf "github.com/libretro/ludo/notifications"
 )
 
@@ -92,8 +93,17 @@ func (s *sceneWiFi) drawHintBar() {
 
 	var stack float32
 	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
+
+	if settings.Current.SwapConfirm {
+		stackHint(&stack, a, "BACK", h)
+	} else {
+		stackHint(&stack, b, "BACK", h)
+	}
 	if s.children[0].callbackOK != nil {
-		stackHint(&stack, a, "CONNECT", h)
+		if settings.Current.SwapConfirm {
+			stackHint(&stack, b, "CONNECT", h)
+		} else {
+			stackHint(&stack, a, "CONNECT", h)
+		}
 	}
 }
