@@ -924,6 +924,9 @@ type DiskControlCallback struct {
 
 // SetDiskControlCallback sets an interface which frontend can use to eject and insert disk images
 func (core *Core) SetDiskControlCallback(data unsafe.Pointer) {
+	if data == nil {
+		return
+	}
 	c := *(*C.struct_retro_disk_control_callback)(data)
 	dcc := &DiskControlCallback{}
 	dcc.SetEjectState = func(state bool) {
