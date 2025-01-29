@@ -6,6 +6,7 @@ import (
 	"github.com/libretro/ludo/core"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
+	"github.com/libretro/ludo/settings"
 )
 
 type sceneCoreOptions struct {
@@ -83,13 +84,17 @@ func (s *sceneCoreOptions) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
-	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()
+	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 
 	var stack float32
 	if state.CoreRunning {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
+	if settings.Current.SwapConfirm {
+        stackHint(&stack, a, "BACK", h)
+	} else {
+        stackHint(&stack, b, "BACK", h)
+	}
 	stackHint(&stack, leftRight, "SET", h)
 }

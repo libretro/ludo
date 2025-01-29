@@ -175,11 +175,25 @@ func (s *sceneSavestates) drawHintBar() {
 		stackHint(&stack, guide, "RESUME", h)
 	}
 	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	if ptr == 0 {
-		stackHint(&stack, a, "SAVE", h)
+
+	if settings.Current.SwapConfirm {
+        stackHint(&stack, a, "BACK", h)
 	} else {
-		stackHint(&stack, a, "LOAD", h)
+        stackHint(&stack, b, "BACK", h)
+	}
+
+	if settings.Current.SwapConfirm {
+		if ptr == 0 {
+			stackHint(&stack, b, "SAVE", h)
+		} else {
+			stackHint(&stack, b, "LOAD", h)
+		}
+	} else {
+		if ptr == 0 {
+			stackHint(&stack, a, "SAVE", h)
+		} else {
+			stackHint(&stack, a, "LOAD", h)
+		}		
 	}
 
 	list := menu.stack[len(menu.stack)-1].Entry()

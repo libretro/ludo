@@ -4,6 +4,7 @@ import (
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/settings"
 )
 
 type sceneDialog struct {
@@ -36,8 +37,20 @@ func (s *sceneDialog) segueBack() {
 }
 
 func (s *sceneDialog) update(dt float32) {
+	var confirmKey uint32
+	var cancelKey uint32
+
+	confirmKey = libretro.DeviceIDJoypadA
+	cancelKey = libretro.DeviceIDJoypadB
+
+	// Optionally swap confirm and cancel
+	if settings.Current.SwapConfirm {
+		confirmKey = libretro.DeviceIDJoypadB
+		cancelKey = libretro.DeviceIDJoypadA
+	}
+
 	// OK
-	if input.Released[0][libretro.DeviceIDJoypadA] == 1 {
+	if input.Released[0][confirmKey] == 1 {
 		audio.PlayEffect(audio.Effects["ok"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
@@ -45,7 +58,7 @@ func (s *sceneDialog) update(dt float32) {
 	}
 
 	// Cancel
-	if input.Released[0][libretro.DeviceIDJoypadB] == 1 {
+	if input.Released[0][cancelKey] == 1 {
 		audio.PlayEffect(audio.Effects["cancel"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
