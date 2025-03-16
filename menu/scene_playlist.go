@@ -14,10 +14,6 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-type scenePlaylist struct {
-	entry
-}
-
 /*
 func buildPlaylist(path string) Scene {
 	var list scenePlaylist
