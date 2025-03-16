@@ -47,7 +47,7 @@ func (m *Menu) UpdatePalette() {
 		bgColor = darkerGrey
 		cursorBg = darkBlue
 		textColor = white
-		sepColor = darkBlue
+		sepColor = darkerGrey
 		hintTextColor = white
 		hintBgColor = black
 	}
