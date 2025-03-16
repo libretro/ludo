@@ -194,6 +194,11 @@ func genericRender(list *entry) {
 			0.5, 0, textColor.Alpha(e.iconAlpha))
 
 		if e.labelAlpha > 0 {
+			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
+			menu.Font.Printf(
+				(670+1)*menu.ratio,
+				float32(h)*e.yp+fontOffset+1*menu.ratio,
+				0.5*menu.ratio, e.label)
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Printf(
 				670*menu.ratio,

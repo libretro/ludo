@@ -236,12 +236,18 @@ func (s *scenePlaylist) render() {
 					e.scale, 0, white.Alpha(e.iconAlpha))
 			}
 
-			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			stack := 840 * menu.ratio
+			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
+			menu.Font.Printf(
+				(840+1)*menu.ratio,
+				float32(h)*e.yp+fontOffset+1*menu.ratio,
+				0.5*menu.ratio, e.label)
+			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.5*menu.ratio, e.label)
+
 			stack += float32(int(menu.Font.Width(0.5*menu.ratio, e.label)))
 			stack += 10
 
