@@ -66,12 +66,14 @@ func rotateUV(va []float32, rot uint) []float32 {
 }
 
 // DrawImage draws an image with x, y, w, h
-func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c Color) {
+func (video *Video) DrawImage(image uint32, x, y, w, h, scale, r float32, c Color) {
 
 	va := video.vertexArray(x, y, w, h, scale)
 
 	gl.UseProgram(video.demulProgram)
 	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform1f(gl.GetUniformLocation(video.roundedProgram, gl.Str("radius\x00")), r)
+	gl.Uniform2f(gl.GetUniformLocation(video.roundedProgram, gl.Str("size\x00")), w, h)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	bindVertexArray(video.vao)

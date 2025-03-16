@@ -77,15 +77,23 @@ func (s *sceneCoreDiskControl) render() {
 
 func (s *sceneCoreDiskControl) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
 
-	_, upDown, leftRight, _, b, _, _, _, _, guide := hintIcons()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
-	var stack float32
-	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
+	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
+
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	list := menu.stack[len(menu.stack)-1].Entry()
+	stackHintLeft(&lstack, upDown, "Navigate", h)
+	if list.children[list.ptr].callbackOK != nil {
+		stackHintRight(&rstack, a, "Set", h)
+	} else {
+		stackHintLeft(&lstack, leftRight, "Set", h)
 	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, leftRight, "SET", h)
+	stackHintRight(&rstack, b, "Back", h)
+	if state.CoreRunning {
+		stackHintRight(&rstack, guide, "Resume", h)
+	}
 }

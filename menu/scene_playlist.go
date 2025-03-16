@@ -233,7 +233,7 @@ func (s *scenePlaylist) render() {
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, white.Alpha(e.iconAlpha))
+					e.scale, 0, white.Alpha(e.iconAlpha))
 			}
 
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
@@ -251,7 +251,7 @@ func (s *scenePlaylist) render() {
 					menu.DrawImage(
 						menu.icons[tag],
 						stack, float32(h)*e.yp-22*menu.ratio,
-						60*menu.ratio, 44*menu.ratio, 1.0, white.Alpha(e.tagAlpha))
+						60*menu.ratio, 44*menu.ratio, 1.0, 0, white.Alpha(e.tagAlpha))
 					menu.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
 						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, black.Alpha(e.tagAlpha/4))
 					stack += 60 * menu.ratio
@@ -265,20 +265,23 @@ func (s *scenePlaylist) render() {
 
 func (s *scenePlaylist) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, upDown, _, a, b, x, _, _, _, guide := hintIcons()
 
-	var stack float32
-	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, a, "RUN", h)
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, upDown, "Navigate", h)
+	stackHintRight(&rstack, b, "Back", h)
+	stackHintRight(&rstack, a, "Run", h)
 
 	list := menu.stack[len(menu.stack)-1].Entry()
 	if list.children[list.ptr].callbackX != nil {
-		stackHint(&stack, x, "DELETE", h)
+		stackHintRight(&rstack, x, "Delete", h)
+	}
+
+	if state.CoreRunning {
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
 }

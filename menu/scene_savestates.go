@@ -150,7 +150,7 @@ func (s *sceneSavestates) render() {
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, textColor.Alpha(e.iconAlpha))
+					e.scale, 0, textColor.Alpha(e.iconAlpha))
 			}
 
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
@@ -164,26 +164,28 @@ func (s *sceneSavestates) render() {
 
 func (s *sceneSavestates) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	ptr := menu.stack[len(menu.stack)-1].Entry().ptr
 
 	_, upDown, _, a, b, x, _, _, _, guide := hintIcons()
 
-	var stack float32
-	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, upDown, "Navigate", h)
 	if ptr == 0 {
-		stackHint(&stack, a, "SAVE", h)
+		stackHintRight(&rstack, a, "Save", h)
 	} else {
-		stackHint(&stack, a, "LOAD", h)
+		stackHintRight(&rstack, a, "Load", h)
+	}
+	stackHintRight(&rstack, b, "Back", h)
+	if state.CoreRunning {
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
 
 	list := menu.stack[len(menu.stack)-1].Entry()
 	if list.children[list.ptr].callbackX != nil {
-		stackHint(&stack, x, "DELETE", h)
+		stackHintRight(&rstack, x, "Delete", h)
 	}
 }
