@@ -14,6 +14,9 @@ import (
 
 // Downloads a thumbnail from the web and cache it to the local filesystem.
 func downloadThumbnail(list *entry, i int, url, folderPath, path string) {
+	if i >= len(list.children) {
+		return
+	}
 	resp, err := http.Get(url)
 	if err != nil {
 		list.children[i].thumbnail = menu.icons["img-broken"]
@@ -61,7 +64,7 @@ func scrubIllegalChars(str string) string {
 }
 
 // Draws a thumbnail in the playlist scene.
-func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, color video.Color) {
+func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scale float32, c video.Color) {
 	folderPath := filepath.Join(settings.Current.ThumbnailsDirectory, system, "Named_Snaps")
 	legalName := scrubIllegalChars(gameName)
 	path := filepath.Join(folderPath, legalName+".png")
@@ -76,26 +79,18 @@ func drawThumbnail(list *entry, i int, system, gameName string, x, y, w, h, scal
 		}
 	}
 
-	menu.DrawImage(
-		list.children[i].thumbnail,
-		x, y, w, h, scale,
-		color,
-	)
+	menu.DrawThumbnail(list.children[i].thumbnail, x, y, w, h, scale, 0.07, c)
 }
 
 // Draws a thumbnail in the savestates scene.
-func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale float32, color video.Color) {
+func drawSavestateThumbnail(list *entry, i int, path string, x, y, w, h, scale float32, c video.Color) {
 	if list.children[i].thumbnail == 0 {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
 			list.children[i].thumbnail = video.NewImage(path)
 		}
 	}
 
-	menu.DrawImage(
-		list.children[i].thumbnail,
-		x, y, w, h, scale,
-		color,
-	)
+	menu.DrawThumbnail(list.children[i].thumbnail, x, y, w, h, scale, 0, c)
 }
 
 func freeThumbnail(list *entry, i int) {

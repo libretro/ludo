@@ -49,6 +49,7 @@ func (s *sceneDialog) update(dt float32) {
 		audio.PlayEffect(audio.Effects["cancel"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
+		menu.focus = menu.oldFocus
 	}
 }
 
@@ -70,7 +71,7 @@ func (s *sceneDialog) render() {
 		white,
 	)
 
-	menu.Font.SetColor(orange)
+	menu.Font.SetColor(titleColor)
 	lw1 := menu.Font.Width(0.7*menu.ratio, s.title)
 	menu.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 0.7*menu.ratio, s.title)
 	menu.Font.SetColor(black)
@@ -89,7 +90,7 @@ func (s *sceneDialog) render() {
 		b,
 		fw/2-width/2*menu.ratio+margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, darkGrey)
+		70*menu.ratio, 70*menu.ratio, 1.0, 0, darkGrey)
 	menu.Font.Printf(
 		fw/2-width/2*menu.ratio+margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
@@ -100,7 +101,7 @@ func (s *sceneDialog) render() {
 		a,
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, darkGrey)
+		70*menu.ratio, 70*menu.ratio, 1.0, 0, darkGrey)
 	menu.Font.Printf(
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,

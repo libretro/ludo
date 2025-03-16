@@ -157,8 +157,7 @@ func (s *sceneKeyboard) render() {
 	ttw := 10 * ksp
 
 	// Background
-	menu.DrawRect(0, 0, float32(w), float32(h), 0,
-		white.Alpha(s.alpha))
+	menu.DrawRect(0, 0, float32(w), float32(h), 0, bgColor.Alpha(s.alpha))
 
 	// Label
 	menu.Font.SetColor(black)
@@ -169,7 +168,7 @@ func (s *sceneKeyboard) render() {
 
 	// Value
 	menu.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.25-ksz/2, ttw, ksz, 0,
-		video.Color{R: 0.95, G: 0.95, B: 0.95, A: 1})
+		lightGrey)
 	menu.Font.Printf(
 		float32(w)/2-ttw/2+ksz/4,
 		s.y+float32(h)*0.25-ksz/2+ksz*0.62,
@@ -205,15 +204,17 @@ func (s *sceneKeyboard) render() {
 
 func (s *sceneKeyboard) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	arrows, _, _, a, b, x, y, start, _, _ := hintIcons()
 
-	var stack float32
-	stackHint(&stack, arrows, "SELECT", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, x, "SHIFT", h)
-	stackHint(&stack, y, "DELETE", h)
-	stackHint(&stack, a, "INSERT", h)
-	stackHint(&stack, start, "DONE", h)
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, arrows, "Select", h)
+	stackHintRight(&rstack, start, "Done", h)
+	stackHintRight(&rstack, a, "Insert", h)
+	stackHintRight(&rstack, y, "Delete", h)
+	stackHintRight(&rstack, x, "Shift", h)
+	stackHintRight(&rstack, b, "Back", h)
 }

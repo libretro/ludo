@@ -230,8 +230,8 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Fon
 }
 
 // SetColor allows you to set the text color to be used when you draw the text
-func (f *Font) SetColor(color Color) {
-	f.color = color
+func (f *Font) SetColor(c Color) {
+	f.color = c
 }
 
 // UpdateResolution passes the new framebuffer size to the font shader

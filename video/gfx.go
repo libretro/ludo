@@ -66,17 +66,44 @@ func rotateUV(va []float32, rot uint) []float32 {
 }
 
 // DrawImage draws an image with x, y, w, h
-func (video *Video) DrawImage(image uint32, x, y, w, h float32, scale float32, c Color) {
+func (video *Video) DrawImage(image uint32, x, y, w, h, scale, r float32, c Color) {
 
 	va := video.vertexArray(x, y, w, h, scale)
 
-	gl.UseProgram(video.demulProgram)
-	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.UseProgram(video.roundedProgram)
+	gl.Uniform4f(gl.GetUniformLocation(video.roundedProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform1f(gl.GetUniformLocation(video.roundedProgram, gl.Str("radius\x00")), r)
+	gl.Uniform2f(gl.GetUniformLocation(video.roundedProgram, gl.Str("size\x00")), w, h)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	bindVertexArray(video.vao)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, image)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	bindVertexArray(0)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+	gl.UseProgram(0)
+	gl.Disable(gl.BLEND)
+}
+
+// DrawThumbnail draws an image with x, y, w, h
+func (video *Video) DrawThumbnail(image uint32, x, y, w, h, scale, r float32, c Color) {
+
+	va := video.vertexArray(x, y, w, h, scale)
+
+	gl.UseProgram(video.roundedProgram)
+	gl.Uniform4f(gl.GetUniformLocation(video.roundedProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform1f(gl.GetUniformLocation(video.roundedProgram, gl.Str("radius\x00")), r)
+	gl.Uniform2f(gl.GetUniformLocation(video.roundedProgram, gl.Str("size\x00")), w, h)
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	bindVertexArray(video.vao)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, image)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
@@ -148,10 +175,13 @@ func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	bindVertexArray(video.vao)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.white)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 	bindVertexArray(0)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
 	gl.UseProgram(0)
 	gl.Disable(gl.BLEND)
 }
@@ -217,5 +247,11 @@ func NewImage(file string) uint32 {
 	}
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
+	return textureLoad(rgba)
+}
+
+func newWhite() uint32 {
+	rgba := image.NewRGBA(image.Rect(0, 0, 8, 8))
+	draw.Draw(rgba, rgba.Bounds(), image.White, image.Point{0, 0}, draw.Src)
 	return textureLoad(rgba)
 }
