@@ -3,6 +3,7 @@ package menu
 import (
 	"fmt"
 	"os"
+
 	//"os/user"
 	"sort"
 
@@ -12,10 +13,10 @@ import (
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
-	"github.com/libretro/ludo/settings"
 	colorful "github.com/lucasb-eyer/go-colorful"
 
 	"github.com/tanema/gween"
@@ -303,29 +304,26 @@ func (tabs sceneTabs) render() {
 
 		menu.DrawImage(menu.icons["hexagon"],
 			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio,
-			440*menu.ratio, 440*menu.ratio, e.scale, c)
+			440*menu.ratio, 440*menu.ratio, e.scale, 0, c)
 
 		menu.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, white.Alpha(e.iconAlpha))
+			256*menu.ratio, 256*menu.ratio, e.scale, 0, white.Alpha(e.iconAlpha))
 	}
 }
 
-func (tabs sceneTabs) drawHintBar() {
-	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+func (s *sceneTabs) drawHintBar() {
+	w, h := menu.Window.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
-	_, _, leftRight, a, _, x, _, _, _, guide := hintIcons()
+	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 
-	var stack float32
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, leftRight, "Navigate", h)
+	stackHintRight(&rstack, a, "Ok", h)
 	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, leftRight, "NAVIGATE", h)
-	stackHint(&stack, a, "OPEN", h)
-
-	list := menu.stack[0].Entry()
-	if list.children[list.ptr].callbackX != nil {
-		stackHint(&stack, x, "DELETE", h)
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
 }

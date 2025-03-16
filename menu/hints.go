@@ -5,13 +5,23 @@ import (
 )
 
 // Used to easily compose different hint bars based on the context.
-func stackHint(stack *float32, icon uint32, label string, h int) {
-	menu.Font.SetColor(darkGrey)
-	*stack += 30 * menu.ratio
-	menu.DrawImage(icon, *stack, float32(h)-70*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, darkGrey)
+func stackHintLeft(stack *float32, icon uint32, label string, h int) {
+	menu.Font.SetColor(hintTextColor)
+	menu.DrawImage(icon, *stack, float32(h)-79*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, 0, hintTextColor)
 	*stack += 70 * menu.ratio
-	menu.Font.Printf(*stack, float32(h)-23*menu.ratio, 0.4*menu.ratio, label)
-	*stack += menu.Font.Width(0.4*menu.ratio, label)
+	menu.Font.Printf(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
+	*stack += menu.Font.Width(0.5*menu.ratio, label)
+	*stack += 32 * menu.ratio
+}
+
+// Used to easily compose different hint bars based on the context.
+func stackHintRight(stack *float32, icon uint32, label string, h int) {
+	*stack -= menu.Font.Width(0.5*menu.ratio, label)
+	menu.Font.SetColor(hintTextColor)
+	menu.Font.Printf(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
+	*stack -= 70 * menu.ratio
+	menu.DrawImage(icon, *stack, float32(h)-79*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, 0, hintTextColor)
+	*stack -= 32 * menu.ratio
 }
 
 func hintIcons() (arrows, upDown, leftRight, a, b, x, y, start, slct, guide uint32) {

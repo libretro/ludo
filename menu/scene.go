@@ -153,7 +153,7 @@ func genericDrawCursor(list *entry) {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawImage(menu.icons["arrow"],
 		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
+		70*menu.ratio, 70*menu.ratio, 1, 0, cursorBg.Alpha(list.cursor.alpha))
 	menu.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		float32(w)-630*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
@@ -165,7 +165,7 @@ func thumbnailDrawCursor(list *entry) {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawImage(menu.icons["arrow"],
 		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		100*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
+		100*menu.ratio, 100*menu.ratio, 1, 0, cursorBg.Alpha(list.cursor.alpha))
 	menu.DrawRect(
 		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
 		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, cursorBg.Alpha(list.cursor.alpha))
@@ -191,7 +191,7 @@ func genericRender(list *entry) {
 			610*menu.ratio-64*0.5*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*0.5*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			0.5, textColor.Alpha(e.iconAlpha))
+			0.5, 0, textColor.Alpha(e.iconAlpha))
 
 		if e.labelAlpha > 0 {
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
@@ -263,16 +263,18 @@ func askDeleteSavestateConfirmation(cb func()) {
 }
 
 func genericDrawHintBar() {
-	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	w, h := menu.Window.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
-	var stack float32
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, upDown, "Navigate", h)
+	stackHintRight(&rstack, a, "Ok", h)
+	stackHintRight(&rstack, b, "Back", h)
 	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, a, "OK", h)
 }

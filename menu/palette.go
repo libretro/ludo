@@ -33,6 +33,9 @@ var lightWarning = video.Color{R: 1.00, G: 0.92, B: 0.53, A: 1}
 var bgColor = white
 var cursorBg = cyan
 var textColor = black
+var sepColor = lightGrey
+var hintTextColor = darkGrey
+var hintBgColor = white
 
 // UpdatePalette updates the color palette to honor the dark theme
 func (m *Menu) UpdatePalette() {
@@ -44,5 +47,8 @@ func (m *Menu) UpdatePalette() {
 		bgColor = darkerGrey
 		cursorBg = darkBlue
 		textColor = white
+		sepColor = darkerGrey
+		hintTextColor = white
+		hintBgColor = black
 	}
 }
