@@ -80,6 +80,16 @@ func floatToAnalog(v float32) int16 {
 	return int16(v * 32767.0)
 }
 
+// JoypadPlugged returns true if at least one joypad is plugged
+func JoypadPlugged() bool {
+	for joy := glfw.Joystick(0); joy < glfw.JoystickLast; joy++ {
+		if joy.IsGamepad() {
+			return true
+		}
+	}
+	return false
+}
+
 // pollJoypads process joypads of all players
 func pollJoypads(state States, analogState AnalogStates) (States, AnalogStates) {
 	p := 0
