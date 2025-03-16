@@ -5,7 +5,6 @@ package core
 
 import (
 	"errors"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -111,6 +110,7 @@ func unarchiveGame(filename string) (string, int64, error) {
 	extPrefered := make(map[string]int)
 	extPrefered[".cue"] = 1
 	extPrefered[".m3u"] = 2
+	extPrefered[".pbp"] = 3
 
 	err = archiver.Walk(filename, func(f archiver.File) error {
 		fname := f.Name()
@@ -154,7 +154,7 @@ func LoadGame(gamePath string) error {
 	}
 
 	if !si.NeedFullpath {
-		bytes, err := ioutil.ReadFile(gi.Path)
+		bytes, err := os.ReadFile(gi.Path)
 		if err != nil {
 			return err
 		}

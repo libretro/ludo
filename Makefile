@@ -9,10 +9,11 @@ ifeq ($(OS), Linux)
 	BUNDLENAME = $(APP)-$(OS)-$(DISPDRIVER)-$(ARCH)-$(VERSION)
 endif
 
-CORES = atari800 bluemsx swanstation fbneo fceumm gambatte gearsystem genesis_plus_gx handy lutro mednafen_ngp mednafen_pce mednafen_pce_fast mednafen_pcfx mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba melonds np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella2014 vecx virtualjaguar
+CORES = atari800 bluemsx swanstation fbneo fceumm gambatte gearsystem genesis_plus_gx handy lutro mednafen_ngp mednafen_pce mednafen_pce_fast mednafen_pcfx mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba melonds mupen64plus_next np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella2014 vecx virtualjaguar
 
 ifeq ($(ARCH), arm)
 	CORES := $(filter-out swanstation,$(CORES))
+	CORES := $(filter-out mupen64plus_next,$(CORES))
 	CORES := $(filter-out mednafen_pcfx,$(CORES))
 	CORES := $(filter-out mednafen_saturn,$(CORES))
 	CORES := $(filter-out melonds,$(CORES))
@@ -20,13 +21,10 @@ endif
 
 ifeq ($(ARCH), arm64)
 	CORES := $(filter-out swanstation,$(CORES))
+	CORES := $(filter-out mupen64plus_next,$(CORES))
 	CORES := $(filter-out mednafen_wswan,$(CORES))
 	CORES := $(filter-out handy,$(CORES))
 	CORES := $(filter-out np2kai,$(CORES))
-endif
-
-ifeq ($(OS), Windows)
-	CORES += mupen64plus_next
 endif
 
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))

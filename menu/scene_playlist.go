@@ -14,6 +14,47 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
+type scenePlaylist struct {
+	entry
+}
+
+/*
+func buildPlaylist(path string) Scene {
+	var list scenePlaylist
+	list.label = utils.FileName(path)
+
+	re := regexp.MustCompile(`\(([Dd]isc [1-9]?)\)`)
+	for _, game := range playlists.Playlists[path] {
+		game := game // needed for callbackOK
+		strippedName, tags := extractTags(game.Name)
+		if match := re.FindStringSubmatch(game.Name); len(match) >= 2 {
+			strippedName = strippedName + " (" + match[1] + ")"
+		}
+		list.children = append(list.children, entry{
+			label:      strippedName,
+			gameName:   game.Name,
+			path:       game.Path,
+			tags:       tags,
+			icon:       utils.FileName(path) + "-content",
+			callbackOK: func() { loadPlaylistEntry(&list, list.label, game) },
+			callbackX:  func() { askDeleteGameConfirmation(func() { deletePlaylistEntry(&list, path, game) }) },
+		})
+	}
+
+	if len(playlists.Playlists[path]) == 0 {
+		list.children = append(list.children, entry{
+			label: "Empty playlist",
+			icon:  "subsetting",
+		})
+	}
+
+	buildIndexes(&list.entry)
+
+	list.segueMount()
+	return &list
+}
+*/
+
 // Index first letters of entries to allow quick jump to the next or previous
 // letter
 func buildIndexes(list *entry) {

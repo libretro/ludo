@@ -2,13 +2,13 @@ package menu
 
 import (
 	"math"
-	"os/user"
 	"time"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/scanner"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 )
 
@@ -50,10 +50,11 @@ func buildTabs() Scene {
 	list.children = append(list.children, entry{
 		icon: "tab-scan",
 		callbackOK: func() {
-			usr, _ := user.Current()
-			menu.stack = menu.stack[:len(menu.stack)-1]
-			menu.Push(buildExplorer(usr.HomeDir, nil,
-				func(path string) { scanner.ScanDir(path, nil) },
+			//usr, _ := user.Current()
+			menu.Push(buildExplorer(settings.Current.FileDirectory, nil,
+				func(path string) {
+					scanner.ScanDir(path, nil)
+				},
 				&entry{
 					label: "<Scan this directory>",
 					icon:  "scan",

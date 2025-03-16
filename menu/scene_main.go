@@ -40,6 +40,7 @@ var prettyCoreNames = map[string]string{
 	"mednafen_wswan_libretro":      "Bandai - WonderSwan/Color (Beetle Cygne)",
 	"melonds_libretro":             "Nintendo - DS (melonDS)",
 	"mgba_libretro":                "Nintendo - Game Boy Advance (mGBA)",
+	"mupen64plus_next_libretro":    "Nintendo - Nintendo 64 (Mupen64Plus-Next)",
 	"np2kai_libretro":              "NEC - PC-98 (Neko Project II Kai)",
 	"o2em_libretro":                "Magnavox - Odyssey2 / Phillips Videopac+ (O2EM)",
 	"pcsx_rearmed_libretro":        "Sony - PlayStation (PCSX ReARMed)",
