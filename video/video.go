@@ -30,18 +30,18 @@ type Video struct {
 	borderProgram        uint32 // program to draw rectangles borders
 	circleProgram        uint32 // program to draw textured circles
 	demulProgram         uint32 // program to draw premultiplied alpha images
-	vao                  uint32
-	vbo                  uint32
-	texID                uint32
+	vao                  uint32 // vertex array object
+	vbo                  uint32 // vertex buffer object
+	texID                uint32 // texture id
 
 	pitch         int32  // pitch set by the refresh callback
 	pixFmt        uint32 // format set by the environment callback
-	pixType       uint32
-	bpp           int32
-	width, height int32 // dimensions set by the refresh callback
-	rot           uint
+	pixType       uint32 // pixel type for the core framebuffer
+	bpp           int32  // bit per pixel for the core framebuffer
+	width, height int32  // dimensions set by the refresh callback
+	rot           uint   // rotation index
 
-	needUpload bool
+	needUpload bool // true when the texture needs to be uploaded to the GPU
 	data       unsafe.Pointer
 }
 
