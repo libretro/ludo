@@ -158,6 +158,33 @@ func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
 	gl.Disable(gl.BLEND)
 }
 
+// Draw draws a rectangle and supports rounded corners, border and shadow
+func (video *Video) Draw(x, y, w, h, r float32, c Color, bw float32, bc Color, ss float32) {
+
+	va := video.vertexArray(x, y, w, h, 1.0)
+	fbw, fbh := video.Window.GetFramebufferSize()
+
+	gl.UseProgram(video.uiProgram)
+
+	gl.Uniform2f(gl.GetUniformLocation(video.uiProgram, gl.Str("resolution\x00")), float32(fbw), float32(fbh))
+	gl.Uniform4f(gl.GetUniformLocation(video.uiProgram, gl.Str("rect\x00")), x, y, w, h)
+	gl.Uniform1f(gl.GetUniformLocation(video.uiProgram, gl.Str("radius\x00")), r)
+	gl.Uniform4f(gl.GetUniformLocation(video.uiProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform4f(gl.GetUniformLocation(video.uiProgram, gl.Str("borderColor\x00")), bc.R, bc.G, bc.B, bc.A)
+	gl.Uniform1f(gl.GetUniformLocation(video.uiProgram, gl.Str("borderWidth\x00")), bw)
+	gl.Uniform1f(gl.GetUniformLocation(video.uiProgram, gl.Str("shadowSize\x00")), ss)
+
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	bindVertexArray(video.vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	bindVertexArray(0)
+	gl.UseProgram(0)
+	gl.Disable(gl.BLEND)
+}
+
 // DrawCircle draws a circle
 func (video *Video) DrawCircle(x, y, r float32, c Color) {
 
