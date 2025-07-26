@@ -11,14 +11,14 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/pelletier/go-toml v1.9.5
-	github.com/tanema/gween v0.0.0-20221212145351-621cc8a459d1
+	github.com/tanema/gween v0.0.0-20250522035225-e874ee3ae01a
 	github.com/youpy/go-wav v0.3.2
-	golang.org/x/image v0.25.0
-	golang.org/x/mobile v0.0.0-20250305212854-3a7bc9f8a4de
+	golang.org/x/image v0.29.0
+	golang.org/x/mobile v0.0.0-20250711185624-d5bb5ecc55c0
 )
 
 require (
-	github.com/andybalholm/brotli v1.1.1 // indirect
+	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -30,7 +30,7 @@ require (
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/youpy/go-riff v0.1.0 // indirect
 	github.com/zaf/g711 v1.4.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 )
 
 go 1.23.0
