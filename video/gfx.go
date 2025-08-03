@@ -3,6 +3,7 @@ package video
 import (
 	"image"
 	"image/draw"
+	"log"
 	"os"
 
 	"github.com/go-gl/gl/v2.1/gl"
@@ -173,8 +174,6 @@ func (video *Video) DrawCircle(x, y, r float32, c Color) {
 
 func textureLoad(nrgba *image.NRGBA) uint32 {
 	var texture uint32
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 	gl.GenTextures(1, &texture)
 	gl.ActiveTexture(gl.TEXTURE1)
 	gl.BindTexture(gl.TEXTURE_2D, texture)
@@ -193,7 +192,6 @@ func textureLoad(nrgba *image.NRGBA) uint32 {
 		gl.RGBA,
 		gl.UNSIGNED_BYTE,
 		gl.Ptr(nrgba.Pix))
-	gl.GenerateMipmap(gl.TEXTURE_2D)
 	return texture
 }
 
@@ -201,19 +199,18 @@ func textureLoad(nrgba *image.NRGBA) uint32 {
 func NewImage(file string) uint32 {
 	imgFile, err := os.Open(file)
 	if err != nil {
+		log.Printf("failed to open image file %s: %v", file, err)
 		return 0
 	}
 	defer imgFile.Close()
 
 	img, _, err := image.Decode(imgFile)
 	if err != nil {
+		log.Printf("failed to decode image file %s: %v", file, err)
 		return 0
 	}
 
 	nrgba := image.NewNRGBA(img.Bounds())
-	if nrgba.Stride != nrgba.Rect.Size().X*4 {
-		return 0
-	}
 	draw.Draw(nrgba, nrgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
 	return textureLoad(nrgba)
