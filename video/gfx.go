@@ -117,7 +117,6 @@ func (video *Video) vertexArray(x, y, w, h, scale float32) []float32 {
 
 // DrawBorder draws a colored rectangle border
 func (video *Video) DrawBorder(x, y, w, h, borderWidth float32, c Color) {
-
 	va := video.vertexArray(x, y, w, h, 1.0)
 
 	gl.UseProgram(video.borderProgram)
@@ -137,7 +136,6 @@ func (video *Video) DrawBorder(x, y, w, h, borderWidth float32, c Color) {
 
 // DrawRect draws a rectangle and supports rounded corners
 func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
-
 	va := video.vertexArray(x, y, w, h, 1.0)
 
 	gl.UseProgram(video.roundedProgram)
@@ -157,7 +155,6 @@ func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
 
 // DrawCircle draws a circle
 func (video *Video) DrawCircle(x, y, r float32, c Color) {
-
 	va := video.vertexArray(x-r, y-r, r*2, r*2, 1.0)
 
 	gl.UseProgram(video.circleProgram)
@@ -175,10 +172,9 @@ func (video *Video) DrawCircle(x, y, r float32, c Color) {
 }
 
 func textureLoad(nrgba *image.NRGBA) uint32 {
+	var texture uint32
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
-
-	var texture uint32
 	gl.GenTextures(1, &texture)
 	gl.ActiveTexture(gl.TEXTURE1)
 	gl.BindTexture(gl.TEXTURE_2D, texture)
