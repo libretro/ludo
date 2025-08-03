@@ -3,6 +3,7 @@ package video
 import (
 	"image"
 	"image/draw"
+	"log"
 	"os"
 
 	"github.com/go-gl/gl/v2.1/gl"
@@ -67,13 +68,10 @@ func rotateUV(va []float32, rot uint) []float32 {
 
 // DrawImage draws an image with x, y, w, h
 func (video *Video) DrawImage(image uint32, x, y, w, h, scale, r float32, c Color) {
-
 	va := video.vertexArray(x, y, w, h, scale)
 
-	gl.UseProgram(video.demulProgram)
-	gl.Uniform4f(gl.GetUniformLocation(video.demulProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
-	gl.Uniform1f(gl.GetUniformLocation(video.roundedProgram, gl.Str("radius\x00")), r)
-	gl.Uniform2f(gl.GetUniformLocation(video.roundedProgram, gl.Str("size\x00")), w, h)
+	gl.UseProgram(video.defaultProgram)
+	gl.Uniform4f(gl.GetUniformLocation(video.defaultProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	bindVertexArray(video.vao)
@@ -120,7 +118,6 @@ func (video *Video) vertexArray(x, y, w, h, scale float32) []float32 {
 
 // DrawBorder draws a colored rectangle border
 func (video *Video) DrawBorder(x, y, w, h, borderWidth float32, c Color) {
-
 	va := video.vertexArray(x, y, w, h, 1.0)
 
 	gl.UseProgram(video.borderProgram)
@@ -140,7 +137,6 @@ func (video *Video) DrawBorder(x, y, w, h, borderWidth float32, c Color) {
 
 // DrawRect draws a rectangle and supports rounded corners
 func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
-
 	va := video.vertexArray(x, y, w, h, 1.0)
 
 	gl.UseProgram(video.roundedProgram)
@@ -160,7 +156,6 @@ func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
 
 // DrawCircle draws a circle
 func (video *Video) DrawCircle(x, y, r float32, c Color) {
-
 	va := video.vertexArray(x-r, y-r, r*2, r*2, 1.0)
 
 	gl.UseProgram(video.circleProgram)
@@ -177,28 +172,26 @@ func (video *Video) DrawCircle(x, y, r float32, c Color) {
 	gl.Disable(gl.BLEND)
 }
 
-func textureLoad(rgba *image.RGBA) uint32 {
+func textureLoad(nrgba *image.NRGBA) uint32 {
 	var texture uint32
 	gl.GenTextures(1, &texture)
 	gl.ActiveTexture(gl.TEXTURE1)
 	gl.BindTexture(gl.TEXTURE_2D, texture)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, 0)
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, (int32)(nrgba.Stride/4))
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
 		0,
 		gl.RGBA,
-		int32(rgba.Rect.Size().X),
-		int32(rgba.Rect.Size().Y),
+		int32(nrgba.Rect.Dx()),
+		int32(nrgba.Rect.Dy()),
 		0,
 		gl.RGBA,
 		gl.UNSIGNED_BYTE,
-		gl.Ptr(rgba.Pix))
-	gl.GenerateMipmap(gl.TEXTURE_2D)
-
+		gl.Ptr(nrgba.Pix))
 	return texture
 }
 
@@ -206,18 +199,19 @@ func textureLoad(rgba *image.RGBA) uint32 {
 func NewImage(file string) uint32 {
 	imgFile, err := os.Open(file)
 	if err != nil {
+		log.Printf("failed to open image file %s: %v", file, err)
 		return 0
 	}
+	defer imgFile.Close()
+
 	img, _, err := image.Decode(imgFile)
 	if err != nil {
+		log.Printf("failed to decode image file %s: %v", file, err)
 		return 0
 	}
 
-	rgba := image.NewRGBA(img.Bounds())
-	if rgba.Stride != rgba.Rect.Size().X*4 {
-		return 0
-	}
-	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	nrgba := image.NewNRGBA(img.Bounds())
+	draw.Draw(nrgba, nrgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
-	return textureLoad(rgba)
+	return textureLoad(nrgba)
 }

@@ -29,7 +29,6 @@ type Video struct {
 	roundedProgram       uint32 // program to draw rectangles with rounded corners
 	borderProgram        uint32 // program to draw rectangles borders
 	circleProgram        uint32 // program to draw textured circles
-	demulProgram         uint32 // program to draw premultiplied alpha images
 	vao                  uint32 // vertex array object
 	vbo                  uint32 // vertex buffer object
 	texID                uint32 // texture id
@@ -159,11 +158,6 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.demulProgram, err = newProgram(vertexShader, demulFragmentShader)
 	if err != nil {
 		panic(err)
 	}
