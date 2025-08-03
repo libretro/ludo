@@ -30,6 +30,7 @@ type Video struct {
 	borderProgram        uint32 // program to draw rectangles borders
 	circleProgram        uint32 // program to draw textured circles
 	demulProgram         uint32 // program to draw premultiplied alpha images
+	uiProgram            uint32 // program to draw UI elements
 	vao                  uint32 // vertex array object
 	vbo                  uint32 // vertex buffer object
 	texID                uint32 // texture id
@@ -84,6 +85,13 @@ func (video *Video) SetShouldClose(b bool) {
 	video.Window.SetShouldClose(b)
 }
 
+func panicOnErr(v uint32, err error) uint32 {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
 	var width, height int
@@ -128,45 +136,15 @@ func (video *Video) Configure(fullscreen bool) {
 	}
 
 	// Configure the vertex and fragment shaders
-	video.defaultProgram, err = newProgram(vertexShader, defaultFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.sharpBilinearProgram, err = newProgram(vertexShader, sharpBilinearFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.zfastCRTProgram, err = newProgram(vertexShader, zfastCRTFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.zfastLCDProgram, err = newProgram(vertexShader, zfastLCDFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.borderProgram, err = newProgram(vertexShader, borderFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.demulProgram, err = newProgram(vertexShader, demulFragmentShader)
-	if err != nil {
-		panic(err)
-	}
+	video.defaultProgram = panicOnErr(newProgram(vertexShader, defaultFragmentShader))
+	video.sharpBilinearProgram = panicOnErr(newProgram(vertexShader, sharpBilinearFragmentShader))
+	video.zfastCRTProgram = panicOnErr(newProgram(vertexShader, zfastCRTFragmentShader))
+	video.zfastLCDProgram = panicOnErr(newProgram(vertexShader, zfastLCDFragmentShader))
+	video.roundedProgram = panicOnErr(newProgram(vertexShader, roundedFragmentShader))
+	video.borderProgram = panicOnErr(newProgram(vertexShader, borderFragmentShader))
+	video.circleProgram = panicOnErr(newProgram(vertexShader, circleFragmentShader))
+	video.demulProgram = panicOnErr(newProgram(vertexShader, demulFragmentShader))
+	video.uiProgram = panicOnErr(newProgram(uiVertexShader, uiFragmentShader))
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
