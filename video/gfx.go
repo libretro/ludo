@@ -174,28 +174,30 @@ func (video *Video) DrawCircle(x, y, r float32, c Color) {
 	gl.Disable(gl.BLEND)
 }
 
-func textureLoad(rgba *image.RGBA) uint32 {
+func textureLoad(nrgba *image.NRGBA) uint32 {
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+
 	var texture uint32
 	gl.GenTextures(1, &texture)
 	gl.ActiveTexture(gl.TEXTURE1)
 	gl.BindTexture(gl.TEXTURE_2D, texture)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, 0)
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, (int32)(nrgba.Stride/4))
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
 		0,
 		gl.RGBA,
-		int32(rgba.Rect.Size().X),
-		int32(rgba.Rect.Size().Y),
+		int32(nrgba.Rect.Dx()),
+		int32(nrgba.Rect.Dy()),
 		0,
 		gl.RGBA,
 		gl.UNSIGNED_BYTE,
-		gl.Ptr(rgba.Pix))
+		gl.Ptr(nrgba.Pix))
 	gl.GenerateMipmap(gl.TEXTURE_2D)
-
 	return texture
 }
 
@@ -205,16 +207,18 @@ func NewImage(file string) uint32 {
 	if err != nil {
 		return 0
 	}
+	defer imgFile.Close()
+
 	img, _, err := image.Decode(imgFile)
 	if err != nil {
 		return 0
 	}
 
-	rgba := image.NewRGBA(img.Bounds())
-	if rgba.Stride != rgba.Rect.Size().X*4 {
+	nrgba := image.NewNRGBA(img.Bounds())
+	if nrgba.Stride != nrgba.Rect.Size().X*4 {
 		return 0
 	}
-	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	draw.Draw(nrgba, nrgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
-	return textureLoad(rgba)
+	return textureLoad(nrgba)
 }
