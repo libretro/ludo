@@ -83,6 +83,13 @@ func (video *Video) SetShouldClose(b bool) {
 	video.Window.SetShouldClose(b)
 }
 
+func panicOnErr(v uint32, err error) uint32 {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
 	var width, height int
@@ -126,41 +133,14 @@ func (video *Video) Configure(fullscreen bool) {
 		panic(err)
 	}
 
-	// Configure the vertex and fragment shaders
-	video.defaultProgram, err = newProgram(vertexShader, defaultFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.sharpBilinearProgram, err = newProgram(vertexShader, sharpBilinearFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.zfastCRTProgram, err = newProgram(vertexShader, zfastCRTFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.zfastLCDProgram, err = newProgram(vertexShader, zfastLCDFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.roundedProgram, err = newProgram(vertexShader, roundedFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.borderProgram, err = newProgram(vertexShader, borderFragmentShader)
-	if err != nil {
-		panic(err)
-	}
-
-	video.circleProgram, err = newProgram(vertexShader, circleFragmentShader)
-	if err != nil {
-		panic(err)
-	}
+	// Configure the vertex and fragment shader
+	video.defaultProgram = panicOnErr(newProgram(vertexShader, defaultFragmentShader))
+	video.sharpBilinearProgram = panicOnErr(newProgram(vertexShader, sharpBilinearFragmentShader))
+	video.zfastCRTProgram = panicOnErr(newProgram(vertexShader, zfastCRTFragmentShader))
+	video.zfastLCDProgram = panicOnErr(newProgram(vertexShader, zfastLCDFragmentShader))
+	video.roundedProgram = panicOnErr(newProgram(vertexShader, roundedFragmentShader))
+	video.borderProgram = panicOnErr(newProgram(vertexShader, borderFragmentShader))
+	video.circleProgram = panicOnErr(newProgram(vertexShader, circleFragmentShader))
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
