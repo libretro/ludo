@@ -65,9 +65,9 @@ func (m *Menu) Render(dt float32) {
 	m.ratio = float32(w) / 1920
 
 	if state.CoreRunning {
-		m.DrawRect(0, 0, float32(w), float32(h), 0, bgColor.Alpha(0.85))
+		m.Draw(m.White, 0, 0, float32(w), float32(h), 1, 0, bgColor.Alpha(0.85))
 	} else {
-		m.DrawRect(0, 0, float32(w), float32(h), 0, bgColor)
+		m.Draw(m.White, 0, 0, float32(w), float32(h), 1, 0, bgColor)
 	}
 
 	m.tweens.Update(dt)

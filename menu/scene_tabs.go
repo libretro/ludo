@@ -310,11 +310,11 @@ func (tabs sceneTabs) render() {
 			menu.Font.Print(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), 0.4*menu.ratio, e.subLabel)
 		}
 
-		menu.DrawImage(menu.icons["hexagon"],
+		menu.Draw(menu.icons["hexagon"],
 			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio,
 			440*menu.ratio, 440*menu.ratio, e.scale, 0, hexaColor)
 
-		menu.DrawImage(menu.icons[e.icon],
+		menu.Draw(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
 			256*menu.ratio, 256*menu.ratio, e.scale, 0, iconColor)
 	}
@@ -322,8 +322,8 @@ func (tabs sceneTabs) render() {
 
 func (s *sceneTabs) drawHintBar() {
 	w, h := menu.Window.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
+	menu.Draw(menu.White, 0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 1, 0, hintBgColor)
+	menu.Draw(menu.White, 0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 1, 0, sepColor)
 
 	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 

@@ -42,6 +42,8 @@ type Video struct {
 
 	needUpload bool // true when the texture needs to be uploaded to the GPU
 	data       unsafe.Pointer
+
+	White uint32 // white texture used for rendering
 }
 
 // Init instanciates the video package
@@ -123,6 +125,8 @@ func (video *Video) Configure(fullscreen bool) {
 	if err := gl.Init(); err != nil {
 		panic(err)
 	}
+
+	video.White = NewWhiteImage()
 
 	fbw, fbh := video.Window.GetFramebufferSize()
 

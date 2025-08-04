@@ -17,6 +17,7 @@ out vec4 COMPAT_FRAGCOLOR;
 uniform vec4 color;
 uniform float radius;
 uniform vec2 size;
+uniform sampler2D Texture;
 
 COMPAT_VARYING vec2 fragTexCoord;
 
@@ -28,7 +29,9 @@ void main() {
 	float ratio = size.x / size.y;
 	vec2 halfRes = vec2(0.5*ratio, 0.5);
 	float b = udRoundBox(fragTexCoord*vec2(ratio,1.0) - halfRes, halfRes, min(halfRes.x,halfRes.y)*radius);
-	vec4 c = min(color, vec4(1.0, 1.0, 1.0, 1.0));
-	COMPAT_FRAGCOLOR = vec4(c.r, c.g, c.b, c.a * (1.0-smoothstep(0.00002,0.0001,b)));
+	vec4 c1 = min(color, vec4(1.0, 1.0, 1.0, 1.0));
+	vec4 c2 = COMPAT_TEXTURE(Texture, fragTexCoord);
+	vec4 c3 = c2 * c1;
+	COMPAT_FRAGCOLOR = vec4(c3.r, c3.g, c3.b, c3.a * (1.0-smoothstep(0.00002,0.0001,b)));
 }
 ` + "\x00"
