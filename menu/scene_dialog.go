@@ -56,16 +56,17 @@ func (s *sceneDialog) render() {
 	w, h := menu.GetFramebufferSize()
 	fw := float32(w)
 	fh := float32(h)
-	menu.DrawRect(0, 0, fw, fh, 0, black.Alpha(0.85))
+	menu.Draw(menu.White, 0, 0, fw, fh, 1, 0, black.Alpha(0.85))
 
 	var width float32 = 1000
 	var height float32 = 400
 
-	menu.DrawRect(
+	menu.Draw(menu.White,
 		fw/2-width/2*menu.ratio,
 		fh/2-height/2*menu.ratio,
 		width*menu.ratio,
 		height*menu.ratio,
+		1,
 		0.05,
 		white,
 	)
@@ -85,7 +86,7 @@ func (s *sceneDialog) render() {
 
 	_, _, _, a, b, _, _, _, _, _ := hintIcons()
 
-	menu.DrawImage(
+	menu.Draw(
 		b,
 		fw/2-width/2*menu.ratio+margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
@@ -96,11 +97,11 @@ func (s *sceneDialog) render() {
 		0.4*menu.ratio,
 		"NO")
 
-	menu.DrawImage(
+	menu.Draw(
 		a,
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, 0, darkGrey)
+		70*menu.ratio, 70*menu.ratio, 1, 0, darkGrey)
 	menu.Font.Printf(
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,

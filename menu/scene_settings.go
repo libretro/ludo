@@ -135,7 +135,7 @@ var widgets = map[string]func(*entry){
 			icon = "on"
 		}
 		w, h := menu.GetFramebufferSize()
-		menu.DrawImage(menu.icons[icon],
+		menu.Draw(menu.icons[icon],
 			float32(w)-128*menu.ratio-128*menu.ratio,
 			float32(h)*e.yp-64*1.25*menu.ratio,
 			128*menu.ratio, 128*menu.ratio,
@@ -149,9 +149,9 @@ var widgets = map[string]func(*entry){
 		y := float32(fbh)*e.yp - 4*menu.ratio
 		w := 175 * menu.ratio
 		h := 8 * menu.ratio
-		menu.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha/4))
+		menu.Draw(menu.White, x, y, w, h, 1, 0.9, textColor.Alpha(e.iconAlpha/4))
 		w = 175 * menu.ratio * e.value().(float32)
-		menu.DrawRect(x, y, w, h, 0.9, textColor.Alpha(e.iconAlpha))
+		menu.Draw(menu.White, x, y, w, h, 1, 0.9, textColor.Alpha(e.iconAlpha))
 		menu.DrawCircle(x+w, y+4*menu.ratio, 38*menu.ratio, textColor.Alpha(e.iconAlpha))
 	},
 }
@@ -274,8 +274,8 @@ func (s *sceneSettings) render() {
 
 func (s *sceneSettings) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
+	menu.Draw(menu.White, 0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 1, 0, hintBgColor)
+	menu.Draw(menu.White, 0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 1, 0, sepColor)
 
 	_, upDown, leftRight, a, b, _, _, _, _, guide := hintIcons()
 

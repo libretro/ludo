@@ -34,11 +34,12 @@ func (m *Menu) RenderNotifications() {
 		lw := m.Font.Width(0.5*m.ratio, n.Message)
 		fg := severityFgColor[n.Severity]
 		bg := severityBgColor[n.Severity]
-		m.DrawRect(
+		m.Draw(m.White,
 			25*m.ratio,
 			(stack+offset-46)*m.ratio,
 			lw+40*m.ratio,
 			70*m.ratio,
+			1,
 			0.25,
 			bg.Alpha(fading),
 		)

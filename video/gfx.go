@@ -66,12 +66,14 @@ func rotateUV(va []float32, rot uint) []float32 {
 	return va
 }
 
-// DrawImage draws an image with x, y, w, h
-func (video *Video) DrawImage(image uint32, x, y, w, h, scale, r float32, c Color) {
+// Draw draws an image or a flat color rectangle with x, y, w, h
+func (video *Video) Draw(image uint32, x, y, w, h, scale, radius float32, c Color) {
 	va := video.vertexArray(x, y, w, h, scale)
 
-	gl.UseProgram(video.defaultProgram)
-	gl.Uniform4f(gl.GetUniformLocation(video.defaultProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.UseProgram(video.roundedProgram)
+	gl.Uniform4f(gl.GetUniformLocation(video.roundedProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
+	gl.Uniform1f(gl.GetUniformLocation(video.roundedProgram, gl.Str("radius\x00")), radius)
+	gl.Uniform2f(gl.GetUniformLocation(video.roundedProgram, gl.Str("size\x00")), w, h)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	bindVertexArray(video.vao)
@@ -135,25 +137,6 @@ func (video *Video) DrawBorder(x, y, w, h, borderWidth float32, c Color) {
 	gl.Disable(gl.BLEND)
 }
 
-// DrawRect draws a rectangle and supports rounded corners
-func (video *Video) DrawRect(x, y, w, h, r float32, c Color) {
-	va := video.vertexArray(x, y, w, h, 1.0)
-
-	gl.UseProgram(video.roundedProgram)
-	gl.Uniform4f(gl.GetUniformLocation(video.roundedProgram, gl.Str("color\x00")), c.R, c.G, c.B, c.A)
-	gl.Uniform1f(gl.GetUniformLocation(video.roundedProgram, gl.Str("radius\x00")), r)
-	gl.Uniform2f(gl.GetUniformLocation(video.roundedProgram, gl.Str("size\x00")), w, h)
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	bindVertexArray(video.vao)
-	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
-	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-	bindVertexArray(0)
-	gl.UseProgram(0)
-	gl.Disable(gl.BLEND)
-}
-
 // DrawCircle draws a circle
 func (video *Video) DrawCircle(x, y, r float32, c Color) {
 	va := video.vertexArray(x-r, y-r, r*2, r*2, 1.0)
@@ -175,7 +158,7 @@ func (video *Video) DrawCircle(x, y, r float32, c Color) {
 func textureLoad(nrgba *image.NRGBA) uint32 {
 	var texture uint32
 	gl.GenTextures(1, &texture)
-	gl.ActiveTexture(gl.TEXTURE1)
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, texture)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -213,5 +196,11 @@ func NewImage(file string) uint32 {
 	nrgba := image.NewNRGBA(img.Bounds())
 	draw.Draw(nrgba, nrgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
+	return textureLoad(nrgba)
+}
+
+func NewWhiteImage() uint32 {
+	nrgba := image.NewNRGBA(image.Rect(0, 0, 1, 1))
+	draw.Draw(nrgba, nrgba.Bounds(), &image.Uniform{C: image.White}, image.Point{0, 0}, draw.Src)
 	return textureLoad(nrgba)
 }
