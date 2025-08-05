@@ -22,14 +22,14 @@ var hintBgColor video.Color
 var titleTextColor video.Color
 var dialogTextColor video.Color
 
-var darkInfo video.Color
-var lightInfo video.Color
-var darkSuccess video.Color
-var lightSuccess video.Color
-var darkDanger video.Color
-var lightDanger video.Color
-var darkWarning video.Color
-var lightWarning video.Color
+var infoBgColor video.Color
+var infoTextColor video.Color
+var successBgColor video.Color
+var successTextColor video.Color
+var dangerBgColor video.Color
+var dangerTextColor video.Color
+var warningBgColor video.Color
+var warningTextColor video.Color
 
 var tabColors []video.Color
 var tabIconColor video.Color
@@ -62,14 +62,14 @@ func applyDraculaTheme() {
 	titleTextColor = dracula["pink"]
 	dialogTextColor = dracula["foreground"]
 
-	darkInfo = dracula["selection"]
-	lightInfo = dracula["purple"]
-	darkSuccess = dracula["selection"]
-	lightSuccess = dracula["green"]
-	darkDanger = dracula["selection"]
-	lightDanger = dracula["red"]
-	darkWarning = dracula["selection"]
-	lightWarning = dracula["orange"]
+	infoBgColor = dracula["selection"]
+	infoTextColor = dracula["purple"]
+	successBgColor = dracula["selection"]
+	successTextColor = dracula["green"]
+	dangerBgColor = dracula["selection"]
+	dangerTextColor = dracula["red"]
+	warningBgColor = dracula["selection"]
+	warningTextColor = dracula["orange"]
 
 	tabColors = []video.Color{
 		dracula["purple"],
@@ -113,14 +113,14 @@ func applyRosePineTheme() {
 	titleTextColor = rosePine["foam"]
 	dialogTextColor = rosePine["text"]
 
-	darkInfo = rosePine["iris"]
-	lightInfo = rosePine["base"]
-	darkSuccess = rosePine["foam"]
-	lightSuccess = rosePine["base"]
-	darkDanger = rosePine["love"]
-	lightDanger = rosePine["base"]
-	darkWarning = rosePine["gold"]
-	lightWarning = rosePine["base"]
+	infoBgColor = rosePine["iris"]
+	infoTextColor = rosePine["base"]
+	successBgColor = rosePine["foam"]
+	successTextColor = rosePine["base"]
+	dangerBgColor = rosePine["love"]
+	dangerTextColor = rosePine["base"]
+	warningBgColor = rosePine["gold"]
+	warningTextColor = rosePine["base"]
 
 	tabColors = []video.Color{
 		rosePine["iris"],
@@ -164,14 +164,14 @@ func applyRosePineDawnTheme() {
 	titleTextColor = rosePineDawn["foam"]
 	dialogTextColor = rosePineDawn["text"]
 
-	darkInfo = rosePineDawn["iris"]
-	lightInfo = rosePineDawn["base"]
-	darkSuccess = rosePineDawn["foam"]
-	lightSuccess = rosePineDawn["base"]
-	darkDanger = rosePineDawn["love"]
-	lightDanger = rosePineDawn["base"]
-	darkWarning = rosePineDawn["gold"]
-	lightWarning = rosePineDawn["base"]
+	infoBgColor = rosePineDawn["iris"]
+	infoTextColor = rosePineDawn["base"]
+	successBgColor = rosePineDawn["foam"]
+	successTextColor = rosePineDawn["base"]
+	dangerBgColor = rosePineDawn["love"]
+	dangerTextColor = rosePineDawn["base"]
+	warningBgColor = rosePineDawn["gold"]
+	warningTextColor = rosePineDawn["base"]
 
 	tabColors = []video.Color{
 		rosePineDawn["iris"],
@@ -194,16 +194,16 @@ func (m *Menu) UpdatePalette() {
 	}
 
 	severityFgColor = map[ntf.Severity]video.Color{
-		ntf.Error:   lightDanger,
-		ntf.Warning: lightWarning,
-		ntf.Success: lightSuccess,
-		ntf.Info:    lightInfo,
+		ntf.Error:   dangerTextColor,
+		ntf.Warning: warningTextColor,
+		ntf.Success: successTextColor,
+		ntf.Info:    infoTextColor,
 	}
 
 	severityBgColor = map[ntf.Severity]video.Color{
-			ntf.Error:   darkDanger,
-			ntf.Warning: darkWarning,
-			ntf.Success: darkSuccess,
-			ntf.Info:    darkInfo,
+			ntf.Error:   dangerBgColor,
+			ntf.Warning: warningBgColor,
+			ntf.Success: successBgColor,
+			ntf.Info:    infoBgColor,
 	}
 }
