@@ -44,7 +44,7 @@ var rosePine = map[string]video.Color{
 var white video.Color
 var black video.Color
 var bgColor video.Color
-var cursorBg video.Color
+var cursorBgColor video.Color
 var textColor video.Color
 var mutedTextColor video.Color
 var textShadowColor video.Color
@@ -64,6 +64,7 @@ var darkWarning video.Color
 var lightWarning video.Color
 
 var tabColors []video.Color
+var tabIconColor video.Color
 
 // UpdatePalette updates the color palette to honor the dark theme
 func (m *Menu) UpdatePalette() {
@@ -71,7 +72,7 @@ func (m *Menu) UpdatePalette() {
 		white = rosePine["text"]
 		black = rosePine["base"]
 		bgColor = rosePine["base"]
-		cursorBg = rosePine["overlay"]
+		cursorBgColor = rosePine["overlay"]
 		textColor = rosePine["text"]
 		mutedTextColor = rosePine["muted"]
 		textShadowColor = rosePine["overlay"]
@@ -98,11 +99,13 @@ func (m *Menu) UpdatePalette() {
 			rosePine["foam"],
 			rosePine["pine"],
 		}
+
+		tabIconColor = rosePine["text"]
 	} else {
 		white = rosePineDawn["base"]
 		black = rosePineDawn["text"]
 		bgColor = rosePineDawn["base"]
-		cursorBg = rosePineDawn["overlay"]
+		cursorBgColor = rosePineDawn["overlay"]
 		textColor = rosePineDawn["text"]
 		mutedTextColor = rosePineDawn["muted"]
 		textShadowColor = rosePineDawn["overlay"]
@@ -129,6 +132,8 @@ func (m *Menu) UpdatePalette() {
 			rosePineDawn["foam"],
 			rosePineDawn["pine"],
 		}
+
+		tabIconColor = rosePineDawn["text"]
 	}
 
 	severityFgColor = map[ntf.Severity]video.Color{

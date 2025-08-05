@@ -309,7 +309,7 @@ func (tabs sceneTabs) render() {
 
 		menu.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, 0, white.Alpha(e.iconAlpha))
+			256*menu.ratio, 256*menu.ratio, e.scale, 0, tabIconColor.Alpha(e.iconAlpha))
 	}
 }
 
