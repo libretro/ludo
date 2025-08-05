@@ -6,51 +6,57 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-var white = video.Color{R: 1, G: 1, B: 1, A: 1}
-var black = video.Color{R: 0, G: 0, B: 0, A: 1}
+var white = video.Color{R: 250.0/255.0, G: 244.0/255.0, B: 237.0/255.0, A: 1}
+var black = video.Color{R: 87.0/255.0, G: 82.0/255.0, B: 121.0/255.0, A: 1}
 
-var orange = video.Color{R: 0.8, G: 0.4, B: 0.1, A: 1}
-var cyan = video.Color{R: 0.8784, G: 1, B: 1, A: 1}
-var darkBlue = video.Color{R: 0.1, G: 0.1, B: 0.4, A: 1}
+var foam = video.Color{R: 86.0/255.0, G: 148.0/255.0, B: 159.0/255.0, A: 1}
+var overlay = video.Color{R: 242.0/255.0, G: 233.0/255.0, B: 222.0/255.0, A: 1}
 
-var lightGrey = video.Color{R: 0.75, G: 0.75, B: 0.75, A: 1}
-var mediumGrey = video.Color{R: 0.5, G: 0.5, B: 0.5, A: 1}
-var darkGrey = video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
-var darkerGrey = video.Color{R: 0.10, G: 0.10, B: 0.10, A: 1}
+var highlightMed = video.Color{R: 223.0/255.0, G: 218.0/255.0, B: 217.0/255.0, A: 1}
+var muted = video.Color{R: 152.0/255.0, G: 147.0/255.0, B: 165.0/255.0, A: 1}
 
-var darkInfo = video.Color{R: 0.04, G: 0.36, B: 0.46, A: 1}
-var lightInfo = video.Color{R: 0.53, G: 0.89, B: 1.00, A: 1}
+var darkInfo = video.Color{R: 144.0/255.0, G: 122.0/255.0, B: 169.0/255.0, A: 1}
+var lightInfo = white
 
-var darkSuccess = video.Color{R: 0.15, G: 0.46, B: 0.04, A: 1}
-var lightSuccess = video.Color{R: 0.65, G: 1.00, B: 0.53, A: 1}
+var darkSuccess = foam
+var lightSuccess = white
 
-var darkDanger = video.Color{R: 0.46, G: 0.04, B: 0.04, A: 1}
-var lightDanger = video.Color{R: 1.00, G: 0.53, B: 0.53, A: 1}
+var darkDanger = video.Color{R: 180.0/255.0, G: 99.0/255.0, B: 122.0/255.0, A: 1}
+var lightDanger = white
 
-var darkWarning = video.Color{R: 0.47, G: 0.40, B: 0.04, A: 1}
-var lightWarning = video.Color{R: 1.00, G: 0.92, B: 0.53, A: 1}
+var darkWarning = video.Color{R: 234.0/255.0, G: 157.0/255.0, B: 52.0/255.0, A: 1}
+var lightWarning = white
 
 var bgColor = white
-var cursorBg = cyan
+var cursorBg = overlay
 var textColor = black
-var textShadowColor = white
-var sepColor = lightGrey
-var hintTextColor = darkGrey
+var mutedTextColor = muted
+var textShadowColor = overlay
+var sepColor = highlightMed
+var hintTextColor = black
 var hintBgColor = white
+var titleTextColor = foam
+var dialogTextColor = black
 
 // UpdatePalette updates the color palette to honor the dark theme
 func (m *Menu) UpdatePalette() {
 	bgColor = white
-	cursorBg = cyan
+	cursorBg = overlay
 	textColor = black
+	textShadowColor = overlay
+	sepColor = highlightMed
+	hintTextColor = black
+	hintBgColor = white
+	dialogTextColor = black
 
 	if state.CoreRunning || settings.Current.VideoDarkMode {
-		bgColor = darkerGrey
-		cursorBg = darkBlue
+		bgColor = black
+		cursorBg = black
 		textColor = white
 		textShadowColor = black
-		sepColor = darkerGrey
+		sepColor = white
 		hintTextColor = white
 		hintBgColor = black
+		dialogTextColor = black
 	}
 }
