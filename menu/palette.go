@@ -87,17 +87,17 @@ func applyDraculaTheme() {
 // This is the dark theme color palette used in the menu
 func applyRosePineTheme() {
 	var rosePine = map[string]video.Color{
-			"base": video.Color{R: 25.0/255.0, G: 23.0/255.0, B: 36.0/255.0, A: 1},
-			"text": video.Color{R: 224.0/255.0, G: 222.0/255.0, B: 244.0/255.0, A: 1},
-			"overlay": video.Color{R: 38.0/255.0, G: 35.0/255.0, B: 58.0/255.0, A: 1},
-			"muted": video.Color{R: 110.0/255.0, G: 106.0/255.0, B: 134.0/255.0, A: 1},
-			"love": video.Color{R: 235.0/255.0, G: 111.0/255.0, B: 146.0/255.0, A: 1},
-			"gold": video.Color{R: 246.0/255.0, G: 193.0/255.0, B: 119.0/255.0, A: 1},
-			"rose": video.Color{R: 235.0/255.0, G: 188.0/255.0, B: 186.0/255.0, A: 1},
-			"pine": video.Color{R: 49.0/255.0, G: 116.0/255.0, B: 143.0/255.0, A: 1},
-			"foam": video.Color{R: 156.0/255.0, G: 207.0/255.0, B: 216.0/255.0, A: 1},
-			"iris": video.Color{R: 196.0/255.0, G: 167.0/255.0, B: 231.0/255.0, A: 1},
-			"highlightMed": video.Color{R: 64.0/255.0, G: 61.0/255.0, B: 82.0/255.0, A: 1},
+		"base":         video.ColorFromHex("#191724"),
+		"text":         video.ColorFromHex("#e0def4"),
+		"overlay":      video.ColorFromHex("#26233a"),
+		"muted":        video.ColorFromHex("#6e6a86"),
+		"love":         video.ColorFromHex("#eb6f92"),
+		"gold":         video.ColorFromHex("#f6c177"),
+		"rose":         video.ColorFromHex("#ebbcba"),
+		"pine":         video.ColorFromHex("#31748f"),
+		"foam":         video.ColorFromHex("#9ccfd8"),
+		"iris":         video.ColorFromHex("#c4a7e7"),
+		"highlightMed": video.ColorFromHex("#403d52"),
 	}
 
 	white = rosePine["text"]
@@ -138,17 +138,17 @@ func applyRosePineTheme() {
 // This is the light theme color palette used in the menu
 func applyRosePineDawnTheme() {
 	var rosePineDawn = map[string]video.Color{
-		"base": video.Color{R: 250.0/255.0, G: 244.0/255.0, B: 237.0/255.0, A: 1},
-		"text": video.Color{R: 87.0/255.0, G: 82.0/255.0, B: 121.0/255.0, A: 1},
-		"overlay": video.Color{R: 242.0/255.0, G: 233.0/255.0, B: 222.0/255.0, A: 1},
-		"muted": video.Color{R: 152.0/255.0, G: 147.0/255.0, B: 165.0/255.0, A: 1},
-		"love": video.Color{R: 180.0/255.0, G: 99.0/255.0, B: 122.0/255.0, A: 1},
-		"gold": video.Color{R: 234.0/255.0, G: 157.0/255.0, B: 52.0/255.0, A: 1},
-		"rose": video.Color{R: 215.0/255.0, G: 130.0/255.0, B: 126.0/255.0, A: 1},
-		"pine": video.Color{R: 40.0/255.0, G: 105.0/255.0, B: 131.0/255.0, A: 1},
-		"foam": video.Color{R: 86.0/255.0, G: 148.0/255.0, B: 159.0/255.0, A: 1},
-		"iris": video.Color{R: 144.0/255.0, G: 122.0/255.0, B: 169.0/255.0, A: 1},
-		"highlightMed": video.Color{R: 223.0/255.0, G: 218.0/255.0, B: 217.0/255.0, A: 1},
+		"base":         video.ColorFromHex("#faf4ed"),
+		"text":         video.ColorFromHex("#575279"),
+		"overlay":      video.ColorFromHex("#f2e9e1"),
+		"muted":        video.ColorFromHex("#9893a5"),
+		"love":         video.ColorFromHex("#b4637a"),
+		"gold":         video.ColorFromHex("#ea9d34"),
+		"rose":         video.ColorFromHex("#d7827e"),
+		"pine":         video.ColorFromHex("#286983"),
+		"foam":         video.ColorFromHex("#56949f"),
+		"iris":         video.ColorFromHex("#907aa9"),
+		"highlightMed": video.ColorFromHex("#dfdad9"),
 	}
 
 	white = rosePineDawn["base"]
@@ -182,7 +182,7 @@ func applyRosePineDawnTheme() {
 		rosePineDawn["pine"],
 	}
 
-	tabIconColor = rosePineDawn["text"]
+	tabIconColor = rosePineDawn["base"]
 }
 
 // UpdatePalette updates the color palette to honor the dark theme
