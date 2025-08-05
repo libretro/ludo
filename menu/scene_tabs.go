@@ -16,8 +16,6 @@ import (
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"github.com/libretro/ludo/video"
-	colorful "github.com/lucasb-eyer/go-colorful"
 
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -286,9 +284,7 @@ func (tabs sceneTabs) render() {
 
 	stackWidth := 710 * menu.ratio
 	for i, e := range tabs.children {
-
-		cf := colorful.Hcl(float64(i)*20, 0.5, 0.5)
-		c := video.Color{R: float32(cf.R), G: float32(cf.B), B: float32(cf.G), A: e.iconAlpha}
+		c := tabColors[i%len(tabColors)]
 
 		x := -menu.scroll*menu.ratio + stackWidth + e.width/2*menu.ratio
 
