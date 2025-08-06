@@ -151,24 +151,24 @@ func genericSegueNext(list *entry) {
 // menu entry
 func genericDrawCursor(list *entry) {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawImage(menu.icons["arrow"],
+	menu.Draw(menu.icons["arrow"],
 		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
 		70*menu.ratio, 70*menu.ratio, 1, 0, cursorBg.Alpha(list.cursor.alpha))
-	menu.DrawRect(
+	menu.Draw(menu.White,
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-630*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
+		float32(w)-630*menu.ratio, 100*menu.ratio, 1, 1, cursorBg.Alpha(list.cursor.alpha))
 }
 
 // thumbnailDrawCursor draws the blinking rectangular background of the active
 // menu entry when there is a thumbnail
 func thumbnailDrawCursor(list *entry) {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawImage(menu.icons["arrow"],
+	menu.Draw(menu.icons["arrow"],
 		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
 		100*menu.ratio, 100*menu.ratio, 1, 0, cursorBg.Alpha(list.cursor.alpha))
-	menu.DrawRect(
+	menu.Draw(menu.White,
 		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
-		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, cursorBg.Alpha(list.cursor.alpha))
+		float32(w)-630*menu.ratio, 240*menu.ratio, 1, 0.2, cursorBg.Alpha(list.cursor.alpha))
 }
 
 // genericRender renders a vertical list of menu entries
@@ -187,7 +187,7 @@ func genericRender(list *entry) {
 
 		fontOffset := 64 * 0.7 * menu.ratio * 0.3
 
-		menu.DrawImage(menu.icons[e.icon],
+		menu.Draw(menu.icons[e.icon],
 			610*menu.ratio-64*0.5*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*0.5*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
@@ -269,8 +269,8 @@ func askDeleteSavestateConfirmation(cb func()) {
 
 func genericDrawHintBar() {
 	w, h := menu.Window.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
+	menu.Draw(menu.White, 0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 1, 0, hintBgColor)
+	menu.Draw(menu.White, 0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 1, 0, sepColor)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 

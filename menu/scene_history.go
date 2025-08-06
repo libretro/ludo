@@ -185,7 +185,7 @@ func (s *sceneHistory) render() {
 					float32(h)*e.yp-14*menu.ratio+fontOffset,
 					90*menu.ratio*e.scale,
 					black.Alpha(e.iconAlpha))
-				menu.DrawImage(menu.icons["resume"],
+				menu.Draw(menu.icons["resume"],
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
@@ -215,10 +215,10 @@ func (s *sceneHistory) render() {
 			for _, tag := range e.tags {
 				if _, ok := menu.icons[tag]; ok {
 					stack += 20
-					menu.DrawImage(
+					menu.Draw(
 						menu.icons[tag],
 						stack, float32(h)*e.yp-22*menu.ratio-slOffset,
-						60*menu.ratio, 44*menu.ratio, 1.0, 0, white.Alpha(e.tagAlpha))
+						60*menu.ratio, 44*menu.ratio, 1, 0, white.Alpha(e.tagAlpha))
 					menu.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio-slOffset,
 						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, black.Alpha(e.tagAlpha/4))
 					stack += 60 * menu.ratio
@@ -238,8 +238,8 @@ func (s *sceneHistory) render() {
 
 func (s *sceneHistory) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
-	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
+	menu.Draw(menu.White, 0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 1, 0, hintBgColor)
+	menu.Draw(menu.White, 0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 1, 0, sepColor)
 
 	_, upDown, _, a, b, x, _, _, _, guide := hintIcons()
 
