@@ -184,13 +184,13 @@ func applyDraculaTheme() {
 	bgColor = dracula["background"]
 	cursorBgColor = dracula["selection"]
 	textColor = dracula["foreground"]
-	mutedTextColor = dracula["comment"]
+	mutedTextColor = dracula["purple"]
 	textShadowColor = dracula["selection"]
 	sepColor = dracula["selection"]
 	hintTextColor = dracula["foreground"]
 	hintBgColor = dracula["background"]
-	titleTextColor = dracula["pink"]
-	dialogTextColor = dracula["foreground"]
+	titleTextColor = dracula["purple"]
+	dialogTextColor = dracula["background"]
 
 	infoBgColor = dracula["selection"]
 	infoTextColor = dracula["purple"]
@@ -210,7 +210,7 @@ func applyDraculaTheme() {
 		dracula["cyan"],
 	}
 
-	tabIconColor = dracula["foreground"]
+	tabIconColor = dracula["selection"]
 }
 
 // rosePine color palette
@@ -261,7 +261,7 @@ func applyRosePineTheme() {
 		rosePine["pine"],
 	}
 
-	tabIconColor = rosePine["text"]
+	tabIconColor = rosePine["overlay"]
 }
 
 // rosePineDawn color palette
@@ -318,20 +318,16 @@ func applyRosePineDawnTheme() {
 // UpdatePalette updates the color palette to honor the dark theme
 func (m *Menu) UpdatePalette() {
 	if state.CoreRunning || settings.Current.VideoDarkMode {
-		if settings.Current.VideoTheme == "Rose Pine" {
-			applyRosePineTheme()
-		} else if settings.Current.VideoTheme == "Dracula" {
-			applyDraculaTheme()
-		} else {
-			applyDefaultDarkTheme() // Fallback to default if theme is unknown
+		switch settings.Current.VideoTheme {
+			case "Rose Pine": applyRosePineTheme()
+			case "Dracula": applyDraculaTheme()
+			default: applyDefaultDarkTheme()
 		}
 	} else {
-		if settings.Current.VideoTheme == "Rose Pine" {
-			applyRosePineDawnTheme()
-		} else if settings.Current.VideoTheme == "Dracula" {
-			applyDraculaTheme()
-		} else {
-			applyDefaultLightTheme() // Fallback to default if theme is unknown
+		switch settings.Current.VideoTheme {
+			case "Rose Pine": applyRosePineDawnTheme()
+			case "Dracula": applyDraculaTheme()
+			default: applyDefaultLightTheme()
 		}
 	}
 
