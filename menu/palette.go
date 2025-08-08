@@ -34,6 +34,126 @@ var warningTextColor video.Color
 var tabColors []video.Color
 var tabIconColor video.Color
 
+func applyDefaultLightTheme() {
+	var pal = map[string]video.Color{
+		"background": video.ColorFromHex("#FFFFFF"),
+		"foreground": video.ColorFromHex("#000000"),
+		"selection":  video.Color{R: 0.8784, G: 1, B: 1, A: 1},
+		"lightgrey":  video.ColorFromHex("#cccccc"),
+		"mediumgrey": video.ColorFromHex("#888888"),
+		"darkgrey":   video.ColorFromHex("#555555"),
+		"darkergrey": video.ColorFromHex("#222222"),
+		"infobg":      video.Color{R: 0.04, G: 0.36, B: 0.46, A: 1},
+		"infotext":    video.Color{R: 0.53, G: 0.89, B: 1.00, A: 1},
+		"successbg":   video.Color{R: 0.15, G: 0.46, B: 0.04, A: 1},
+		"successtext": video.Color{R: 0.65, G: 1.00, B: 0.53, A: 1},
+		"dangerbg":    video.Color{R: 0.46, G: 0.04, B: 0.04, A: 1},
+		"dangertext":  video.Color{R: 1.00, G: 0.53, B: 0.53, A: 1},
+		"warningbg":   video.Color{R: 0.47, G: 0.40, B: 0.04, A: 1},
+		"warningtext": video.Color{R: 1.00, G: 0.92, B: 0.53, A: 1},
+		"red":        video.ColorFromHex("#FF5555"),
+		"orange":     video.ColorFromHex("#FFB86C"),
+		"yellow":     video.ColorFromHex("#F1FA8C"),
+		"green":      video.ColorFromHex("#50FA7B"),
+		"purple":     video.ColorFromHex("#BD93F9"),
+		"cyan":       video.ColorFromHex("#8BE9FD"),
+		"pink":       video.ColorFromHex("#FF79C6"),
+	}
+
+	white = pal["background"]
+	black = pal["foreground"]
+	bgColor = pal["background"]
+	cursorBgColor = pal["selection"]
+	textColor = pal["foreground"]
+	mutedTextColor = pal["mediumgrey"]
+	textShadowColor = pal["lightgrey"]
+	sepColor = pal["lightgrey"]
+	hintTextColor = pal["darkergrey"]
+	hintBgColor = pal["background"]
+	titleTextColor = pal["orange"]
+	dialogTextColor = pal["darkergrey"]
+
+	infoBgColor = pal["infobg"]
+	infoTextColor = pal["infotext"]
+	successBgColor = pal["successbg"]
+	successTextColor = pal["successtext"]
+	dangerBgColor = pal["dangerbg"]
+	dangerTextColor = pal["dangertext"]
+	warningBgColor = pal["warningbg"]
+	warningTextColor = pal["warningtext"]
+
+	tabColors = []video.Color{
+		pal["purple"],
+		pal["red"],
+		pal["pink"],
+		pal["orange"],
+		pal["green"],
+		pal["cyan"],
+	}
+
+	tabIconColor = pal["background"]
+}
+
+func applyDefaultDarkTheme() {
+	var pal = map[string]video.Color{
+		"background":  video.ColorFromHex("#000000"),
+		"foreground":  video.ColorFromHex("#FFFFFF"),
+		"selection":   video.Color{R: 0.8784, G: 1, B: 1, A: 1},
+		"lightgrey":   video.ColorFromHex("#cccccc"),
+		"mediumgrey":  video.ColorFromHex("#888888"),
+		"darkgrey":    video.ColorFromHex("#555555"),
+		"darkergrey":  video.ColorFromHex("#222222"),
+		"infobg":      video.Color{R: 0.04, G: 0.36, B: 0.46, A: 1},
+		"infotext":    video.Color{R: 0.53, G: 0.89, B: 1.00, A: 1},
+		"successbg":   video.Color{R: 0.15, G: 0.46, B: 0.04, A: 1},
+		"successtext": video.Color{R: 0.65, G: 1.00, B: 0.53, A: 1},
+		"dangerbg":    video.Color{R: 0.46, G: 0.04, B: 0.04, A: 1},
+		"dangertext":  video.Color{R: 1.00, G: 0.53, B: 0.53, A: 1},
+		"warningbg":   video.Color{R: 0.47, G: 0.40, B: 0.04, A: 1},
+		"warningtext": video.Color{R: 1.00, G: 0.92, B: 0.53, A: 1},
+		"red":         video.ColorFromHex("#FF5555"),
+		"orange":      video.ColorFromHex("#FFB86C"),
+		"yellow":      video.ColorFromHex("#F1FA8C"),
+		"green":       video.ColorFromHex("#50FA7B"),
+		"purple":      video.ColorFromHex("#BD93F9"),
+		"cyan":        video.ColorFromHex("#8BE9FD"),
+		"pink":        video.ColorFromHex("#FF79C6"),
+	}
+
+	white = pal["foreground"]
+	black = pal["background"]
+	bgColor = pal["background"]
+	cursorBgColor = pal["darkergrey"]
+	textColor = pal["foreground"]
+	mutedTextColor = pal["mediumgrey"]
+	textShadowColor = pal["darkergrey"]
+	sepColor = pal["darkergrey"]
+	hintTextColor = pal["lightgrey"]
+	hintBgColor = pal["background"]
+	titleTextColor = pal["orange"]
+	dialogTextColor = pal["darkergrey"]
+
+	infoBgColor = pal["infobg"]
+	infoTextColor = pal["infotext"]
+	successBgColor = pal["successbg"]
+	successTextColor = pal["successtext"]
+	dangerBgColor = pal["dangerbg"]
+	dangerTextColor = pal["dangertext"]
+	warningBgColor = pal["warningbg"]
+	warningTextColor = pal["warningtext"]
+
+	tabColors = []video.Color{
+		pal["purple"],
+		pal["red"],
+		pal["pink"],
+		pal["orange"],
+		pal["green"],
+		pal["cyan"],
+	}
+
+	tabIconColor = pal["darkergrey"]
+}
+
 func applyDraculaTheme() {
 	var dracula = map[string]video.Color{
 		"background": video.ColorFromHex("#282A36"),
@@ -188,9 +308,21 @@ func applyRosePineDawnTheme() {
 // UpdatePalette updates the color palette to honor the dark theme
 func (m *Menu) UpdatePalette() {
 	if state.CoreRunning || settings.Current.VideoDarkMode {
-		applyRosePineTheme()
+		if settings.Current.VideoTheme == "Rose Pine" {
+			applyRosePineTheme()
+		} else if settings.Current.VideoTheme == "Dracula" {
+			applyDraculaTheme()
+		} else {
+			applyDefaultDarkTheme() // Fallback to default if theme is unknown
+		}
 	} else {
-		applyRosePineDawnTheme()
+		if settings.Current.VideoTheme == "Rose Pine" {
+			applyRosePineDawnTheme()
+		} else if settings.Current.VideoTheme == "Dracula" {
+			applyDraculaTheme()
+		} else {
+			applyDefaultLightTheme() // Fallback to default if theme is unknown
+		}
 	}
 
 	severityFgColor = map[ntf.Severity]video.Color{
