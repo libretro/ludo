@@ -110,8 +110,8 @@ func applyRosePineTheme() {
 	sepColor = rosePine["highlightMed"]
 	hintTextColor = rosePine["text"]
 	hintBgColor = rosePine["base"]
-	titleTextColor = rosePine["foam"]
-	dialogTextColor = rosePine["text"]
+	titleTextColor = rosePine["pine"]
+	dialogTextColor = rosePine["base"]
 
 	infoBgColor = rosePine["iris"]
 	infoTextColor = rosePine["base"]
