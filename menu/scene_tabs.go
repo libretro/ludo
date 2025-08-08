@@ -287,7 +287,7 @@ func (tabs sceneTabs) render() {
 		iconColor := tabIconColor.Alpha(e.iconAlpha)
 		hexaColor := tabColors[i%len(tabColors)]
 		lablColor :=  hexaColor
-		if settings.Current.VideoDarkMode {
+		if settings.Current.VideoDarkMode || state.CoreRunning {
 			iconColor = tabColors[i%len(tabColors)]
 			hexaColor = tabIconColor.Alpha(e.iconAlpha)
 			lablColor = iconColor
