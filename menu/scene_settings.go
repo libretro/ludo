@@ -203,6 +203,21 @@ var incrCallbacks = map[string]callbackIncrement{
 		f.Set(v)
 		settings.Save()
 	},
+	"VideoTheme": func(f *structs.Field, direction int) {
+		themes := []string{"Default", "Rose Pine", "Dracula"}
+		v := f.Value().(string)
+		i := utils.IndexOfString(v, themes)
+		i += direction
+		if i < 0 {
+			i = len(themes) - 1
+		}
+		if i > len(themes)-1 {
+			i = 0
+		}
+		f.Set(themes[i])
+		menu.UpdateFilter(themes[i])
+		settings.Save()
+	},
 	"MapAxisToDPad": func(f *structs.Field, direction int) {
 		v := f.Value().(bool)
 		v = !v

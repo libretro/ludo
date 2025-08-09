@@ -1,6 +1,7 @@
 package video
 
 import (
+	"fmt"
 	"image"
 	"image/draw"
 	"log"
@@ -18,6 +19,25 @@ type Color struct {
 func (color Color) Alpha(alpha float32) Color {
 	color.A = alpha
 	return color
+}
+
+func ColorFromHex(hex string) Color {
+	if len(hex) != 7 || hex[0] != '#' {
+		log.Printf("Invalid hex color: %s", hex)
+		return Color{R: 0, G: 0, B: 0, A: 1}
+	}
+	var r, g, b uint8
+	_, err := fmt.Sscanf(hex[1:], "%02x%02x%02x", &r, &g, &b)
+	if err != nil {
+		log.Printf("Failed to parse hex color %s: %v", hex, err)
+		return Color{R: 0, G: 0, B: 0, A: 1}
+	}
+	return Color{
+		R: float32(r) / 255.0,
+		G: float32(g) / 255.0,
+		B: float32(b) / 255.0,
+		A: 1.0, // Default alpha value
+	}
 }
 
 // XYWHTo4points converts coordinates from (x, y, width, height) to (x1, y1, x2, y2, x3, y3, x4, y4)

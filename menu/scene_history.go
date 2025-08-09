@@ -225,7 +225,7 @@ func (s *sceneHistory) render() {
 				}
 			}
 
-			menu.Font.SetColor(mediumGrey.Alpha(e.subLabelAlpha))
+			menu.Font.SetColor(mutedTextColor.Alpha(e.subLabelAlpha))
 			menu.Font.Printf(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset+60*menu.ratio-slOffset,

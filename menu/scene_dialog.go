@@ -70,16 +70,16 @@ func (s *sceneDialog) render() {
 		white,
 	)
 
-	menu.Font.SetColor(orange)
+	menu.Font.SetColor(titleTextColor)
 	lw1 := menu.Font.Width(0.7*menu.ratio, s.title)
 	menu.Font.Printf(fw/2-lw1/2, fh/2-120*menu.ratio+20*menu.ratio, 0.7*menu.ratio, s.title)
-	menu.Font.SetColor(black)
+	menu.Font.SetColor(dialogTextColor)
 	lw2 := menu.Font.Width(0.5*menu.ratio, s.line1)
 	menu.Font.Printf(fw/2-lw2/2, fh/2-30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, s.line1)
 	lw3 := menu.Font.Width(0.5*menu.ratio, s.line2)
 	menu.Font.Printf(fw/2-lw3/2, fh/2+30*menu.ratio+20*menu.ratio, 0.5*menu.ratio, s.line2)
 
-	menu.Font.SetColor(darkGrey)
+	menu.Font.SetColor(dialogTextColor)
 
 	var margin float32 = 15
 
@@ -89,7 +89,7 @@ func (s *sceneDialog) render() {
 		b,
 		fw/2-width/2*menu.ratio+margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, 0, darkGrey)
+		70*menu.ratio, 70*menu.ratio, 1.0, 0, dialogTextColor)
 	menu.Font.Printf(
 		fw/2-width/2*menu.ratio+margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
@@ -100,7 +100,7 @@ func (s *sceneDialog) render() {
 		a,
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio,
 		fh/2+height/2*menu.ratio-70*menu.ratio-margin*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1.0, 0, darkGrey)
+		70*menu.ratio, 70*menu.ratio, 1.0, 0, dialogTextColor)
 	menu.Font.Printf(
 		fw/2+width/2*menu.ratio-150*menu.ratio-margin*menu.ratio+70*menu.ratio,
 		fh/2+height/2*menu.ratio-23*menu.ratio-margin*menu.ratio,
