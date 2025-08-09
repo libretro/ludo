@@ -284,12 +284,12 @@ func (tabs sceneTabs) render() {
 
 	stackWidth := 710 * menu.ratio
 	for i, e := range tabs.children {
-		iconColor := tabIconColor.Alpha(e.iconAlpha)
-		hexaColor := tabColors[i%len(tabColors)]
+		iconColor := tabIconColors(i).Alpha(e.iconAlpha)
+		hexaColor := tabHexaColors(i)
 		lablColor :=  hexaColor
 		if settings.Current.VideoDarkMode || state.CoreRunning {
-			iconColor = tabColors[i%len(tabColors)]
-			hexaColor = tabIconColor.Alpha(e.iconAlpha)
+			iconColor = tabHexaColors(i)
+			hexaColor = tabIconColors(i).Alpha(e.iconAlpha)
 			lablColor = iconColor
 		}
 

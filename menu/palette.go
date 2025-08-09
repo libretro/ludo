@@ -31,8 +31,8 @@ var dangerTextColor video.Color
 var warningBgColor video.Color
 var warningTextColor video.Color
 
-var tabColors []video.Color
-var tabIconColor video.Color
+var tabHexaColors func(int) video.Color
+var tabIconColors func(int) video.Color
 
 func applyDefaultLightTheme() {
 	var pal = map[string]video.Color{
@@ -76,27 +76,31 @@ func applyDefaultLightTheme() {
 	warningBgColor = pal["warningbg"]
 	warningTextColor = pal["warningtext"]
 
-	tabColors = []video.Color{
-		{R: 0.760506, G: 0.4733901, B: 0.3095738, A: 1},
-		{R: 0.769222, G: 0.3621745, B: 0.3175665, A: 1},
-		{R: 0.741043, G: 0.2600054, B: 0.3504505, A: 1},
-		{R: 0.682559, G: 0.1731972, B: 0.3945049, A: 1},
-		{R: 0.600822, G: 0.1108219, B: 0.4383577, A: 1},
-		{R: 0.501656, G: 0.0998607, B: 0.4759319, A: 1},
-		{R: 0.386524, G: 0.1526102, B: 0.5050523, A: 1},
-		{R: 0.241566, G: 0.2402484, B: 0.5257464, A: 1},
-		{R: 0.000000, G: 0.3460500, B: 0.5389818, A: 1},
-		{R: 0.000000, G: 0.4611851, B: 0.5457401, A: 1},
-		{R: 0.000000, G: 0.5755208, B: 0.5463558, A: 1},
-		{R: 0.000000, G: 0.6769230, B: 0.5401942, A: 1},
-		{R: 0.000000, G: 0.7532120, B: 0.5257898, A: 1},
-		{R: 0.000000, G: 0.7945911, B: 0.5014912, A: 1},
-		{R: 0.231233, G: 0.7956520, B: 0.4665107, A: 1},
-		{R: 0.466374, G: 0.7564891, B: 0.4222447, A: 1},
-		{R: 0.613654, G: 0.6826958, B: 0.3738115, A: 1},
+	tabHexaColors = func(i int) video.Color {
+		return []video.Color{
+			{R: 0.760506, G: 0.4733901, B: 0.3095738, A: 1},
+			{R: 0.769222, G: 0.3621745, B: 0.3175665, A: 1},
+			{R: 0.741043, G: 0.2600054, B: 0.3504505, A: 1},
+			{R: 0.682559, G: 0.1731972, B: 0.3945049, A: 1},
+			{R: 0.600822, G: 0.1108219, B: 0.4383577, A: 1},
+			{R: 0.501656, G: 0.0998607, B: 0.4759319, A: 1},
+			{R: 0.386524, G: 0.1526102, B: 0.5050523, A: 1},
+			{R: 0.241566, G: 0.2402484, B: 0.5257464, A: 1},
+			{R: 0.000000, G: 0.3460500, B: 0.5389818, A: 1},
+			{R: 0.000000, G: 0.4611851, B: 0.5457401, A: 1},
+			{R: 0.000000, G: 0.5755208, B: 0.5463558, A: 1},
+			{R: 0.000000, G: 0.6769230, B: 0.5401942, A: 1},
+			{R: 0.000000, G: 0.7532120, B: 0.5257898, A: 1},
+			{R: 0.000000, G: 0.7945911, B: 0.5014912, A: 1},
+			{R: 0.231233, G: 0.7956520, B: 0.4665107, A: 1},
+			{R: 0.466374, G: 0.7564891, B: 0.4222447, A: 1},
+			{R: 0.613654, G: 0.6826958, B: 0.3738115, A: 1},
+		}[i%16]
 	}
 
-	tabIconColor = pal["background"]
+	tabIconColors = func(i int) video.Color {
+		return pal["background"]
+	}
 }
 
 func applyDefaultDarkTheme() {
@@ -141,27 +145,31 @@ func applyDefaultDarkTheme() {
 	warningBgColor = pal["warningbg"]
 	warningTextColor = pal["warningtext"]
 
-	tabColors = []video.Color{
-		{R: 0.760506, G: 0.4733901, B: 0.3095738, A: 1},
-		{R: 0.769222, G: 0.3621745, B: 0.3175665, A: 1},
-		{R: 0.741043, G: 0.2600054, B: 0.3504505, A: 1},
-		{R: 0.682559, G: 0.1731972, B: 0.3945049, A: 1},
-		{R: 0.600822, G: 0.1108219, B: 0.4383577, A: 1},
-		{R: 0.501656, G: 0.0998607, B: 0.4759319, A: 1},
-		{R: 0.386524, G: 0.1526102, B: 0.5050523, A: 1},
-		{R: 0.241566, G: 0.2402484, B: 0.5257464, A: 1},
-		{R: 0.000000, G: 0.3460500, B: 0.5389818, A: 1},
-		{R: 0.000000, G: 0.4611851, B: 0.5457401, A: 1},
-		{R: 0.000000, G: 0.5755208, B: 0.5463558, A: 1},
-		{R: 0.000000, G: 0.6769230, B: 0.5401942, A: 1},
-		{R: 0.000000, G: 0.7532120, B: 0.5257898, A: 1},
-		{R: 0.000000, G: 0.7945911, B: 0.5014912, A: 1},
-		{R: 0.231233, G: 0.7956520, B: 0.4665107, A: 1},
-		{R: 0.466374, G: 0.7564891, B: 0.4222447, A: 1},
-		{R: 0.613654, G: 0.6826958, B: 0.3738115, A: 1},
+	tabHexaColors = func(i int) video.Color {
+		return []video.Color{
+			{R: 0.760506, G: 0.4733901, B: 0.3095738, A: 1},
+			{R: 0.769222, G: 0.3621745, B: 0.3175665, A: 1},
+			{R: 0.741043, G: 0.2600054, B: 0.3504505, A: 1},
+			{R: 0.682559, G: 0.1731972, B: 0.3945049, A: 1},
+			{R: 0.600822, G: 0.1108219, B: 0.4383577, A: 1},
+			{R: 0.501656, G: 0.0998607, B: 0.4759319, A: 1},
+			{R: 0.386524, G: 0.1526102, B: 0.5050523, A: 1},
+			{R: 0.241566, G: 0.2402484, B: 0.5257464, A: 1},
+			{R: 0.000000, G: 0.3460500, B: 0.5389818, A: 1},
+			{R: 0.000000, G: 0.4611851, B: 0.5457401, A: 1},
+			{R: 0.000000, G: 0.5755208, B: 0.5463558, A: 1},
+			{R: 0.000000, G: 0.6769230, B: 0.5401942, A: 1},
+			{R: 0.000000, G: 0.7532120, B: 0.5257898, A: 1},
+			{R: 0.000000, G: 0.7945911, B: 0.5014912, A: 1},
+			{R: 0.231233, G: 0.7956520, B: 0.4665107, A: 1},
+			{R: 0.466374, G: 0.7564891, B: 0.4222447, A: 1},
+			{R: 0.613654, G: 0.6826958, B: 0.3738115, A: 1},
+		}[i%16]
 	}
 
-	tabIconColor = pal["darkergrey"]
+	tabIconColors = func(i int) video.Color {
+		return pal["darkergrey"]
+	}
 }
 
 func applyDraculaTheme() {
@@ -201,16 +209,20 @@ func applyDraculaTheme() {
 	warningBgColor = dracula["selection"]
 	warningTextColor = dracula["orange"]
 
-	tabColors = []video.Color{
-		dracula["purple"],
-		dracula["red"],
-		dracula["pink"],
-		dracula["orange"],
-		dracula["green"],
-		dracula["cyan"],
+	tabHexaColors = func(i int) video.Color {
+		return []video.Color{
+			dracula["purple"],
+			dracula["red"],
+			dracula["pink"],
+			dracula["orange"],
+			dracula["green"],
+			dracula["cyan"],
+		}[i%6]
 	}
 
-	tabIconColor = dracula["selection"]
+	tabIconColors = func(i int) video.Color {
+		return dracula["selection"]
+	}
 }
 
 // rosePine color palette
@@ -252,16 +264,20 @@ func applyRosePineTheme() {
 	warningBgColor = rosePine["gold"]
 	warningTextColor = rosePine["base"]
 
-	tabColors = []video.Color{
-		rosePine["iris"],
-		rosePine["love"],
-		rosePine["rose"],
-		rosePine["gold"],
-		rosePine["foam"],
-		rosePine["pine"],
+	tabHexaColors = func(i int) video.Color {
+		return[]video.Color{
+			rosePine["iris"],
+			rosePine["love"],
+			rosePine["rose"],
+			rosePine["gold"],
+			rosePine["foam"],
+			rosePine["pine"],
+		}[i%6]
 	}
 
-	tabIconColor = rosePine["overlay"]
+	tabIconColors = func(i int) video.Color {
+		return rosePine["overlay"]
+	}
 }
 
 // rosePineDawn color palette
@@ -303,16 +319,20 @@ func applyRosePineDawnTheme() {
 	warningBgColor = rosePineDawn["gold"]
 	warningTextColor = rosePineDawn["base"]
 
-	tabColors = []video.Color{
-		rosePineDawn["iris"],
-		rosePineDawn["love"],
-		rosePineDawn["rose"],
-		rosePineDawn["gold"],
-		rosePineDawn["foam"],
-		rosePineDawn["pine"],
+	tabHexaColors = func(i int) video.Color {
+		return []video.Color{
+			rosePineDawn["iris"],
+			rosePineDawn["love"],
+			rosePineDawn["rose"],
+			rosePineDawn["gold"],
+			rosePineDawn["foam"],
+			rosePineDawn["pine"],
+		}[i%6]
 	}
 
-	tabIconColor = rosePineDawn["base"]
+	tabIconColors = func(i int) video.Color {
+		return rosePineDawn["base"]
+	}
 }
 
 // UpdatePalette updates the color palette to honor the dark theme
