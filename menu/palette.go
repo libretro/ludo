@@ -135,7 +135,7 @@ func applyDefaultDarkTheme() {
 		return video.Color{R: float32(cf.R), G: float32(cf.B), B: float32(cf.G), A: 1}
 	}
 
-	tabIconColors = func(i int) video.Color {
+	tabIconColors = func(_ int) video.Color {
 		return pal["darkergrey"]
 	}
 }
@@ -188,7 +188,7 @@ func applyDraculaTheme() {
 		}[i%6]
 	}
 
-	tabIconColors = func(i int) video.Color {
+	tabIconColors = func(_ int) video.Color {
 		return dracula["selection"]
 	}
 }
@@ -243,7 +243,7 @@ func applyRosePineTheme() {
 		}[i%6]
 	}
 
-	tabIconColors = func(i int) video.Color {
+	tabIconColors = func(_ int) video.Color {
 		return rosePine["overlay"]
 	}
 }
@@ -298,7 +298,7 @@ func applyRosePineDawnTheme() {
 		}[i%6]
 	}
 
-	tabIconColors = func(i int) video.Color {
+	tabIconColors = func(_ int) video.Color {
 		return rosePineDawn["base"]
 	}
 }
