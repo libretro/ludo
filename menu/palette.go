@@ -136,6 +136,57 @@ func applyDefaultDarkTheme() {
 	}
 }
 
+func applyAlucardTheme() {
+	var dracula = map[string]video.Color{
+		"background": video.ColorFromHex("#F5F5F5"),
+		"foreground": video.ColorFromHex("#1F1F1F"),
+		"selection":  video.ColorFromHex("#EBEBEF"),
+		"comment":    video.ColorFromHex("#635D97"),
+		"red":        video.ColorFromHex("#CB3A2A"),
+		"orange":     video.ColorFromHex("#A34D13"),
+		"yellow":     video.ColorFromHex("#836E15"),
+		"green":      video.ColorFromHex("#16710B"),
+		"purple":     video.ColorFromHex("#635D97"),
+		"cyan":       video.ColorFromHex("#036A96"),
+		"pink":       video.ColorFromHex("#A3134D"),
+	}
+
+	bgColor = dracula["background"]
+	cursorBgColor = dracula["selection"]
+	textColor = dracula["foreground"]
+	mutedTextColor = dracula["purple"]
+	textShadowColor = dracula["selection"]
+	sepColor = dracula["selection"]
+	hintTextColor = dracula["foreground"]
+	hintBgColor = dracula["background"]
+	titleTextColor = dracula["purple"]
+	dialogTextColor = dracula["background"]
+
+	infoBgColor = dracula["selection"]
+	infoTextColor = dracula["purple"]
+	successBgColor = dracula["selection"]
+	successTextColor = dracula["green"]
+	dangerBgColor = dracula["selection"]
+	dangerTextColor = dracula["red"]
+	warningBgColor = dracula["selection"]
+	warningTextColor = dracula["orange"]
+
+	tabHexaColors = func(i int) video.Color {
+		return []video.Color{
+			dracula["purple"],
+			dracula["red"],
+			dracula["pink"],
+			dracula["orange"],
+			dracula["green"],
+			dracula["cyan"],
+		}[i%6]
+	}
+
+	tabIconColors = func(_ int) video.Color {
+		return dracula["selection"]
+	}
+}
+
 func applyDraculaTheme() {
 	var dracula = map[string]video.Color{
 		"background": video.ColorFromHex("#282A36"),
@@ -304,7 +355,7 @@ func (m *Menu) UpdatePalette() {
 	} else {
 		switch settings.Current.VideoTheme {
 			case "Rose Pine": applyRosePineDawnTheme()
-			case "Dracula": applyDraculaTheme()
+			case "Dracula": applyAlucardTheme() // TODO: Implement the real Alucard theme
 			default: applyDefaultLightTheme()
 		}
 	}
