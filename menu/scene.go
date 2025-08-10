@@ -153,10 +153,10 @@ func genericDrawCursor(list *entry) {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawImage(menu.icons["arrow"],
 		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1, 0, cursorBg.Alpha(list.cursor.alpha))
+		70*menu.ratio, 70*menu.ratio, 1, 0, cursorBgColor.Alpha(list.cursor.alpha))
 	menu.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-630*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
+		float32(w)-630*menu.ratio, 100*menu.ratio, 1, cursorBgColor.Alpha(list.cursor.alpha))
 }
 
 // thumbnailDrawCursor draws the blinking rectangular background of the active
@@ -165,10 +165,10 @@ func thumbnailDrawCursor(list *entry) {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawImage(menu.icons["arrow"],
 		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		100*menu.ratio, 100*menu.ratio, 1, 0, cursorBg.Alpha(list.cursor.alpha))
+		100*menu.ratio, 100*menu.ratio, 1, 0, cursorBgColor.Alpha(list.cursor.alpha))
 	menu.DrawRect(
 		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
-		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, cursorBg.Alpha(list.cursor.alpha))
+		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, cursorBgColor.Alpha(list.cursor.alpha))
 }
 
 // genericRender renders a vertical list of menu entries

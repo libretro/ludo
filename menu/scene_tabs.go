@@ -16,8 +16,6 @@ import (
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"github.com/libretro/ludo/video"
-	colorful "github.com/lucasb-eyer/go-colorful"
 
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -286,9 +284,14 @@ func (tabs sceneTabs) render() {
 
 	stackWidth := 710 * menu.ratio
 	for i, e := range tabs.children {
-
-		cf := colorful.Hcl(float64(i)*20, 0.5, 0.5)
-		c := video.Color{R: float32(cf.R), G: float32(cf.B), B: float32(cf.G), A: e.iconAlpha}
+		iconColor := tabIconColors(i).Alpha(e.iconAlpha)
+		hexaColor := tabHexaColors(i).Alpha(e.iconAlpha)
+		lablColor :=  hexaColor
+		if settings.Current.VideoDarkMode || state.CoreRunning {
+			iconColor = tabHexaColors(i).Alpha(e.iconAlpha)
+			hexaColor = tabIconColors(i).Alpha(e.iconAlpha)
+			lablColor = iconColor
+		}
 
 		x := -menu.scroll*menu.ratio + stackWidth + e.width/2*menu.ratio
 
@@ -298,22 +301,22 @@ func (tabs sceneTabs) render() {
 			lw := menu.Font.Width(0.5*menu.ratio, e.label)
 			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
 			menu.Font.Printf(x-lw/2+1*menu.ratio, float32(int(float32(h)/2+(250+1)*menu.ratio)), 0.5*menu.ratio, e.label)
-			menu.Font.SetColor(c.Alpha(e.labelAlpha))
+			menu.Font.SetColor(lablColor.Alpha(e.labelAlpha))
 			menu.Font.Printf(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), 0.5*menu.ratio, e.label)
 			lw = menu.Font.Width(0.4*menu.ratio, e.subLabel)
 			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
 			menu.Font.Printf(x-lw/2+1*menu.ratio, float32(int(float32(h)/2+(330+1)*menu.ratio)), 0.4*menu.ratio, e.subLabel)
-			menu.Font.SetColor(c.Alpha(e.labelAlpha))
+			menu.Font.SetColor(lablColor.Alpha(e.labelAlpha))
 			menu.Font.Printf(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), 0.4*menu.ratio, e.subLabel)
 		}
 
 		menu.DrawImage(menu.icons["hexagon"],
 			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio,
-			440*menu.ratio, 440*menu.ratio, e.scale, 0, c)
+			440*menu.ratio, 440*menu.ratio, e.scale, 0, hexaColor)
 
 		menu.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, 0, white.Alpha(e.iconAlpha))
+			256*menu.ratio, 256*menu.ratio, e.scale, 0, iconColor)
 	}
 }
 

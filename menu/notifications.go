@@ -5,19 +5,8 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-var severityFgColor = map[ntf.Severity]video.Color{
-	ntf.Error:   lightDanger,
-	ntf.Warning: lightWarning,
-	ntf.Success: lightSuccess,
-	ntf.Info:    lightInfo,
-}
-
-var severityBgColor = map[ntf.Severity]video.Color{
-	ntf.Error:   darkDanger,
-	ntf.Warning: darkWarning,
-	ntf.Success: darkSuccess,
-	ntf.Info:    darkInfo,
-}
+var severityFgColor map[ntf.Severity]video.Color
+var severityBgColor map[ntf.Severity]video.Color
 
 // RenderNotifications draws the list of notification messages on the viewport
 func (m *Menu) RenderNotifications() {
