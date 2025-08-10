@@ -11,8 +11,8 @@ import (
 
 // Global variables for the menu theme
 
-var white video.Color
-var black video.Color
+var white = video.ColorFromHex("#ffffff")
+var black = video.ColorFromHex("#000000")
 var bgColor video.Color
 var cursorBgColor video.Color
 var textColor video.Color
@@ -56,8 +56,6 @@ func applyDefaultLightTheme() {
 		"orange":      video.ColorFromHex("#c1784e"),
 	}
 
-	white = pal["background"]
-	black = pal["foreground"]
 	bgColor = pal["background"]
 	cursorBgColor = pal["selection"]
 	textColor = pal["foreground"]
@@ -108,8 +106,6 @@ func applyDefaultDarkTheme() {
 		"orange":      video.ColorFromHex("#c1784e"),
 	}
 
-	white = pal["foreground"]
-	black = pal["background"]
 	bgColor = pal["background"]
 	cursorBgColor = pal["darkergrey"]
 	textColor = pal["foreground"]
@@ -155,8 +151,6 @@ func applyDraculaTheme() {
 		"pink":       video.ColorFromHex("#FF79C6"),
 	}
 
-	white = dracula["foreground"]
-	black = dracula["background"]
 	bgColor = dracula["background"]
 	cursorBgColor = dracula["selection"]
 	textColor = dracula["foreground"]
@@ -210,8 +204,6 @@ func applyRosePineTheme() {
 		"highlightMed": video.ColorFromHex("#403d52"),
 	}
 
-	white = rosePine["text"]
-	black = rosePine["base"]
 	bgColor = rosePine["base"]
 	cursorBgColor = rosePine["overlay"]
 	textColor = rosePine["text"]
@@ -265,8 +257,6 @@ func applyRosePineDawnTheme() {
 		"highlightMed": video.ColorFromHex("#dfdad9"),
 	}
 
-	white = rosePineDawn["base"]
-	black = rosePineDawn["text"]
 	bgColor = rosePineDawn["base"]
 	cursorBgColor = rosePineDawn["overlay"]
 	textColor = rosePineDawn["text"]
