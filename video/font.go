@@ -161,10 +161,16 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	for r := rune(32); r <= 126; r++ {
 		lineHeight = increaseLineHeight(face, r, lineHeight)
 	}
+	for _, r := range []rune{'◀', '▶', '【', '】'} {
+		lineHeight = increaseLineHeight(face, r, lineHeight)
+	}
 	for r := rune(0x00A0); r <= 0x017F; r++ {
 		lineHeight = increaseLineHeight(face, r, lineHeight)
 	}
 	for r := rune(0x3040); r <= 0x30FF; r++ {
+		lineHeight = increaseLineHeight(face, r, lineHeight)
+	}
+	for r := rune(0x4E00); r <= 0x9FAF; r++ {
 		lineHeight = increaseLineHeight(face, r, lineHeight)
 	}
 
@@ -174,7 +180,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	atlas := image.NewRGBA(rect)
 	draw.Draw(atlas, atlas.Bounds(), bg, image.Point{}, draw.Src)
 
-	margin := 4
+	margin := 2
 	x := margin
 	y := margin
 
