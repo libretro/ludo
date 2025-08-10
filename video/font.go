@@ -64,7 +64,7 @@ func increaseLineHeight(face font.Face, ch rune, lineHeight float32) float32 {
 	return lineHeight
 }
 
-func appendGlyph(face font.Face, ttf *truetype.Font, ch rune, x, y *int, lineHeight, atlasWidth float32, rgba *image.RGBA, fg *image.Uniform, scale int32, margin int) (*glyph, error) {
+func appendGlyph(face font.Face, ttf *truetype.Font, ch rune, x, y *int, lineHeight, atlasWidth float32, atlas *image.RGBA, fg *image.Uniform, scale int32, margin int) (*glyph, error) {
 	char := new(glyph)
 
 	gBnd, gAdv, ok := face.GlyphBounds(ch)
@@ -109,7 +109,7 @@ func appendGlyph(face font.Face, ttf *truetype.Font, ch rune, x, y *int, lineHei
 	c.SetFont(ttf)
 	c.SetFontSize(float64(scale))
 	c.SetClip(clip)
-	c.SetDst(rgba)
+	c.SetDst(atlas)
 	c.SetSrc(fg)
 	c.SetHinting(font.HintingFull)
 
@@ -156,10 +156,10 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	})
 
 	var lineHeight float32
-	f.atlasWidth = 2048
-	f.atlasHeight = 2048
-	for ch := rune(32); ch <= 126; ch++ {
-		lineHeight = increaseLineHeight(face, ch, lineHeight)
+	f.atlasWidth = 4096
+	f.atlasHeight = 4096
+	for r := rune(32); r <= 126; r++ {
+		lineHeight = increaseLineHeight(face, r, lineHeight)
 	}
 	for r := rune(0x00A0); r <= 0x017F; r++ {
 		lineHeight = increaseLineHeight(face, r, lineHeight)
@@ -171,8 +171,8 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	// Create image to draw glyph
 	fg, bg := image.White, image.Black
 	rect := image.Rect(0, 0, int(f.atlasWidth), int(f.atlasHeight))
-	rgba := image.NewRGBA(rect)
-	draw.Draw(rgba, rgba.Bounds(), bg, image.Point{}, draw.Src)
+	atlas := image.NewRGBA(rect)
+	draw.Draw(atlas, atlas.Bounds(), bg, image.Point{}, draw.Src)
 
 	margin := 4
 	x := margin
@@ -180,21 +180,35 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 
 	// Latin
 	for r := rune(32); r <= 126; r++ {
-		f.glyphs[r], err = appendGlyph(face, ttf, r, &x, &y, lineHeight, f.atlasWidth, rgba, fg, scale, margin)
+		f.glyphs[r], err = appendGlyph(face, ttf, r, &x, &y, lineHeight, f.atlasWidth, atlas, fg, scale, margin)
+		if err != nil {
+			fmt.Printf("error appending glyph %c: %v\n", r, err)
+		}
+	}
+	// Some symbols
+	for _, r := range []rune{'◀', '▶', '【', '】'} {
+		f.glyphs[r], err = appendGlyph(face, ttf, r, &x, &y, lineHeight, f.atlasWidth, atlas, fg, scale, margin)
 		if err != nil {
 			fmt.Printf("error appending glyph %c: %v\n", r, err)
 		}
 	}
 	// Extended Latin
 	for r := rune(0x00A0); r <= 0x017F; r++ {
-		f.glyphs[r], err = appendGlyph(face, ttf, r, &x, &y, lineHeight, f.atlasWidth, rgba, fg, scale, margin)
+		f.glyphs[r], err = appendGlyph(face, ttf, r, &x, &y, lineHeight, f.atlasWidth, atlas, fg, scale, margin)
 		if err != nil {
 			fmt.Printf("error appending glyph %c: %v\n", r, err)
 		}
 	}
 	// Japanese Hiragana and Katakana
 	for r := rune(0x3040); r <= 0x30FF; r++ {
-		f.glyphs[r], err = appendGlyph(face, ttf, r, &x, &y, lineHeight, f.atlasWidth, rgba, fg, scale, margin)
+		f.glyphs[r], err = appendGlyph(face, ttf, r, &x, &y, lineHeight, f.atlasWidth, atlas, fg, scale, margin)
+		if err != nil {
+			fmt.Printf("error appending glyph %c: %v\n", r, err)
+		}
+	}
+	// Japanese Kanji
+	for r := rune(0x4E00); r <= 0x9FAF; r++ {
+		f.glyphs[r], err = appendGlyph(face, ttf, r, &x, &y, lineHeight, f.atlasWidth, atlas, fg, scale, margin)
 		if err != nil {
 			fmt.Printf("error appending glyph %c: %v\n", r, err)
 		}
@@ -207,7 +221,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(rgba.Rect.Dx()), int32(rgba.Rect.Dy()), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(atlas.Rect.Dx()), int32(atlas.Rect.Dy()), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(atlas.Pix))
 
 	gl.GenerateMipmap(gl.TEXTURE_2D)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
