@@ -204,7 +204,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		settings.Save()
 	},
 	"VideoTheme": func(f *structs.Field, direction int) {
-		themes := []string{"Default", "Rose Pine", "Dracula"}
+		themes := []string{"Default", "Rose Pine", "Dracula", "Catppuccin"}
 		v := f.Value().(string)
 		i := utils.IndexOfString(v, themes)
 		i += direction
