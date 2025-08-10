@@ -40,6 +40,13 @@ func ColorFromHex(hex string) Color {
 	}
 }
 
+func ColorToHex(c Color) string {
+	r := uint8(c.R * 255)
+	g := uint8(c.G * 255)
+	b := uint8(c.B * 255)
+	return fmt.Sprintf("#%02x%02x%02x", r, g, b)
+}
+
 // XYWHTo4points converts coordinates from (x, y, width, height) to (x1, y1, x2, y2, x3, y3, x4, y4)
 func XYWHTo4points(x, y, w, h, fbh float32) (x1, y1, x2, y2, x3, y3, x4, y4 float32) {
 	x1 = x
