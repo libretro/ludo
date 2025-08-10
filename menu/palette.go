@@ -239,8 +239,8 @@ func applyDraculaTheme() {
 }
 
 // Catpuccin color palette
-func applyCatpuccinTheme() {
-	var catppuccin = map[string]video.Color{
+func applyCatpuccinMochaTheme() {
+	var mocha = map[string]video.Color{
 		"rosewater": video.ColorFromHex("#f5e0dc"),
 		"flamingo":  video.ColorFromHex("#f2cdcd"),
 		"pink":      video.ColorFromHex("#f5c2e7"),
@@ -269,47 +269,121 @@ func applyCatpuccinTheme() {
 		"crust":     video.ColorFromHex("#11111b"),
 	}
 
-	bgColor = catppuccin["base"]
-	cursorBgColor = catppuccin["surface0"]
-	textColor = catppuccin["text"]
-	mutedTextColor = catppuccin["subtext0"]
-	textShadowColor = catppuccin["surface0"]
-	sepColor = catppuccin["surface1"]
-	hintTextColor = catppuccin["text"]
-	hintBgColor = catppuccin["base"]
-	titleTextColor = catppuccin["mauve"]
-	dialogTextColor = catppuccin["base"]
+	bgColor = mocha["base"]
+	cursorBgColor = mocha["surface0"]
+	textColor = mocha["text"]
+	mutedTextColor = mocha["subtext0"]
+	textShadowColor = mocha["surface0"]
+	sepColor = mocha["surface1"]
+	hintTextColor = mocha["text"]
+	hintBgColor = mocha["base"]
+	titleTextColor = mocha["mauve"]
+	dialogTextColor = mocha["base"]
 
-	infoBgColor = catppuccin["sky"]
-	infoTextColor = catppuccin["base"]
-	successBgColor = catppuccin["green"]
-	successTextColor = catppuccin["base"]
-	dangerBgColor = catppuccin["red"]
-	dangerTextColor = catppuccin["base"]
-	warningBgColor = catppuccin["yellow"]
-	warningTextColor = catppuccin["base"]
+	infoBgColor = mocha["sky"]
+	infoTextColor = mocha["base"]
+	successBgColor = mocha["green"]
+	successTextColor = mocha["base"]
+	dangerBgColor = mocha["red"]
+	dangerTextColor = mocha["base"]
+	warningBgColor = mocha["yellow"]
+	warningTextColor = mocha["base"]
 
 	tabHexaColors = func(i int) video.Color {
 		return []video.Color{
-			catppuccin["rosewater"],
-			catppuccin["flamingo"],
-			catppuccin["pink"],
-			catppuccin["mauve"],
-			catppuccin["red"],
-			catppuccin["maroon"],
-			catppuccin["peach"],
-			catppuccin["yellow"],
-			catppuccin["green"],
-			catppuccin["teal"],
-			catppuccin["sky"],
-			catppuccin["sapphire"],
-			catppuccin["blue"],
-			catppuccin["lavender"],
-		}[i%6]
+			mocha["mauve"],
+			mocha["blue"],
+			mocha["lavender"],
+			mocha["sky"],
+			mocha["sapphire"],
+			mocha["teal"],
+			mocha["green"],
+			mocha["yellow"],
+			mocha["peach"],
+			mocha["red"],
+			mocha["maroon"],
+			mocha["flamingo"],
+			mocha["pink"],
+			mocha["rosewater"],
+		}[i%13]
 	}
 
 	tabIconColors = func(_ int) video.Color {
-		return catppuccin["surface0"]
+		return mocha["surface0"]
+	}
+}
+
+// Catppuccin Latte color palette
+func applyCatpuccinLatteTheme() {
+	var latte = map[string]video.Color{
+		"rosewater": video.ColorFromHex("#dc8a78"),
+		"flamingo":  video.ColorFromHex("#dd7878"),
+		"pink":      video.ColorFromHex("#ea76cb"),
+		"mauve":     video.ColorFromHex("#8839ef"),
+		"red":       video.ColorFromHex("#d20f39"),
+		"maroon":    video.ColorFromHex("#e64553"),
+		"peach":     video.ColorFromHex("#fe640b"),
+		"yellow":    video.ColorFromHex("#df8e1d"),
+		"green":     video.ColorFromHex("#40a02b"),
+		"teal":      video.ColorFromHex("#179299"),
+		"sky":       video.ColorFromHex("#04a5e5"),
+		"sapphire":  video.ColorFromHex("#209fb5"),
+		"blue":      video.ColorFromHex("#1e66f5"),
+		"lavender":  video.ColorFromHex("#7287fd"),
+		"text":      video.ColorFromHex("#4c4f69"),
+		"subtext1":  video.ColorFromHex("#5c5f77"),
+		"subtext0":  video.ColorFromHex("#6c6f85"),
+		"overlay2":  video.ColorFromHex("#7c7f93"),
+		"overlay1":  video.ColorFromHex("#8c8fa1"),
+		"overlay0":  video.ColorFromHex("#9ca0b0"),
+		"surface2":  video.ColorFromHex("#acb0be"),
+		"surface1":  video.ColorFromHex("#bcc0cc"),
+		"surface0":  video.ColorFromHex("#ccd0da"),
+		"base":      video.ColorFromHex("#eff1f5"),
+		"mantle":    video.ColorFromHex("#ebe9f1"),
+		"crust":     video.ColorFromHex("#f5f3f5"),
+	}
+
+	bgColor = latte["base"]
+	cursorBgColor = latte["mantle"]
+	textColor = latte["text"]
+	mutedTextColor = latte["subtext0"]
+	textShadowColor = latte["surface0"]
+	sepColor = latte["surface0"]
+	hintTextColor = latte["text"]
+	hintBgColor = latte["base"]
+	titleTextColor = latte["mauve"]
+	dialogTextColor = latte["base"]
+	infoBgColor = latte["sky"]
+	infoTextColor = latte["base"]
+	successBgColor = latte["green"]
+	successTextColor = latte["base"]
+	dangerBgColor = latte["red"]
+	dangerTextColor = latte["base"]
+	warningBgColor = latte["yellow"]
+	warningTextColor = latte["base"]
+
+	tabHexaColors = func(i int) video.Color {
+		return []video.Color{
+			latte["mauve"],
+			latte["blue"],
+			latte["lavender"],
+			latte["sky"],
+			latte["sapphire"],
+			latte["teal"],
+			latte["green"],
+			latte["yellow"],
+			latte["peach"],
+			latte["red"],
+			latte["maroon"],
+			latte["flamingo"],
+			latte["pink"],
+			latte["rosewater"],
+		}[i%13]
+	}
+
+	tabIconColors = func(_ int) video.Color {
+		return latte["base"]
 	}
 }
 
@@ -425,14 +499,14 @@ func (m *Menu) UpdatePalette() {
 		switch settings.Current.VideoTheme {
 			case "Rose Pine": applyRosePineTheme()
 			case "Dracula": applyDraculaTheme()
-			case "Catppuccin": applyCatpuccinTheme()
+			case "Catppuccin": applyCatpuccinMochaTheme()
 			default: applyDefaultDarkTheme()
 		}
 	} else {
 		switch settings.Current.VideoTheme {
 			case "Rose Pine": applyRosePineDawnTheme()
-			case "Dracula": applyAlucardTheme() // TODO: Implement the real Alucard theme
-			case "Catppuccin": applyCatpuccinTheme()
+			case "Dracula": applyAlucardTheme() // Alucard is a light variant of Dracula
+			case "Catppuccin": applyCatpuccinLatteTheme()
 			default: applyDefaultLightTheme()
 		}
 	}
