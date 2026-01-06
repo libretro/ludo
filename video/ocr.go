@@ -33,6 +33,7 @@ func (video *Video) OCRCurrentFrame() error {
 			log.Printf("[OCR] failed to extract text: %v", err)
 			return
 		}
+		fmt.Println(text)
 		video.SetSubtitle(text, 6*time.Second)
 	}(processed)
 
