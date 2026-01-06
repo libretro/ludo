@@ -28,7 +28,7 @@ func initClient() *gosseract.Client {
 	}
 
 	client = gosseract.NewClient()
-	client.SetLanguage("jpn", "eng")
+	client.SetLanguage("jpn")
 	return client
 }
 

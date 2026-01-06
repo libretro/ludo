@@ -42,8 +42,12 @@ func (video *Video) RenderSubtitle() {
 	}
 
 	topY := baseY - lineHeight*float32(len(lines)-1)
-	bgX := float32(fbw)/2 - maxWidth/2 - padding
 	bgW := maxWidth + padding*2
+	minBgW := float32(fbw) * 0.75
+	if bgW < minBgW {
+		bgW = minBgW
+	}
+	bgX := (float32(fbw) - bgW) / 2
 	bgH := lineHeight*float32(len(lines)) + padding*2
 	bgY := topY - padding
 
