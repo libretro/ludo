@@ -433,6 +433,30 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 	return nil
 }
 
+// LineHeight returns an approximate line height for the current font at a given scale.
+func (f *Font) LineHeight(scale float32) float32 {
+	var maxH float32
+	for _, g := range f.glyphs {
+		h := float32(g.height+2) * scale
+		if h > maxH {
+			maxH = h
+		}
+	}
+	return maxH
+}
+
+// Ascent returns the maximum ascent among loaded glyphs at a given scale.
+func (f *Font) Ascent(scale float32) float32 {
+	var maxA float32
+	for _, g := range f.glyphs {
+		a := float32(g.height-g.bearingV) * scale
+		if a > maxA {
+			maxA = a
+		}
+	}
+	return maxA
+}
+
 // Width returns the width of a piece of text in pixels
 func (f *Font) Width(scale float32, fs string, argv ...interface{}) float32 {
 	var width float32

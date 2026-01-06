@@ -1,18 +1,24 @@
 package video
 
 import (
+	"compress/gzip"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/ikawaha/kagome-dict/ipa"
 	"github.com/ikawaha/kagome/v2/tokenizer"
+	"github.com/yomidevs/jmdict-go"
 )
 
 var (
 	subtitleTokOnce sync.Once
 	subtitleTok     *tokenizer.Tokenizer
+	jmdictOnce      sync.Once
+	jmdictGlosses   map[string][]string
 )
 
 type subtitleToken struct {
@@ -21,6 +27,7 @@ type subtitleToken struct {
 	reading string
 	pron    string
 	base    string
+	glosses []string
 }
 
 func ensureSubtitleTokenizer() {
@@ -79,15 +86,112 @@ func tokenizeLine(line string) []subtitleToken {
 		if len(feats) > 8 {
 			pron = feats[8]
 		}
+		glosses := lookupGlosses(base, reading)
 		res = append(res, subtitleToken{
 			text:    surface,
 			color:   posColor(pos),
 			base:    base,
 			reading: reading,
 			pron:    pron,
+			glosses: glosses,
 		})
 	}
 	return res
+}
+
+func lookupGlosses(base, reading string) []string {
+	jmdictOnce.Do(loadJMDict)
+	if jmdictGlosses == nil {
+		return nil
+	}
+	if g, ok := jmdictGlosses[base]; ok {
+		return g
+	}
+	if reading != "" {
+		if g, ok := jmdictGlosses[reading]; ok {
+			return g
+		}
+	}
+	return nil
+}
+
+func loadJMDict() {
+	path := strings.TrimSpace(os.Getenv("JMDICT_PATH"))
+	if path == "" {
+		path = "JMdict_e.gz"
+	}
+
+	fd, err := os.Open(path)
+	if err != nil {
+		fmt.Printf("[subtitle tooltip] failed to open JMDict: %v\n", err)
+		return
+	}
+	defer fd.Close()
+
+	var reader = io.Reader(fd)
+	if strings.HasSuffix(strings.ToLower(path), ".gz") {
+		gr, err := gzip.NewReader(fd)
+		if err != nil {
+			fmt.Printf("[subtitle tooltip] failed to decompress JMDict: %v\n", err)
+			return
+		}
+		defer gr.Close()
+		reader = gr
+	}
+
+	dict, _, err := jmdict.LoadJmdict(reader)
+	if err != nil {
+		fmt.Printf("[subtitle tooltip] failed to load JMDict: %v\n", err)
+		return
+	}
+
+	glosses := make(map[string][]string)
+	for _, entry := range dict.Entries {
+		forms := make([]string, 0, len(entry.Kanji)+len(entry.Readings))
+		for _, k := range entry.Kanji {
+			if k.Expression != "" {
+				forms = append(forms, k.Expression)
+			}
+		}
+		for _, r := range entry.Readings {
+			if r.Reading != "" {
+				forms = append(forms, r.Reading)
+			}
+		}
+
+		eng := firstEnglishGlosses(entry.Sense)
+		if len(eng) == 0 {
+			continue
+		}
+
+		for _, f := range forms {
+			if _, exists := glosses[f]; !exists {
+				glosses[f] = eng
+			}
+		}
+	}
+
+	jmdictGlosses = glosses
+	fmt.Printf("[subtitle tooltip] loaded JMDict with %d entries\n", len(jmdictGlosses))
+}
+
+func firstEnglishGlosses(senses []jmdict.JmdictSense) []string {
+	for _, s := range senses {
+		line := make([]string, 0, len(s.Glossary))
+		for _, g := range s.Glossary {
+			lang := "eng"
+			if g.Language != nil {
+				lang = *g.Language
+			}
+			if lang == "" || lang == "eng" {
+				line = append(line, g.Content)
+			}
+		}
+		if len(line) > 0 {
+			return line
+		}
+	}
+	return nil
 }
 
 func posColor(pos string) Color {
@@ -114,20 +218,35 @@ func posColor(pos string) Color {
 func lineWidth(video *Video, line []subtitleToken, scale float32) float32 {
 	var w float32
 	for _, tok := range line {
-		w += video.Font.Width(scale, tok.text)
+		w += video.Font.Width(scale, "%s", tok.text)
 	}
 	return w
 }
 
-func (video *Video) drawTooltip(reading string, x, y, w, ratio, fbw float32) {
-	if reading == "" {
+func (video *Video) drawTooltip(tok subtitleToken, x, y, w, ratio, fbw float32) {
+	if tok.reading == "" && len(tok.glosses) == 0 {
 		return
+	}
+
+	lines := []string{}
+	if tok.reading != "" {
+		lines = append(lines, tok.reading)
+	}
+	if len(tok.glosses) > 0 {
+		lines = append(lines, tok.glosses[0])
 	}
 
 	tipScale := 0.4 * ratio
 	tipPadding := 12 * ratio
-	tipW := video.Font.Width(tipScale, reading) + tipPadding*2
-	tipH := 48 * ratio
+	lineHeight := 38 * ratio
+	var tipW float32
+	for _, ln := range lines {
+		if w := video.Font.Width(tipScale, "%s", ln); w > tipW {
+			tipW = w
+		}
+	}
+	tipW += tipPadding * 2
+	tipH := float32(len(lines))*lineHeight + tipPadding*2
 	tipX := x + (w-tipW)/2
 	if tipX < 0 {
 		tipX = 0
@@ -138,7 +257,10 @@ func (video *Video) drawTooltip(reading string, x, y, w, ratio, fbw float32) {
 	tipY := y - tipH - 8*ratio
 	video.DrawRect(tipX, tipY, tipW, tipH, 0.15, Color{0, 0, 0, 1})
 	video.Font.SetColor(Color{1, 1, 1, 1})
-	video.Font.Printf(tipX+tipPadding, tipY+36*ratio, tipScale, reading)
+	for i, ln := range lines {
+		lineY := tipY + tipPadding + video.Font.Ascent(tipScale) + lineHeight*float32(i)
+		video.Font.Printf(tipX+tipPadding, lineY, tipScale, "%s", ln)
+	}
 }
 
 func maxLineWidth(video *Video, lines [][]subtitleToken, scale float32) float32 {
@@ -198,9 +320,12 @@ func (video *Video) RenderSubtitle() {
 	ratio := float32(fbw) / 1920
 	scale := 0.6 * ratio
 	padding := 16 * ratio
-	lineHeight := 64 * ratio
+	lineHeight := video.Font.LineHeight(scale)
+	if lineHeight == 0 {
+		return
+	}
+	ascent := video.Font.Ascent(scale)
 	margin := 50 * ratio
-	hoverPadY := -50 * ratio
 
 	video.Font.UpdateResolution(fbw, fbh)
 
@@ -224,42 +349,44 @@ func (video *Video) RenderSubtitle() {
 	bgX := (float32(fbw) - bgW) / 2
 	bgH := lineHeight*float32(len(lines)) + padding*2
 	bgY := float32(fbh) - bgH
-	topY := bgY + padding
+	rectY := bgY - margin
+	topY := rectY + padding
 
 	bgColor := Color{0, 0, 0, 0.75}
 
-	video.DrawRect(bgX, bgY-margin, bgW, bgH, 0.25, bgColor)
+	video.DrawRect(bgX, rectY, bgW, bgH, 0.25, bgColor)
 	video.Font.SetColor(Color{1, 1, 1, 1})
 
 	var tooltip *subtitleToken
 	var tooltipX, tooltipY, tooltipW float32
 	for i, line := range lines {
-		y := topY + lineHeight*float32(i)
+		baseY := topY + ascent + lineHeight*float32(i)
+		hitTop := baseY - ascent
 		lineWidth := lineWidth(video, line, scale)
 		x := float32(fbw)/2 - lineWidth/2
 		for _, tok := range line {
-			w := video.Font.Width(scale, tok.text)
-			hover := cx >= x && cx <= x+w && cy >= y+hoverPadY && cy <= y+hoverPadY+lineHeight
+			w := video.Font.Width(scale, "%s", tok.text)
+			hover := cx >= x && cx <= x+w && cy >= hitTop && cy <= hitTop+lineHeight
 			if hover {
 				// Draw a subtle highlight behind the token.
-				video.DrawRect(x-4*ratio, y+hoverPadY-4*ratio, w+8*ratio, lineHeight+8*ratio, 0.15, Color{1, 1, 1, 0.1})
+				video.DrawRect(x-4*ratio, hitTop-4*ratio, w+8*ratio, lineHeight+8*ratio, 0.15, Color{1, 1, 1, 0.1})
 				fmt.Printf("[subtitle hover] %s\n", tok.text)
 				if tok.reading != "" {
 					tooltip = &tok
 					tooltipX = x
-					tooltipY = y + hoverPadY
+					tooltipY = hitTop
 					tooltipW = w
 				}
 			}
 
 			video.Font.SetColor(tok.color)
-			video.Font.Printf(x, y, scale, tok.text)
+			video.Font.Printf(x, baseY, scale, "%s", tok.text)
 			x += w
 		}
 	}
 
 	// Draw tooltip above all subtitle text.
 	if tooltip != nil {
-		video.drawTooltip(tooltip.reading, tooltipX, tooltipY, tooltipW, ratio, float32(fbw))
+		video.drawTooltip(*tooltip, tooltipX, tooltipY, tooltipW, ratio, float32(fbw))
 	}
 }
