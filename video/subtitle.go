@@ -119,6 +119,28 @@ func lineWidth(video *Video, line []subtitleToken, scale float32) float32 {
 	return w
 }
 
+func (video *Video) drawTooltip(reading string, x, y, w, ratio, fbw float32) {
+	if reading == "" {
+		return
+	}
+
+	tipScale := 0.4 * ratio
+	tipPadding := 12 * ratio
+	tipW := video.Font.Width(tipScale, reading) + tipPadding*2
+	tipH := 48 * ratio
+	tipX := x + (w-tipW)/2
+	if tipX < 0 {
+		tipX = 0
+	}
+	if tipX+tipW > fbw {
+		tipX = fbw - tipW
+	}
+	tipY := y - tipH - 8*ratio
+	video.DrawRect(tipX, tipY, tipW, tipH, 0.15, Color{0, 0, 0, 1})
+	video.Font.SetColor(Color{1, 1, 1, 1})
+	video.Font.Printf(tipX+tipPadding, tipY+36*ratio, tipScale, reading)
+}
+
 func maxLineWidth(video *Video, lines [][]subtitleToken, scale float32) float32 {
 	var max float32
 	for _, line := range lines {
@@ -209,6 +231,8 @@ func (video *Video) RenderSubtitle() {
 	video.DrawRect(bgX, bgY-margin, bgW, bgH, 0.25, bgColor)
 	video.Font.SetColor(Color{1, 1, 1, 1})
 
+	var tooltip *subtitleToken
+	var tooltipX, tooltipY, tooltipW float32
 	for i, line := range lines {
 		y := topY + lineHeight*float32(i)
 		lineWidth := lineWidth(video, line, scale)
@@ -221,21 +245,10 @@ func (video *Video) RenderSubtitle() {
 				video.DrawRect(x-4*ratio, y+hoverPadY-4*ratio, w+8*ratio, lineHeight+8*ratio, 0.15, Color{1, 1, 1, 0.1})
 				fmt.Printf("[subtitle hover] %s\n", tok.text)
 				if tok.reading != "" {
-					tipScale := 0.4 * ratio
-					tipPadding := 12 * ratio
-					tipW := video.Font.Width(tipScale, tok.reading) + tipPadding*2
-					tipH := 48 * ratio
-					tipX := x + (w-tipW)/2
-					if tipX < 0 {
-						tipX = 0
-					}
-					if tipX+tipW > float32(fbw) {
-						tipX = float32(fbw) - tipW
-					}
-					tipY := y + hoverPadY + lineHeight + 8*ratio
-					video.DrawRect(tipX, tipY, tipW, tipH, 0.15, Color{0, 0, 0, 1})
-					video.Font.SetColor(Color{1, 1, 1, 1})
-					video.Font.Printf(tipX+tipPadding, tipY+(tipH-32*ratio)/2, tipScale, tok.reading)
+					tooltip = &tok
+					tooltipX = x
+					tooltipY = y + hoverPadY
+					tooltipW = w
 				}
 			}
 
@@ -243,5 +256,10 @@ func (video *Video) RenderSubtitle() {
 			video.Font.Printf(x, y, scale, tok.text)
 			x += w
 		}
+	}
+
+	// Draw tooltip above all subtitle text.
+	if tooltip != nil {
+		video.drawTooltip(tooltip.reading, tooltipX, tooltipY, tooltipW, ratio, float32(fbw))
 	}
 }
