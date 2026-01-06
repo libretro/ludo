@@ -76,15 +76,15 @@ func posColor(pos string) Color {
 	case "名詞": // noun
 		return Color{1, 1, 1, 1}
 	case "動詞": // verb
-		return Color{0.6, 0.9, 1, 1}
+		return Color{1.0, 0.75, 0.9, 1} // soft pink
 	case "形容詞": // adjective
-		return Color{1, 0.8, 1, 1}
+		return Color{1.0, 0.95, 0.6, 1} // pastel yellow
 	case "助詞": // particle
-		return Color{0.8, 0.8, 0.8, 1}
+		return Color{0.75, 0.9, 1.0, 1} // light blue
 	case "副詞": // adverb
-		return Color{1, 0.95, 0.7, 1}
+		return Color{0.75, 1.0, 0.8, 1} // soft green
 	case "連体詞": // prenominal adjective
-		return Color{0.9, 1, 0.7, 1}
+		return Color{0.9, 0.95, 0.7, 1}
 	case "記号": // symbol/punctuation
 		return Color{0.7, 0.7, 0.7, 1}
 	default:
