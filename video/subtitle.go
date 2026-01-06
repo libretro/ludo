@@ -9,9 +9,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ikawaha/kagome-dict/dict"
 	"github.com/ikawaha/kagome-dict/ipa"
 	"github.com/ikawaha/kagome/v2/tokenizer"
 	"github.com/yomidevs/jmdict-go"
+)
+
+const (
+	subtitleUserDictPath = "video/userdict.txt"
 )
 
 var (
@@ -32,7 +37,14 @@ type subtitleToken struct {
 
 func ensureSubtitleTokenizer() {
 	subtitleTokOnce.Do(func() {
-		t, err := tokenizer.New(ipa.Dict())
+		opts := []tokenizer.Option{}
+		if udict, err := dict.NewUserDict(subtitleUserDictPath); err == nil {
+			opts = append(opts, tokenizer.UserDict(udict))
+		} else {
+			fmt.Printf("[subtitle tokenizer] user dict not loaded (%s): %v\n", subtitleUserDictPath, err)
+		}
+
+		t, err := tokenizer.New(ipa.Dict(), opts...)
 		if err != nil {
 			panic(err)
 		}

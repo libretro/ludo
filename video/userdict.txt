@@ -1,0 +1,5 @@
+## UTF-8 user dictionary for Kagome subtitles
+# Format: <text>,<tokens>,<readings>,<pos>
+# Keep loanwords whole when the IPA dictionary splits them.
+ソルジャー,ソルジャー,ソルジャー,名詞
+反神羅,反神羅,シンラ,名詞
