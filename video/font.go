@@ -73,7 +73,20 @@ func appendRange(runes []rune, start, end rune) []rune {
 func defaultRunes() []rune {
 	runes := make([]rune, 0, 22000)
 	runes = appendRange(runes, 32, 126)
-	runes = append(runes, '◀', '▶', '【', '】')
+	runes = append(runes,
+		'◀', '▶', '【', '】',
+		'「', '」', '『', '』',
+		'。', '、', '・', 'ー',
+		'！', '？',
+		'（', '）', '［', '］', '｛', '｝',
+	)
+	runes = appendRange(runes, 0xFF01, 0xFF0F) // fullwidth punctuation
+	runes = appendRange(runes, 0xFF10, 0xFF19) // fullwidth digits
+	runes = appendRange(runes, 0xFF1A, 0xFF20) // fullwidth : ; < = > ? @
+	runes = appendRange(runes, 0xFF21, 0xFF3A) // fullwidth A-Z
+	runes = appendRange(runes, 0xFF3B, 0xFF40) // fullwidth [ \ ] ^ _
+	runes = appendRange(runes, 0xFF41, 0xFF5A) // fullwidth a-z
+	runes = appendRange(runes, 0xFF5B, 0xFF65) // fullwidth { | } ~ and katakana punctuation
 	runes = appendRange(runes, 0x00A0, 0x017F)
 	runes = appendRange(runes, 0x3040, 0x30FF)
 	runes = appendRange(runes, 0x4E00, 0x9FAF)
