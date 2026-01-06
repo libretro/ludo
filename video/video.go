@@ -6,6 +6,7 @@ package video
 import (
 	"log"
 	"path/filepath"
+	"time"
 	"unsafe"
 
 	"github.com/go-gl/gl/v2.1/gl"
@@ -39,6 +40,9 @@ type Video struct {
 	bpp           int32  // bit per pixel for the core framebuffer
 	width, height int32  // dimensions set by the refresh callback
 	rot           uint   // rotation index
+
+	subtitleText  string
+	subtitleUntil time.Time
 
 	needUpload bool // true when the texture needs to be uploaded to the GPU
 	data       unsafe.Pointer

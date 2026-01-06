@@ -62,6 +62,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			vid.Render()
 			m.Render(dt)
 		}
+		vid.RenderSubtitle()
 		m.RenderNotifications()
 		if state.FastForward {
 			glfw.SwapInterval(0)

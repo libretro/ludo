@@ -1,6 +1,9 @@
 package menu
 
 import (
+	"log"
+	"time"
+
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/input"
 	"github.com/libretro/ludo/libretro"
@@ -210,6 +213,27 @@ func (m *Menu) ProcessHotkeys() {
 			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward ON")
 		} else {
 			ntf.DisplayAndLog(ntf.Info, "Menu", "Fast forward OFF")
+		}
+	}
+
+	if input.Pressed[0][input.ActionOCRSubtitle] == 1 && state.CoreRunning && !state.MenuActive {
+		text, err := m.Video.OCRCurrentFrame()
+		if err != nil {
+			ntf.DisplayAndLog(ntf.Error, "OCR", "%v", err)
+		} else {
+			m.Video.SetSubtitle(text, 8*time.Second)
+			if text != "" {
+				log.Printf("[OCR] %s\n", text)
+			}
+			preview := []rune(text)
+			if len(preview) > 80 {
+				preview = append(preview[:80], '…')
+			}
+			if len(preview) == 0 {
+				ntf.DisplayAndLog(ntf.Info, "OCR", "(no text detected)")
+			} else {
+				ntf.DisplayAndLog(ntf.Info, "OCR", "%s", string(preview))
+			}
 		}
 	}
 

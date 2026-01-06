@@ -10,6 +10,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mholt/archiver/v3 v3.5.1
+	github.com/otiai10/gosseract/v2 v2.4.1
 	github.com/pelletier/go-toml v1.9.5
 	github.com/tanema/gween v0.0.0-20250522035225-e874ee3ae01a
 	github.com/youpy/go-wav v0.3.2

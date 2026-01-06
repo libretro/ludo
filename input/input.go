@@ -45,8 +45,10 @@ const (
 	ActionShouldClose uint32 = lr.DeviceIDJoypadR3 + 3
 	// ActionFastForwardToggle will run the core as fast as possible
 	ActionFastForwardToggle uint32 = lr.DeviceIDJoypadR3 + 4
+	// ActionOCRSubtitle will capture the current frame, run OCR, and display it as a subtitle
+	ActionOCRSubtitle uint32 = lr.DeviceIDJoypadR3 + 5
 	// ActionLast is used for iterating
-	ActionLast uint32 = lr.DeviceIDJoypadR3 + 5
+	ActionLast uint32 = lr.DeviceIDJoypadR3 + 6
 )
 
 // joystickCallback is triggered when a joypad is plugged.
