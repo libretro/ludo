@@ -43,6 +43,7 @@ type Video struct {
 
 	subtitleText  string
 	subtitleUntil time.Time
+	subtitleLines [][]subtitleToken
 
 	needUpload bool // true when the texture needs to be uploaded to the GPU
 	data       unsafe.Pointer
