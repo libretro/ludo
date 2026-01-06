@@ -26,7 +26,7 @@ func (video *Video) RenderSubtitle() {
 	scale := 0.6 * ratio
 	padding := 16 * ratio
 	lineHeight := 64 * ratio
-	baseY := float32(fbh) - 80*ratio
+	margin := 50 * ratio
 
 	video.Font.UpdateResolution(fbw, fbh)
 
@@ -41,7 +41,6 @@ func (video *Video) RenderSubtitle() {
 		}
 	}
 
-	topY := baseY - lineHeight*float32(len(lines)-1)
 	bgW := maxWidth + padding*2
 	minBgW := float32(fbw) * 0.75
 	if bgW < minBgW {
@@ -49,9 +48,12 @@ func (video *Video) RenderSubtitle() {
 	}
 	bgX := (float32(fbw) - bgW) / 2
 	bgH := lineHeight*float32(len(lines)) + padding*2
-	bgY := topY - padding
+	bgY := float32(fbh) - bgH
+	topY := bgY + padding
 
-	video.DrawRect(bgX, bgY, bgW, bgH, 12*ratio, Color{0, 0, 0, 0.7})
+	bgColor := Color{0, 0, 0, 0.75}
+
+	video.DrawRect(bgX, bgY - margin, bgW, bgH, 0.25, bgColor)
 	video.Font.SetColor(Color{1, 1, 1, 1})
 
 	for i, line := range lines {
