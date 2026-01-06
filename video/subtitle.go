@@ -218,8 +218,25 @@ func (video *Video) RenderSubtitle() {
 			hover := cx >= x && cx <= x+w && cy >= y+hoverPadY && cy <= y+hoverPadY+lineHeight
 			if hover {
 				// Draw a subtle highlight behind the token.
-				video.DrawRect(x-4*ratio, y+hoverPadY-4*ratio, w+8*ratio, lineHeight+8*ratio, 0.1, Color{1, 1, 1, 0.1})
+				video.DrawRect(x-4*ratio, y+hoverPadY-4*ratio, w+8*ratio, lineHeight+8*ratio, 0.15, Color{1, 1, 1, 0.1})
 				fmt.Printf("[subtitle hover] %s\n", tok.text)
+				if tok.reading != "" {
+					tipScale := 0.4 * ratio
+					tipPadding := 12 * ratio
+					tipW := video.Font.Width(tipScale, tok.reading) + tipPadding*2
+					tipH := 48 * ratio
+					tipX := x + (w-tipW)/2
+					if tipX < 0 {
+						tipX = 0
+					}
+					if tipX+tipW > float32(fbw) {
+						tipX = float32(fbw) - tipW
+					}
+					tipY := y + hoverPadY + lineHeight + 8*ratio
+					video.DrawRect(tipX, tipY, tipW, tipH, 0.15, Color{0, 0, 0, 1})
+					video.Font.SetColor(Color{1, 1, 1, 1})
+					video.Font.Printf(tipX+tipPadding, tipY+(tipH-32*ratio)/2, tipScale, tok.reading)
+				}
 			}
 
 			video.Font.SetColor(tok.color)
