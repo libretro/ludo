@@ -3,6 +3,7 @@ package video
 import (
 	"image"
 	"image/png"
+	"math"
 	"os"
 	"path/filepath"
 
@@ -13,13 +14,28 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-// During the TakeScreenshot step, we need to render the current game frame at
-// the right resolution to later capture it using ReadPixels. renderScreenshot
-// taking care of this.
-func (video *Video) renderScreenshot() {
-	va := video.vertexArray(0, 0, float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight), 1.0)
+// renderScreenshot draws the core frame centered at core resolution and returns the pixel bounds to read back.
+func (video *Video) renderScreenshot() (int32, int32, int32, int32) {
+	fbw, fbh := video.Window.GetFramebufferSize()
+	w := float32(video.width)
+	h := float32(video.height)
+	if w == 0 || h == 0 {
+		w = float32(video.Geom.BaseWidth)
+		h = float32(video.Geom.BaseHeight)
+	}
+
+	// Center the core-resolution quad in the framebuffer.
+	x := (float32(fbw) - w) / 2
+	y := (float32(fbh) - h) / 2
+
+	va := video.vertexArray(x, y, w, h, 1.0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+
+	readX := int32(math.Round(float64(x)))
+	readY := int32(math.Round(float64(fbh) - math.Round(float64(y+h))))
+	readW := int32(math.Round(float64(w)))
+	readH := int32(math.Round(float64(h)))
 
 	bindVertexArray(video.vao)
 
@@ -27,30 +43,40 @@ func (video *Video) renderScreenshot() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+
+	return readX, readY, readW, readH
 }
 
-// TakeScreenshot captures the ouput of video.Render and writes it to a file
-func (video *Video) TakeScreenshot(name string) error {
+// CaptureFrameImage captures the output of video.Render and returns it as an image.
+func (video *Video) CaptureFrameImage() (image.Image, error) {
+	prevMenu := state.MenuActive
 	state.MenuActive = false
-	defer func() { state.MenuActive = true }()
+	defer func() { state.MenuActive = prevMenu }()
 
 	gl.UseProgram(video.defaultProgram)
 
-	video.renderScreenshot()
+	readX, readY, readW, readH := video.renderScreenshot()
 
-	img := image.NewRGBA(image.Rect(0, 0, video.Geom.BaseWidth, video.Geom.BaseHeight))
-
-	_, fbh := video.Window.GetFramebufferSize()
+	img := image.NewRGBA(image.Rect(0, 0, int(readW), int(readH)))
 
 	gl.ReadPixels(
-		0, int32(fbh-video.Geom.BaseHeight),
-		int32(video.Geom.BaseWidth), int32(video.Geom.BaseHeight),
+		readX, readY,
+		readW, readH,
 		gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 
 	gl.UseProgram(video.program)
 
-	err := os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
+	return imaging.FlipV(img), nil
+}
+
+// TakeScreenshot captures the output of video.Render and writes it to a file
+func (video *Video) TakeScreenshot(name string) error {
+	flipped, err := video.CaptureFrameImage()
 	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm); err != nil {
 		return err
 	}
 
@@ -59,8 +85,6 @@ func (video *Video) TakeScreenshot(name string) error {
 	if err != nil {
 		return err
 	}
-
-	flipped := imaging.FlipV(img)
 
 	return png.Encode(fd, flipped)
 }

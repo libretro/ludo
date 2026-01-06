@@ -22,4 +22,5 @@ var keyBinds = map[glfw.Key]uint32{
 	glfw.KeyP:          ActionMenuToggle,
 	glfw.KeyF:          ActionFullscreenToggle,
 	glfw.KeyEscape:     ActionShouldClose,
+	glfw.KeyT:          ActionOCR,
 }

@@ -220,4 +220,11 @@ func (m *Menu) ProcessHotkeys() {
 			m.SetShouldClose(true)
 		})
 	}
+
+	// Trigger OCR subtitle extraction
+	if input.Pressed[0][input.ActionOCR] == 1 && state.CoreRunning {
+		if err := m.Video.OCRCurrentFrame(); err != nil {
+			ntf.DisplayAndLog(ntf.Error, "OCR", "%v", err)
+		}
+	}
 }
