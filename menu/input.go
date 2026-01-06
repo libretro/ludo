@@ -221,8 +221,12 @@ func (m *Menu) ProcessHotkeys() {
 		})
 	}
 
-	// Trigger OCR subtitle extraction
+	// Trigger OCR subtitle extraction; if a subtitle is already shown, clear it instead.
 	if input.Pressed[0][input.ActionOCR] == 1 && state.CoreRunning {
+		if m.Video != nil && m.Video.SubtitleText() != "" {
+			m.Video.ClearSubtitle()
+			return
+		}
 		if err := m.Video.OCRCurrentFrame(); err != nil {
 			ntf.DisplayAndLog(ntf.Error, "OCR", "%v", err)
 		}

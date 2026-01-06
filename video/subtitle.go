@@ -1,6 +1,7 @@
 package video
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -141,14 +142,25 @@ func (video *Video) SetSubtitle(text string, duration time.Duration) {
 	video.subtitleUntil = time.Now().Add(duration)
 }
 
+// ClearSubtitle hides the currently displayed subtitle.
+func (video *Video) ClearSubtitle() {
+	video.subtitleText = ""
+	video.subtitleLines = nil
+	video.subtitleUntil = time.Time{}
+}
+
+// SubtitleText returns the current subtitle text.
+func (video *Video) SubtitleText() string {
+	return video.subtitleText
+}
+
 // RenderSubtitle draws the current subtitle, if any.
 func (video *Video) RenderSubtitle() {
 	if video == nil || video.Font == nil || video.Window == nil {
 		return
 	}
 
-	if video.subtitleText == "" || time.Now().After(video.subtitleUntil) {
-		video.subtitleText = ""
+	if video.subtitleText == "" {
 		return
 	}
 
@@ -166,8 +178,16 @@ func (video *Video) RenderSubtitle() {
 	padding := 16 * ratio
 	lineHeight := 64 * ratio
 	margin := 50 * ratio
+	hoverPadY := -50 * ratio
 
 	video.Font.UpdateResolution(fbw, fbh)
+
+	cursorX, cursorY := video.Window.GetCursorPos()
+	winW, winH := video.Window.GetSize()
+	scaleX := float32(fbw) / float32(winW)
+	scaleY := float32(fbh) / float32(winH)
+	cx := float32(cursorX) * scaleX
+	cy := float32(cursorY) * scaleY
 
 	previousColor := video.Font.color
 	defer video.Font.SetColor(previousColor)
@@ -194,9 +214,17 @@ func (video *Video) RenderSubtitle() {
 		lineWidth := lineWidth(video, line, scale)
 		x := float32(fbw)/2 - lineWidth/2
 		for _, tok := range line {
+			w := video.Font.Width(scale, tok.text)
+			hover := cx >= x && cx <= x+w && cy >= y+hoverPadY && cy <= y+hoverPadY+lineHeight
+			if hover {
+				// Draw a subtle highlight behind the token.
+				video.DrawRect(x-4*ratio, y+hoverPadY-4*ratio, w+8*ratio, lineHeight+8*ratio, 0.1, Color{1, 1, 1, 0.1})
+				fmt.Printf("[subtitle hover] %s\n", tok.text)
+			}
+
 			video.Font.SetColor(tok.color)
 			video.Font.Printf(x, y, scale, tok.text)
-			x += video.Font.Width(scale, tok.text)
+			x += w
 		}
 	}
 }
