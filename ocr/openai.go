@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/draw"
 	"image/png"
 	"io"
 	"net/http"
@@ -61,17 +60,28 @@ type chatResponse struct {
 	} `json:"error,omitempty"`
 }
 
-// Preprocess converts the image to a high-contrast black-on-white mask and upscales it.
+// Preprocess converts the image to a strict color mask for the known subtitle color and upscales it.
 func Preprocess(img image.Image) image.Image {
-	gray := image.NewGray(img.Bounds())
-	draw.Draw(gray, gray.Bounds(), img, img.Bounds().Min, draw.Src)
+	b := img.Bounds()
+	w := b.Dx()
+	h := b.Dy()
 
-	const threshold uint8 = 220
-	bin := image.NewGray(gray.Bounds())
+	// Binarize to keep only the observed text color (#cbc6dd).
+	const (
+		targetR = 0xcb
+		targetG = 0xc6
+		targetB = 0xdd
+	)
+
+	bin := image.NewGray(b)
 	for y := bin.Bounds().Min.Y; y < bin.Bounds().Max.Y; y++ {
 		for x := bin.Bounds().Min.X; x < bin.Bounds().Max.X; x++ {
-			v := gray.GrayAt(x, y).Y
-			if v >= threshold {
+			r, g, b, _ := img.At(x, y).RGBA()
+			rr := int(r >> 8)
+			gg := int(g >> 8)
+			bb := int(b >> 8)
+
+			if rr == targetR && gg == targetG && bb == targetB {
 				bin.SetGray(x, y, color.Gray{Y: 255})
 			} else {
 				bin.SetGray(x, y, color.Gray{Y: 0})
@@ -79,8 +89,11 @@ func Preprocess(img image.Image) image.Image {
 		}
 	}
 
-	// Upscale to help recognition of small glyphs.
-	return imaging.Resize(bin, bin.Bounds().Dx()*4, bin.Bounds().Dy()*4, imaging.NearestNeighbor)
+	// Upscale the frame to help recognition of small text.
+	scale := 6
+	resized := imaging.Resize(bin, w*scale, h*scale, imaging.Linear)
+
+	return resized
 }
 
 // TextFromImage sends the image to OpenAI vision and returns the extracted text.
