@@ -15,8 +15,11 @@ var (
 )
 
 type subtitleToken struct {
-	text  string
-	color Color
+	text    string
+	color   Color
+	reading string
+	pron    string
+	base    string
 }
 
 func ensureSubtitleTokenizer() {
@@ -58,14 +61,29 @@ func tokenizeLine(line string) []subtitleToken {
 		if surface == "" {
 			continue
 		}
-		pos := ""
 		feats := tok.Features()
+		pos := ""
+		base := surface
+		reading := ""
+		pron := ""
 		if len(feats) > 0 {
 			pos = feats[0]
 		}
+		if len(feats) > 6 {
+			base = feats[6]
+		}
+		if len(feats) > 7 {
+			reading = feats[7]
+		}
+		if len(feats) > 8 {
+			pron = feats[8]
+		}
 		res = append(res, subtitleToken{
-			text:  surface,
-			color: posColor(pos),
+			text:    surface,
+			color:   posColor(pos),
+			base:    base,
+			reading: reading,
+			pron:    pron,
 		})
 	}
 	return res
