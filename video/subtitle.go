@@ -23,7 +23,13 @@ var (
 	subtitleTokOnce sync.Once
 	subtitleTok     *tokenizer.Tokenizer
 	jmdictOnce      sync.Once
-	jmdictGlosses   map[string][]string
+	jmdictGlosses   map[string][]senseEntry
+	manualGlosses   = map[string][]string{
+		"ビッグズ":  {"Biggs"},
+		"ビッグス":  {"Biggs"},
+		"アバランチ": {"Avalanche"},
+		"反神羅":   {"Shinra"},
+	}
 )
 
 type subtitleToken struct {
@@ -32,6 +38,11 @@ type subtitleToken struct {
 	reading string
 	pron    string
 	base    string
+	glosses []string
+}
+
+type senseEntry struct {
+	pos     []string
 	glosses []string
 }
 
@@ -98,7 +109,10 @@ func tokenizeLine(line string) []subtitleToken {
 		if len(feats) > 8 {
 			pron = feats[8]
 		}
-		glosses := lookupGlosses(base, reading)
+		if reading == "" {
+			reading = surface
+		}
+		glosses := lookupGlosses(base, reading, pos)
 		res = append(res, subtitleToken{
 			text:    surface,
 			color:   posColor(pos),
@@ -111,17 +125,36 @@ func tokenizeLine(line string) []subtitleToken {
 	return res
 }
 
-func lookupGlosses(base, reading string) []string {
+func lookupGlosses(base, reading, pos string) []string {
+	keys := make([]string, 0, 2)
+	seen := make(map[string]struct{})
+	addKey := func(k string) {
+		if k == "" {
+			return
+		}
+		if _, ok := seen[k]; ok {
+			return
+		}
+		seen[k] = struct{}{}
+		keys = append(keys, k)
+	}
+	addKey(base)
+	addKey(reading)
+
+	for _, k := range keys {
+		if g, ok := manualGlosses[k]; ok {
+			return g
+		}
+	}
 	jmdictOnce.Do(loadJMDict)
 	if jmdictGlosses == nil {
 		return nil
 	}
-	if g, ok := jmdictGlosses[base]; ok {
-		return g
-	}
-	if reading != "" {
-		if g, ok := jmdictGlosses[reading]; ok {
-			return g
+	for _, k := range keys {
+		if senses, ok := jmdictGlosses[k]; ok {
+			if g := bestEnglishGlosses(pos, k, senses); len(g) > 0 {
+				return g
+			}
 		}
 	}
 	return nil
@@ -157,7 +190,7 @@ func loadJMDict() {
 		return
 	}
 
-	glosses := make(map[string][]string)
+	glosses := make(map[string][]senseEntry)
 	for _, entry := range dict.Entries {
 		forms := make([]string, 0, len(entry.Kanji)+len(entry.Readings))
 		for _, k := range entry.Kanji {
@@ -171,14 +204,14 @@ func loadJMDict() {
 			}
 		}
 
-		eng := firstEnglishGlosses(entry.Sense)
-		if len(eng) == 0 {
-			continue
-		}
-
-		for _, f := range forms {
-			if _, exists := glosses[f]; !exists {
-				glosses[f] = eng
+		for _, sense := range entry.Sense {
+			eng := englishGlosses(sense)
+			if len(eng) == 0 {
+				continue
+			}
+			se := senseEntry{pos: sense.PartsOfSpeech, glosses: eng}
+			for _, f := range forms {
+				glosses[f] = append(glosses[f], se)
 			}
 		}
 	}
@@ -187,23 +220,93 @@ func loadJMDict() {
 	fmt.Printf("[subtitle tooltip] loaded JMDict with %d entries\n", len(jmdictGlosses))
 }
 
-func firstEnglishGlosses(senses []jmdict.JmdictSense) []string {
-	for _, s := range senses {
-		line := make([]string, 0, len(s.Glossary))
-		for _, g := range s.Glossary {
-			lang := "eng"
-			if g.Language != nil {
-				lang = *g.Language
-			}
-			if lang == "" || lang == "eng" {
-				line = append(line, g.Content)
-			}
+func englishGlosses(s jmdict.JmdictSense) []string {
+	line := make([]string, 0, len(s.Glossary))
+	for _, g := range s.Glossary {
+		lang := "eng"
+		if g.Language != nil {
+			lang = *g.Language
 		}
-		if len(line) > 0 {
-			return line
+		if lang == "" || lang == "eng" {
+			line = append(line, g.Content)
 		}
 	}
-	return nil
+	return line
+}
+
+func bestEnglishGlosses(pos, form string, senses []senseEntry) []string {
+	var fallback []string
+	matched := false
+	for _, s := range senses {
+		if len(s.glosses) == 0 {
+			continue
+		}
+		if posMatches(pos, s.pos) {
+			matched = true
+			return s.glosses
+		}
+		if fallback == nil {
+			fallback = s.glosses
+		}
+	}
+	if matched {
+		return fallback
+	}
+	if pos != "" {
+		if len(senses) > 0 {
+			all := make([]string, 0, len(senses))
+			for _, s := range senses {
+				all = append(all, s.glosses...)
+			}
+			fmt.Printf("[subtitle gloss] no POS match for %s (%s); available=%v\n", form, pos, all)
+		}
+		return nil
+	}
+	return fallback
+}
+
+func posMatches(pos string, sensePOS []string) bool {
+	if len(sensePOS) == 0 {
+		return false
+	}
+	switch {
+	case strings.HasPrefix(pos, "助詞"):
+		for _, p := range sensePOS {
+			if strings.Contains(p, "prt") || strings.Contains(p, "particle") {
+				return true
+			}
+		}
+	case strings.HasPrefix(pos, "名詞"):
+		for _, p := range sensePOS {
+			if strings.HasPrefix(p, "n") || strings.Contains(p, "noun") {
+				return true
+			}
+		}
+	case strings.HasPrefix(pos, "動詞"):
+		for _, p := range sensePOS {
+			if strings.HasPrefix(p, "v") || strings.Contains(p, "verb") {
+				return true
+			}
+		}
+	case strings.HasPrefix(pos, "形容詞"), strings.HasPrefix(pos, "連体詞"):
+		for _, p := range sensePOS {
+			if strings.HasPrefix(p, "adj") ||
+				strings.Contains(p, "adjective") ||
+				strings.Contains(p, "adjectival") ||
+				strings.Contains(p, "rentaishi") {
+				return true
+			}
+		}
+	case strings.HasPrefix(pos, "副詞"):
+		for _, p := range sensePOS {
+			if strings.HasPrefix(p, "adv") || strings.Contains(p, "adverb") {
+				return true
+			}
+		}
+	default:
+		return true
+	}
+	return false
 }
 
 func posColor(pos string) Color {
@@ -382,7 +485,7 @@ func (video *Video) RenderSubtitle() {
 			if hover {
 				// Draw a subtle highlight behind the token.
 				video.DrawRect(x-4*ratio, hitTop-4*ratio, w+8*ratio, lineHeight+8*ratio, 0.15, Color{1, 1, 1, 0.1})
-				fmt.Printf("[subtitle hover] %s\n", tok.text)
+				// fmt.Printf("[subtitle hover] %s\n", tok.text)
 				if tok.reading != "" {
 					tooltip = &tok
 					tooltipX = x
