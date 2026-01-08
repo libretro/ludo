@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
-	"image/color"
+	// "image/color"
 	"image/png"
 	"io"
 	"net/http"
@@ -67,31 +67,31 @@ func Preprocess(img image.Image) image.Image {
 	h := b.Dy()
 
 	// Binarize to keep only the observed text color (#cbc6dd).
-	const (
-		targetR = 0xcb
-		targetG = 0xc6
-		targetB = 0xdd
-	)
+	// const (
+	// 	targetR = 0xcb
+	// 	targetG = 0xc6
+	// 	targetB = 0xdd
+	// )
 
-	bin := image.NewGray(b)
-	for y := bin.Bounds().Min.Y; y < bin.Bounds().Max.Y; y++ {
-		for x := bin.Bounds().Min.X; x < bin.Bounds().Max.X; x++ {
-			r, g, b, _ := img.At(x, y).RGBA()
-			rr := int(r >> 8)
-			gg := int(g >> 8)
-			bb := int(b >> 8)
+	// bin := image.NewGray(b)
+	// for y := bin.Bounds().Min.Y; y < bin.Bounds().Max.Y; y++ {
+	// 	for x := bin.Bounds().Min.X; x < bin.Bounds().Max.X; x++ {
+	// 		r, g, b, _ := img.At(x, y).RGBA()
+	// 		rr := int(r >> 8)
+	// 		gg := int(g >> 8)
+	// 		bb := int(b >> 8)
 
-			if rr == targetR && gg == targetG && bb == targetB {
-				bin.SetGray(x, y, color.Gray{Y: 255})
-			} else {
-				bin.SetGray(x, y, color.Gray{Y: 0})
-			}
-		}
-	}
+	// 		if rr == targetR && gg == targetG && bb == targetB {
+	// 			bin.SetGray(x, y, color.Gray{Y: 255})
+	// 		} else {
+	// 			bin.SetGray(x, y, color.Gray{Y: 0})
+	// 		}
+	// 	}
+	// }
 
 	// Upscale the frame to help recognition of small text.
 	scale := 6
-	resized := imaging.Resize(bin, w*scale, h*scale, imaging.Linear)
+	resized := imaging.Resize(img, w*scale, h*scale, imaging.Linear)
 
 	return resized
 }
