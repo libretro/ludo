@@ -1,10 +1,15 @@
 package video
 
 import (
+	"bytes"
 	"compress/gzip"
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -17,6 +22,10 @@ import (
 
 const (
 	subtitleUserDictPath = "video/userdict.txt"
+	openAIChatURL        = "https://api.openai.com/v1/chat/completions"
+	defaultGlossModel    = "gpt-4o-mini"
+	glossMaxTextLength   = 120
+	glossRequestTimeout  = 20 * time.Second
 )
 
 var (
@@ -29,6 +38,8 @@ var (
 		"ビッグス":  {"Biggs"},
 		"アバランチ": {"Avalanche"},
 		"反神羅":   {"Shinra"},
+		"魔晄":    {"makou"},
+		"まこう":   {"makou"},
 	}
 )
 
@@ -38,10 +49,12 @@ type subtitleToken struct {
 	reading string
 	pron    string
 	base    string
+	pos     string
 	glosses []string
 }
 
 type senseEntry struct {
+	id      string
 	pos     []string
 	glosses []string
 }
@@ -83,7 +96,8 @@ func tokenizeLine(line string) []subtitleToken {
 	}
 
 	toks := subtitleTok.Tokenize(line)
-	res := make([]subtitleToken, 0, len(toks))
+	tokens := make([]subtitleToken, 0, len(toks))
+	candidates := make([][]senseEntry, 0, len(toks))
 	for _, tok := range toks {
 		if tok.Class == tokenizer.DUMMY {
 			continue
@@ -112,20 +126,23 @@ func tokenizeLine(line string) []subtitleToken {
 		if reading == "" {
 			reading = surface
 		}
-		glosses := lookupGlosses(base, reading, pos)
-		res = append(res, subtitleToken{
+		glosses, senses := lookupGlossCandidates(base, reading)
+		tokens = append(tokens, subtitleToken{
 			text:    surface,
 			color:   posColor(pos),
 			base:    base,
 			reading: reading,
 			pron:    pron,
+			pos:     pos,
 			glosses: glosses,
 		})
+		candidates = append(candidates, senses)
 	}
-	return res
+	assignGlossesWithContext(tokens, candidates)
+	return tokens
 }
 
-func lookupGlosses(base, reading, pos string) []string {
+func lookupGlossCandidates(base, reading string) ([]string, []senseEntry) {
 	keys := make([]string, 0, 2)
 	seen := make(map[string]struct{})
 	addKey := func(k string) {
@@ -143,21 +160,235 @@ func lookupGlosses(base, reading, pos string) []string {
 
 	for _, k := range keys {
 		if g, ok := manualGlosses[k]; ok {
-			return g
+			return g, nil
 		}
 	}
 	jmdictOnce.Do(loadJMDict)
 	if jmdictGlosses == nil {
-		return nil
+		return nil, nil
 	}
+
+	result := make([]senseEntry, 0)
+	seenIDs := make(map[string]struct{})
 	for _, k := range keys {
 		if senses, ok := jmdictGlosses[k]; ok {
-			if g := bestEnglishGlosses(pos, k, senses); len(g) > 0 {
-				return g
+			for _, s := range senses {
+				if s.id != "" {
+					if _, exists := seenIDs[s.id]; exists {
+						continue
+					}
+					seenIDs[s.id] = struct{}{}
+				}
+				result = append(result, s)
 			}
 		}
 	}
-	return nil
+	return nil, result
+}
+
+func assignGlossesWithContext(tokens []subtitleToken, candidates [][]senseEntry) {
+	if len(tokens) == 0 {
+		return
+	}
+
+	context := make([]contextToken, 0, len(tokens))
+	targets := make([]senseSelectionTarget, 0)
+	candidateIndex := make(map[int]map[string]int)
+
+	for i, tok := range tokens {
+		context = append(context, contextToken{
+			Surface: tok.text,
+			POS:     tok.pos,
+		})
+
+		if len(tok.glosses) > 0 || len(candidates[i]) == 0 {
+			continue
+		}
+
+		senseCandidates := make([]senseCandidate, 0, len(candidates[i]))
+		indexByID := make(map[string]int, len(candidates[i]))
+		for j, s := range candidates[i] {
+			id := s.id
+			if id == "" {
+				id = fmt.Sprintf("sense-%d-%d", i, j)
+			}
+			senseCandidates = append(senseCandidates, senseCandidate{
+				ID:    id,
+				Gloss: truncateGloss(strings.Join(s.glosses, "; ")),
+			})
+			indexByID[id] = j
+		}
+
+		if len(senseCandidates) == 0 {
+			continue
+		}
+
+		targets = append(targets, senseSelectionTarget{
+			Index:      i,
+			Surface:    tok.text,
+			Reading:    tok.reading,
+			POS:        tok.pos,
+			Candidates: senseCandidates,
+		})
+		candidateIndex[i] = indexByID
+	}
+
+	selected := map[int]string{}
+	if len(targets) > 0 && strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) != "" {
+		ids, err := selectSenseIDsWithLLM(context, targets)
+		if err != nil {
+			fmt.Printf("[subtitle gloss] OpenAI sense selection failed: %v\n", err)
+		} else {
+			selected = ids
+		}
+	}
+
+	for i := range tokens {
+		if len(tokens[i].glosses) > 0 || len(candidates[i]) == 0 {
+			continue
+		}
+
+		if chosenID, ok := selected[i]; ok && chosenID != "" {
+			if idxByID, ok := candidateIndex[i]; ok {
+				if candIdx, ok := idxByID[chosenID]; ok && candIdx < len(candidates[i]) {
+					tokens[i].glosses = candidates[i][candIdx].glosses
+					continue
+				}
+			}
+		}
+
+		if g := bestEnglishGlosses(tokens[i].pos, tokens[i].base, candidates[i]); len(g) > 0 {
+			tokens[i].glosses = g
+			continue
+		}
+		tokens[i].glosses = candidates[i][0].glosses
+	}
+}
+
+func selectSenseIDsWithLLM(contextTokens []contextToken, targets []senseSelectionTarget) (map[int]string, error) {
+	apiKey := strings.TrimSpace(os.Getenv("OPENAI_API_KEY"))
+	if apiKey == "" {
+		return nil, fmt.Errorf("OPENAI_API_KEY is not set")
+	}
+
+	model := strings.TrimSpace(os.Getenv("OPENAI_MODEL"))
+	if model == "" {
+		model = defaultGlossModel
+	}
+
+	prompt := buildSenseSelectionPrompt(contextTokens, targets)
+	fmt.Printf("[subtitle gloss] OpenAI request (model=%s):\n%s\n", model, prompt)
+	reqBody := chatRequest{
+		Model: model,
+		Messages: []message{
+			{
+				Role: "system",
+				Content: []contentPart{{
+					Type: "text",
+					Text: senseSelectorSystemPrompt,
+				}},
+			},
+			{
+				Role: "user",
+				Content: []contentPart{{
+					Type: "text",
+					Text: prompt,
+				}},
+			},
+		},
+		Temperature: 0,
+		MaxTokens:   400,
+	}
+
+	payload, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("marshal request: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), glossRequestTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, openAIChatURL, bytes.NewReader(payload))
+	if err != nil {
+		return nil, fmt.Errorf("build request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("call OpenAI: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response: %w", err)
+	}
+
+	if resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("OpenAI error (%d): %s", resp.StatusCode, string(body))
+	}
+
+	var out chatResponse
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, fmt.Errorf("decode response: %w", err)
+	}
+
+	if out.Error != nil {
+		return nil, fmt.Errorf("OpenAI error: %s (%s)", out.Error.Message, out.Error.Type)
+	}
+	if len(out.Choices) == 0 {
+		return nil, fmt.Errorf("no choices returned")
+	}
+
+	content := strings.TrimSpace(out.Choices[0].Message.Content)
+	fmt.Printf("[subtitle gloss] OpenAI response:\n%s\n", content)
+	selections, err := parseSenseSelections(content)
+	if err != nil {
+		return nil, fmt.Errorf("decode selection: %w", err)
+	}
+
+	result := make(map[int]string, len(selections))
+	for _, sel := range selections {
+		if sel.ID == nil {
+			continue
+		}
+		result[sel.Index] = *sel.ID
+	}
+
+	return result, nil
+}
+
+func buildSenseSelectionPrompt(contextTokens []contextToken, targets []senseSelectionTarget) string {
+	var b strings.Builder
+	b.WriteString("Context tokens in order (index: surface / pos):\n")
+	for i, tok := range contextTokens {
+		fmt.Fprintf(&b, "%d: %s / %s\n", i, strconv.Quote(tok.Surface), strconv.Quote(tok.POS))
+	}
+
+	b.WriteString("\nChoose the best JMDict sense id for each target token using the provided candidates.\n")
+	b.WriteString("Respond with JSON array only: [{\"index\":<token index>,\"id\":<candidate id or null>}].\n")
+	b.WriteString("Targets:\n")
+
+	for i, t := range targets {
+		fmt.Fprintf(&b, "%d. index: %d, surface: %s, reading: %s, pos: %s\n", i+1, t.Index, strconv.Quote(t.Surface), strconv.Quote(t.Reading), strconv.Quote(t.POS))
+		b.WriteString("   candidates:\n")
+		for _, c := range t.Candidates {
+			fmt.Fprintf(&b, "   - id: %s, gloss: %s\n", strconv.Quote(c.ID), strconv.Quote(c.Gloss))
+		}
+	}
+
+	return b.String()
+}
+
+func truncateGloss(gloss string) string {
+	gloss = strings.TrimSpace(gloss)
+	runes := []rune(gloss)
+	if len(runes) <= glossMaxTextLength {
+		return gloss
+	}
+	return string(runes[:glossMaxTextLength]) + "..."
 }
 
 func loadJMDict() {
@@ -204,12 +435,16 @@ func loadJMDict() {
 			}
 		}
 
-		for _, sense := range entry.Sense {
+		for i, sense := range entry.Sense {
 			eng := englishGlosses(sense)
 			if len(eng) == 0 {
 				continue
 			}
-			se := senseEntry{pos: sense.PartsOfSpeech, glosses: eng}
+			se := senseEntry{
+				id:      fmt.Sprintf("%d-%d", entry.Sequence, i+1),
+				pos:     sense.PartsOfSpeech,
+				glosses: eng,
+			}
 			for _, f := range forms {
 				glosses[f] = append(glosses[f], se)
 			}
@@ -307,6 +542,74 @@ func posMatches(pos string, sensePOS []string) bool {
 		return true
 	}
 	return false
+}
+
+var senseSelectorSystemPrompt = "You are a Japanese sense selector. Choose one JMDict sense ID per target token from the provided candidates using the surrounding context. If no candidate fits, return null. Respond with a JSON array only (no prose, no code fences)."
+
+type contextToken struct {
+	Surface string `json:"surface"`
+	POS     string `json:"pos,omitempty"`
+}
+
+type senseSelectionTarget struct {
+	Index      int              `json:"index"`
+	Surface    string           `json:"surface"`
+	Reading    string           `json:"reading,omitempty"`
+	POS        string           `json:"pos,omitempty"`
+	Candidates []senseCandidate `json:"candidates"`
+}
+
+type senseCandidate struct {
+	ID    string `json:"id"`
+	Gloss string `json:"gloss"`
+}
+
+type senseSelectionResponse struct {
+	Index int     `json:"index"`
+	ID    *string `json:"id"`
+}
+
+type chatRequest struct {
+	Model       string    `json:"model"`
+	Messages    []message `json:"messages"`
+	Temperature float64   `json:"temperature,omitempty"`
+	MaxTokens   int       `json:"max_tokens,omitempty"`
+}
+
+type message struct {
+	Role    string        `json:"role"`
+	Content []contentPart `json:"content"`
+}
+
+type contentPart struct {
+	Type string `json:"type"`
+	Text string `json:"text,omitempty"`
+}
+
+type chatResponse struct {
+	Choices []struct {
+		Message struct {
+			Content string `json:"content"`
+		} `json:"message"`
+	} `json:"choices"`
+	Error *struct {
+		Message string `json:"message"`
+		Type    string `json:"type"`
+	} `json:"error,omitempty"`
+}
+
+func parseSenseSelections(raw string) ([]senseSelectionResponse, error) {
+	raw = strings.TrimSpace(raw)
+	start := strings.Index(raw, "[")
+	end := strings.LastIndex(raw, "]")
+	if start >= 0 && end > start {
+		raw = raw[start : end+1]
+	}
+	var selections []senseSelectionResponse
+	if err := json.Unmarshal([]byte(raw), &selections); err != nil {
+		return nil, err
+	}
+	return selections, nil
 }
 
 func posColor(pos string) Color {
