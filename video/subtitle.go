@@ -61,6 +61,54 @@ type senseEntry struct {
 	glosses []string
 }
 
+func tokenDetails(tok tokenizer.Token) (pos, base, reading, pron string) {
+	surface := tok.Surface
+	posSlice := tok.POS()
+	if len(posSlice) > 0 {
+		pos = posSlice[0]
+	}
+
+	if b, ok := tok.BaseForm(); ok && b != "" {
+		base = b
+	}
+	if r, ok := tok.Reading(); ok && r != "" {
+		reading = r
+	}
+	if p, ok := tok.Pronunciation(); ok && p != "" {
+		pron = p
+	}
+
+	if tok.Class == tokenizer.USER {
+		if ux := tok.UserExtra(); ux != nil {
+			if base == "" && len(ux.Tokens) > 0 {
+				base = ux.Tokens[0]
+			}
+			if reading == "" && len(ux.Readings) > 0 {
+				reading = ux.Readings[0]
+			}
+		}
+		feats := tok.Features()
+		// Features for USER tokens are [pos, tokens, yomi]; take the first yomi/tokens if still empty.
+		if reading == "" && len(feats) > 2 && feats[2] != "" {
+			parts := strings.Split(feats[2], "/")
+			reading = parts[0]
+		}
+		if base == "" && len(feats) > 1 && feats[1] != "" {
+			parts := strings.Split(feats[1], "/")
+			base = parts[0]
+		}
+	}
+
+	if base == "" {
+		base = surface
+	}
+	if reading == "" {
+		reading = surface
+	}
+
+	return pos, base, reading, pron
+}
+
 func manualGlossOverrides() map[string][]string {
 	manualGlossOnce.Do(func() {
 		path := strings.TrimSpace(os.Getenv("JMDICT_OVERRIDES_PATH"))
@@ -158,26 +206,7 @@ func tokenizeLine(line string) []subtitleToken {
 		if surface == "" {
 			continue
 		}
-		feats := tok.Features()
-		pos := ""
-		base := surface
-		reading := ""
-		pron := ""
-		if len(feats) > 0 {
-			pos = feats[0]
-		}
-		if len(feats) > 6 {
-			base = feats[6]
-		}
-		if len(feats) > 7 {
-			reading = feats[7]
-		}
-		if len(feats) > 8 {
-			pron = feats[8]
-		}
-		if reading == "" {
-			reading = surface
-		}
+		pos, base, reading, pron := tokenDetails(tok)
 		common := isCommonForm(base) || isCommonForm(reading)
 		glosses, senses := lookupGlossCandidates(base, reading)
 		tokens = append(tokens, subtitleToken{
