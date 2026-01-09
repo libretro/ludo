@@ -23,6 +23,7 @@ import (
 
 const (
 	subtitleUserDictPath = "userdict.txt"
+	manualGlossesPath    = "jmdict_overrides.json"
 	openAIChatURL        = "https://api.openai.com/v1/chat/completions"
 	defaultGlossModel    = "gpt-4o-mini"
 	glossMaxTextLength   = 120
@@ -30,18 +31,12 @@ const (
 )
 
 var (
-	subtitleTokOnce sync.Once
-	subtitleTok     *tokenizer.Tokenizer
-	jmdictOnce      sync.Once
-	jmdictGlosses   map[string][]senseEntry
-	manualGlosses   = map[string][]string{
-		"ビッグズ":  {"Biggs"},
-		"ビッグス":  {"Biggs"},
-		"アバランチ": {"Avalanche"},
-		"反神羅":   {"Shinra"},
-		"魔晄":    {"makou"},
-		"まこう":   {"makou"},
-	}
+	subtitleTokOnce      sync.Once
+	subtitleTok          *tokenizer.Tokenizer
+	jmdictOnce           sync.Once
+	jmdictGlosses        map[string][]senseEntry
+	manualGlosses        map[string][]string
+	manualGlossOnce      sync.Once
 	missingOpenAIKeyOnce sync.Once
 )
 
@@ -59,6 +54,36 @@ type senseEntry struct {
 	id      string
 	pos     []string
 	glosses []string
+}
+
+func manualGlossOverrides() map[string][]string {
+	manualGlossOnce.Do(func() {
+		path := strings.TrimSpace(os.Getenv("JMDICT_OVERRIDES_PATH"))
+		if path == "" {
+			path = manualGlossesPath
+		}
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				fmt.Printf("[subtitle gloss] failed to read manual gloss overrides: %v\n", err)
+			}
+			manualGlosses = map[string][]string{}
+			return
+		}
+
+		var overrides map[string][]string
+		if err := json.Unmarshal(data, &overrides); err != nil {
+			fmt.Printf("[subtitle gloss] failed to parse manual gloss overrides: %v\n", err)
+			manualGlosses = map[string][]string{}
+			return
+		}
+
+		manualGlosses = overrides
+		fmt.Printf("[subtitle gloss] loaded %d manual gloss overrides\n", len(manualGlosses))
+	})
+
+	return manualGlosses
 }
 
 func ensureSubtitleTokenizer() {
@@ -160,8 +185,9 @@ func lookupGlossCandidates(base, reading string) ([]string, []senseEntry) {
 	addKey(base)
 	addKey(reading)
 
+	overrides := manualGlossOverrides()
 	for _, k := range keys {
-		if g, ok := manualGlosses[k]; ok {
+		if g, ok := overrides[k]; ok {
 			return g, nil
 		}
 	}
