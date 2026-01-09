@@ -79,6 +79,7 @@ func defaultRunes() []rune {
 		'。', '、', '・', 'ー',
 		'！', '？',
 		'（', '）', '［', '］', '｛', '｝',
+		'★',
 	)
 	runes = appendRange(runes, 0xFF01, 0xFF0F) // fullwidth punctuation
 	runes = appendRange(runes, 0xFF10, 0xFF19) // fullwidth digits

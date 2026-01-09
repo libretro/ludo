@@ -28,6 +28,7 @@ const (
 	defaultGlossModel    = "gpt-4o-mini"
 	glossMaxTextLength   = 120
 	glossRequestTimeout  = 20 * time.Second
+	commonStar           = "★"
 )
 
 var (
@@ -35,9 +36,12 @@ var (
 	subtitleTok          *tokenizer.Tokenizer
 	jmdictOnce           sync.Once
 	jmdictGlosses        map[string][]senseEntry
+	jmdictCommon         map[string]bool
 	manualGlosses        map[string][]string
 	manualGlossOnce      sync.Once
 	missingOpenAIKeyOnce sync.Once
+	commonStarColor      = Color{0.35, 0.7, 1, 1}
+	glossTextColor       = Color{0.6, 1.0, 0.6, 1}
 )
 
 type subtitleToken struct {
@@ -48,6 +52,7 @@ type subtitleToken struct {
 	base    string
 	pos     string
 	glosses []string
+	common  bool
 }
 
 type senseEntry struct {
@@ -84,6 +89,26 @@ func manualGlossOverrides() map[string][]string {
 	})
 
 	return manualGlosses
+}
+
+func hasPriority(tags []string) bool {
+	for _, t := range tags {
+		if strings.TrimSpace(t) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func isCommonForm(form string) bool {
+	if form == "" {
+		return false
+	}
+	jmdictOnce.Do(loadJMDict)
+	if jmdictCommon == nil {
+		return false
+	}
+	return jmdictCommon[form]
 }
 
 func ensureSubtitleTokenizer() {
@@ -153,6 +178,7 @@ func tokenizeLine(line string) []subtitleToken {
 		if reading == "" {
 			reading = surface
 		}
+		common := isCommonForm(base) || isCommonForm(reading)
 		glosses, senses := lookupGlossCandidates(base, reading)
 		tokens = append(tokens, subtitleToken{
 			text:    surface,
@@ -162,6 +188,7 @@ func tokenizeLine(line string) []subtitleToken {
 			pron:    pron,
 			pos:     pos,
 			glosses: glosses,
+			common:  common,
 		})
 		candidates = append(candidates, senses)
 	}
@@ -456,16 +483,24 @@ func loadJMDict() {
 	}
 
 	glosses := make(map[string][]senseEntry)
+	common := make(map[string]bool)
 	for _, entry := range dict.Entries {
 		forms := make([]string, 0, len(entry.Kanji)+len(entry.Readings))
+		formCommon := make(map[string]bool)
 		for _, k := range entry.Kanji {
 			if k.Expression != "" {
 				forms = append(forms, k.Expression)
+				if hasPriority(k.Priorities) {
+					formCommon[k.Expression] = true
+				}
 			}
 		}
 		for _, r := range entry.Readings {
 			if r.Reading != "" {
 				forms = append(forms, r.Reading)
+				if hasPriority(r.Priorities) {
+					formCommon[r.Reading] = true
+				}
 			}
 		}
 
@@ -481,12 +516,16 @@ func loadJMDict() {
 			}
 			for _, f := range forms {
 				glosses[f] = append(glosses[f], se)
+				if formCommon[f] {
+					common[f] = true
+				}
 			}
 		}
 	}
 
 	jmdictGlosses = glosses
-	fmt.Printf("[subtitle tooltip] loaded JMDict with %d entries\n", len(jmdictGlosses))
+	jmdictCommon = common
+	fmt.Printf("[subtitle tooltip] loaded JMDict with %d entries (%d forms with priority)\n", len(jmdictGlosses), len(jmdictCommon))
 }
 
 func englishGlosses(s jmdict.JmdictSense) []string {
@@ -691,10 +730,16 @@ func (video *Video) drawTooltip(tok subtitleToken, x, y, w, ratio, fbw float32) 
 	tipScale := 0.4 * ratio
 	tipPadding := 12 * ratio
 	lineHeight := 38 * ratio
+	starWidth := video.Font.Width(tipScale, "%s", commonStar)
+	spaceWidth := video.Font.Width(tipScale, "%s", " ")
 	var tipW float32
-	for _, ln := range lines {
-		if w := video.Font.Width(tipScale, "%s", ln); w > tipW {
-			tipW = w
+	for i, ln := range lines {
+		width := video.Font.Width(tipScale, "%s", ln)
+		if tok.common && i == 0 {
+			width += starWidth + spaceWidth
+		}
+		if width > tipW {
+			tipW = width
 		}
 	}
 	tipW += tipPadding * 2
@@ -708,10 +753,23 @@ func (video *Video) drawTooltip(tok subtitleToken, x, y, w, ratio, fbw float32) 
 	}
 	tipY := y - tipH - 8*ratio
 	video.DrawRect(tipX, tipY, tipW, tipH, 0.15, Color{0, 0, 0, 1})
-	video.Font.SetColor(Color{1, 1, 1, 1})
 	for i, ln := range lines {
 		lineY := tipY + tipPadding + video.Font.Ascent(tipScale) + lineHeight*float32(i)
-		video.Font.Printf(tipX+tipPadding, lineY, tipScale, "%s", ln)
+		lineX := tipX + tipPadding
+		if tok.common && i == 0 {
+			video.Font.SetColor(Color{1, 1, 1, 1})
+			video.Font.Printf(lineX, lineY, tipScale, "%s", ln)
+			lineX += video.Font.Width(tipScale, "%s", ln) + spaceWidth
+			video.Font.SetColor(commonStarColor)
+			video.Font.Printf(lineX, lineY, tipScale, "%s", commonStar)
+			continue
+		}
+		if i > 0 {
+			video.Font.SetColor(glossTextColor)
+		} else {
+			video.Font.SetColor(Color{1, 1, 1, 1})
+		}
+		video.Font.Printf(lineX, lineY, tipScale, "%s", ln)
 	}
 }
 
@@ -814,8 +872,8 @@ func (video *Video) RenderSubtitle() {
 	for i, line := range lines {
 		baseY := topY + ascent + lineHeight*float32(i)
 		hitTop := baseY - ascent
-		lineWidth := lineWidth(video, line, scale)
-		x := float32(fbw)/2 - lineWidth/2
+		lineW := lineWidth(video, line, scale)
+		x := float32(fbw)/2 - lineW/2
 		for _, tok := range line {
 			w := video.Font.Width(scale, "%s", tok.text)
 			hover := cx >= x && cx <= x+w && cy >= hitTop && cy <= hitTop+lineHeight
