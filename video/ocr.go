@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/libretro/ludo/ocr"
@@ -14,6 +15,10 @@ import (
 
 // OCRCurrentFrame captures the current frame, preprocesses it for text, sends it to OpenAI, and displays the result as a subtitle.
 func (video *Video) OCRCurrentFrame() error {
+	if strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) == "" {
+		return fmt.Errorf("OPENAI_API_KEY is not set")
+	}
+
 	img, err := video.CaptureFrameImage()
 	if err != nil {
 		return fmt.Errorf("capture frame: %w", err)

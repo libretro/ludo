@@ -17,11 +17,12 @@ import (
 	"github.com/ikawaha/kagome-dict/dict"
 	"github.com/ikawaha/kagome-dict/ipa"
 	"github.com/ikawaha/kagome/v2/tokenizer"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/yomidevs/jmdict-go"
 )
 
 const (
-	subtitleUserDictPath = "video/userdict.txt"
+	subtitleUserDictPath = "userdict.txt"
 	openAIChatURL        = "https://api.openai.com/v1/chat/completions"
 	defaultGlossModel    = "gpt-4o-mini"
 	glossMaxTextLength   = 120
@@ -41,6 +42,7 @@ var (
 		"魔晄":    {"makou"},
 		"まこう":   {"makou"},
 	}
+	missingOpenAIKeyOnce sync.Once
 )
 
 type subtitleToken struct {
@@ -234,12 +236,18 @@ func assignGlossesWithContext(tokens []subtitleToken, candidates [][]senseEntry)
 	}
 
 	selected := map[int]string{}
-	if len(targets) > 0 && strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) != "" {
-		ids, err := selectSenseIDsWithLLM(context, targets)
-		if err != nil {
-			fmt.Printf("[subtitle gloss] OpenAI sense selection failed: %v\n", err)
+	if len(targets) > 0 {
+		if strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) == "" {
+			missingOpenAIKeyOnce.Do(func() {
+				ntf.DisplayAndLog(ntf.Error, "Subtitle", "OPENAI_API_KEY is not set; subtitle glossing is disabled")
+			})
 		} else {
-			selected = ids
+			ids, err := selectSenseIDsWithLLM(context, targets)
+			if err != nil {
+				fmt.Printf("[subtitle gloss] OpenAI sense selection failed: %v\n", err)
+			} else {
+				selected = ids
+			}
 		}
 	}
 
