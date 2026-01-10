@@ -753,7 +753,9 @@ func (video *Video) drawTooltip(tok subtitleToken, x, y, w, ratio, fbw float32) 
 		lines = append(lines, tok.reading)
 	}
 	if len(tok.glosses) > 0 {
-		lines = append(lines, tok.glosses[0])
+		for _, g := range tok.glosses {
+			lines = append(lines, "- "+g)
+		}
 	}
 
 	tipScale := 0.4 * ratio
