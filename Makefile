@@ -4,6 +4,8 @@ VERSION ?= dev
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 DISPDRIVER ?= x11
 
+BUILDBOTURL_BASE ?= https://buildbot.libretro.com/nightly
+
 ifeq ($(OS), Linux)
 	TAGS = -tags=$(DISPDRIVER)
 	BUNDLENAME = $(APP)-$(OS)-$(DISPDRIVER)-$(ARCH)-$(VERSION)
@@ -32,17 +34,17 @@ DLLS = $(addprefix cores/, $(addsuffix _libretro.dll,$(CORES)))
 SOBJS = $(addprefix cores/, $(addsuffix _libretro.so,$(CORES)))
 
 ifeq ($(OS), OSX)
-	BUILDBOTURL=http://buildbot.libretro.com/nightly/apple/osx/$(ARCH)/latest
+	BUILDBOTURL=$(BUILDBOTURL_BASE)/apple/osx/$(ARCH)/latest
 endif
 ifeq ($(OS), Linux)
 	ifeq ($(ARCH), arm)
-		BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/armv7-neon-hf/latest
+		BUILDBOTURL=$(BUILDBOTURL_BASE)/linux/armv7-neon-hf/latest
 	else
-		BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/$(ARCH)/latest
+		BUILDBOTURL=$(BUILDBOTURL_BASE)/linux/$(ARCH)/latest
 	endif
 endif
 ifeq ($(OS), Windows)
-	BUILDBOTURL=http://buildbot.libretro.com/nightly/windows/$(ARCH)/latest
+	BUILDBOTURL=$(BUILDBOTURL_BASE)/windows/$(ARCH)/latest
 endif
 
 ludo:
