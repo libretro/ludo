@@ -41,38 +41,90 @@ func LoadDB(dir string) (dat.DB, error) {
 
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
-	n := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
-	roms, err := utils.AllFilesIn(dir)
-	if err != nil {
-		n.Update(ntf.Error, err.Error())
-		return
-	}
-	games := make(chan (dat.Game))
-	go Scan(dir, roms, games, n)
-	go func() {
-		i := 0
-		for game := range games {
-			os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
-			CSVPath := filepath.Join(settings.Current.PlaylistsDirectory, game.System+".csv")
-			if playlists.Contains(CSVPath, game.Path, uint32(game.ROMs[0].CRC)) {
-				continue
-			}
-			f, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-			if len(game.Description) == 0 {
-				continue
-			}
-			f.WriteString(game.Path + "\t")
-			f.WriteString(game.Description + "\t")
-			if game.ROMs[0].CRC > 0 {
-				f.WriteString(strconv.FormatUint(uint64(game.ROMs[0].CRC), 16))
-			}
-			f.WriteString("\n")
-			f.Close()
-			i++
-		}
-		doneCb()
-		n.Update(ntf.Success, "Done scanning. %d new games found.", i)
-	}()
+    n := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
+    
+    // Get all files from all subdirectories at once
+    allFiles, err := utils.AllFilesIn(dir)
+    if err != nil {
+        n.Update(ntf.Error, err.Error())
+        return
+    }
+    
+    // Scan all files
+    games := make(chan (dat.Game))
+    go Scan(dir, allFiles, games, n)
+    
+    go func() {
+        i := 0
+        recognizedFiles := make(map[string]bool)
+        
+        // Process recognized games
+        for game := range games {
+            os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
+            CSVPath := filepath.Join(settings.Current.PlaylistsDirectory, game.System+".csv")
+            if playlists.Contains(CSVPath, game.Path, uint32(game.ROMs[0].CRC)) {
+                recognizedFiles[game.Path] = true
+                continue
+            }
+            f, _ := os.OpenFile(CSVPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+            if len(game.Description) == 0 {
+                continue
+            }
+            f.WriteString(game.Path + "\t")
+            f.WriteString(game.Description + "\t")
+            if game.ROMs[0].CRC > 0 {
+                f.WriteString(strconv.FormatUint(uint64(game.ROMs[0].CRC), 16))
+            }
+            f.WriteString("\n")
+            f.Close()
+            recognizedFiles[game.Path] = true
+            i++
+        }
+        
+        // Add unrecognized files from platform-named folders
+        for _, rom := range allFiles {
+            if recognizedFiles[rom] {
+                continue
+            }
+            
+            // Find which platform folder this file is in
+            relPath, _ := filepath.Rel(dir, rom)
+            pathParts := strings.Split(relPath, string(filepath.Separator))
+            
+            if len(pathParts) > 0 {
+                folderName := pathParts[0] // First folder in path
+                
+                if _, exists := state.DB[folderName]; exists {
+                    ext := strings.ToLower(filepath.Ext(rom))
+                    switch ext {
+                    case ".cue", ".pbp", ".m3u", ".chd",
+                         ".32x", ".a26", ".a52", ".a78", ".col", ".crt", 
+                         ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", 
+                         ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", 
+                         ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", 
+                         ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", 
+                         ".wsc", ".z64", ".zip":
+                        
+                        os.MkdirAll(settings.Current.PlaylistsDirectory, os.ModePerm)
+                        csvPath := filepath.Join(settings.Current.PlaylistsDirectory, folderName+".csv")
+                        
+                        if playlists.Contains(csvPath, rom, 0) {
+                            continue
+                        }
+                        
+                        f, _ := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+                        name := strings.TrimSuffix(filepath.Base(rom), ext)
+                        f.WriteString(rom + "\t" + name + "\t\n")
+                        f.Close()
+                        i++
+                    }
+                }
+            }
+        }
+        
+        doneCb()
+        n.Update(ntf.Success, "Done scanning. %d new games found.", i)
+    }()
 }
 
 // Returns the checksum and headerless checksum of a ROM
