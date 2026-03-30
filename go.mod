@@ -13,7 +13,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5
 	github.com/tanema/gween v0.0.0-20250522035225-e874ee3ae01a
 	github.com/youpy/go-wav v0.3.2
-	golang.org/x/image v0.29.0
+	golang.org/x/image v0.38.0
 	golang.org/x/mobile v0.0.0-20250711185624-d5bb5ecc55c0
 )
 
@@ -33,6 +33,4 @@ require (
 	golang.org/x/sys v0.34.0 // indirect
 )
 
-go 1.23.0
-
-toolchain go1.24.0
+go 1.25.0
