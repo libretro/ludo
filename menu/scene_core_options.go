@@ -44,7 +44,7 @@ func buildCoreOptions() Scene {
 				core.Options.Updated = true
 				err := core.Options.Save()
 				if err != nil {
-					ntf.DisplayAndLog(ntf.Error, "Core", "Error saving core options: %v", err.Error())
+					ntf.DisplayAndLogf(ntf.Error, "Core", "Error saving core options: %v", err)
 				}
 			},
 		})

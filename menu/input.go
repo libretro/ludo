@@ -200,7 +200,7 @@ func (m *Menu) ProcessHotkeys() {
 		m.ContextReset()
 		err := settings.Save()
 		if err != nil {
-			ntf.DisplayAndLog(ntf.Error, "Menu", "Error saving settings: %s", err)
+			ntf.DisplayAndLogf(ntf.Error, "Menu", "Error saving settings: %v", err)
 		}
 	}
 

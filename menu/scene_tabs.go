@@ -160,7 +160,7 @@ func getPlaylists() []entry {
 func deletePlaylist(path string) {
 	err := os.Remove(path)
 	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", "Could not delete playlist: %s", err.Error())
+		ntf.DisplayAndLogf(ntf.Error, "Menu", "Could not delete playlist: %v", err)
 		return
 	}
 	menu.stack[0].Entry().ptr++
@@ -286,7 +286,7 @@ func (tabs sceneTabs) render() {
 	for i, e := range tabs.children {
 		iconColor := tabIconColors(i).Alpha(e.iconAlpha)
 		hexaColor := tabHexaColors(i).Alpha(e.iconAlpha)
-		lablColor :=  hexaColor
+		lablColor := hexaColor
 		if settings.Current.VideoDarkMode || state.CoreRunning {
 			iconColor = tabHexaColors(i).Alpha(e.iconAlpha)
 			hexaColor = tabIconColors(i).Alpha(e.iconAlpha)

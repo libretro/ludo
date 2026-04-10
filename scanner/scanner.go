@@ -41,7 +41,7 @@ func LoadDB(dir string) (dat.DB, error) {
 
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
-	n := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
+	n := ntf.DisplayAndLogf(ntf.Info, "Menu", "Scanning %s", dir)
 	roms, err := utils.AllFilesIn(dir)
 	if err != nil {
 		n.Update(ntf.Error, err.Error())
@@ -71,7 +71,7 @@ func ScanDir(dir string, doneCb func()) {
 			i++
 		}
 		doneCb()
-		n.Update(ntf.Success, "Done scanning. %d new games found.", i)
+		n.Updatef(ntf.Success, "Done scanning. %d new games found.", i)
 	}()
 }
 

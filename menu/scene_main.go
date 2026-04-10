@@ -160,7 +160,7 @@ func coreExplorerCb(path string) {
 		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
 		return
 	}
-	ntf.DisplayAndLog(ntf.Success, "Core", "Core loaded: %s", filepath.Base(path))
+	ntf.DisplayAndLogf(ntf.Success, "Core", "Core loaded: %s", filepath.Base(path))
 }
 
 // triggered when a game is selected in the file explorer of Load Game

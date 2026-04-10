@@ -52,7 +52,7 @@ func loadHistoryEntry(list Scene, game history.Game) {
 	}
 	corePath := game.CorePath
 	if _, err := os.Stat(corePath); os.IsNotExist(err) {
-		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
+		ntf.DisplayAndLogf(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
 		return
 	}
 	if state.CorePath != corePath {

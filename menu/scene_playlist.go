@@ -98,7 +98,7 @@ func loadPlaylistEntry(list *scenePlaylist, playlist string, game playlists.Game
 		return
 	}
 	if _, err := os.Stat(corePath); os.IsNotExist(err) {
-		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
+		ntf.DisplayAndLogf(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
 		return
 	}
 	if state.CorePath != corePath {

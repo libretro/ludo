@@ -106,7 +106,7 @@ func removeSavestateEntry(s []entry, path string) []entry {
 func deleteSavestateEntry(list *sceneSavestates, path string) {
 	err := os.Remove(path)
 	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", "Could not delete savestate: %s", err.Error())
+		ntf.DisplayAndLogf(ntf.Error, "Menu", "Could not delete savestate: %v", err)
 		return
 	}
 	list.children = removeSavestateEntry(list.children, path)
