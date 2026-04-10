@@ -34,3 +34,5 @@ require (
 )
 
 go 1.25.0
+
+replace github.com/go-gl/glfw/v3.4/glfw => github.com/kivutar/glfw/v3.4/glfw v0.0.0-20260410202638-4349e4d5a0ee
