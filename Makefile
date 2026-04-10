@@ -88,20 +88,20 @@ $(APP).app: check-sign-identity ludo $(DYLIBS)
 	codesign --force --options runtime --verbose --timestamp --sign "$(SIGN_IDENTITY)" \
 		--entitlements pkg/entitlements.xml $(APP).app
 
-empty.dmg:
-	rm -f empty.dmg
-	hdiutil create -fs HFSX -layout SPUD -size 300m empty.dmg -format UDRW -volname $(BUNDLENAME)
+empty.sparseimage:
+	rm -rf empty.sparseimage
+	hdiutil create -fs HFSX -layout SPUD -size 300m empty.sparseimage -type SPARSE -volname $(BUNDLENAME)
 
 # For OSX
-dmg: check-sign-identity empty.dmg $(APP).app
+dmg: check-sign-identity empty.sparseimage $(APP).app
 	mkdir -p wc
-	hdiutil attach empty.dmg -noautoopen -quiet -mountpoint wc
+	hdiutil attach empty.sparseimage -noautoopen -quiet -mountpoint wc
 	rm -rf wc/$(APP).app
 	ditto -rsrc $(APP).app wc/$(APP).app
 	ln -sf /Applications wc/Applications
 	WC_DEV=`hdiutil info | grep wc | grep "Apple_HFS" | awk '{print $$1}'` && hdiutil detach $$WC_DEV -quiet -force
 	rm -f $(BUNDLENAME)-*.dmg
-	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
+	hdiutil convert empty.sparseimage -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
 	codesign --force --options runtime --verbose --timestamp --sign "$(SIGN_IDENTITY)" \
 		--entitlements pkg/entitlements.xml $(BUNDLENAME).dmg
 
@@ -157,4 +157,4 @@ deb: ludo $(SOBJS)
 	dpkg-deb --build $(DEB_ROOT)
 
 clean:
-	rm -rf Ludo.app ludo wc *.dmg *.deb $(BUNDLENAME)-* cores/
+	rm -rf Ludo.app ludo wc *.dmg *.sparseimage *.deb $(BUNDLENAME)-* cores/
