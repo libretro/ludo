@@ -151,11 +151,12 @@ jobs:
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
-      - run: echo ${{ secrets.OSXCERT }} | base64 --decode > dev.p12
+      - run: |
+          printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
       - run: security create-keychain -p github build.keychain
       - run: security default-keychain -s build.keychain
       - run: security unlock-keychain -p github build.keychain
-      - run: security import dev.p12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
+      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -A -T /usr/bin/codesign && rm dev.p12
       - run: security set-keychain-settings -lut 21600 build.keychain
       - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
       - run: security list-keychains -d user -s build.keychain
@@ -163,6 +164,7 @@ jobs:
           SIGN_IDENTITY="$(security find-identity -v -p codesigning build.keychain | awk -F '"' '/Developer ID Application:/ { print $2; exit }')"
           if [[ -z "$SIGN_IDENTITY" ]]; then
             security find-identity -v -p codesigning build.keychain
+            security find-certificate -a -Z build.keychain
             exit 1
           fi
           echo "SIGN_IDENTITY=$SIGN_IDENTITY" >> $GITHUB_ENV
@@ -192,11 +194,12 @@ jobs:
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
-      - run: echo ${{ secrets.OSXCERT }} | base64 --decode > dev.p12
+      - run: |
+          printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
       - run: security create-keychain -p github build.keychain
       - run: security default-keychain -s build.keychain
       - run: security unlock-keychain -p github build.keychain
-      - run: security import dev.p12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
+      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -A -T /usr/bin/codesign && rm dev.p12
       - run: security set-keychain-settings -lut 21600 build.keychain
       - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
       - run: security list-keychains -d user -s build.keychain
@@ -204,6 +207,7 @@ jobs:
           SIGN_IDENTITY="$(security find-identity -v -p codesigning build.keychain | awk -F '"' '/Developer ID Application:/ { print $2; exit }')"
           if [[ -z "$SIGN_IDENTITY" ]]; then
             security find-identity -v -p codesigning build.keychain
+            security find-certificate -a -Z build.keychain
             exit 1
           fi
           echo "SIGN_IDENTITY=$SIGN_IDENTITY" >> $GITHUB_ENV
