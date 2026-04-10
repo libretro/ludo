@@ -89,9 +89,8 @@ $(APP).app: check-sign-identity ludo $(DYLIBS)
 		--entitlements pkg/entitlements.xml $(APP).app
 
 empty.dmg:
-	mkdir -p template
-	hdiutil create -fs HFSX -layout SPUD -size 300m empty.dmg -srcfolder template -format UDRW -volname $(BUNDLENAME) -quiet
-	rmdir template
+	rm -f empty.dmg
+	hdiutil create -fs HFSX -layout SPUD -size 300m empty.dmg -format UDRW -volname $(BUNDLENAME)
 
 # For OSX
 dmg: check-sign-identity empty.dmg $(APP).app
