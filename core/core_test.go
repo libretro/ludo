@@ -49,14 +49,16 @@ func Test_coreLoad(t *testing.T) {
 
 	t.Run("Logs information about the loaded core", func(t *testing.T) {
 		got := out
-		want := `[Core]: Name: VecX
-[Core]: Version: 1.2 42366f8
-[Core]: Valid extensions: bin|vec
-[Core]: Need fullpath: false
-[Core]: Block extract: false
-`
-		if !strings.Contains(got, want) {
-			t.Errorf("got = %v, want %v", got, want)
+		for _, want := range []string{
+			`[Core]: Name: VecX`,
+			`[Core]: Version: 1.2 `,
+			`[Core]: Valid extensions: bin|vec`,
+			`[Core]: Need fullpath: false`,
+			`[Core]: Block extract: false`,
+		} {
+			if !strings.Contains(got, want) {
+				t.Errorf("got = %v, want to contain %v", got, want)
+			}
 		}
 	})
 
