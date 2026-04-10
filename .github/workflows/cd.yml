@@ -203,7 +203,7 @@ jobs:
         with:
           asset_paths: '["./Ludo-*.dmg*"]'
 
-  build_windows:
+  build_windows_x86_64:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
