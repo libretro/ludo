@@ -202,6 +202,7 @@ func textureLoad(nrgba *image.NRGBA) uint32 {
 		gl.RGBA,
 		gl.UNSIGNED_BYTE,
 		gl.Ptr(nrgba.Pix))
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, 0)
 	return texture
 }
 
