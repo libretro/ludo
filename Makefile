@@ -90,7 +90,7 @@ $(APP).app: check-sign-identity ludo $(DYLIBS)
 
 empty.dmg:
 	mkdir -p template
-	hdiutil create -fs HFSX -layout SPUD -size 200m empty.dmg -srcfolder template -format UDRW -volname $(BUNDLENAME) -quiet
+	hdiutil create -fs HFSX -layout SPUD -size 300m empty.dmg -srcfolder template -format UDRW -volname $(BUNDLENAME) -quiet
 	rmdir template
 
 # For OSX
