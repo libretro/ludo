@@ -106,7 +106,7 @@ jobs:
       - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
 
   build_osx:
-    runs-on: macos-13
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
         with:
