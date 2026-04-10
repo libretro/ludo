@@ -10,9 +10,6 @@ defaults:
   run:
     shell: bash
 
-env:
-  APPLE_TEAM_ID: ZE9XE938Z2
-
 jobs:
   build_linux_wayland_x86_64:
     runs-on: ubuntu-latest
@@ -156,20 +153,11 @@ jobs:
       - run: security create-keychain -p github build.keychain
       - run: security default-keychain -s build.keychain
       - run: security unlock-keychain -p github build.keychain
-      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -A -T /usr/bin/codesign && rm dev.p12
-      - run: security set-keychain-settings -lut 21600 build.keychain
+      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
       - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
       - run: security list-keychains -d user -s build.keychain
-      - run: |
-          SIGN_IDENTITY="$(security find-identity -v -p codesigning build.keychain | awk -F '"' '/Developer ID Application:/ { print $2; exit }')"
-          if [[ -z "$SIGN_IDENTITY" ]]; then
-            security find-identity -v -p codesigning build.keychain
-            security find-certificate -a -Z build.keychain
-            exit 1
-          fi
-          echo "SIGN_IDENTITY=$SIGN_IDENTITY" >> $GITHUB_ENV
-      - run: OS=OSX ARCH=x86_64 VERSION=$VERSION SIGN_IDENTITY="$SIGN_IDENTITY" make dmg
-      - run: xcrun notarytool submit Ludo-OSX-x86_64-${VERSION}.dmg --apple-id ${{ secrets.APPLEID }} --password ${{ secrets.APPLEIDPASS }} --team-id $APPLE_TEAM_ID --wait
+      - run: OS=OSX ARCH=x86_64 VERSION=$VERSION make dmg
+      - run: xcrun notarytool submit Ludo-OSX-x86_64-${VERSION}.dmg --apple-id ${{ secrets.APPLEID }} --password ${{ secrets.APPLEIDPASS }} --team-id ZE9XE938Z2 --wait
       - run: xcrun stapler staple Ludo-OSX-x86_64-${VERSION}.dmg
       - run: xcrun stapler validate Ludo-OSX-x86_64-${VERSION}.dmg
       - run: shasum -a 256 Ludo-OSX-x86_64-${VERSION}.dmg > Ludo-OSX-x86_64-${VERSION}.dmg.sha256
@@ -199,20 +187,11 @@ jobs:
       - run: security create-keychain -p github build.keychain
       - run: security default-keychain -s build.keychain
       - run: security unlock-keychain -p github build.keychain
-      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -A -T /usr/bin/codesign && rm dev.p12
-      - run: security set-keychain-settings -lut 21600 build.keychain
+      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
       - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
       - run: security list-keychains -d user -s build.keychain
-      - run: |
-          SIGN_IDENTITY="$(security find-identity -v -p codesigning build.keychain | awk -F '"' '/Developer ID Application:/ { print $2; exit }')"
-          if [[ -z "$SIGN_IDENTITY" ]]; then
-            security find-identity -v -p codesigning build.keychain
-            security find-certificate -a -Z build.keychain
-            exit 1
-          fi
-          echo "SIGN_IDENTITY=$SIGN_IDENTITY" >> $GITHUB_ENV
-      - run: OS=OSX ARCH=arm64 VERSION=$VERSION SIGN_IDENTITY="$SIGN_IDENTITY" make dmg
-      - run: xcrun notarytool submit Ludo-OSX-arm64-${VERSION}.dmg --apple-id ${{ secrets.APPLEID }} --password ${{ secrets.APPLEIDPASS }} --team-id $APPLE_TEAM_ID --wait
+      - run: OS=OSX ARCH=arm64 VERSION=$VERSION make dmg
+      - run: xcrun notarytool submit Ludo-OSX-arm64-${VERSION}.dmg --apple-id ${{ secrets.APPLEID }} --password ${{ secrets.APPLEIDPASS }} --team-id ZE9XE938Z2 --wait
       - run: xcrun stapler staple Ludo-OSX-arm64-${VERSION}.dmg
       - run: xcrun stapler validate Ludo-OSX-arm64-${VERSION}.dmg
       - run: shasum -a 256 Ludo-OSX-arm64-${VERSION}.dmg > Ludo-OSX-arm64-${VERSION}.dmg.sha256
