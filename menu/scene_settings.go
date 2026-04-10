@@ -117,7 +117,7 @@ func dirExplorerCb(path string, f *structs.Field) {
 		return
 	}
 	f.Set(path)
-	ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
+	ntf.DisplayAndLogf(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
 	err = settings.Save()
 	if err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())

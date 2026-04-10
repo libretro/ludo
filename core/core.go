@@ -146,6 +146,10 @@ func LoadGame(gamePath string) error {
 		UnloadGame()
 	}
 
+	if state.Core == nil {
+		return errors.New("no core loaded")
+	}
+
 	si := state.Core.GetSystemInfo()
 
 	gi, err := getGameInfo(gamePath, si.BlockExtract)

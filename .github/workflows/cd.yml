@@ -19,7 +19,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev libwayland-dev libxkbcommon-dev -y --allow-unauthenticated
@@ -43,7 +43,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
@@ -81,7 +81,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
@@ -105,7 +105,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
@@ -136,14 +136,14 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_osx:
-    runs-on: macos-13
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
@@ -177,7 +177,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: choco install wget make hashdeep --ignore-checksums
       - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
