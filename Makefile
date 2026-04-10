@@ -21,14 +21,6 @@ ifeq ($(ARCH), arm)
 	CORES := $(filter-out melonds,$(CORES))
 endif
 
-ifeq ($(ARCH), arm64)
-	CORES := $(filter-out swanstation,$(CORES))
-	CORES := $(filter-out mupen64plus_next,$(CORES))
-	CORES := $(filter-out mednafen_wswan,$(CORES))
-	CORES := $(filter-out handy,$(CORES))
-	CORES := $(filter-out np2kai,$(CORES))
-endif
-
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
 DLLS = $(addprefix cores/, $(addsuffix _libretro.dll,$(CORES)))
 SOBJS = $(addprefix cores/, $(addsuffix _libretro.so,$(CORES)))
