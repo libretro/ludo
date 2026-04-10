@@ -148,8 +148,7 @@ jobs:
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
-      - run: |
-          printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
+      - run: printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
       - run: security create-keychain -p github build.keychain
       - run: security default-keychain -s build.keychain
       - run: security unlock-keychain -p github build.keychain
@@ -182,8 +181,7 @@ jobs:
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
-      - run: |
-          printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
+      - run: printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
       - run: security create-keychain -p github build.keychain
       - run: security default-keychain -s build.keychain
       - run: security unlock-keychain -p github build.keychain
