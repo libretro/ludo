@@ -195,12 +195,12 @@ func genericRender(list *entry) {
 
 		if e.labelAlpha > 0 {
 			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
-			menu.Font.Printf(
+			menu.Font.Print(
 				(670+1)*menu.ratio,
 				float32(h)*e.yp+fontOffset+1*menu.ratio,
 				0.5*menu.ratio, e.label)
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
-			menu.Font.Printf(
+			menu.Font.Print(
 				670*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.5*menu.ratio, e.label)
@@ -209,7 +209,7 @@ func genericRender(list *entry) {
 				e.widget(&e)
 			} else if e.stringValue != nil {
 				lw := menu.Font.Width(0.5*menu.ratio, e.stringValue())
-				menu.Font.Printf(
+				menu.Font.Print(
 					float32(w)-lw-128*menu.ratio,
 					float32(h)*e.yp+fontOffset,
 					0.5*menu.ratio, e.stringValue())

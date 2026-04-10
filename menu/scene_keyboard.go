@@ -162,7 +162,7 @@ func (s *sceneKeyboard) render() {
 
 	// Label
 	menu.Font.SetColor(black)
-	menu.Font.Printf(
+	menu.Font.Print(
 		float32(w)/2-ttw/2,
 		s.y+float32(h)*0.15-ksz/2+ksz*0.6,
 		ksz/260, s.label)
@@ -170,7 +170,7 @@ func (s *sceneKeyboard) render() {
 	// Value
 	menu.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.25-ksz/2, ttw, ksz, 0,
 		video.Color{R: 0.95, G: 0.95, B: 0.95, A: 1})
-	menu.Font.Printf(
+	menu.Font.Print(
 		float32(w)/2-ttw/2+ksz/4,
 		s.y+float32(h)*0.25-ksz/2+ksz*0.62,
 		ksz/200, s.value+"|")
@@ -196,7 +196,7 @@ func (s *sceneKeyboard) render() {
 		menu.DrawRect(x, y, ksz, ksz, 0.2, c1)
 		menu.DrawRect(x, y, ksz, ksz*0.95, 0.2, c2)
 
-		menu.Font.Printf(
+		menu.Font.Print(
 			x+ksz/2-gw/2,
 			y+ksz*0.6,
 			ksz/200, key)

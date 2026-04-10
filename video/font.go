@@ -242,8 +242,8 @@ func (f *Font) UpdateResolution(windowWidth int, windowHeight int) {
 	gl.UseProgram(0)
 }
 
-// Printf draws a string to the screen.
-func (f *Font) Printf(x, y float32, scale float32, text string) error {
+// Print draws a string to the screen.
+func (f *Font) Print(x, y float32, scale float32, text string) error {
 	indices := []rune(text)
 
 	if len(indices) == 0 {
@@ -313,6 +313,11 @@ func (f *Font) Printf(x, y float32, scale float32, text string) error {
 	gl.Disable(gl.BLEND)
 
 	return nil
+}
+
+// Printf formats then draws a string to the screen.
+func (f *Font) Printf(x, y float32, scale float32, format string, argv ...interface{}) error {
+	return f.Print(x, y, scale, fmt.Sprintf(format, argv...))
 }
 
 // Width returns the width of a piece of text in pixels.
