@@ -6,7 +6,7 @@ package input
 import (
 	"log"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/glfw/v3.4/glfw"
 	lr "github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"

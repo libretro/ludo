@@ -6,7 +6,7 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/structs v1.1.0
 	github.com/go-gl/gl v0.0.0-20260331235117-4566fea9a276
-	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20260406072232-3ac4aa2bb164
+	github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.1
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/lucasb-eyer/go-colorful v1.4.0
 	github.com/mholt/archiver/v3 v3.5.1
@@ -34,3 +34,5 @@ require (
 )
 
 go 1.25.0
+
+replace github.com/go-gl/glfw/v3.4/glfw => github.com/kivutar/glfw/v3.4/glfw v0.0.0-20260410202638-4349e4d5a0ee
