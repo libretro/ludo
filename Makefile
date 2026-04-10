@@ -1,6 +1,7 @@
 APP ?= Ludo
 ARCH ?= x86_64
 VERSION ?= dev
+SIGN_IDENTITY ?=
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 DISPDRIVER ?= x11
 
@@ -51,7 +52,12 @@ cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
 	unzip $@.zip -d cores
 	rm $@.zip
 
-$(APP).app: ludo $(DYLIBS)
+check-sign-identity:
+ifeq ($(strip $(SIGN_IDENTITY)),)
+	$(error SIGN_IDENTITY is required for signed OSX builds)
+endif
+
+$(APP).app: check-sign-identity ludo $(DYLIBS)
 	mkdir -p $(APP).app/Contents/MacOS
 	mkdir -p $(APP).app/Contents/Resources/$(APP).iconset
 	cp pkg/Info.plist $(APP).app/Contents/
@@ -61,7 +67,7 @@ $(APP).app: ludo $(DYLIBS)
 	cp -r database $(APP).app/Contents/Resources
 	cp -r assets $(APP).app/Contents/Resources
 	cp -r cores $(APP).app/Contents/Resources
-	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
+	codesign --force --options runtime --verbose --timestamp --sign "$(SIGN_IDENTITY)" \
 		--entitlements pkg/entitlements.xml $(APP).app/Contents/Resources/cores/*.dylib
 	rm -rf $(APP).app/Contents/Resources/database/.git
 	rm -rf $(APP).app/Contents/Resources/assets/.git
@@ -75,11 +81,11 @@ $(APP).app: ludo $(DYLIBS)
 	sips -z 512 512 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_256x256@2x.png
 	sips -z 512 512 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_512x512.png
 	cp ludo $(APP).app/Contents/MacOS
-	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
+	codesign --force --options runtime --verbose --timestamp --sign "$(SIGN_IDENTITY)" \
 		--entitlements pkg/entitlements.xml $(APP).app/Contents/MacOS/ludo
 	iconutil -c icns -o $(APP).app/Contents/Resources/$(APP).icns $(APP).app/Contents/Resources/$(APP).iconset
 	rm -rf $(APP).app/Contents/Resources/$(APP).iconset
-	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
+	codesign --force --options runtime --verbose --timestamp --sign "$(SIGN_IDENTITY)" \
 		--entitlements pkg/entitlements.xml $(APP).app
 
 empty.dmg:
@@ -88,7 +94,7 @@ empty.dmg:
 	rmdir template
 
 # For OSX
-dmg: empty.dmg $(APP).app
+dmg: check-sign-identity empty.dmg $(APP).app
 	mkdir -p wc
 	hdiutil attach empty.dmg -noautoopen -quiet -mountpoint wc
 	rm -rf wc/$(APP).app
@@ -97,7 +103,7 @@ dmg: empty.dmg $(APP).app
 	WC_DEV=`hdiutil info | grep wc | grep "Apple_HFS" | awk '{print $$1}'` && hdiutil detach $$WC_DEV -quiet -force
 	rm -f $(BUNDLENAME)-*.dmg
 	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
-	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
+	codesign --force --options runtime --verbose --timestamp --sign "$(SIGN_IDENTITY)" \
 		--entitlements pkg/entitlements.xml $(BUNDLENAME).dmg
 
 # For Windows
