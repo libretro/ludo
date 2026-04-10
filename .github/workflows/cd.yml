@@ -148,16 +148,15 @@ jobs:
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
-      - run: echo ${{ secrets.OSXCERT }} | base64 --decode > dev.p12
+      - run: printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
       - run: security create-keychain -p github build.keychain
       - run: security default-keychain -s build.keychain
       - run: security unlock-keychain -p github build.keychain
-      - run: security import dev.p12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
+      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
       - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
+      - run: security list-keychains -d user -s build.keychain
       - run: OS=OSX ARCH=x86_64 VERSION=$VERSION make dmg
-      - run: echo "REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${VERSION}.dmg --primary-bundle-id com.libretro.ludo -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -itc_provider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }')" >> $GITHUB_ENV
-      - run: sleep 180
-      - run: xcrun altool --notarization-info $REQUESTUUID -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -ascprovider ZE9XE938Z2
+      - run: xcrun notarytool submit Ludo-OSX-x86_64-${VERSION}.dmg --apple-id ${{ secrets.APPLEID }} --password ${{ secrets.APPLEIDPASS }} --team-id ZE9XE938Z2 --wait
       - run: xcrun stapler staple Ludo-OSX-x86_64-${VERSION}.dmg
       - run: xcrun stapler validate Ludo-OSX-x86_64-${VERSION}.dmg
       - run: shasum -a 256 Ludo-OSX-x86_64-${VERSION}.dmg > Ludo-OSX-x86_64-${VERSION}.dmg.sha256
@@ -182,16 +181,15 @@ jobs:
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
-      - run: echo ${{ secrets.OSXCERT }} | base64 --decode > dev.p12
+      - run: printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
       - run: security create-keychain -p github build.keychain
       - run: security default-keychain -s build.keychain
       - run: security unlock-keychain -p github build.keychain
-      - run: security import dev.p12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
+      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
       - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
+      - run: security list-keychains -d user -s build.keychain
       - run: OS=OSX ARCH=arm64 VERSION=$VERSION make dmg
-      - run: echo "REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-arm64-${VERSION}.dmg --primary-bundle-id com.libretro.ludo -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -itc_provider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }')" >> $GITHUB_ENV
-      - run: sleep 180
-      - run: xcrun altool --notarization-info $REQUESTUUID -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -ascprovider ZE9XE938Z2
+      - run: xcrun notarytool submit Ludo-OSX-arm64-${VERSION}.dmg --apple-id ${{ secrets.APPLEID }} --password ${{ secrets.APPLEIDPASS }} --team-id ZE9XE938Z2 --wait
       - run: xcrun stapler staple Ludo-OSX-arm64-${VERSION}.dmg
       - run: xcrun stapler validate Ludo-OSX-arm64-${VERSION}.dmg
       - run: shasum -a 256 Ludo-OSX-arm64-${VERSION}.dmg > Ludo-OSX-arm64-${VERSION}.dmg.sha256
