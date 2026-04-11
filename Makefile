@@ -22,12 +22,10 @@ ifeq ($(ARCH), arm)
 endif
 ifeq ($(ARCH), arm64)
 	CORES := $(filter-out lutro,$(CORES))
-	CORES := $(filter-out mednafen_pce,$(CORES))
 	CORES := $(filter-out mednafen_saturn,$(CORES))
 	CORES := $(filter-out mupen64plus_next,$(CORES))
 	CORES := $(filter-out picodrive,$(CORES))
 	CORES := $(filter-out stella2014,$(CORES))
-	CORES := $(filter-out vecx,$(CORES))
 endif
 
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
