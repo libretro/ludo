@@ -14,6 +14,7 @@ defaults:
 
 jobs:
   build_linux_wayland_x86_64:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +34,7 @@ jobs:
       - run: go build -tags wayland -v
 
   build_linux_wayland_armhf:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -60,6 +62,7 @@ jobs:
       - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
 
   build_linux_wayland_arm64:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -87,6 +90,7 @@ jobs:
       - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc go build -tags wayland -v
 
   build_linux_x11_x86_64:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -106,6 +110,7 @@ jobs:
       - run: go build -tags x11 -v
 
   build_linux_x11_armhf:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -133,6 +138,7 @@ jobs:
       - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
 
   build_linux_x11_arm64:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -160,6 +166,7 @@ jobs:
       - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc go build -tags x11 -v
 
   build_osx_x86_64:
+    if: ${{ false }}
     runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
@@ -178,6 +185,7 @@ jobs:
       - run: go build -v
 
   build_osx_arm64:
+    if: ${{ false }}
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
@@ -214,14 +222,14 @@ jobs:
           path-type: inherit
           install: >-
             mingw-w64-ucrt-x86_64-toolchain
-            curl
-            unzip
+            mingw-w64-ucrt-x86_64-openal
       - run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
-      - run: curl -L -o openal-soft-1.21.0-bin.zip http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
-      - run: unzip -q openal-soft-1.21.0-bin.zip
-      - run: echo "CGO_CFLAGS=-I$PWD/openal-soft-1.21.0-bin/include/" >> "$GITHUB_ENV"
-      - run: echo "CGO_LDFLAGS=-L$PWD/openal-soft-1.21.0-bin/libs/Win64/" >> "$GITHUB_ENV"
+      # golang.org/x/mobile/exp/audio/al hardcodes -lOpenAL32 on Windows,
+      # while the MSYS2 package installs libopenal.dll.a.
+      - run: mkdir -p .ci/mingw-lib
+      - run: cp /ucrt64/lib/libopenal.dll.a .ci/mingw-lib/libOpenAL32.dll.a
+      - run: echo "CGO_LDFLAGS=-L$PWD/.ci/mingw-lib" >> "$GITHUB_ENV"
       - run: go get .
       #- run: go test -v -race ./...
       #- run: go vet ./...

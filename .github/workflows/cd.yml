@@ -12,6 +12,7 @@ defaults:
 
 jobs:
   build_linux_wayland_x86_64:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,6 +37,7 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_wayland_armhf:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -74,6 +76,7 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_wayland_arm64:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -111,6 +114,7 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_x11_x86_64:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -135,6 +139,7 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_x11_armhf:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -173,6 +178,7 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_x11_arm64:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -210,6 +216,7 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_osx_x86_64:
+    if: ${{ false }}
     runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
@@ -243,6 +250,7 @@ jobs:
           asset_paths: '["./Ludo-*.dmg*"]'
 
   build_osx_arm64:
+    if: ${{ false }}
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
@@ -294,21 +302,21 @@ jobs:
           path-type: inherit
           install: >-
             mingw-w64-ucrt-x86_64-toolchain
-            curl
+            mingw-w64-ucrt-x86_64-openal
             make
             p7zip
-            unzip
-            wget
+            mingw-w64-ucrt-x86_64-rcedit
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> "$GITHUB_ENV"
-      - run: curl -L -o openal-soft-1.21.0-bin.zip http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
-      - run: wget https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe
-      - run: cp rcedit-x64.exe rcedit-x64
-      - run: unzip -q openal-soft-1.21.0-bin.zip
-      - run: echo "CGO_CFLAGS=-I$PWD/openal-soft-1.21.0-bin/include/" >> "$GITHUB_ENV"
-      - run: echo "CGO_LDFLAGS=-L$PWD/openal-soft-1.21.0-bin/libs/Win64/" >> "$GITHUB_ENV"
+      - run: cp /ucrt64/bin/rcedit.exe ./rcedit-x64
+      - run: mkdir -p .ci/mingw-lib
+      - run: cp /ucrt64/lib/libopenal.dll.a .ci/mingw-lib/libOpenAL32.dll.a
+      - run: echo "CGO_LDFLAGS=-L$PWD/.ci/mingw-lib" >> "$GITHUB_ENV"
       - run: cp /ucrt64/bin/libgcc_s_seh-1.dll .
+      - run: cp /ucrt64/bin/libmysofa.dll .
+      - run: cp /ucrt64/bin/libopenal-1.dll .
+      - run: cp /ucrt64/bin/libstdc++-6.dll .
       - run: cp /ucrt64/bin/libwinpthread-1.dll .
-      - run: cp ./openal-soft-1.21.0-bin/bin/Win64/soft_oal.dll OpenAL32.dll
+      - run: cp /ucrt64/bin/zlib1.dll .
       - run: cp /c/Windows/System32/VCRUNTIME140.dll .
       - run: mkdir -p ./Ludo-Windows-x86_64-${VERSION}/
       - run: cp *.dll ./Ludo-Windows-x86_64-${VERSION}/
