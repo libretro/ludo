@@ -28,11 +28,11 @@ func buildCoreOptions() Scene {
 	for _, v := range core.Options.Vars {
 		v := v
 		list.children = append(list.children, entry{
-			label: strings.Replace(v.Desc, "%", "%%", -1),
+			label: strings.ReplaceAll(v.Desc, "%", "%%"),
 			icon:  "subsetting",
 			stringValue: func() string {
 				val := v.Choices[v.Choice]
-				return strings.Replace(val, "%", "%%", -1)
+				return "◀ " + strings.ReplaceAll(val, "%", "%%") + " ▶"
 			},
 			incr: func(direction int) {
 				v.Choice += direction
