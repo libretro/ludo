@@ -33,7 +33,7 @@ func buildCoreDiskControl() Scene {
 				state.Core.DiskControlCallback.SetEjectState(true)
 				state.Core.DiskControlCallback.SetImageIndex(index)
 				state.Core.DiskControlCallback.SetEjectState(false)
-				ntf.DisplayAndLog(ntf.Success, "Menu", "Switched to disk %d.", index+1)
+				ntf.DisplayAndLogf(ntf.Success, "Menu", "Switched to disk %d.", index+1)
 				state.MenuActive = false
 			},
 		})

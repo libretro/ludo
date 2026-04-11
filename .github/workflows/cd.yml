@@ -19,7 +19,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev libwayland-dev libxkbcommon-dev -y --allow-unauthenticated
@@ -35,7 +35,7 @@ jobs:
         with:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
-  build_linux_wayland_arm:
+  build_linux_wayland_armhf:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
@@ -73,6 +73,43 @@ jobs:
         with:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
+  build_linux_wayland_arm64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
+      - run: sudo apt update -q
+      - run: sudo apt install binutils-multiarch
+      - run: sudo dpkg --add-architecture arm64
+      - run: sudo rm -rf /etc/apt/sources.list.d/*
+      - run: echo "" | sudo tee /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
+      - run: sudo apt update -q
+      - run: sudo apt install -f libc6-dev:arm64 gcc-aarch64-linux-gnu libopenal-dev:arm64 libgl1-mesa-dev:arm64 libxcursor-dev:arm64 libxrandr-dev:arm64 libxinerama-dev:arm64 libxi-dev:arm64 libwayland-dev:arm64 libxkbcommon-dev:arm64 -y --allow-unauthenticated
+      - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc OS=Linux ARCH=arm64 DISPDRIVER=wayland VERSION=$VERSION make tar
+      - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc OS=Linux ARCH=arm64 DISPDRIVER=wayland VERSION=$VERSION make deb
+      - run: sha256sum Ludo-Linux-wayland-arm64-${VERSION}.tar.gz > Ludo-Linux-wayland-arm64-${VERSION}.tar.gz.sha256
+
+      - name: Upload Release Asset
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
+
   build_linux_x11_x86_64:
     runs-on: ubuntu-latest
     steps:
@@ -81,7 +118,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev -y --allow-unauthenticated
@@ -97,7 +134,7 @@ jobs:
         with:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
-  build_linux_x11_arm:
+  build_linux_x11_armhf:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -105,7 +142,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
@@ -135,29 +172,65 @@ jobs:
         with:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
-  build_osx:
-    runs-on: macos-13
+  build_linux_x11_arm64:
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
+      - run: sudo apt update -q
+      - run: sudo apt install binutils-multiarch
+      - run: sudo dpkg --add-architecture arm64
+      - run: sudo rm -rf /etc/apt/sources.list.d/*
+      - run: echo "" | sudo tee /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
+      - run: sudo apt update -q
+      - run: sudo apt install -f libxxf86vm-dev:arm64 libc6-dev:arm64 gcc-aarch64-linux-gnu libopenal-dev:arm64 libgl1-mesa-dev:arm64 libxcursor-dev:arm64 libxrandr-dev:arm64 libxinerama-dev:arm64 libxi-dev:arm64 -y --allow-unauthenticated
+      - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc OS=Linux ARCH=arm64 DISPDRIVER=x11 VERSION=$VERSION make tar
+      - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc OS=Linux ARCH=arm64 DISPDRIVER=x11 VERSION=$VERSION make deb
+      - run: sha256sum Ludo-Linux-x11-arm64-${VERSION}.tar.gz > Ludo-Linux-x11-arm64-${VERSION}.tar.gz.sha256
+
+      - name: Upload Release Asset
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
+
+  build_osx_x86_64:
+    runs-on: macos-15-intel
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
-      - run: echo ${{ secrets.OSXCERT }} | base64 --decode > dev.p12
+      - run: printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
       - run: security create-keychain -p github build.keychain
       - run: security default-keychain -s build.keychain
       - run: security unlock-keychain -p github build.keychain
-      - run: security import dev.p12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
+      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
       - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
+      - run: security list-keychains -d user -s build.keychain
       - run: OS=OSX ARCH=x86_64 VERSION=$VERSION make dmg
-      - run: echo "REQUESTUUID=$(xcrun altool --notarize-app -t osx -f Ludo-OSX-x86_64-${VERSION}.dmg --primary-bundle-id com.libretro.ludo -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -itc_provider ZE9XE938Z2 | awk '/RequestUUID/ { print $NF; }')" >> $GITHUB_ENV
-      - run: sleep 180
-      - run: xcrun altool --notarization-info $REQUESTUUID -u ${{ secrets.APPLEID }} -p ${{ secrets.APPLEIDPASS }} -ascprovider ZE9XE938Z2
+      - run: xcrun notarytool submit Ludo-OSX-x86_64-${VERSION}.dmg --apple-id ${{ secrets.APPLEID }} --password ${{ secrets.APPLEIDPASS }} --team-id ZE9XE938Z2 --wait
       - run: xcrun stapler staple Ludo-OSX-x86_64-${VERSION}.dmg
       - run: xcrun stapler validate Ludo-OSX-x86_64-${VERSION}.dmg
       - run: shasum -a 256 Ludo-OSX-x86_64-${VERSION}.dmg > Ludo-OSX-x86_64-${VERSION}.dmg.sha256
@@ -169,7 +242,40 @@ jobs:
         with:
           asset_paths: '["./Ludo-*.dmg*"]'
 
-  build_windows:
+  build_osx_arm64:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+      - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
+      - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
+      - run: go install honnef.co/go/tools/cmd/staticcheck@latest
+      - run: brew install openal-soft
+      - run: printf '%s' '${{ secrets.OSXCERT }}' | base64 --decode > dev.p12
+      - run: security create-keychain -p github build.keychain
+      - run: security default-keychain -s build.keychain
+      - run: security unlock-keychain -p github build.keychain
+      - run: security import dev.p12 -f pkcs12 -k build.keychain -P ${{ secrets.OSXCERTPASS }} -T /usr/bin/codesign && rm dev.p12
+      - run: security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k github build.keychain
+      - run: security list-keychains -d user -s build.keychain
+      - run: OS=OSX ARCH=arm64 VERSION=$VERSION make dmg
+      - run: xcrun notarytool submit Ludo-OSX-arm64-${VERSION}.dmg --apple-id ${{ secrets.APPLEID }} --password ${{ secrets.APPLEIDPASS }} --team-id ZE9XE938Z2 --wait
+      - run: xcrun stapler staple Ludo-OSX-arm64-${VERSION}.dmg
+      - run: xcrun stapler validate Ludo-OSX-arm64-${VERSION}.dmg
+      - run: shasum -a 256 Ludo-OSX-arm64-${VERSION}.dmg > Ludo-OSX-arm64-${VERSION}.dmg.sha256
+
+      - name: Upload Release Asset
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./Ludo-*.dmg*"]'
+
+  build_windows_x86_64:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -177,7 +283,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> $GITHUB_ENV
       - run: choco install wget make hashdeep --ignore-checksums
       - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip

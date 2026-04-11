@@ -106,7 +106,7 @@ func removeSavestateEntry(s []entry, path string) []entry {
 func deleteSavestateEntry(list *sceneSavestates, path string) {
 	err := os.Remove(path)
 	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", "Could not delete savestate: %s", err.Error())
+		ntf.DisplayAndLogf(ntf.Error, "Menu", "Could not delete savestate: %v", err)
 		return
 	}
 	list.children = removeSavestateEntry(list.children, path)
@@ -154,13 +154,13 @@ func (s *sceneSavestates) render() {
 			}
 
 			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
-			menu.Font.Printf(
+			menu.Font.Print(
 				(840+1)*menu.ratio,
 				float32(h)*e.yp+fontOffset+1*menu.ratio,
 				0.5*menu.ratio, e.label)
 
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
-			menu.Font.Printf(
+			menu.Font.Print(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
 				0.5*menu.ratio, e.label)

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/structs"
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/glfw/v3.4/glfw"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/ludos"
@@ -117,7 +117,7 @@ func dirExplorerCb(path string, f *structs.Field) {
 		return
 	}
 	f.Set(path)
-	ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
+	ntf.DisplayAndLogf(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
 	err = settings.Save()
 	if err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())

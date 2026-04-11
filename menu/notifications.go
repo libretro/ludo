@@ -32,7 +32,7 @@ func (m *Menu) RenderNotifications() {
 			bg.Alpha(fading),
 		)
 		m.Font.SetColor(fg.Alpha(fading))
-		m.Font.Printf(
+		m.Font.Print(
 			45*m.ratio,
 			(stack+offset)*m.ratio,
 			0.5*m.ratio,

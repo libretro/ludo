@@ -9,7 +9,7 @@ func stackHintLeft(stack *float32, icon uint32, label string, h int) {
 	menu.Font.SetColor(hintTextColor)
 	menu.DrawImage(icon, *stack, float32(h)-79*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, 0, hintTextColor)
 	*stack += 70 * menu.ratio
-	menu.Font.Printf(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
+	menu.Font.Print(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
 	*stack += menu.Font.Width(0.5*menu.ratio, label)
 	*stack += 32 * menu.ratio
 }
@@ -18,7 +18,7 @@ func stackHintLeft(stack *float32, icon uint32, label string, h int) {
 func stackHintRight(stack *float32, icon uint32, label string, h int) {
 	*stack -= menu.Font.Width(0.5*menu.ratio, label)
 	menu.Font.SetColor(hintTextColor)
-	menu.Font.Printf(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
+	menu.Font.Print(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
 	*stack -= 70 * menu.ratio
 	menu.DrawImage(icon, *stack, float32(h)-79*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, 0, hintTextColor)
 	*stack -= 32 * menu.ratio

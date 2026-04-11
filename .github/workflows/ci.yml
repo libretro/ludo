@@ -21,7 +21,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: sudo apt-get update -q
@@ -32,7 +32,7 @@ jobs:
       - run: staticcheck ./...
       - run: go build -tags wayland -v
 
-  build_linux_wayland_arm:
+  build_linux_wayland_armhf:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: sudo apt update -q
       - run: sudo apt install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
@@ -59,6 +59,33 @@ jobs:
       - run: sudo apt install -f libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf libwayland-dev:armhf libxkbcommon-dev:armhf -y --allow-unauthenticated
       - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
 
+  build_linux_wayland_arm64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+      - run: sudo apt update -q
+      - run: sudo apt install binutils-multiarch
+      - run: sudo dpkg --add-architecture arm64
+      - run: sudo rm -rf /etc/apt/sources.list.d/*
+      - run: echo "" | sudo tee /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
+      - run: sudo apt update -q
+      - run: sudo apt install -f libc6-dev:arm64 gcc-aarch64-linux-gnu libopenal-dev:arm64 libgl1-mesa-dev:arm64 libxcursor-dev:arm64 libxrandr-dev:arm64 libxinerama-dev:arm64 libxi-dev:arm64 libwayland-dev:arm64 libxkbcommon-dev:arm64 -y --allow-unauthenticated
+      - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc go build -tags wayland -v
+
   build_linux_x11_x86_64:
     runs-on: ubuntu-latest
     steps:
@@ -67,18 +94,18 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "/home/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: sudo apt-get update -q
       - run: sudo apt-get install libopenal-dev xorg-dev libgl1-mesa-dev libxkbcommon-dev -y --allow-unauthenticated
       - run: go get .
-      - run: xvfb-run -a go test -v -race ./...
-      - run: go vet ./...
-      - run: staticcheck ./...
+      - run: xvfb-run -a go test -tags x11 -v -race ./...
+      - run: go vet -tags x11 ./...
+      - run: staticcheck -tags x11 ./...
       - run: go build -tags x11 -v
 
-  build_linux_x11_arm:
+  build_linux_x11_armhf:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -86,7 +113,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: sudo apt update -q
       - run: sudo apt-get install binutils-multiarch
       - run: sudo dpkg --add-architecture armhf
@@ -105,15 +132,42 @@ jobs:
       - run: sudo apt install -f libxxf86vm-dev:armhf libc6-dev:armhf gcc-arm-linux-gnueabihf libopenal-dev:armhf libgl1-mesa-dev:armhf libxcursor-dev:armhf libxrandr-dev:armhf libxinerama-dev:armhf libxi-dev:armhf -y --allow-unauthenticated
       - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
 
-  build_osx:
-    runs-on: macos-13
+  build_linux_x11_arm64:
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
+      - run: sudo apt update -q
+      - run: sudo apt install binutils-multiarch
+      - run: sudo dpkg --add-architecture arm64
+      - run: sudo rm -rf /etc/apt/sources.list.d/*
+      - run: echo "" | sudo tee /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+      - run: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
+      - run: sudo apt update -q
+      - run: sudo apt install -f libxxf86vm-dev:arm64 libc6-dev:arm64 gcc-aarch64-linux-gnu libopenal-dev:arm64 libgl1-mesa-dev:arm64 libxcursor-dev:arm64 libxrandr-dev:arm64 libxinerama-dev:arm64 libxi-dev:arm64 -y --allow-unauthenticated
+      - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc go build -tags x11 -v
+
+  build_osx_x86_64:
+    runs-on: macos-15-intel
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
       - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: brew install openal-soft
@@ -123,7 +177,25 @@ jobs:
       - run: staticcheck ./...
       - run: go build -v
 
-  build_windows:
+  build_osx_arm64:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+      - run: echo "/Users/runner/go/bin" >> $GITHUB_PATH
+      - run: go install honnef.co/go/tools/cmd/staticcheck@latest
+      - run: brew install openal-soft
+      - run: go get .
+      - run: go test -v -race ./...
+      - run: go vet ./...
+      - run: staticcheck ./...
+      - run: go build -v
+
+  build_windows_x86_64:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -131,7 +203,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version: '1.25.0'
       - run: echo "/c/Users/runneradmin/go/bin" >> $GITHUB_PATH
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - run: choco install wget --ignore-checksums

@@ -6,7 +6,7 @@ package input
 import (
 	"log"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/glfw/v3.4/glfw"
 	lr "github.com/libretro/ludo/libretro"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
@@ -54,14 +54,14 @@ func joystickCallback(joy glfw.Joystick, event glfw.PeripheralEvent) {
 	switch event {
 	case glfw.Connected:
 		if joy.IsGamepad() {
-			ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.Joystick.GetName(joy))
+			ntf.DisplayAndLogf(ntf.Info, "Input", "Joystick #%d plugged: %s.", joy, glfw.Joystick.GetName(joy))
 		} else {
-			ntf.DisplayAndLog(ntf.Warning, "Input", "Joystick #%d plugged: %s but not configured.", joy, glfw.Joystick.GetName(joy))
+			ntf.DisplayAndLogf(ntf.Warning, "Input", "Joystick #%d plugged: %s but not configured.", joy, glfw.Joystick.GetName(joy))
 		}
 	case glfw.Disconnected:
-		ntf.DisplayAndLog(ntf.Info, "Input", "Joystick #%d unplugged.", joy)
+		ntf.DisplayAndLogf(ntf.Info, "Input", "Joystick #%d unplugged.", joy)
 	default:
-		ntf.DisplayAndLog(ntf.Warning, "Input", "Joystick #%d unhandled event: %d.", joy, event)
+		ntf.DisplayAndLogf(ntf.Warning, "Input", "Joystick #%d unhandled event: %d.", joy, event)
 	}
 }
 
