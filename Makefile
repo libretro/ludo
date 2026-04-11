@@ -31,6 +31,8 @@ endif
 ifeq ($(OS), Linux)
 	ifeq ($(ARCH), arm)
 		BUILDBOTURL=$(BUILDBOTURL_BASE)/linux/armv7-neon-hf/latest
+	else ifeq ($(ARCH), arm64)
+		BUILDBOTURL=$(BUILDBOTURL_BASE)/linux/aarch64/latest
 	else
 		BUILDBOTURL=$(BUILDBOTURL_BASE)/linux/$(ARCH)/latest
 	endif
@@ -45,7 +47,13 @@ ludo:
 ludo.exe:
 	go build -ldflags '-H=windowsgui'
 
-cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
+cores/%_libretro.dylib cores/%_libretro.dll:
+	mkdir -p cores
+	wget -c $(BUILDBOTURL)/$(@F).zip -O $@.zip;\
+	unzip $@.zip -d cores
+	rm $@.zip
+
+cores/%_libretro.so:
 	mkdir -p cores
 	wget -c $(BUILDBOTURL)/$(@F).zip -O $@.zip;\
 	unzip $@.zip -d cores
@@ -123,6 +131,9 @@ tar: ludo $(SOBJS)
 DEB_ARCH = amd64
 ifeq ($(ARCH), arm)
 	DEB_ARCH = armhf
+endif
+ifeq ($(ARCH), arm64)
+	DEB_ARCH = arm64
 endif
 DEB_ROOT = ludo-$(DISPDRIVER)_$(VERSION)-1_$(DEB_ARCH)
 
