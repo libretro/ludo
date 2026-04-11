@@ -20,6 +20,9 @@ ifeq ($(ARCH), arm)
 	CORES := $(filter-out mednafen_saturn,$(CORES))
 	CORES := $(filter-out melonds,$(CORES))
 endif
+ifeq ($(ARCH), arm64)
+	CORES := $(filter-out lutro,$(CORES))
+endif
 
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
 DLLS = $(addprefix cores/, $(addsuffix _libretro.dll,$(CORES)))
