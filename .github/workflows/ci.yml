@@ -14,7 +14,6 @@ defaults:
 
 jobs:
   build_linux_wayland_x86_64:
-    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +33,6 @@ jobs:
       - run: go build -tags wayland -v
 
   build_linux_wayland_armhf:
-    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +60,6 @@ jobs:
       - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags wayland -v
 
   build_linux_wayland_arm64:
-    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +87,6 @@ jobs:
       - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc go build -tags wayland -v
 
   build_linux_x11_x86_64:
-    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -110,7 +106,6 @@ jobs:
       - run: go build -tags x11 -v
 
   build_linux_x11_armhf:
-    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -138,7 +133,6 @@ jobs:
       - run: PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -tags x11 -v
 
   build_linux_x11_arm64:
-    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -166,7 +160,6 @@ jobs:
       - run: PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc go build -tags x11 -v
 
   build_osx_x86_64:
-    if: ${{ false }}
     runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
@@ -185,7 +178,6 @@ jobs:
       - run: go build -v
 
   build_osx_arm64:
-    if: ${{ false }}
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4

@@ -12,7 +12,6 @@ defaults:
 
 jobs:
   build_linux_wayland_x86_64:
-    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +36,6 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_wayland_armhf:
-    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +74,6 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_wayland_arm64:
-    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -114,7 +111,6 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_x11_x86_64:
-    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -139,7 +135,6 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_x11_armhf:
-    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -178,7 +173,6 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_linux_x11_arm64:
-    if: ${{ false }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -216,7 +210,6 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_osx_x86_64:
-    if: ${{ false }}
     runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
@@ -250,7 +243,6 @@ jobs:
           asset_paths: '["./Ludo-*.dmg*"]'
 
   build_osx_arm64:
-    if: ${{ false }}
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
