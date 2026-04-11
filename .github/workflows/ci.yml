@@ -197,6 +197,9 @@ jobs:
 
   build_windows_x86_64:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -204,19 +207,22 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25.0'
-      - run: echo "/c/Users/runneradmin/go/bin" >> $GITHUB_PATH
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          path-type: inherit
+          install: >-
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-openal
+      - run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
       - run: go install honnef.co/go/tools/cmd/staticcheck@latest
-      - run: choco install wget --ignore-checksums
-      - run: curl -L -o mingw64.zip https://github.com/brechtsanders/winlibs_mingw/releases/download/13.2.0posix-17.0.6-11.0.1-ucrt-r5/winlibs-x86_64-posix-seh-gcc-13.2.0-llvm-17.0.6-mingw-w64ucrt-11.0.1-r5.zip
-      - run: unzip mingw64.zip
-      - run: wget --no-check-certificate http://www.openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
-      - run: 7z x openal-soft-1.21.0-bin.zip -o/c/
-      - run: echo "CGO_CFLAGS=-I/c/openal-soft-1.21.0-bin/include/" >> $GITHUB_ENV
-      - run: echo "CGO_LDFLAGS=-L/c/openal-soft-1.21.0-bin/libs/Win64/" >> $GITHUB_ENV
-      - run: cp "mingw64/bin/libwinpthread-1.dll" .
-      - run: PATH="/c/mingw64/bin:$PATH"
+      # golang.org/x/mobile/exp/audio/al hardcodes -lOpenAL32 on Windows,
+      # while the MSYS2 package installs libopenal.dll.a.
+      - run: cp /ucrt64/lib/libopenal.dll.a ./libOpenAL32.dll.a
+      - run: echo "CGO_LDFLAGS=-L$PWD" >> "$GITHUB_ENV"
       - run: go get .
-      #- run: go test -v -race ./...
-      #- run: go vet ./...
+      - run: go test -v -race ./...
+      - run: go vet ./...
       - run: staticcheck ./...
       - run: go build -v -ldflags '-H=windowsgui'
