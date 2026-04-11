@@ -308,9 +308,8 @@ jobs:
             mingw-w64-ucrt-x86_64-rcedit
       - run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | cut -c 2-)" >> "$GITHUB_ENV"
       - run: cp /ucrt64/bin/rcedit.exe ./rcedit-x64
-      - run: mkdir -p .ci/mingw-lib
-      - run: cp /ucrt64/lib/libopenal.dll.a .ci/mingw-lib/libOpenAL32.dll.a
-      - run: echo "CGO_LDFLAGS=-L$PWD/.ci/mingw-lib" >> "$GITHUB_ENV"
+      - run: cp /ucrt64/lib/libopenal.dll.a ./libOpenAL32.dll.a
+      - run: echo "CGO_LDFLAGS=-L$PWD" >> "$GITHUB_ENV"
       - run: cp /ucrt64/bin/libgcc_s_seh-1.dll .
       - run: cp /ucrt64/bin/libmysofa.dll .
       - run: cp /ucrt64/bin/libopenal-1.dll .
