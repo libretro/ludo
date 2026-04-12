@@ -6,6 +6,7 @@ package core
 import (
 	"errors"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,6 +32,21 @@ var Options *options.Options
 // Call Init before calling other functions of this package.
 func Init(v *video.Video) {
 	vid = v
+}
+
+func applySystemAVInfo(avi libretro.SystemAVInfo) {
+	vid.Geom = avi.Geometry
+
+	if avi.Timing.FPS > 0 {
+		state.CoreFPS = avi.Timing.FPS
+	}
+
+	if avi.Timing.SampleRate > 0 {
+		audio.Reconfigure(int32(math.Round(avi.Timing.SampleRate)))
+		if state.Core != nil && state.Core.AudioCallback != nil {
+			state.Core.AudioCallback.SetState(true)
+		}
+	}
 }
 
 // Load loads a libretro core
@@ -178,8 +194,7 @@ func LoadGame(gamePath string) error {
 	}
 
 	avi := state.Core.GetSystemAVInfo()
-
-	vid.Geom = avi.Geometry
+	applySystemAVInfo(avi)
 
 	// Append the library name to the window title.
 	if len(si.LibraryName) > 0 {
@@ -187,10 +202,6 @@ func LoadGame(gamePath string) error {
 	}
 
 	input.Init(vid)
-	audio.Reconfigure(int32(avi.Timing.SampleRate))
-	if state.Core.AudioCallback != nil {
-		state.Core.AudioCallback.SetState(true)
-	}
 
 	state.CoreRunning = true
 	state.FastForward = false
@@ -216,6 +227,7 @@ func Unload() {
 		state.CorePath = ""
 		state.Core = nil
 		Options = nil
+		state.CoreFPS = 0
 	}
 }
 
@@ -223,9 +235,11 @@ func Unload() {
 func UnloadGame() {
 	if state.CoreRunning {
 		savefiles.SaveSRAM()
+		audio.Stop()
 		state.Core.UnloadGame()
 		state.GamePath = ""
 		state.CoreRunning = false
+		state.CoreFPS = 0
 		vid.ResetPitch()
 		vid.ResetRot()
 	}
