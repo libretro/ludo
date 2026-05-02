@@ -88,8 +88,9 @@ func defaultRunes() []rune {
 	runes = appendRange(runes, 0xFF41, 0xFF5A) // fullwidth a-z
 	runes = appendRange(runes, 0xFF5B, 0xFF65) // fullwidth { | } ~ and katakana punctuation
 	runes = appendRange(runes, 0x00A0, 0x017F)
+	runes = appendRange(runes, 0x3000, 0x303F)
 	runes = appendRange(runes, 0x3040, 0x30FF)
-	runes = appendRange(runes, 0x4E00, 0x9FAF)
+	runes = appendRange(runes, 0x4E00, 0x9FFF)
 	return runes
 }
 
