@@ -33,6 +33,8 @@ const (
 	TopToBottom                  // E.g.: Chinese
 )
 
+const fontRenderScale = 2
+
 // A Font allows rendering of text to an OpenGL context.
 type Font struct {
 	glyphs      map[rune]*glyph
@@ -140,6 +142,13 @@ func increaseLineHeight(face font.Face, ttf *truetype.Font, ch rune, lineHeight 
 	return max(lineHeight, float32(metrics.height))
 }
 
+func wrapGlyph(x, y *int, glyphWidth, lineHeight, atlasWidth, margin int) {
+	if *x+glyphWidth+margin > atlasWidth {
+		*x = margin
+		*y += lineHeight + margin
+	}
+}
+
 func appendGlyph(face font.Face, ttf *truetype.Font, ch rune, x, y *int, lineHeight, atlasWidth float32, atlas *image.RGBA, fg *image.Uniform, scale int32, margin int) (*glyph, error) {
 	char := new(glyph)
 
@@ -147,6 +156,8 @@ func appendGlyph(face font.Face, ttf *truetype.Font, ch rune, x, y *int, lineHei
 	if err != nil {
 		return nil, err
 	}
+
+	wrapGlyph(x, y, metrics.width, int(lineHeight), int(atlasWidth), margin)
 
 	// Set w,h and adv, bearing V and bearing H in char
 	char.x = *x
@@ -174,14 +185,9 @@ func appendGlyph(face font.Face, ttf *truetype.Font, ch rune, x, y *int, lineHei
 	py := (metrics.ascent) + *y
 	pt := freetype.Pt(px, py)
 
-	*x += metrics.width + margin
-	if *x+metrics.width+margin > int(atlasWidth) {
-		*x = 0
-		*y += int(lineHeight) + margin
-	}
-
 	// Draw the text from mask to image
 	_, err = c.DrawString(string(ch), pt)
+	*x += metrics.width + margin
 	return char, err
 }
 
@@ -213,11 +219,7 @@ func calculateAtlasSize(face font.Face, ttf *truetype.Font, runes []rune, scale 
 				continue
 			}
 
-			if x+metrics.width+margin > width {
-				x = margin
-				y += int(lineHeight) + margin
-			}
-
+			wrapGlyph(&x, &y, metrics.width, int(lineHeight), width, margin)
 			x += metrics.width + margin
 
 			if y+int(lineHeight) > maxY {
@@ -298,14 +300,12 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	gl.GenTextures(1, &f.textureID)
 	gl.BindTexture(gl.TEXTURE_2D, f.textureID)
 	gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(atlas.Rect.Dx()), int32(atlas.Rect.Dy()), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(atlas.Pix))
-
-	gl.GenerateMipmap(gl.TEXTURE_2D)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 
 	// Configure VAO/VBO for texture quads
@@ -349,7 +349,12 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Fon
 	resUniform := gl.GetUniformLocation(program, gl.Str("resolution\x00"))
 	gl.Uniform2f(resUniform, float32(windowWidth), float32(windowHeight))
 
-	return LoadTrueTypeFont(program, fd, scale, LeftToRight)
+	atlasScale := int32(float32(scale) / fontRenderScale)
+	if atlasScale < 1 {
+		atlasScale = 1
+	}
+
+	return LoadTrueTypeFont(program, fd, atlasScale, LeftToRight)
 }
 
 // SetColor allows you to set the text color to be used when you draw the text
@@ -368,6 +373,7 @@ func (f *Font) UpdateResolution(windowWidth int, windowHeight int) {
 // Print draws a string to the screen.
 func (f *Font) Print(x, y float32, scale float32, text string) error {
 	indices := []rune(text)
+	scale *= fontRenderScale
 
 	if len(indices) == 0 {
 		return nil
@@ -442,6 +448,7 @@ func (f *Font) Printf(x, y float32, scale float32, format string, argv ...interf
 // Width returns the width of a piece of text in pixels.
 func (f *Font) Width(scale float32, text string) float32 {
 	var width float32
+	scale *= fontRenderScale
 
 	indices := []rune(text)
 
