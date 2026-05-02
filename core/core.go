@@ -102,17 +102,17 @@ func unarchiveGame(filename string) (string, int64, error) {
 		".pbp": 3,
 	}
 
-	selectGame := func(fname string, fsize int64) {
-		ext := filepath.Ext(fname)
+	selectGame := func(gamePath string, fsize int64) {
+		ext := filepath.Ext(gamePath)
 		if size == 0 {
-			path = filepath.Join(dst, fname)
+			path = gamePath
 			size = fsize
 			log.Println("first file in archive:", path, size)
 		}
 		priority, ok := extPrefered[strings.ToLower(ext)]
 		if ok && priority > extPriority {
 			extPriority = priority
-			path = filepath.Join(dst, fname)
+			path = gamePath
 			size = fsize
 			log.Println("find a better file in archive:", path, size)
 		}
@@ -155,7 +155,7 @@ func unarchiveGame(filename string) (string, int64, error) {
 				return closeErr
 			}
 
-			selectGame(strings.TrimPrefix(fname, dst+string(filepath.Separator)), f.Size())
+			selectGame(fname, f.Size())
 			return nil
 		})
 		return path, size, err
