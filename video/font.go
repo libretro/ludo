@@ -65,6 +65,10 @@ func max(a, b float32) float32 {
 	return b
 }
 
+func ceilFixed26_6(v fixed.Int26_6) int32 {
+	return int32((v + 63) >> 6)
+}
+
 func appendRange(runes []rune, start, end rune) []rune {
 	for r := start; r <= end; r++ {
 		runes = append(runes, r)
@@ -102,14 +106,14 @@ func getGlyphMetrics(face font.Face, ttf *truetype.Font, ch rune, scale int32) (
 		return glyphMetrics{}, fmt.Errorf("ttf face glyphBounds error")
 	}
 
-	gh := int32((gBnd.Max.Y - gBnd.Min.Y) >> 6)
-	gw := int32((gBnd.Max.X - gBnd.Min.X) >> 6)
+	gh := ceilFixed26_6(gBnd.Max.Y - gBnd.Min.Y)
+	gw := ceilFixed26_6(gBnd.Max.X - gBnd.Min.X)
 
 	// If gylph has no dimensions set to a max value
 	if gw == 0 || gh == 0 {
 		gBnd = ttf.Bounds(fixed.Int26_6(scale))
-		gw = int32((gBnd.Max.X - gBnd.Min.X) >> 6)
-		gh = int32((gBnd.Max.Y - gBnd.Min.Y) >> 6)
+		gw = ceilFixed26_6(gBnd.Max.X - gBnd.Min.X)
+		gh = ceilFixed26_6(gBnd.Max.Y - gBnd.Min.Y)
 
 		// Above can sometimes yield 0 for font smaller than 48pt, 1 is minimum
 		if gw == 0 || gh == 0 {
@@ -119,8 +123,8 @@ func getGlyphMetrics(face font.Face, ttf *truetype.Font, ch rune, scale int32) (
 	}
 
 	// The glyph's ascent and descent equal -bounds.Min.Y and +bounds.Max.Y.
-	gAscent := int(-gBnd.Min.Y) >> 6
-	gdescent := int(gBnd.Max.Y) >> 6
+	gAscent := int(ceilFixed26_6(-gBnd.Min.Y))
+	gdescent := int(ceilFixed26_6(gBnd.Max.Y))
 
 	return glyphMetrics{
 		bounds:  gBnd,
