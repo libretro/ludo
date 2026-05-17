@@ -66,13 +66,6 @@ type glyphMetrics struct {
 	descent int
 }
 
-func max(a, b float32) float32 {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 func ceilFixed26_6(v fixed.Int26_6) int32 {
 	return int32((v + 63) >> 6)
 }
