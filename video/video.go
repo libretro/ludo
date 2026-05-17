@@ -19,7 +19,7 @@ import (
 // Video holds the state of the video package
 type Video struct {
 	Window   *glfw.Window
-	HWWindow *glfw.Window
+	HWWindow *glfw.Window // hidden shared context window for cores using SET_HW_SHARED_CONTEXT
 	Geom     libretro.GameGeometry
 	Font     *Font
 	FontSm   *Font
@@ -72,17 +72,10 @@ func Init(fullscreen bool) *Video {
 // Reconfigure destroys and recreates the window with new attributes
 func (video *Video) Reconfigure(fullscreen bool) {
 	if video.Window != nil {
+		video.runContextDestroy()
 		if video.HWWindow != nil {
 			video.HWWindow.Destroy()
 			video.HWWindow = nil
-		}
-		// This is the expected frontend behavior and Flycast requires this
-		// for fullscreen toggling to work, but ppsspp breaks. OTOH, ppsspp
-		// breaks in those situations even if we don't call context_destroy
-		// so ignore it.
-		hw := state.Core.HWRenderCallback
-		if state.CoreRunning && hw != nil && hw.ContextDestroy != nil {
-			state.Core.HWRenderCallback.ContextDestroy()
 		}
 		video.Window.Destroy()
 	}
@@ -137,6 +130,21 @@ func (video *Video) MakeHardwareContextCurrent() {
 	if video.HWWindow != nil {
 		video.HWWindow.MakeContextCurrent()
 	}
+}
+
+func (video *Video) runContextDestroy() {
+	hw := state.Core.HWRenderCallback
+	if !state.CoreRunning || hw == nil || hw.ContextDestroy == nil {
+		return
+	}
+
+	if video.HWWindow != nil {
+		video.HWWindow.MakeContextCurrent()
+	} else {
+		video.Window.MakeContextCurrent()
+	}
+	hw.ContextDestroy()
+	video.Window.MakeContextCurrent()
 }
 
 // BeginCoreFrame makes the hardware context current before the core issues GL calls.
