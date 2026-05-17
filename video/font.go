@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/draw"
 	"io"
+	"log"
 	"os"
 
 	"github.com/go-gl/gl/v2.1/gl"
@@ -389,6 +390,7 @@ func (f *Font) ensureGlyph(r rune) *glyph {
 
 	glyph, err := appendGlyph(f.face, f.ttf, r, &f.nextX, &f.nextY, f.lineHeight, f.atlasWidth, f.atlas, image.White, f.scale, f.margin)
 	if err != nil {
+		log.Printf("font: failed to append U+%04X %q: %v", r, string(r), err)
 		return nil
 	}
 	f.glyphs[r] = glyph
@@ -535,16 +537,16 @@ func (f *Font) Width(scale float32, text string) float32 {
 		// Get rune
 		runeIndex := indices[i]
 
-		// Find rune in glyphs list
-		var ch *glyph
-		ch = f.ensureGlyph(runeIndex)
-		if ch == nil {
-			ch = f.glyphs['?'] // fallback
+		if f.face != nil {
+			if advance, ok := f.face.GlyphAdvance(runeIndex); ok {
+				width += float32(advance.Round()) * scale
+				continue
+			}
 		}
 
-		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		width += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
-
+		if ch, ok := f.glyphs['?']; ok {
+			width += float32((ch.advance >> 6)) * scale
+		}
 	}
 
 	return width
