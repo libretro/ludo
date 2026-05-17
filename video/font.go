@@ -42,7 +42,7 @@ type Font struct {
 	vao         uint32
 	vbo         uint32
 	program     uint32
-	textureID   uint32
+	textureID   uint32 // Holds the glyph texture id.
 	color       Color
 	atlasWidth  float32
 	atlasHeight float32
@@ -88,13 +88,13 @@ func defaultRunes() []rune {
 		'！', '？',
 		'（', '）', '［', '］', '｛', '｝',
 	)
-	runes = appendRange(runes, 0xFF01, 0xFF0F)
-	runes = appendRange(runes, 0xFF10, 0xFF19)
-	runes = appendRange(runes, 0xFF1A, 0xFF20)
-	runes = appendRange(runes, 0xFF21, 0xFF3A)
-	runes = appendRange(runes, 0xFF3B, 0xFF40)
-	runes = appendRange(runes, 0xFF41, 0xFF5A)
-	runes = appendRange(runes, 0xFF5B, 0xFF65)
+	runes = appendRange(runes, 0xFF01, 0xFF0F) // fullwidth punctuation
+	runes = appendRange(runes, 0xFF10, 0xFF19) // fullwidth digits
+	runes = appendRange(runes, 0xFF1A, 0xFF20) // fullwidth : ; < = > ? @
+	runes = appendRange(runes, 0xFF21, 0xFF3A) // fullwidth A-Z
+	runes = appendRange(runes, 0xFF3B, 0xFF40) // fullwidth [ \ ] ^ _
+	runes = appendRange(runes, 0xFF41, 0xFF5A) // fullwidth a-z
+	runes = appendRange(runes, 0xFF5B, 0xFF65) // fullwidth { | } ~ and katakana punctuation
 	runes = appendRange(runes, 0x00A0, 0x017F)
 	runes = appendRange(runes, 0x3000, 0x303F)
 	runes = appendRange(runes, 0x3040, 0x30FF)
@@ -110,23 +110,30 @@ func getGlyphMetrics(face font.Face, ttf *truetype.Font, ch rune, scale int32) (
 	gh := ceilFixed26_6(gBnd.Max.Y - gBnd.Min.Y)
 	gw := ceilFixed26_6(gBnd.Max.X - gBnd.Min.X)
 
+	// If gylph has no dimensions set to a max value
 	if gw == 0 || gh == 0 {
 		gBnd = ttf.Bounds(fixed.Int26_6(scale))
 		gw = ceilFixed26_6(gBnd.Max.X - gBnd.Min.X)
 		gh = ceilFixed26_6(gBnd.Max.Y - gBnd.Min.Y)
+
+		// Above can sometimes yield 0 for font smaller than 48pt, 1 is minimum
 		if gw == 0 || gh == 0 {
 			gw = 1
 			gh = 1
 		}
 	}
 
+	// The glyph's ascent and descent equal -bounds.Min.Y and +bounds.Max.Y.
+	gAscent := int(ceilFixed26_6(-gBnd.Min.Y))
+	gdescent := int(ceilFixed26_6(gBnd.Max.Y))
+
 	return glyphMetrics{
 		bounds:  gBnd,
 		advance: gAdv,
 		width:   int(gw),
 		height:  int(gh),
-		ascent:  int(ceilFixed26_6(-gBnd.Min.Y)),
-		descent: int(ceilFixed26_6(gBnd.Max.Y)),
+		ascent:  gAscent,
+		descent: gdescent,
 	}, nil
 }
 
@@ -150,16 +157,18 @@ func appendGlyph(face font.Face, ttf *truetype.Font, ch rune, x, y *int, lineHei
 		return nil, fmt.Errorf("glyph atlas full")
 	}
 
+	// Set w,h and adv, bearing V and bearing H in char
 	char.x = *x
 	char.y = *y
 	char.width = metrics.width
 	char.height = metrics.height
 	char.advance = int(metrics.advance)
 	char.bearingV = metrics.descent
-	char.bearingH = int(metrics.bounds.Min.X) >> 6
+	char.bearingH = (int(metrics.bounds.Min.X) >> 6)
 
 	clip := image.Rect(*x, *y, *x+metrics.width, *y+metrics.height)
 
+	// Create a freetype context for drawing
 	c := freetype.NewContext()
 	c.SetDPI(72)
 	c.SetFont(ttf)
@@ -169,10 +178,12 @@ func appendGlyph(face font.Face, ttf *truetype.Font, ch rune, x, y *int, lineHei
 	c.SetSrc(fg)
 	c.SetHinting(font.HintingFull)
 
+	// Set the glyph dot
 	px := 0 - (int(metrics.bounds.Min.X) >> 6) + *x
-	py := metrics.ascent + *y
+	py := (metrics.ascent) + *y
 	pt := freetype.Pt(px, py)
 
+	// Draw the text from mask to image
 	_, err = c.DrawString(string(ch), pt)
 	*x += metrics.width + margin
 	return char, err
@@ -219,6 +230,7 @@ func calculateAtlasSize(face font.Face, ttf *truetype.Font, runes []rune, scale 
 		}
 
 		height := maxY + margin
+
 		if height <= int(maxTextureSize) || width >= int(maxTextureSize) {
 			if height > int(maxTextureSize) {
 				return 0, 0, 0, fmt.Errorf("glyph atlas %dx%d exceeds max texture size %d", width, height, maxTextureSize)
@@ -274,26 +286,28 @@ func (f *Font) uploadGlyphRect(g *glyph) {
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 }
 
-// LoadTrueTypeFont builds a set of textures based on a ttf file's glyphs.
+// LoadTrueTypeFont builds a set of textures based on a ttf files gylphs
 func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (*Font, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
 
+	// Read the truetype font.
 	ttf, err := truetype.Parse(data)
 	if err != nil {
 		return nil, err
 	}
 
-	f := &Font{
-		glyphs:  make(map[rune]*glyph),
-		program: program,
-		ttf:     ttf,
-		scale:   scale,
-	}
-	f.SetColor(Color{R: 1, G: 1, B: 1, A: 1})
+	// Make Font stuct type
+	f := new(Font)
+	f.glyphs = make(map[rune]*glyph)
+	f.program = program                       // Set shader program
+	f.SetColor(Color{R: 1, G: 1, B: 1, A: 1}) // Set default white
+	f.ttf = ttf
+	f.scale = scale
 
+	// Create new face
 	face := truetype.NewFace(ttf, &truetype.Options{
 		Size:    float64(scale),
 		DPI:     72,
@@ -303,22 +317,28 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 
 	margin := 4
 	runes := defaultRunes()
-	f.atlasWidth, f.atlasHeight, f.lineHeight, err = calculateAtlasSize(face, ttf, runes, scale, margin)
+	var lineHeight float32
+
+	f.atlasWidth, f.atlasHeight, lineHeight, err = calculateAtlasSize(face, ttf, runes, scale, margin)
 	if err != nil {
 		return nil, err
 	}
-	f.atlasHeight = float32(reserveAtlasHeight(int(f.atlasHeight), f.lineHeight, margin, getMaxTextureSize()))
+	f.atlasHeight = float32(reserveAtlasHeight(int(f.atlasHeight), lineHeight, margin, getMaxTextureSize()))
+	f.lineHeight = lineHeight
 	f.margin = margin
 
+	// Create image to draw glyph
+	fg, bg := image.White, image.Black
 	rect := image.Rect(0, 0, int(f.atlasWidth), int(f.atlasHeight))
 	atlas := image.NewRGBA(rect)
-	draw.Draw(atlas, atlas.Bounds(), image.Black, image.Point{}, draw.Src)
+	draw.Draw(atlas, atlas.Bounds(), bg, image.Point{}, draw.Src)
 	f.atlas = atlas
 
 	x := margin
 	y := margin
+
 	for _, r := range runes {
-		glyph, err := appendGlyph(face, ttf, r, &x, &y, f.lineHeight, f.atlasWidth, atlas, image.White, scale, margin)
+		glyph, err := appendGlyph(face, ttf, r, &x, &y, lineHeight, f.atlasWidth, atlas, fg, scale, margin)
 		if err != nil {
 			continue
 		}
@@ -327,6 +347,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	f.nextX = x
 	f.nextY = y
 
+	// Generate texture
 	gl.GenTextures(1, &f.textureID)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, f.textureID)
@@ -335,13 +356,14 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(atlas.Rect.Dx()), int32(atlas.Rect.Dy()), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(atlas.Pix))
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 
+	// Configure VAO/VBO for texture quads
 	genVertexArrays(1, &f.vao)
-	bindVertexArray(f.vao)
-
 	gl.GenBuffers(1, &f.vbo)
+	bindVertexArray(f.vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, f.vbo)
 
 	vertAttrib := uint32(gl.GetAttribLocation(f.program, gl.Str("vert\x00")))
@@ -354,10 +376,6 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
 	bindVertexArray(0)
-
-	gl.UseProgram(f.program)
-	gl.Uniform1i(gl.GetUniformLocation(f.program, gl.Str("Texture\x00")), 0)
-	gl.UseProgram(0)
 
 	return f, nil
 }
@@ -377,6 +395,7 @@ func (f *Font) ensureGlyph(r rune) *glyph {
 	}
 	f.glyphs[r] = glyph
 	f.uploadGlyphRect(glyph)
+
 	return glyph
 }
 
@@ -388,32 +407,41 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Fon
 	}
 	defer fd.Close()
 
+	// Configure the default font vertex and fragment shaders
 	program, err := newProgram(fontVertexShader, fontFragmentShader)
 	if err != nil {
 		panic(err)
 	}
 
+	// Activate corresponding render state
 	gl.UseProgram(program)
-	gl.Uniform2f(gl.GetUniformLocation(program, gl.Str("resolution\x00")), float32(windowWidth), float32(windowHeight))
-	gl.UseProgram(0)
+
+	// Set screen resolution
+	resUniform := gl.GetUniformLocation(program, gl.Str("resolution\x00"))
+	gl.Uniform2f(resUniform, float32(windowWidth), float32(windowHeight))
 
 	atlasScale := int32(float32(scale) / fontRenderScale)
 	if atlasScale < 1 {
 		atlasScale = 1
 	}
 
-	return LoadTrueTypeFont(program, fd, atlasScale, LeftToRight)
+	font, err := LoadTrueTypeFont(program, fd, atlasScale, LeftToRight)
+	if err != nil {
+		return nil, err
+	}
+	return font, nil
 }
 
-// SetColor allows you to set the text color to be used when you draw the text.
+// SetColor allows you to set the text color to be used when you draw the text
 func (f *Font) SetColor(color Color) {
 	f.color = color
 }
 
-// UpdateResolution passes the new framebuffer size to the font shader.
+// UpdateResolution passes the new framebuffer size to the font shader
 func (f *Font) UpdateResolution(windowWidth int, windowHeight int) {
 	gl.UseProgram(f.program)
-	gl.Uniform2f(gl.GetUniformLocation(f.program, gl.Str("resolution\x00")), float32(windowWidth), float32(windowHeight))
+	resUniform := gl.GetUniformLocation(f.program, gl.Str("resolution\x00"))
+	gl.Uniform2f(resUniform, float32(windowWidth), float32(windowHeight))
 	gl.UseProgram(0)
 }
 
@@ -428,33 +456,40 @@ func (f *Font) Print(x, y float32, scale float32, text string) error {
 		return nil
 	}
 
+	// Setup blending mode
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
+	// Activate corresponding render state
 	gl.UseProgram(f.program)
-	gl.Uniform4f(gl.GetUniformLocation(f.program, gl.Str("color\x00")), f.color.R, f.color.G, f.color.B, f.color.A)
+	// Set text color
+	gl.Uniform4f(gl.GetUniformLocation(f.program, gl.Str("textColor\x00")), f.color.R, f.color.G, f.color.B, f.color.A)
 
 	var coords []point
+
+	// Iterate through all glyphs in string
 	for i := range indices {
+		// Get rune
 		runeIndex := indices[i]
 
-		ch := f.ensureGlyph(runeIndex)
+		var ch *glyph
+		// Skip runes that are not in font glyph map
+		ch = f.ensureGlyph(runeIndex)
 		if ch == nil {
-			ch = f.glyphs['?']
-		}
-		if ch == nil {
-			continue
+			ch = f.glyphs['?'] // fallback
 		}
 
+		// Calculate position and size for current rune
 		xpos := x + float32(ch.bearingH)*scale
 		ypos := y - float32(ch.height-ch.bearingV)*scale
 		w := float32(ch.width) * scale
 		h := float32(ch.height) * scale
 
-		x1 := xpos
-		x2 := xpos + w
-		y1 := ypos
-		y2 := ypos + h
+		// Set quad positions
+		var x1 = xpos
+		var x2 = xpos + w
+		var y1 = ypos
+		var y2 = ypos + h
 
 		coords = append(coords, point{x1, y1, float32(ch.x) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
 		coords = append(coords, point{x2, y1, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y) / f.atlasHeight})
@@ -463,7 +498,8 @@ func (f *Font) Print(x, y float32, scale float32, text string) error {
 		coords = append(coords, point{x1, y2, float32(ch.x) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
 		coords = append(coords, point{x2, y2, float32(ch.x+ch.width) / f.atlasWidth, float32(ch.y+ch.height) / f.atlasHeight})
 
-		x += float32(ch.advance>>6) * scale
+		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+		x += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
 	}
 
 	bindVertexArray(f.vao)
@@ -491,12 +527,16 @@ func (f *Font) Width(scale float32, text string) float32 {
 	scale *= fontRenderScale
 
 	indices := []rune(text)
+
 	if len(indices) == 0 {
 		return 0
 	}
 
+	// Iterate through all glyphs in string
 	for i := range indices {
+		// Get rune
 		runeIndex := indices[i]
+
 		if f.face != nil {
 			if advance, ok := f.face.GlyphAdvance(runeIndex); ok {
 				width += float32(advance.Round()) * scale
@@ -505,7 +545,7 @@ func (f *Font) Width(scale float32, text string) float32 {
 		}
 
 		if ch, ok := f.glyphs['?']; ok {
-			width += float32(ch.advance>>6) * scale
+			width += float32((ch.advance >> 6)) * scale
 		}
 	}
 

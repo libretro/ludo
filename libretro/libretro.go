@@ -37,7 +37,6 @@ void bridge_retro_run(void *f);
 void bridge_retro_reset(void *f);
 void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_t usec);
 void bridge_retro_hw_context_reset(retro_hw_context_reset_t f);
-void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f);
 void bridge_retro_audio_callback(retro_audio_callback_t f);
 void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
 size_t bridge_retro_get_memory_size(void *f, unsigned id);
@@ -56,7 +55,8 @@ size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames);
 int16_t coreInputState_cgo(unsigned port, unsigned device, unsigned index, unsigned id);
 void coreLog_cgo(enum retro_log_level level, const char *msg);
 int64_t coreGetTimeUsec_cgo();
-uintptr_t coreGetCurrentFramebuffer_cgo();
+uintptr_t coreGetCurrentFramebufferDirect_cgo();
+void coreSetCurrentFramebuffer_cgo(uintptr_t fb);
 uintptr_t coreGetProcAddress_cgo(const char *sym);
 */
 import "C"
@@ -223,8 +223,6 @@ type FrameTimeCallback struct {
 	Reference int64
 }
 
-// HWRenderCallback sets an interface to let a libretro core render with
-// hardware acceleration.
 type HWRenderCallback struct {
 	HWContextType              uint32
 	ContextReset               func()
@@ -232,8 +230,6 @@ type HWRenderCallback struct {
 	Stencil                    bool
 	BottomLeftOrigin           bool
 	VersionMajor, VersionMinor uint
-	CacheContext               bool
-	ContextDestroy             func()
 	DebugContext               bool
 }
 
@@ -439,7 +435,6 @@ const (
 	HWContextOpenGLES3       = uint32(C.RETRO_HW_CONTEXT_OPENGLES3)
 	HWContextOpenGLESVersion = uint32(C.RETRO_HW_CONTEXT_OPENGLES_VERSION)
 	HWContextVulkan          = uint32(C.RETRO_HW_CONTEXT_VULKAN)
-	HWContextDummy           = uint32(C.RETRO_HW_CONTEXT_DUMMY)
 )
 
 // Pass this to retro_video_refresh_t if rendering to hardware.
@@ -483,8 +478,6 @@ func Load(sofile string) (*Core, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	C.cothread_init()
 
 	core.symRetroInit = DlSym(core.handle, "retro_init")
 	core.symRetroDeinit = DlSym(core.handle, "retro_deinit")
@@ -768,14 +761,14 @@ func coreGetTimeUsec() C.uint64_t {
 	return C.uint64_t(getTimeUsec())
 }
 
-//export coreGetCurrentFramebuffer
-func coreGetCurrentFramebuffer() C.uintptr_t {
-	return C.uintptr_t(getCurrentFramebuffer())
-}
-
 //export coreGetProcAddress
 func coreGetProcAddress(sym *C.char) C.uintptr_t {
 	return C.uintptr_t(getProcAddress(C.GoString(sym)))
+}
+
+// SetCurrentFramebufferValue updates the C-side framebuffer callback target
+func SetCurrentFramebufferValue(fb uintptr) {
+	C.coreSetCurrentFramebuffer_cgo(C.uintptr_t(fb))
 }
 
 // SetData is a setter for the data of a GameInfo type
@@ -952,7 +945,8 @@ func SetHWRenderCallback(
 
 	getCurrentFramebuffer = currentFramebuffer
 	getProcAddress = procAddress
-	c.get_current_framebuffer = (C.retro_hw_get_current_framebuffer_t)(C.coreGetCurrentFramebuffer_cgo)
+	SetCurrentFramebufferValue(currentFramebuffer())
+	c.get_current_framebuffer = (C.retro_hw_get_current_framebuffer_t)(C.coreGetCurrentFramebufferDirect_cgo)
 	c.get_proc_address = (C.retro_hw_get_proc_address_t)(C.coreGetProcAddress_cgo)
 
 	hwrc.ContextReset = func() {
@@ -964,10 +958,6 @@ func SetHWRenderCallback(
 	hwrc.BottomLeftOrigin = bool(c.bottom_left_origin)
 	hwrc.VersionMajor = uint(c.version_major)
 	hwrc.VersionMinor = uint(c.version_minor)
-	hwrc.CacheContext = bool(c.cache_context)
-	hwrc.ContextDestroy = func() {
-		C.bridge_retro_hw_context_destroy((C.retro_hw_context_reset_t)(c.context_destroy))
-	}
 	hwrc.DebugContext = bool(c.debug_context)
 	return &hwrc
 }

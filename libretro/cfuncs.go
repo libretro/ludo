@@ -6,6 +6,7 @@ package libretro
 #include <stdarg.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <stdint.h>
 
 #ifdef __APPLE__
 #include <mach/semaphore.h>
@@ -49,6 +50,7 @@ static pthread_t s_thread;
 static SEM_T s_sem_do;
 static SEM_T s_sem_done;
 static bool s_use_thread = false;
+static uintptr_t s_current_framebuffer = 0;
 
 void* emu_thread_loop(void *a0) {
 	print_sema("begin thread\n");
@@ -132,10 +134,6 @@ void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_
 }
 
 void bridge_retro_hw_context_reset(retro_hw_context_reset_t f) {
-	f();
-}
-
-void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f) {
 	f();
 }
 
@@ -311,9 +309,12 @@ int64_t coreGetTimeUsec_cgo() {
 	return coreGetTimeUsec();
 }
 
-uintptr_t coreGetCurrentFramebuffer_cgo() {
-	uintptr_t coreGetCurrentFramebuffer();
-	return coreGetCurrentFramebuffer();
+uintptr_t coreGetCurrentFramebufferDirect_cgo() {
+	return s_current_framebuffer;
+}
+
+void coreSetCurrentFramebuffer_cgo(uintptr_t fb) {
+	s_current_framebuffer = fb;
 }
 
 uintptr_t coreGetProcAddress_cgo(const char *sym) {

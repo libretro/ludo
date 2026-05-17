@@ -5,8 +5,24 @@ import (
 	"strings"
 
 	"github.com/go-gl/gl/v2.1/gl"
-	"github.com/go-gl/mathgl/mgl32"
 )
+
+func identityMatrix() [16]float32 {
+	return [16]float32{
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1,
+	}
+}
+
+func orthoMatrix(bottomLeftOrigin bool) [16]float32 {
+	m := identityMatrix()
+	if bottomLeftOrigin {
+		m[5] = -1
+	}
+	return m
+}
 
 func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
 	vertexShader, err := compileShader(vertexShaderSource, gl.VERTEX_SHADER)
@@ -23,6 +39,8 @@ func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error)
 
 	gl.AttachShader(program, vertexShader)
 	gl.AttachShader(program, fragmentShader)
+	gl.BindAttribLocation(program, 0, gl.Str("vert\x00"))
+	gl.BindAttribLocation(program, 1, gl.Str("vertTexCoord\x00"))
 	gl.LinkProgram(program)
 
 	var status int32
@@ -40,14 +58,12 @@ func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error)
 	gl.DeleteShader(vertexShader)
 	gl.DeleteShader(fragmentShader)
 
-	// Only the core rendering code uses MVPs so we set it to identity
-	// to avoid issues with other parts of the program
 	gl.UseProgram(program)
 	mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
 
 	if mvp != -1 {
-		IdentityMatrix := mgl32.Ident4()
-		gl.UniformMatrix4fv(mvp, 1, false, &IdentityMatrix[0])
+		identity := identityMatrix()
+		gl.UniformMatrix4fv(mvp, 1, false, &identity[0])
 	}
 	gl.UseProgram(0)
 

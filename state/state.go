@@ -33,3 +33,5 @@ var LudOS bool
 
 // FastForward will run the core as fast as possible
 var FastForward bool
+
+var CoreSetSharedContext bool

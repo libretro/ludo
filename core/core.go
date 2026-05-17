@@ -20,6 +20,7 @@ import (
 	"github.com/libretro/ludo/options"
 	"github.com/libretro/ludo/patch"
 	"github.com/libretro/ludo/savefiles"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 
@@ -51,8 +52,11 @@ func Load(sofile string) error {
 	if err != nil {
 		return err
 	}
+
 	state.Core.SetEnvironment(environment)
 	state.Core.Init()
+	state.CoreSetSharedContext = false
+	vid.SetHWRenderContext(nil)
 	state.Core.SetVideoRefresh(vid.Refresh)
 	state.Core.SetInputPoll(func() {})
 	state.Core.SetInputState(input.State)
@@ -264,13 +268,19 @@ func LoadGame(gamePath string) error {
 		vid.SetTitle("Ludo - " + si.LibraryName)
 	}
 
+	if state.Core.HWRenderCallback != nil {
+		vid.SetHWRenderContext(state.Core.HWRenderCallback)
+		vid.Reconfigure(settings.Current.VideoFullscreen)
+	} else if vid.Window == nil {
+		vid.Configure(settings.Current.VideoFullscreen)
+	}
+
 	input.Init(vid)
 	audio.Reconfigure(int32(avi.Timing.SampleRate))
 	if state.Core.AudioCallback != nil {
 		state.Core.AudioCallback.SetState(true)
 	}
 
-	state.CoreRunning = true
 	state.FastForward = false
 	state.GamePath = gamePath
 
@@ -284,9 +294,13 @@ func LoadGame(gamePath string) error {
 	savefiles.LoadSRAM()
 
 	if state.Core.HWRenderCallback != nil {
+		vid.MakeHardwareContextCurrent()
 		vid.InitFramebuffer()
+		vid.PrepareCoreContext()
 		state.Core.HWRenderCallback.ContextReset()
 	}
+
+	state.CoreRunning = true
 
 	return nil
 }
@@ -298,6 +312,7 @@ func Unload() {
 		state.Core.Deinit()
 		state.CorePath = ""
 		state.Core = nil
+		state.CoreSetSharedContext = false
 		Options = nil
 	}
 }
