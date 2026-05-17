@@ -24,6 +24,7 @@ type Video struct {
 	Font     *Font
 	FontSm   *Font
 	FontLg   *Font
+	title    string
 
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
@@ -50,11 +51,17 @@ type Video struct {
 
 	needUpload bool // true when the texture needs to be uploaded to the GPU
 	data       unsafe.Pointer
+
+	hwContextType       uint32
+	hwContextMajor      int
+	hwContextMinor      int
+	hwDebugContext      bool
+	hwContextConfigured bool
 }
 
 // Init instanciates the video package
 func Init(fullscreen bool) *Video {
-	vid := &Video{}
+	vid := &Video{title: "Ludo"}
 	vid.identityMat = mgl32.Ident4()
 	vid.Configure(fullscreen)
 	return vid
@@ -86,7 +93,7 @@ func (video *Video) CreateSharedHWContext() error {
 		return nil
 	}
 
-	glfw.DefaultWindowHints()
+	video.configureWindowHints()
 	glfw.WindowHint(glfw.Visible, glfw.False)
 	glfw.WindowHint(glfw.Focused, glfw.False)
 
@@ -145,10 +152,79 @@ func (video *Video) GetFramebufferSize() (int, int) {
 
 // SetTitle sets the window title, encoded as UTF-8, of the window.
 func (video *Video) SetTitle(title string) {
+	video.title = title
 	if video.Window == nil {
 		return
 	}
 	video.Window.SetTitle(title)
+}
+
+// SetHWRenderContext stores the context requested by the current libretro core.
+func (video *Video) SetHWRenderContext(hw *libretro.HWRenderCallback) {
+	if hw == nil {
+		video.hwContextType = 0
+		video.hwContextMajor = 0
+		video.hwContextMinor = 0
+		video.hwDebugContext = false
+		video.hwContextConfigured = false
+		return
+	}
+
+	video.hwContextType = hw.HWContextType
+	video.hwContextMajor = int(hw.VersionMajor)
+	video.hwContextMinor = int(hw.VersionMinor)
+	video.hwDebugContext = hw.DebugContext
+	video.hwContextConfigured = true
+}
+
+func (video *Video) configureWindowHints() {
+	glfw.DefaultWindowHints()
+
+	if !video.hwContextConfigured {
+		return
+	}
+
+	switch video.hwContextType {
+	case libretro.HWContextOpenGLCore:
+		major := video.hwContextMajor
+		minor := video.hwContextMinor
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLAPI)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		if major > 0 && !(major == 3 && minor == 1) {
+			glfw.WindowHint(glfw.ContextVersionMajor, major)
+			glfw.WindowHint(glfw.ContextVersionMinor, minor)
+			if major > 3 || (major == 3 && minor >= 2) {
+				glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+			}
+		}
+	case libretro.HWContextOpenGL:
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLAPI)
+		if video.hwContextMajor > 0 {
+			glfw.WindowHint(glfw.ContextVersionMajor, video.hwContextMajor)
+			glfw.WindowHint(glfw.ContextVersionMinor, video.hwContextMinor)
+			if video.hwContextMajor > 3 || (video.hwContextMajor == 3 && video.hwContextMinor >= 2) {
+				glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCompatProfile)
+			}
+		}
+	case libretro.HWContextOpenGLES2:
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLESAPI)
+		glfw.WindowHint(glfw.ContextVersionMajor, 2)
+		glfw.WindowHint(glfw.ContextVersionMinor, 0)
+	case libretro.HWContextOpenGLES3:
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLESAPI)
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 0)
+	case libretro.HWContextOpenGLESVersion:
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLESAPI)
+		if video.hwContextMajor > 0 {
+			glfw.WindowHint(glfw.ContextVersionMajor, video.hwContextMajor)
+			glfw.WindowHint(glfw.ContextVersionMinor, video.hwContextMinor)
+		}
+	}
+
+	if video.hwDebugContext {
+		glfw.WindowHint(glfw.OpenGLDebugContext, glfw.True)
+	}
 }
 
 // SetShouldClose sets the value of the close flag of the window.
@@ -182,8 +258,10 @@ func (video *Video) Configure(fullscreen bool) {
 		height = 240 * 2
 	}
 
+	video.configureWindowHints()
+
 	var err error
-	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
+	video.Window, err = glfw.CreateWindow(width, height, video.title, m, nil)
 	if err != nil {
 		panic("Window creation failed:" + err.Error())
 	}

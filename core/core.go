@@ -52,6 +52,7 @@ func Load(sofile string) error {
 		return err
 	}
 	state.CoreSetSharedContext = false
+	vid.SetHWRenderContext(nil)
 	state.Core.SetEnvironment(environment)
 	state.Core.Init()
 	state.Core.SetVideoRefresh(vid.Refresh)
@@ -308,6 +309,7 @@ func Unload() {
 		state.CorePath = ""
 		state.Core = nil
 		state.CoreSetSharedContext = false
+		vid.SetHWRenderContext(nil)
 		Options = nil
 	}
 }

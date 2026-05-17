@@ -4,6 +4,7 @@
 package menu
 
 import (
+	"log"
 	"path/filepath"
 
 	"github.com/libretro/ludo/settings"
@@ -107,6 +108,24 @@ func (m *Menu) ContextReset() {
 	for i := range curList.children {
 		curList.children[i].thumbnail = 0
 	}
+}
+
+// ReconfigureVideo recreates the window and restores any running HW-render core state.
+func (m *Menu) ReconfigureVideo(fullscreen bool) {
+	m.Reconfigure(fullscreen)
+	if state.CoreRunning && state.Core.HWRenderCallback != nil {
+		if state.CoreSetSharedContext {
+			if err := m.CreateSharedHWContext(); err != nil {
+				log.Println("[Video]: Failed to create shared HW context:", err)
+			}
+		}
+		m.MakeHardwareContextCurrent()
+		m.InitFramebuffer()
+		m.PrepareCoreContext()
+		state.Core.HWRenderCallback.ContextReset()
+		m.MakeFrontendContextCurrent()
+	}
+	m.ContextReset()
 }
 
 // WarpToQuickMenu loads the contextual menu for games that are launched from
