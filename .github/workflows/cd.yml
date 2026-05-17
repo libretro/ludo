@@ -210,7 +210,7 @@ jobs:
           asset_paths: '["./Ludo-*.tar.gz*", "./*.deb"]'
 
   build_osx_x86_64:
-    runs-on: macos-15-intel
+    runs-on: macos-26-intel
     steps:
       - uses: actions/checkout@v4
         with:
