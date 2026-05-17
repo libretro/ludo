@@ -322,8 +322,10 @@ func UnloadGame() {
 		state.GamePath = ""
 		state.CoreRunning = false
 		vid.DestroySharedHWContext()
-		vid.ResetPitch()
-		vid.ResetRot()
+		vid.ResetCoreState()
+		state.Core.HWRenderCallback = nil
+		state.CoreSetSharedContext = false
+		vid.SetHWRenderContext(nil)
 	}
 }
 

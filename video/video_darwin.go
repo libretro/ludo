@@ -74,6 +74,18 @@ func bindBackbuffer() {
 	gl.BindFramebufferEXT(gl.FRAMEBUFFER_EXT, 0)
 }
 
+func (video *Video) destroyFramebuffer() {
+	bindBackbuffer()
+	if video.rboID != 0 {
+		gl.DeleteRenderbuffersEXT(1, &video.rboID)
+		video.rboID = 0
+	}
+	if video.fboID != 0 {
+		gl.DeleteFramebuffersEXT(1, &video.fboID)
+		video.fboID = 0
+	}
+}
+
 func genVertexArrays(n int32, arrays *uint32) {
 	gl.GenVertexArraysAPPLE(n, arrays)
 }

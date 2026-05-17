@@ -252,6 +252,39 @@ func panicOnErr(v uint32, err error) uint32 {
 	return v
 }
 
+func (video *Video) ensurePixelFormatDefaults() {
+	if video.pixFmt == 0 {
+		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+		video.pixType = gl.BGRA
+		video.bpp = 2
+	}
+}
+
+func (video *Video) resetGameTexture(width, height int32) {
+	if width < 1 {
+		width = 1
+	}
+	if height < 1 {
+		height = 1
+	}
+
+	if video.texID != 0 {
+		gl.DeleteTextures(1, &video.texID)
+		video.texID = 0
+	}
+
+	gl.GenTextures(1, &video.texID)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+	video.texWidth = width
+	video.texHeight = height
+}
+
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
 	var width, height int
@@ -337,24 +370,13 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.VertexAttribPointerWithOffset(texCoordAttrib, 2, gl.FLOAT, false, 4*4, 2*4)
 
 	// Some cores won't call SetPixelFormat, provide default values
-	if video.pixFmt == 0 {
-		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-		video.pixType = gl.BGRA
-		video.bpp = 2
-	}
+	video.ensurePixelFormatDefaults()
 
 	if video.Geom.MaxWidth == 0 || video.Geom.MaxHeight == 0 {
 		video.Geom.MaxWidth = video.Geom.BaseWidth
 		video.Geom.MaxHeight = video.Geom.BaseHeight
 	}
 
-	gl.GenTextures(1, &video.texID)
-	if video.texID == 0 && state.Verbose {
-		log.Fatalln("[Video]: Failed to create the vid texture")
-	}
-
-	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	video.texWidth = int32(video.Geom.MaxWidth)
 	video.texHeight = int32(video.Geom.MaxHeight)
 	if video.texWidth < 1 {
@@ -363,7 +385,7 @@ func (video *Video) Configure(fullscreen bool) {
 	if video.texHeight < 1 {
 		video.texHeight = 1
 	}
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, video.texWidth, video.texHeight, 0, video.pixType, video.pixFmt, nil)
+	video.resetGameTexture(video.texWidth, video.texHeight)
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
@@ -461,6 +483,26 @@ func (video *Video) ResetPitch() {
 // be rendered with the wrong rotation
 func (video *Video) ResetRot() {
 	video.rot = 0
+}
+
+// ResetCoreState clears per-core video state when unloading a game.
+func (video *Video) ResetCoreState() {
+	video.MakeFrontendContextCurrent()
+	video.destroyFramebuffer()
+	libretro.SetCurrentFramebufferValue(0)
+	video.ResetPitch()
+	video.ResetRot()
+	video.needUpload = false
+	video.data = nil
+	video.width = 0
+	video.height = 0
+	video.pixFmt = 0
+	video.pixType = 0
+	video.bpp = 0
+	video.ensurePixelFormatDefaults()
+	video.resetGameTexture(1, 1)
+	video.texWidth = 0
+	video.texHeight = 0
 }
 
 // coreRatioViewport configures the vertex array to display the game at the center of the window
