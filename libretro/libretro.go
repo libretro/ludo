@@ -37,6 +37,7 @@ void bridge_retro_run(void *f);
 void bridge_retro_reset(void *f);
 void bridge_retro_frame_time_callback(retro_frame_time_callback_t f, retro_usec_t usec);
 void bridge_retro_hw_context_reset(retro_hw_context_reset_t f);
+void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f);
 void bridge_retro_audio_callback(retro_audio_callback_t f);
 void bridge_retro_audio_set_state(retro_audio_set_state_callback_t f, bool state);
 size_t bridge_retro_get_memory_size(void *f, unsigned id);
@@ -223,6 +224,8 @@ type FrameTimeCallback struct {
 	Reference int64
 }
 
+// HWRenderCallback sets an interface to let a libretro core render with
+// hardware acceleration.
 type HWRenderCallback struct {
 	HWContextType              uint32
 	ContextReset               func()
@@ -230,6 +233,8 @@ type HWRenderCallback struct {
 	Stencil                    bool
 	BottomLeftOrigin           bool
 	VersionMajor, VersionMinor uint
+	CacheContext               bool
+	ContextDestroy             func()
 	DebugContext               bool
 }
 
@@ -435,6 +440,7 @@ const (
 	HWContextOpenGLES3       = uint32(C.RETRO_HW_CONTEXT_OPENGLES3)
 	HWContextOpenGLESVersion = uint32(C.RETRO_HW_CONTEXT_OPENGLES_VERSION)
 	HWContextVulkan          = uint32(C.RETRO_HW_CONTEXT_VULKAN)
+	HWContextDummy           = uint32(C.RETRO_HW_CONTEXT_DUMMY)
 )
 
 // Pass this to retro_video_refresh_t if rendering to hardware.
@@ -761,6 +767,11 @@ func coreGetTimeUsec() C.uint64_t {
 	return C.uint64_t(getTimeUsec())
 }
 
+//export coreGetCurrentFramebuffer
+func coreGetCurrentFramebuffer() C.uintptr_t {
+	return C.uintptr_t(getCurrentFramebuffer())
+}
+
 //export coreGetProcAddress
 func coreGetProcAddress(sym *C.char) C.uintptr_t {
 	return C.uintptr_t(getProcAddress(C.GoString(sym)))
@@ -958,7 +969,11 @@ func SetHWRenderCallback(
 	hwrc.BottomLeftOrigin = bool(c.bottom_left_origin)
 	hwrc.VersionMajor = uint(c.version_major)
 	hwrc.VersionMinor = uint(c.version_minor)
+	hwrc.CacheContext = bool(c.cache_context)
 	hwrc.DebugContext = bool(c.debug_context)
+	hwrc.ContextDestroy = func() {
+		C.bridge_retro_hw_context_destroy((C.retro_hw_context_reset_t)(c.context_destroy))
+	}
 	return &hwrc
 }
 

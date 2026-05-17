@@ -137,6 +137,10 @@ void bridge_retro_hw_context_reset(retro_hw_context_reset_t f) {
 	f();
 }
 
+void bridge_retro_hw_context_destroy(retro_hw_context_reset_t f) {
+	f();
+}
+
 void bridge_retro_audio_callback(retro_audio_callback_t f) {
 	f();
 }
