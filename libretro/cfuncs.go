@@ -313,7 +313,7 @@ int64_t coreGetTimeUsec_cgo() {
 	return coreGetTimeUsec();
 }
 
-uintptr_t coreGetCurrentFramebufferDirect_cgo() {
+uintptr_t coreGetCurrentFramebuffer_cgo() {
 	return s_current_framebuffer;
 }
 

@@ -56,7 +56,7 @@ size_t coreAudioSampleBatch_cgo(const int16_t *data, size_t frames);
 int16_t coreInputState_cgo(unsigned port, unsigned device, unsigned index, unsigned id);
 void coreLog_cgo(enum retro_log_level level, const char *msg);
 int64_t coreGetTimeUsec_cgo();
-uintptr_t coreGetCurrentFramebufferDirect_cgo();
+uintptr_t coreGetCurrentFramebuffer_cgo();
 void coreSetCurrentFramebuffer_cgo(uintptr_t fb);
 uintptr_t coreGetProcAddress_cgo(const char *sym);
 */
@@ -957,7 +957,7 @@ func SetHWRenderCallback(
 	getCurrentFramebuffer = currentFramebuffer
 	getProcAddress = procAddress
 	SetCurrentFramebufferValue(currentFramebuffer())
-	c.get_current_framebuffer = (C.retro_hw_get_current_framebuffer_t)(C.coreGetCurrentFramebufferDirect_cgo)
+	c.get_current_framebuffer = (C.retro_hw_get_current_framebuffer_t)(C.coreGetCurrentFramebuffer_cgo)
 	c.get_proc_address = (C.retro_hw_get_proc_address_t)(C.coreGetProcAddress_cgo)
 
 	hwrc.ContextReset = func() {
