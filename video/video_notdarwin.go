@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 )
 
@@ -24,6 +25,7 @@ func (video *Video) InitFramebuffer() {
 
 	gl.GenFramebuffers(1, &video.fboID)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
+	libretro.SetCurrentFramebufferValue(uintptr(video.fboID))
 	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
 
 	hw := state.Core.HWRenderCallback

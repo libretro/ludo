@@ -57,6 +57,7 @@ int16_t coreInputState_cgo(unsigned port, unsigned device, unsigned index, unsig
 void coreLog_cgo(enum retro_log_level level, const char *msg);
 int64_t coreGetTimeUsec_cgo();
 uintptr_t coreGetCurrentFramebuffer_cgo();
+void coreSetCurrentFramebuffer_cgo(uintptr_t fb);
 uintptr_t coreGetProcAddress_cgo(const char *sym);
 */
 import "C"
@@ -776,6 +777,11 @@ func coreGetProcAddress(sym *C.char) C.uintptr_t {
 	return C.uintptr_t(getProcAddress(C.GoString(sym)))
 }
 
+// SetCurrentFramebufferValue updates the C-side framebuffer callback target
+func SetCurrentFramebufferValue(fb uintptr) {
+	C.coreSetCurrentFramebuffer_cgo(C.uintptr_t(fb))
+}
+
 // SetData is a setter for the data of a GameInfo type
 func (gi *GameInfo) SetData(bytes []byte) {
 	cstr := C.CString(string(bytes))
@@ -950,6 +956,7 @@ func SetHWRenderCallback(
 
 	getCurrentFramebuffer = currentFramebuffer
 	getProcAddress = procAddress
+	SetCurrentFramebufferValue(currentFramebuffer())
 	c.get_current_framebuffer = (C.retro_hw_get_current_framebuffer_t)(C.coreGetCurrentFramebuffer_cgo)
 	c.get_proc_address = (C.retro_hw_get_proc_address_t)(C.coreGetProcAddress_cgo)
 
