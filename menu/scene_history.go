@@ -203,13 +203,13 @@ func (s *sceneHistory) render() {
 			menu.Font.Print(
 				(840+1)*menu.ratio,
 				float32(h)*e.yp+fontOffset-slOffset+1*menu.ratio,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Print(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset-slOffset,
-				0.5*menu.ratio, e.label)
-			stack += float32(int(menu.Font.Width(0.5*menu.ratio, e.label)))
+				menu.ratio, e.label)
+			stack += float32(int(menu.Font.Width(menu.ratio, e.label)))
 			stack += 10
 
 			for _, tag := range e.tags {
@@ -225,11 +225,11 @@ func (s *sceneHistory) render() {
 				}
 			}
 
-			menu.Font.SetColor(mutedTextColor.Alpha(e.subLabelAlpha))
-			menu.Font.Print(
+			menu.FontSm.SetColor(mutedTextColor.Alpha(e.subLabelAlpha))
+			menu.FontSm.Print(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset+60*menu.ratio-slOffset,
-				0.5*menu.ratio, e.subLabel)
+				menu.ratio, e.subLabel)
 		}
 	}
 

@@ -198,21 +198,21 @@ func genericRender(list *entry) {
 			menu.Font.Print(
 				(670+1)*menu.ratio,
 				float32(h)*e.yp+fontOffset+1*menu.ratio,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Print(
 				670*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 
 			if e.widget != nil {
 				e.widget(&e)
 			} else if e.stringValue != nil {
-				lw := menu.Font.Width(0.5*menu.ratio, e.stringValue())
+				lw := menu.Font.Width(menu.ratio, e.stringValue())
 				menu.Font.Print(
 					float32(w)-lw-128*menu.ratio,
 					float32(h)*e.yp+fontOffset,
-					0.5*menu.ratio, e.stringValue())
+					menu.ratio, e.stringValue())
 			}
 		}
 	}

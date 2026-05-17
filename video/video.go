@@ -20,6 +20,8 @@ type Video struct {
 	Window *glfw.Window
 	Geom   libretro.GameGeometry
 	Font   *Font
+	FontSm *Font
+	FontLg *Font
 
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
@@ -128,7 +130,15 @@ func (video *Video) Configure(fullscreen bool) {
 
 	// LoadFont (fontfile, font scale, window width, window height)
 	fontPath := filepath.Join(settings.Current.AssetsDirectory, "font.ttf")
-	video.Font, err = LoadFont(fontPath, int32(36*2), fbw, fbh)
+	video.Font, err = LoadFont(fontPath, int32(36), fbw, fbh)
+	if err != nil {
+		panic(err)
+	}
+	video.FontSm, err = LoadFont(fontPath, int32(29), fbw, fbh)
+	if err != nil {
+		panic(err)
+	}
+	video.FontLg, err = LoadFont(fontPath, int32(50), fbw, fbh)
 	if err != nil {
 		panic(err)
 	}
@@ -309,6 +319,15 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 func (video *Video) ResizeViewport() {
 	fbw, fbh := video.Window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(fbw), int32(fbh))
+	if video.Font != nil {
+		video.Font.UpdateResolution(fbw, fbh)
+	}
+	if video.FontSm != nil {
+		video.FontSm.UpdateResolution(fbw, fbh)
+	}
+	if video.FontLg != nil {
+		video.FontLg.UpdateResolution(fbw, fbh)
+	}
 }
 
 // Render the current frame

@@ -20,7 +20,7 @@ func (m *Menu) RenderNotifications() {
 			fading = 1
 		}
 		offset := fading*h - h
-		lw := m.Font.Width(0.5*m.ratio, n.Message)
+		lw := m.Font.Width(m.ratio, n.Message)
 		fg := severityFgColor[n.Severity]
 		bg := severityBgColor[n.Severity]
 		m.DrawRect(
@@ -35,7 +35,7 @@ func (m *Menu) RenderNotifications() {
 		m.Font.Print(
 			45*m.ratio,
 			(stack+offset)*m.ratio,
-			0.5*m.ratio,
+			m.ratio,
 			n.Message,
 		)
 		stack += h + offset

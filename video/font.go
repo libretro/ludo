@@ -33,7 +33,7 @@ const (
 	TopToBottom                  // E.g.: Chinese
 )
 
-const fontRenderScale = 1.5
+const fontRenderScale = 1
 
 // A Font allows rendering of text to an OpenGL context.
 type Font struct {
