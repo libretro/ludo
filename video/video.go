@@ -18,11 +18,12 @@ import (
 
 // Video holds the state of the video package
 type Video struct {
-	Window *glfw.Window
-	Geom   libretro.GameGeometry
-	Font   *Font
-	FontSm *Font
-	FontLg *Font
+	Window   *glfw.Window
+	HWWindow *glfw.Window
+	Geom     libretro.GameGeometry
+	Font     *Font
+	FontSm   *Font
+	FontLg   *Font
 
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
@@ -62,6 +63,10 @@ func Init(fullscreen bool) *Video {
 // Reconfigure destroys and recreates the window with new attributes
 func (video *Video) Reconfigure(fullscreen bool) {
 	if video.Window != nil {
+		if video.HWWindow != nil {
+			video.HWWindow.Destroy()
+			video.HWWindow = nil
+		}
 		// This is the expected frontend behavior and Flycast requires this
 		// for fullscreen toggling to work, but ppsspp breaks. OTOH, ppsspp
 		// breaks in those situations even if we don't call context_destroy
@@ -73,6 +78,61 @@ func (video *Video) Reconfigure(fullscreen bool) {
 		video.Window.Destroy()
 	}
 	video.Configure(fullscreen)
+}
+
+// CreateSharedHWContext creates a hidden context shared with the visible frontend context.
+func (video *Video) CreateSharedHWContext() error {
+	if video.HWWindow != nil || video.Window == nil || !state.CoreSetSharedContext {
+		return nil
+	}
+
+	glfw.DefaultWindowHints()
+	glfw.WindowHint(glfw.Visible, glfw.False)
+	glfw.WindowHint(glfw.Focused, glfw.False)
+
+	hwWindow, err := glfw.CreateWindow(1, 1, "", nil, video.Window)
+	if err != nil {
+		return err
+	}
+
+	video.HWWindow = hwWindow
+	video.MakeFrontendContextCurrent()
+	return nil
+}
+
+// DestroySharedHWContext destroys the hidden shared context if it exists.
+func (video *Video) DestroySharedHWContext() {
+	if video.HWWindow != nil {
+		video.HWWindow.Destroy()
+		video.HWWindow = nil
+	}
+}
+
+// MakeFrontendContextCurrent switches back to the visible frontend context.
+func (video *Video) MakeFrontendContextCurrent() {
+	if video.Window != nil {
+		video.Window.MakeContextCurrent()
+	}
+}
+
+// MakeHardwareContextCurrent switches to the shared HW context when available.
+func (video *Video) MakeHardwareContextCurrent() {
+	if video.HWWindow != nil {
+		video.HWWindow.MakeContextCurrent()
+	}
+}
+
+// BeginCoreFrame makes the hardware context current before the core issues GL calls.
+func (video *Video) BeginCoreFrame() {
+	video.MakeHardwareContextCurrent()
+}
+
+// EndCoreFrame flushes HW GL work and restores the visible frontend context.
+func (video *Video) EndCoreFrame() {
+	if video.HWWindow != nil {
+		gl.Flush()
+		video.MakeFrontendContextCurrent()
+	}
 }
 
 // GetFramebufferSize retrieves the size, in pixels, of the framebuffer of the specified window.

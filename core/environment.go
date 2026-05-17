@@ -150,6 +150,9 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 			vid.ProcAddress)
 		log.Println("[Env]: HWContextType:", state.Core.HWRenderCallback.HWContextType)
 		return true
+	case libretro.EnvironmentSetHWSharedContext:
+		state.CoreSetSharedContext = true
+		return true
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:

@@ -51,6 +51,7 @@ func Load(sofile string) error {
 	if err != nil {
 		return err
 	}
+	state.CoreSetSharedContext = false
 	state.Core.SetEnvironment(environment)
 	state.Core.Init()
 	state.Core.SetVideoRefresh(vid.Refresh)
@@ -284,9 +285,16 @@ func LoadGame(gamePath string) error {
 	savefiles.LoadSRAM()
 
 	if state.Core.HWRenderCallback != nil {
+		if state.CoreSetSharedContext {
+			if err := vid.CreateSharedHWContext(); err != nil {
+				log.Println("[Video]: Failed to create shared HW context:", err)
+			}
+		}
+		vid.MakeHardwareContextCurrent()
 		vid.InitFramebuffer()
 		vid.PrepareCoreContext()
 		state.Core.HWRenderCallback.ContextReset()
+		vid.MakeFrontendContextCurrent()
 	}
 
 	return nil
@@ -299,6 +307,7 @@ func Unload() {
 		state.Core.Deinit()
 		state.CorePath = ""
 		state.Core = nil
+		state.CoreSetSharedContext = false
 		Options = nil
 	}
 }
@@ -310,6 +319,7 @@ func UnloadGame() {
 		state.Core.UnloadGame()
 		state.GamePath = ""
 		state.CoreRunning = false
+		vid.DestroySharedHWContext()
 		vid.ResetPitch()
 		vid.ResetRot()
 	}
