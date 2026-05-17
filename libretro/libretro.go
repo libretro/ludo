@@ -484,8 +484,6 @@ func Load(sofile string) (*Core, error) {
 		return nil, err
 	}
 
-	C.cothread_init()
-
 	core.symRetroInit = DlSym(core.handle, "retro_init")
 	core.symRetroDeinit = DlSym(core.handle, "retro_deinit")
 	core.symRetroAPIVersion = DlSym(core.handle, "retro_api_version")
