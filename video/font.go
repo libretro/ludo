@@ -347,21 +347,6 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	f.nextX = x
 	f.nextY = y
 
-	// Configure VAO/VBO for texture quads
-	genVertexArrays(1, &f.vao)
-	bindVertexArray(f.vao)
-
-	gl.GenBuffers(1, &f.vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, f.vbo)
-
-	vertAttrib := uint32(gl.GetAttribLocation(f.program, gl.Str("vert\x00")))
-	gl.EnableVertexAttribArray(vertAttrib)
-	gl.VertexAttribPointerWithOffset(vertAttrib, 2, gl.FLOAT, false, 4*4, 0)
-
-	texCoordAttrib := uint32(gl.GetAttribLocation(f.program, gl.Str("vertTexCoord\x00")))
-	gl.EnableVertexAttribArray(texCoordAttrib)
-	gl.VertexAttribPointerWithOffset(texCoordAttrib, 2, gl.FLOAT, false, 4*4, 2*4)
-
 	// Generate texture
 	gl.GenTextures(1, &f.textureID)
 	gl.ActiveTexture(gl.TEXTURE0)
@@ -371,8 +356,23 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(atlas.Rect.Dx()), int32(atlas.Rect.Dy()), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(atlas.Pix))
 	gl.BindTexture(gl.TEXTURE_2D, 0)
+
+	// Configure VAO/VBO for texture quads
+	genVertexArrays(1, &f.vao)
+	gl.GenBuffers(1, &f.vbo)
+	bindVertexArray(f.vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, f.vbo)
+
+	vertAttrib := uint32(gl.GetAttribLocation(f.program, gl.Str("vert\x00")))
+	gl.EnableVertexAttribArray(vertAttrib)
+	gl.VertexAttribPointerWithOffset(vertAttrib, 2, gl.FLOAT, false, 4*4, 0)
+
+	texCoordAttrib := uint32(gl.GetAttribLocation(f.program, gl.Str("vertTexCoord\x00")))
+	gl.EnableVertexAttribArray(texCoordAttrib)
+	gl.VertexAttribPointerWithOffset(texCoordAttrib, 2, gl.FLOAT, false, 4*4, 2*4)
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
 	bindVertexArray(0)
@@ -417,7 +417,8 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Fon
 	gl.UseProgram(program)
 
 	// Set screen resolution
-	gl.Uniform2f(gl.GetUniformLocation(program, gl.Str("resolution\x00")), float32(windowWidth), float32(windowHeight))
+	resUniform := gl.GetUniformLocation(program, gl.Str("resolution\x00"))
+	gl.Uniform2f(resUniform, float32(windowWidth), float32(windowHeight))
 
 	atlasScale := int32(float32(scale) / fontRenderScale)
 	if atlasScale < 1 {
@@ -454,6 +455,15 @@ func (f *Font) Print(x, y float32, scale float32, text string) error {
 	if len(indices) == 0 {
 		return nil
 	}
+
+	// Setup blending mode
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+	// Activate corresponding render state
+	gl.UseProgram(f.program)
+	// Set text color
+	gl.Uniform4f(gl.GetUniformLocation(f.program, gl.Str("textColor\x00")), f.color.R, f.color.G, f.color.B, f.color.A)
 
 	var coords []point
 
@@ -492,10 +502,6 @@ func (f *Font) Print(x, y float32, scale float32, text string) error {
 		x += float32((ch.advance >> 6)) * scale // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
 	}
 
-	gl.UseProgram(f.program)
-	gl.Uniform4f(gl.GetUniformLocation(f.program, gl.Str("textColor\x00")), f.color.R, f.color.G, f.color.B, f.color.A)
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	bindVertexArray(f.vao)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, f.textureID)

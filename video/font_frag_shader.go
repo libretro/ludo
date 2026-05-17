@@ -16,7 +16,6 @@ out vec4 FragColor;
 
 uniform sampler2D tex;
 uniform vec4 textColor;
-
 COMPAT_VARYING vec2 fragTexCoord;
 
 void main() {
