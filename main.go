@@ -45,6 +45,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		if !state.MenuActive {
 			if state.CoreRunning {
 				vid.BeginCoreFrame()
+				vid.PrepareCoreContext()
 				state.Core.Run()
 				vid.EndCoreFrame()
 				if state.Core.FrameTimeCallback != nil {
