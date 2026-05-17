@@ -1,12 +1,13 @@
 package menu
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
+	"strings"
 
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
@@ -74,7 +75,7 @@ func explorerIcon(f os.FileInfo) string {
 
 func appendNode(list *sceneExplorer, fullPath string, name string, f os.FileInfo, exts []string, cb func(string), dirAction *entry, prettifier Prettifier) {
 	// Check whether or not we are to display hidden files.
-	if name[:1] == "." && !settings.Current.ShowHiddenFiles {
+	if strings.HasPrefix(name, ".") && !settings.Current.ShowHiddenFiles {
 		return
 	}
 
@@ -135,7 +136,16 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		appendFolder(&list, "..", filepath.Clean(path+"/.."), exts, cb, dirAction, prettifier)
 	}
 
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
+
+	// Sort entries by their labels, ignoring case.
+	sort.SliceStable(files, func(i, j int) bool {
+		if prettifier != nil {
+			return strings.ToLower(prettifier(utils.FileName(files[i].Name()))) < strings.ToLower(prettifier(utils.FileName(files[j].Name())))
+		}
+		return strings.ToLower(utils.FileName(files[i].Name())) < strings.ToLower(utils.FileName(files[j].Name()))
+	})
+
 	if err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}
@@ -155,6 +165,7 @@ func buildExplorer(path string, exts []string, cb func(string), dirAction *entry
 		}
 		appendNode(&list, fullPath, f.Name(), fi, exts, cb, dirAction, prettifier)
 	}
+
 	buildIndexes(&list.entry)
 
 	if len(files) == 0 {

@@ -6,7 +6,7 @@ package scanner
 import (
 	"archive/zip"
 	"hash/crc32"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -22,7 +22,7 @@ import (
 
 // LoadDB loops over the RDBs in a given directory and parses them
 func LoadDB(dir string) (dat.DB, error) {
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return dat.DB{}, err
 	}
@@ -33,7 +33,7 @@ func LoadDB(dir string) (dat.DB, error) {
 			continue
 		}
 		system := name[0 : len(name)-4]
-		bytes, _ := ioutil.ReadFile(filepath.Join(dir, name))
+		bytes, _ := os.ReadFile(filepath.Join(dir, name))
 		db[system] = dat.Parse(bytes)
 	}
 	return db, nil
@@ -41,7 +41,7 @@ func LoadDB(dir string) (dat.DB, error) {
 
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
-	n := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
+	n := ntf.DisplayAndLogf(ntf.Info, "Menu", "Scanning %s", dir)
 	roms, err := utils.AllFilesIn(dir)
 	if err != nil {
 		n.Update(ntf.Error, err.Error())
@@ -71,7 +71,7 @@ func ScanDir(dir string, doneCb func()) {
 			i++
 		}
 		doneCb()
-		n.Update(ntf.Success, "Done scanning. %d new games found.", i)
+		n.Updatef(ntf.Success, "Done scanning. %d new games found.", i)
 	}()
 }
 
@@ -82,7 +82,7 @@ func checksumHeaderless(rom *zip.File, headerSize uint) (uint32, uint32, error) 
 		return 0, 0, err
 	}
 	defer h.Close()
-	bytes, err := ioutil.ReadAll(h)
+	bytes, err := io.ReadAll(h)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -114,6 +114,7 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 			}
 			for _, rom := range z.File {
 				romExt := filepath.Ext(rom.Name)
+				size := int64(rom.UncompressedSize64)
 				// these 4 systems might have headered or headerless roms and need special logic
 				if headerSize, ok := headerSizes[romExt]; ok {
 					crc, crcHeaderless, err := checksumHeaderless(rom, headerSize)
@@ -121,31 +122,36 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 						n.Update(ntf.Error, err.Error())
 						continue
 					}
-					state.DB.FindByCRC(f, rom.Name, crc, games)
-					state.DB.FindByCRC(f, rom.Name, crcHeaderless, games)
+					state.DB.FindByCRC(f, rom.Name, crc, size, games)
+					state.DB.FindByCRC(f, rom.Name, crcHeaderless, size-int64(headerSize), games)
 					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				} else if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
-					state.DB.FindByCRC(f, rom.Name, rom.CRC32, games)
+					state.DB.FindByCRC(f, rom.Name, rom.CRC32, size, games)
 					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 				}
 			}
 			z.Close()
-		case ".cue":
+		case ".cue", ".pbp", ".m3u":
 			// Look for a matching game entry in the database
 			state.DB.FindByROMName(f, filepath.Base(f), 0, games)
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
-		case ".32x", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc":
-			bytes, err := ioutil.ReadFile(f)
+		case ".32x", ".a26", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc", ".z64":
+			bytes, err := os.ReadFile(f)
+			if err != nil {
+				n.Update(ntf.Error, err.Error())
+				continue
+			}
+			s, err := os.Stat(f)
 			if err != nil {
 				n.Update(ntf.Error, err.Error())
 				continue
 			}
 			crc := crc32.ChecksumIEEE(bytes)
-			state.DB.FindByCRC(f, utils.FileName(f), crc, games)
+			state.DB.FindByCRC(f, utils.FileName(f), crc, s.Size(), games)
 			if headerSize, ok := headerSizes[ext]; ok {
 				crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
-				state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, games)
+				state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, s.Size()-int64(headerSize), games)
 			}
 			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
 		}

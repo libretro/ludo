@@ -35,7 +35,7 @@ type entry struct {
 	children []entry // children entries
 	ptr      int     // index of the active child
 	indexes  []struct {
-		Char  byte
+		Char  rune
 		Index int
 	}
 }
@@ -51,6 +51,13 @@ type Scene interface {
 	render()
 	drawHintBar()
 	Entry() *entry
+}
+
+func firstRune(s string) rune {
+	for _, r := range s {
+		return r
+	}
+	return 0
 }
 
 // genericSegueMount is the smooth transition of the menu entries first appearance
@@ -153,10 +160,10 @@ func genericDrawCursor(list *entry) {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawImage(menu.icons["arrow"],
 		530*menu.ratio, float32(h)*list.cursor.yp-35*menu.ratio,
-		70*menu.ratio, 70*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
+		70*menu.ratio, 70*menu.ratio, 1, 0, cursorBgColor.Alpha(list.cursor.alpha))
 	menu.DrawRect(
 		550*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		float32(w)-630*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
+		float32(w)-630*menu.ratio, 100*menu.ratio, 1, cursorBgColor.Alpha(list.cursor.alpha))
 }
 
 // thumbnailDrawCursor draws the blinking rectangular background of the active
@@ -165,10 +172,10 @@ func thumbnailDrawCursor(list *entry) {
 	w, h := menu.GetFramebufferSize()
 	menu.DrawImage(menu.icons["arrow"],
 		500*menu.ratio, float32(h)*list.cursor.yp-50*menu.ratio,
-		100*menu.ratio, 100*menu.ratio, 1, cursorBg.Alpha(list.cursor.alpha))
+		100*menu.ratio, 100*menu.ratio, 1, 0, cursorBgColor.Alpha(list.cursor.alpha))
 	menu.DrawRect(
 		530*menu.ratio, float32(h)*list.cursor.yp-120*menu.ratio,
-		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, cursorBg.Alpha(list.cursor.alpha))
+		float32(w)-630*menu.ratio, 240*menu.ratio, 0.2, cursorBgColor.Alpha(list.cursor.alpha))
 }
 
 // genericRender renders a vertical list of menu entries
@@ -191,23 +198,28 @@ func genericRender(list *entry) {
 			610*menu.ratio-64*0.5*menu.ratio,
 			float32(h)*e.yp-14*menu.ratio-64*0.5*menu.ratio+fontOffset,
 			128*menu.ratio, 128*menu.ratio,
-			0.5, textColor.Alpha(e.iconAlpha))
+			0.5, 0, textColor.Alpha(e.iconAlpha))
 
 		if e.labelAlpha > 0 {
+			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
+			menu.Font.Print(
+				(670+1)*menu.ratio,
+				float32(h)*e.yp+fontOffset+1*menu.ratio,
+				menu.ratio, e.label)
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
-			menu.Font.Printf(
+			menu.Font.Print(
 				670*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 
 			if e.widget != nil {
 				e.widget(&e)
 			} else if e.stringValue != nil {
-				lw := menu.Font.Width(0.5*menu.ratio, e.stringValue())
-				menu.Font.Printf(
+				lw := menu.Font.Width(menu.ratio, e.stringValue())
+				menu.Font.Print(
 					float32(w)-lw-128*menu.ratio,
 					float32(h)*e.yp+fontOffset,
-					0.5*menu.ratio, e.stringValue())
+					menu.ratio, e.stringValue())
 			}
 		}
 	}
@@ -263,16 +275,18 @@ func askDeleteSavestateConfirmation(cb func()) {
 }
 
 func genericDrawHintBar() {
-	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	w, h := menu.Window.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, upDown, _, a, b, _, _, _, _, guide := hintIcons()
 
-	var stack float32
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, upDown, "Navigate", h)
+	stackHintRight(&rstack, a, "Ok", h)
+	stackHintRight(&rstack, b, "Back", h)
 	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, a, "OK", h)
 }

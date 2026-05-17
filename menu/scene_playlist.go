@@ -23,9 +23,13 @@ func buildPlaylist(path string) Scene {
 	var list scenePlaylist
 	list.label = utils.FileName(path)
 
+	re := regexp.MustCompile(`\(([Dd]isc [1-9]?)\)`)
 	for _, game := range playlists.Playlists[path] {
 		game := game // needed for callbackOK
 		strippedName, tags := extractTags(game.Name)
+		if match := re.FindStringSubmatch(game.Name); len(match) >= 2 {
+			strippedName = strippedName + " (" + match[1] + ")"
+		}
 		list.children = append(list.children, entry{
 			label:      strippedName,
 			gameName:   game.Name,
@@ -53,12 +57,12 @@ func buildPlaylist(path string) Scene {
 // Index first letters of entries to allow quick jump to the next or previous
 // letter
 func buildIndexes(list *entry) {
-	var last byte
+	var last rune
 	for i := 0; i < len(list.children); i++ {
-		char := list.children[i].label[0]
+		char := firstRune(list.children[i].label)
 		if char != last {
 			list.indexes = append(list.indexes, struct {
-				Char  byte
+				Char  rune
 				Index int
 			}{char, i})
 			last = char
@@ -94,7 +98,7 @@ func loadPlaylistEntry(list *scenePlaylist, playlist string, game playlists.Game
 		return
 	}
 	if _, err := os.Stat(corePath); os.IsNotExist(err) {
-		ntf.DisplayAndLog(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
+		ntf.DisplayAndLogf(ntf.Error, "Menu", "Core not found: %s", filepath.Base(corePath))
 		return
 	}
 	if state.CorePath != corePath {
@@ -229,16 +233,22 @@ func (s *scenePlaylist) render() {
 					680*menu.ratio-25*e.scale*menu.ratio,
 					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, white.Alpha(e.iconAlpha))
+					e.scale, 0, white.Alpha(e.iconAlpha))
 			}
 
-			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			stack := 840 * menu.ratio
-			menu.Font.Printf(
+			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
+			menu.Font.Print(
+				(840+1)*menu.ratio,
+				float32(h)*e.yp+fontOffset+1*menu.ratio,
+				menu.ratio, e.label)
+			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
+			menu.Font.Print(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.5*menu.ratio, e.label)
-			stack += float32(int(menu.Font.Width(0.5*menu.ratio, e.label)))
+				menu.ratio, e.label)
+
+			stack += float32(int(menu.Font.Width(menu.ratio, e.label)))
 			stack += 10
 
 			for _, tag := range e.tags {
@@ -247,7 +257,7 @@ func (s *scenePlaylist) render() {
 					menu.DrawImage(
 						menu.icons[tag],
 						stack, float32(h)*e.yp-22*menu.ratio,
-						60*menu.ratio, 44*menu.ratio, 1.0, white.Alpha(e.tagAlpha))
+						60*menu.ratio, 44*menu.ratio, 1.0, 0, white.Alpha(e.tagAlpha))
 					menu.DrawBorder(stack, float32(h)*e.yp-22*menu.ratio,
 						60*menu.ratio, 44*menu.ratio, 0.05/menu.ratio, black.Alpha(e.tagAlpha/4))
 					stack += 60 * menu.ratio
@@ -261,20 +271,23 @@ func (s *scenePlaylist) render() {
 
 func (s *scenePlaylist) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
 	_, upDown, _, a, b, x, _, _, _, guide := hintIcons()
 
-	var stack float32
-	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, upDown, "NAVIGATE", h)
-	stackHint(&stack, b, "BACK", h)
-	stackHint(&stack, a, "RUN", h)
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, upDown, "Navigate", h)
+	stackHintRight(&rstack, b, "Back", h)
+	stackHintRight(&rstack, a, "Run", h)
 
 	list := menu.stack[len(menu.stack)-1].Entry()
 	if list.children[list.ptr].callbackX != nil {
-		stackHint(&stack, x, "DELETE", h)
+		stackHintRight(&rstack, x, "Delete", h)
+	}
+
+	if state.CoreRunning {
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
 }

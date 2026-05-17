@@ -18,10 +18,11 @@ uniform vec2 OutputSize;
 uniform vec2 TextureSize;
 uniform vec2 InputSize;
 uniform sampler2D Texture;
+uniform vec4 color;
 COMPAT_VARYING vec2 fragTexCoord;
 
 void main() {
   vec4 c = COMPAT_TEXTURE(Texture, fragTexCoord);
-  COMPAT_FRAGCOLOR = vec4(c.rgb, 1.0);
+  COMPAT_FRAGCOLOR = c * color;
 }
 ` + "\x00"

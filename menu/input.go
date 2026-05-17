@@ -143,7 +143,7 @@ func genericInput(list *entry, dt float32) {
 
 // indexed allows jumping directly to the next letter in playlists
 func indexed(list *entry, offset int) int {
-	curr := list.children[list.ptr].label[0]
+	curr := firstRune(list.children[list.ptr].label)
 	for i, t := range list.indexes {
 		if curr == t.Char {
 			if i+offset < 0 {
@@ -193,14 +193,14 @@ func (m *Menu) ProcessHotkeys() {
 		}
 	}
 
-	// Toggle fullscreen if ActionFullscreenToggle is pressed
-	if input.Pressed[0][input.ActionFullscreenToggle] == 1 {
+	// Toggle fullscreen if ActionFullscreenToggle is released
+	if input.Released[0][input.ActionFullscreenToggle] == 1 {
 		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
 		m.Reconfigure(settings.Current.VideoFullscreen)
 		m.ContextReset()
 		err := settings.Save()
 		if err != nil {
-			ntf.DisplayAndLog(ntf.Error, "Menu", "Error saving settings: %s", err)
+			ntf.DisplayAndLogf(ntf.Error, "Menu", "Error saving settings: %v", err)
 		}
 	}
 

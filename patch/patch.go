@@ -4,7 +4,6 @@
 package patch
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +14,7 @@ import (
 func Try(gamePath string, bytes []byte) (*[]byte, error) {
 	upsFile := strings.TrimSuffix(gamePath, filepath.Ext(gamePath)) + ".ups"
 	if _, err := os.Stat(upsFile); !os.IsNotExist(err) {
-		pbytes, err := ioutil.ReadFile(upsFile)
+		pbytes, err := os.ReadFile(upsFile)
 		if err != nil {
 			return nil, err
 		}
@@ -30,7 +29,7 @@ func Try(gamePath string, bytes []byte) (*[]byte, error) {
 
 	ipsFile := strings.TrimSuffix(gamePath, filepath.Ext(gamePath)) + ".ips"
 	if _, err := os.Stat(ipsFile); !os.IsNotExist(err) {
-		pbytes, err := ioutil.ReadFile(ipsFile)
+		pbytes, err := os.ReadFile(ipsFile)
 		if err != nil {
 			return nil, err
 		}

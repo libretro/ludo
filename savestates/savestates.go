@@ -3,7 +3,6 @@
 package savestates
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -24,13 +23,13 @@ func Save(name string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(path, bytes, 0644)
+	return os.WriteFile(path, bytes, 0644)
 }
 
 // Load the state from the filesystem
 func Load(path string) error {
 	s := state.Core.SerializeSize()
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}

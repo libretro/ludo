@@ -1,3 +1,4 @@
+//go:build !darwin
 // +build !darwin
 
 package video
@@ -15,12 +16,14 @@ import (
 func (video *Video) InitFramebuffer() {
 	width := int32(video.Geom.MaxWidth)
 	height := int32(video.Geom.MaxHeight)
+	video.texWidth = width
+	video.texHeight = height
 
 	log.Printf("[Video]: Initializing HW render (%v x %v).\n", width, height)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, width, height)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
 
 	gl.GenFramebuffers(1, &video.fboID)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)

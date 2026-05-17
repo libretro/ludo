@@ -114,7 +114,7 @@ func Test_buildExplorer(t *testing.T) {
 	os.Create(tmp + "File 1.txt")
 	os.Create(tmp + "File 2.img")
 	os.Create(tmp + "File 3.txt")
-	os.Create(tmp + "File 4.img")
+	os.Create(tmp + "File 4.img") // this entry will be pushed at the end by sort+prettify
 	os.Create(tmp + "File 5.txt")
 	os.Create(tmp + "File 6.txt")
 	os.Create(tmp + "File 7.txt")
@@ -158,14 +158,14 @@ func Test_buildExplorer(t *testing.T) {
 	})
 
 	t.Run("Targeted files have OK callbacks", func(t *testing.T) {
-		children[3].callbackOK()
+		children[2].callbackOK()
 		if exec != 1 {
 			t.Errorf("buildExplorer = %v, want %v", exec, 1)
 		}
 	})
 
 	t.Run("Folders have folder icon", func(t *testing.T) {
-		if children[4].icon != "folder" {
+		if children[3].icon != "folder" {
 			t.Errorf("buildExplorer = %v, want %v", children[4].icon, "folder")
 		}
 	})
@@ -174,7 +174,7 @@ func Test_buildExplorer(t *testing.T) {
 		if len(menu.stack) != 1 {
 			t.Errorf("buildExplorer = %v, want %v", len(menu.stack), 1)
 		}
-		children[4].callbackOK()
+		children[3].callbackOK()
 		if len(menu.stack) != 2 {
 			t.Errorf("buildExplorer = %v, want %v", len(menu.stack), 2)
 		}
@@ -182,7 +182,7 @@ func Test_buildExplorer(t *testing.T) {
 
 	t.Run("Prettifier should work", func(t *testing.T) {
 		want := "IMAGE 4"
-		if children[3].label != want {
+		if children[4].label != want {
 			t.Errorf("buildExplorer = %v, want %v", children[3].label, want)
 		}
 	})

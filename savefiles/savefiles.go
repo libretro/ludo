@@ -4,7 +4,6 @@ package savefiles
 import (
 	"C"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -84,7 +83,7 @@ func LoadSRAM() error {
 	// this *[1 << 30]byte points to the same memory as ptr, allowing to
 	// overwrite this memory
 	destination := (*[1 << 30]byte)(unsafe.Pointer(ptr))[:len:len]
-	source, err := ioutil.ReadFile(path())
+	source, err := os.ReadFile(path())
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,8 @@ package menu
 import (
 	"fmt"
 	"os"
-	"os/user"
+
+	//"os/user"
 	"sort"
 
 	"github.com/libretro/ludo/audio"
@@ -12,10 +13,9 @@ import (
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/playlists"
 	"github.com/libretro/ludo/scanner"
+	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
-	"github.com/libretro/ludo/video"
-	colorful "github.com/lucasb-eyer/go-colorful"
 
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -63,8 +63,8 @@ func buildTabs() Scene {
 		subLabel: "Scan your collection",
 		icon:     "add",
 		callbackOK: func() {
-			usr, _ := user.Current()
-			menu.Push(buildExplorer(usr.HomeDir, nil,
+			//usr, _ := user.Current()
+			menu.Push(buildExplorer(settings.Current.FileDirectory, nil,
 				func(path string) {
 					scanner.ScanDir(path, refreshTabs)
 				},
@@ -160,7 +160,7 @@ func getPlaylists() []entry {
 func deletePlaylist(path string) {
 	err := os.Remove(path)
 	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", "Could not delete playlist: %s", err.Error())
+		ntf.DisplayAndLogf(ntf.Error, "Menu", "Could not delete playlist: %v", err)
 		return
 	}
 	menu.stack[0].Entry().ptr++
@@ -284,47 +284,54 @@ func (tabs sceneTabs) render() {
 
 	stackWidth := 710 * menu.ratio
 	for i, e := range tabs.children {
-
-		cf := colorful.Hcl(float64(i)*20, 0.5, 0.5)
-		c := video.Color{R: float32(cf.R), G: float32(cf.B), B: float32(cf.G), A: e.iconAlpha}
+		iconColor := tabIconColors(i).Alpha(e.iconAlpha)
+		hexaColor := tabHexaColors(i).Alpha(e.iconAlpha)
+		lablColor := hexaColor
+		if settings.Current.VideoDarkMode || state.CoreRunning {
+			iconColor = tabHexaColors(i).Alpha(e.iconAlpha)
+			hexaColor = tabIconColors(i).Alpha(e.iconAlpha)
+			lablColor = iconColor
+		}
 
 		x := -menu.scroll*menu.ratio + stackWidth + e.width/2*menu.ratio
 
 		stackWidth += e.width*menu.ratio + e.margin*menu.ratio
 
 		if e.labelAlpha > 0 {
-			menu.Font.SetColor(c.Alpha(e.labelAlpha))
-			lw := menu.Font.Width(0.5*menu.ratio, e.label)
-			menu.Font.Printf(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), 0.5*menu.ratio, e.label)
-			lw = menu.Font.Width(0.4*menu.ratio, e.subLabel)
-			menu.Font.Printf(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), 0.4*menu.ratio, e.subLabel)
+			lw := menu.Font.Width(menu.ratio, e.label)
+			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
+			menu.Font.Print(x-lw/2+1*menu.ratio, float32(int(float32(h)/2+(250+1)*menu.ratio)), menu.ratio, e.label)
+			menu.Font.SetColor(lablColor.Alpha(e.labelAlpha))
+			menu.Font.Print(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), menu.ratio, e.label)
+			lw = menu.FontSm.Width(menu.ratio, e.subLabel)
+			menu.FontSm.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
+			menu.FontSm.Print(x-lw/2+1*menu.ratio, float32(int(float32(h)/2+(330+1)*menu.ratio)), menu.ratio, e.subLabel)
+			menu.FontSm.SetColor(lablColor.Alpha(e.labelAlpha))
+			menu.FontSm.Print(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), menu.ratio, e.subLabel)
 		}
 
 		menu.DrawImage(menu.icons["hexagon"],
 			x-220*e.scale*menu.ratio, float32(h)/2-220*e.scale*menu.ratio,
-			440*menu.ratio, 440*menu.ratio, e.scale, c)
+			440*menu.ratio, 440*menu.ratio, e.scale, 0, hexaColor)
 
 		menu.DrawImage(menu.icons[e.icon],
 			x-128*e.scale*menu.ratio, float32(h)/2-128*e.scale*menu.ratio,
-			256*menu.ratio, 256*menu.ratio, e.scale, white.Alpha(e.iconAlpha))
+			256*menu.ratio, 256*menu.ratio, e.scale, 0, iconColor)
 	}
 }
 
-func (tabs sceneTabs) drawHintBar() {
-	w, h := menu.GetFramebufferSize()
-	menu.DrawRect(0, float32(h)-70*menu.ratio, float32(w), 70*menu.ratio, 0, lightGrey)
+func (s *sceneTabs) drawHintBar() {
+	w, h := menu.Window.GetFramebufferSize()
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
+	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 
-	_, _, leftRight, a, _, x, _, _, _, guide := hintIcons()
+	_, _, leftRight, a, _, _, _, _, _, guide := hintIcons()
 
-	var stack float32
+	lstack := float32(75) * menu.ratio
+	rstack := float32(w) - 96*menu.ratio
+	stackHintLeft(&lstack, leftRight, "Navigate", h)
+	stackHintRight(&rstack, a, "Ok", h)
 	if state.CoreRunning {
-		stackHint(&stack, guide, "RESUME", h)
-	}
-	stackHint(&stack, leftRight, "NAVIGATE", h)
-	stackHint(&stack, a, "OPEN", h)
-
-	list := menu.stack[0].Entry()
-	if list.children[list.ptr].callbackX != nil {
-		stackHint(&stack, x, "DELETE", h)
+		stackHintRight(&rstack, guide, "Resume", h)
 	}
 }
