@@ -347,9 +347,6 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, dir Direction) (
 	f.nextX = x
 	f.nextY = y
 
-	textureUniform := gl.GetUniformLocation(f.program, gl.Str("Texture\x00"))
-	gl.Uniform1i(textureUniform, 0)
-
 	// Configure VAO/VBO for texture quads
 	genVertexArrays(1, &f.vao)
 	bindVertexArray(f.vao)
@@ -496,7 +493,7 @@ func (f *Font) Print(x, y float32, scale float32, text string) error {
 	}
 
 	gl.UseProgram(f.program)
-	gl.Uniform4f(gl.GetUniformLocation(f.program, gl.Str("color\x00")), f.color.R, f.color.G, f.color.B, f.color.A)
+	gl.Uniform4f(gl.GetUniformLocation(f.program, gl.Str("textColor\x00")), f.color.R, f.color.G, f.color.B, f.color.A)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	bindVertexArray(f.vao)
