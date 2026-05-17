@@ -57,12 +57,12 @@ func buildPlaylist(path string) Scene {
 // Index first letters of entries to allow quick jump to the next or previous
 // letter
 func buildIndexes(list *entry) {
-	var last byte
+	var last rune
 	for i := 0; i < len(list.children); i++ {
-		char := list.children[i].label[0]
+		char := firstRune(list.children[i].label)
 		if char != last {
 			list.indexes = append(list.indexes, struct {
-				Char  byte
+				Char  rune
 				Index int
 			}{char, i})
 			last = char
@@ -241,14 +241,14 @@ func (s *scenePlaylist) render() {
 			menu.Font.Print(
 				(840+1)*menu.ratio,
 				float32(h)*e.yp+fontOffset+1*menu.ratio,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Print(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 
-			stack += float32(int(menu.Font.Width(0.5*menu.ratio, e.label)))
+			stack += float32(int(menu.Font.Width(menu.ratio, e.label)))
 			stack += 10
 
 			for _, tag := range e.tags {

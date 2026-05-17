@@ -219,6 +219,7 @@ func textureLoad(nrgba *image.NRGBA) uint32 {
 		gl.RGBA,
 		gl.UNSIGNED_BYTE,
 		gl.Ptr(nrgba.Pix))
+	gl.ActiveTexture(gl.TEXTURE0)
 	return texture
 }
 

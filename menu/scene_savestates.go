@@ -157,13 +157,13 @@ func (s *sceneSavestates) render() {
 			menu.Font.Print(
 				(840+1)*menu.ratio,
 				float32(h)*e.yp+fontOffset+1*menu.ratio,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Print(
 				840*menu.ratio,
 				float32(h)*e.yp+fontOffset,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 		}
 	}
 }

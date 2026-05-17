@@ -298,16 +298,16 @@ func (tabs sceneTabs) render() {
 		stackWidth += e.width*menu.ratio + e.margin*menu.ratio
 
 		if e.labelAlpha > 0 {
-			lw := menu.Font.Width(0.5*menu.ratio, e.label)
+			lw := menu.Font.Width(menu.ratio, e.label)
 			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
-			menu.Font.Print(x-lw/2+1*menu.ratio, float32(int(float32(h)/2+(250+1)*menu.ratio)), 0.5*menu.ratio, e.label)
+			menu.Font.Print(x-lw/2+1*menu.ratio, float32(int(float32(h)/2+(250+1)*menu.ratio)), menu.ratio, e.label)
 			menu.Font.SetColor(lablColor.Alpha(e.labelAlpha))
-			menu.Font.Print(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), 0.5*menu.ratio, e.label)
-			lw = menu.Font.Width(0.4*menu.ratio, e.subLabel)
-			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
-			menu.Font.Print(x-lw/2+1*menu.ratio, float32(int(float32(h)/2+(330+1)*menu.ratio)), 0.4*menu.ratio, e.subLabel)
-			menu.Font.SetColor(lablColor.Alpha(e.labelAlpha))
-			menu.Font.Print(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), 0.4*menu.ratio, e.subLabel)
+			menu.Font.Print(x-lw/2, float32(int(float32(h)/2+250*menu.ratio)), menu.ratio, e.label)
+			lw = menu.FontSm.Width(menu.ratio, e.subLabel)
+			menu.FontSm.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
+			menu.FontSm.Print(x-lw/2+1*menu.ratio, float32(int(float32(h)/2+(330+1)*menu.ratio)), menu.ratio, e.subLabel)
+			menu.FontSm.SetColor(lablColor.Alpha(e.labelAlpha))
+			menu.FontSm.Print(x-lw/2, float32(int(float32(h)/2+330*menu.ratio)), menu.ratio, e.subLabel)
 		}
 
 		menu.DrawImage(menu.icons["hexagon"],
