@@ -285,6 +285,7 @@ func LoadGame(gamePath string) error {
 
 	if state.Core.HWRenderCallback != nil {
 		vid.InitFramebuffer()
+		vid.PrepareCoreContext()
 		state.Core.HWRenderCallback.ContextReset()
 	}
 

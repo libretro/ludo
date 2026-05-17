@@ -362,6 +362,29 @@ func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight i
 	return
 }
 
+// PrepareCoreContext resets frontend GL state so HW cores see a minimal context
+func (video *Video) PrepareCoreContext() {
+	gl.UseProgram(0)
+	bindVertexArray(0)
+	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+	gl.BindTexture(gl.TEXTURE_CUBE_MAP, 0)
+	gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
+	bindBackbuffer()
+	gl.Disable(gl.BLEND)
+	gl.Disable(gl.CULL_FACE)
+	gl.Disable(gl.DEPTH_TEST)
+	gl.Disable(gl.DITHER)
+	gl.Disable(gl.SCISSOR_TEST)
+	gl.Disable(gl.STENCIL_TEST)
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, 0)
+	gl.PixelStorei(gl.PACK_ROW_LENGTH, 0)
+	gl.PixelStorei(gl.UNPACK_ALIGNMENT, 4)
+	gl.PixelStorei(gl.PACK_ALIGNMENT, 4)
+}
+
 // ResizeViewport resizes the GL viewport to the framebuffer size
 func (video *Video) ResizeViewport() {
 	fbw, fbh := video.Window.GetFramebufferSize()
