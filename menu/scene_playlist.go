@@ -57,12 +57,12 @@ func buildPlaylist(path string) Scene {
 // Index first letters of entries to allow quick jump to the next or previous
 // letter
 func buildIndexes(list *entry) {
-	var last byte
+	var last rune
 	for i := 0; i < len(list.children); i++ {
-		char := list.children[i].label[0]
+		char := firstRune(list.children[i].label)
 		if char != last {
 			list.indexes = append(list.indexes, struct {
-				Char  byte
+				Char  rune
 				Index int
 			}{char, i})
 			last = char

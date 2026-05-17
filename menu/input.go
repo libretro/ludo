@@ -143,7 +143,7 @@ func genericInput(list *entry, dt float32) {
 
 // indexed allows jumping directly to the next letter in playlists
 func indexed(list *entry, offset int) int {
-	curr := list.children[list.ptr].label[0]
+	curr := firstRune(list.children[list.ptr].label)
 	for i, t := range list.indexes {
 		if curr == t.Char {
 			if i+offset < 0 {

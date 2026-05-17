@@ -35,7 +35,7 @@ type entry struct {
 	children []entry // children entries
 	ptr      int     // index of the active child
 	indexes  []struct {
-		Char  byte
+		Char  rune
 		Index int
 	}
 }
@@ -51,6 +51,13 @@ type Scene interface {
 	render()
 	drawHintBar()
 	Entry() *entry
+}
+
+func firstRune(s string) rune {
+	for _, r := range s {
+		return r
+	}
+	return 0
 }
 
 // genericSegueMount is the smooth transition of the menu entries first appearance

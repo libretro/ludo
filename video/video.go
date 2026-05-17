@@ -376,6 +376,7 @@ func (video *Video) uploadTexture() {
 		return
 	}
 
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 
