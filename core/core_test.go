@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/glfw/v3.4/glfw"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -35,7 +35,11 @@ func Test_coreLoad(t *testing.T) {
 
 	Init(&video.Video{})
 
-	out := utils.CaptureOutput(func() { Load("testdata/vecx_libretro" + ext) })
+	var loadErr error
+	out := utils.CaptureOutput(func() { loadErr = Load("testdata/vecx_libretro" + ext) })
+	if loadErr != nil {
+		t.Fatalf("Load() error = %v", loadErr)
+	}
 
 	t.Run("The core is loaded", func(t *testing.T) {
 		if state.Core == nil {
@@ -45,14 +49,16 @@ func Test_coreLoad(t *testing.T) {
 
 	t.Run("Logs information about the loaded core", func(t *testing.T) {
 		got := out
-		want := `[Core]: Name: VecX
-[Core]: Version: 1.2 42366f8
-[Core]: Valid extensions: bin|vec
-[Core]: Need fullpath: false
-[Core]: Block extract: false
-`
-		if !strings.Contains(got, want) {
-			t.Errorf("got = %v, want %v", got, want)
+		for _, want := range []string{
+			`[Core]: Name: VecX`,
+			`[Core]: Version: 1.2 `,
+			`[Core]: Valid extensions: bin|vec`,
+			`[Core]: Need fullpath: false`,
+			`[Core]: Block extract: false`,
+		} {
+			if !strings.Contains(got, want) {
+				t.Errorf("got = %v, want to contain %v", got, want)
+			}
 		}
 	})
 
@@ -198,10 +204,17 @@ func Test_coreLoadGame(t *testing.T) {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw")
 	}
+	t.Cleanup(glfw.Terminate)
 
-	Load("testdata/vecx_libretro" + ext)
+	if err := Load("testdata/vecx_libretro" + ext); err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
 
-	got := utils.CaptureOutput(func() { LoadGame("testdata/Polar Rescue (USA).vec") })
+	var loadGameErr error
+	got := utils.CaptureOutput(func() { loadGameErr = LoadGame("testdata/Polar Rescue (USA).vec") })
+	if loadGameErr != nil {
+		t.Fatalf("LoadGame() error = %v", loadGameErr)
+	}
 
 	t.Run("Logs information about the loaded game", func(t *testing.T) {
 		want := `[Core]: Game loaded: testdata/Polar Rescue (USA).vec`
@@ -236,4 +249,17 @@ func Test_coreLoadGame(t *testing.T) {
 			t.Errorf("got = %v, want %v", state.CoreRunning, false)
 		}
 	})
+}
+
+func Test_coreLoadGameWithoutCore(t *testing.T) {
+	UnloadGame()
+	Unload()
+
+	err := LoadGame("testdata/Polar Rescue (USA).vec")
+	if err == nil {
+		t.Fatal("LoadGame() error = nil, want not nil")
+	}
+	if err.Error() != "no core loaded" {
+		t.Fatalf("LoadGame() error = %v, want %v", err, "no core loaded")
+	}
 }

@@ -58,12 +58,16 @@ func Display(severity Severity, message string, duration float32) *Notification 
 }
 
 // DisplayAndLog creates a new notification and also logs the message to stdout.
-func DisplayAndLog(severity Severity, prefix, message string, vars ...interface{}) *Notification {
-	msg := fmt.Sprintf(message, vars...)
+func DisplayAndLog(severity Severity, prefix, message string) *Notification {
 	if state.Verbose {
-		log.Print("[" + prefix + "]: " + msg + "\n")
+		log.Print("[" + prefix + "]: " + message + "\n")
 	}
-	return Display(severity, msg, Medium)
+	return Display(severity, message, Medium)
+}
+
+// DisplayAndLogf formats a message, then creates a new notification and logs it.
+func DisplayAndLogf(severity Severity, prefix, format string, vars ...interface{}) *Notification {
+	return DisplayAndLog(severity, prefix, fmt.Sprintf(format, vars...))
 }
 
 // Process iterates over the notifications, update them, delete the old ones.
@@ -86,10 +90,13 @@ func Clear() {
 
 // Update the message of a given notification. Also resets the delay before
 // disapearing.
-func (n *Notification) Update(severity Severity, message string, vars ...interface{}) {
-	msg := fmt.Sprintf(message, vars...)
-
+func (n *Notification) Update(severity Severity, message string) {
 	n.Duration = Medium
-	n.Message = msg
+	n.Message = message
 	n.Severity = severity
+}
+
+// Updatef formats and updates the message of a given notification.
+func (n *Notification) Updatef(severity Severity, format string, vars ...interface{}) {
+	n.Update(severity, fmt.Sprintf(format, vars...))
 }

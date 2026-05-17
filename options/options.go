@@ -6,7 +6,6 @@ package options
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -100,7 +99,7 @@ func (o *Options) load() error {
 	defer o.Unlock()
 
 	name := utils.FileName(state.CorePath)
-	b, err := ioutil.ReadFile(filepath.Join(xdg.ConfigHome, "ludo", name+".toml"))
+	b, err := os.ReadFile(filepath.Join(xdg.ConfigHome, "ludo", name+".toml"))
 	if err != nil {
 		return err
 	}

@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,9 +22,10 @@ import (
 // Widget sets the graphical representation of the value.
 type Settings struct {
 	VideoFullscreen   bool   `hide:"ludos" toml:"video_fullscreen" label:"Video Fullscreen" fmt:"%t" widget:"switch"`
-	VideoMonitorIndex int    `toml:"video_monitor_index" label:"Video Monitor Index" fmt:"%d"`
-	VideoFilter       string `toml:"video_filter" label:"Video Filter" fmt:"<%s>"`
+	VideoMonitorIndex int    `toml:"video_monitor_index" label:"Video Monitor Index" fmt:"◀ %d ▶"`
+	VideoFilter       string `toml:"video_filter" label:"Video Filter" fmt:"◀ %s ▶"`
 	VideoDarkMode     bool   `toml:"video_dark_mode" label:"Video Dark Mode" fmt:"%t" widget:"switch"`
+	VideoTheme 		   string `toml:"video_theme" label:"Video Theme" fmt:"◀ %s ▶"`
 
 	AudioVolume float32 `toml:"audio_volume" label:"Audio Volume" fmt:"%.1f" widget:"range"`
 
@@ -36,6 +36,7 @@ type Settings struct {
 
 	CoreForPlaylist map[string]string `hide:"always" toml:"core_for_playlist"`
 
+	FileDirectory        string `hide:"ludos" toml:"files_dir" label:"Files Directory" fmt:"%s" widget:"dir"`
 	CoresDirectory       string `hide:"ludos" toml:"cores_dir" label:"Cores Directory" fmt:"%s" widget:"dir"`
 	AssetsDirectory      string `hide:"ludos" toml:"assets_dir" label:"Assets Directory" fmt:"%s" widget:"dir"`
 	DatabaseDirectory    string `hide:"ludos" toml:"database_dir" label:"Database Directory" fmt:"%s" widget:"dir"`
@@ -73,14 +74,14 @@ func Load() error {
 
 	// If /etc/ludo.toml exists, override the defaults
 	if _, err := os.Stat("/etc/ludo.toml"); !os.IsNotExist(err) {
-		b, _ := ioutil.ReadFile("/etc/ludo.toml")
+		b, _ := os.ReadFile("/etc/ludo.toml")
 		err = toml.Unmarshal(b, &Current)
 		if err != nil {
 			return err
 		}
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(xdg.ConfigHome, "ludo", "settings.toml"))
+	b, err := os.ReadFile(filepath.Join(xdg.ConfigHome, "ludo", "settings.toml"))
 	if err != nil {
 		return err
 	}

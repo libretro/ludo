@@ -36,6 +36,7 @@ type CRC uint32
 type ROM struct {
 	XMLName xml.Name `xml:"rom"`
 	Name    string   `xml:"name,attr"`
+	Size    int64    `xml:"size,attr"`
 	CRC     CRC      `xml:"crc,attr"`
 }
 
@@ -63,7 +64,13 @@ func Parse(dat []byte) Dat {
 }
 
 // FindByCRC loops over the Dats in the DB and concurrently matches CRC checksums.
-func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (Game)) {
+func (db *DB) FindByCRC(romPath string, romName string, crc uint32, size int64, games chan (Game)) {
+	// skip empty file
+	if size == 0 || crc == 0 {
+		return
+	}
+
+	once := sync.Once{}
 	var wg sync.WaitGroup
 	wg.Add(len(*db))
 	// For every Dat in the DB
@@ -74,11 +81,13 @@ func (db *DB) FindByCRC(romPath string, romName string, crc uint32, games chan (
 				if len(game.ROMs) == 0 {
 					continue
 				}
-				// If the checksums match
-				if crc == uint32(game.ROMs[0].CRC) {
-					game.Path = romPath
-					game.System = system
-					games <- game
+				// If the checksums and sizes match
+				if crc == uint32(game.ROMs[0].CRC) && size == game.ROMs[0].Size {
+					once.Do(func() {
+						game.Path = romPath
+						game.System = system
+						games <- game
+					})
 				}
 			}
 			wg.Done()
@@ -101,10 +110,13 @@ func (db *DB) FindByROMName(romPath string, romName string, crc uint32, games ch
 					continue
 				}
 				// If the checksums match
-				if romName == game.ROMs[0].Name {
-					game.Path = romPath
-					game.System = system
-					games <- game
+				for _, ROM := range game.ROMs {
+					if romName == ROM.Name {
+						game.Path = romPath
+						game.System = system
+						games <- game
+					}
+					// element is the element from someSlice for where we are
 				}
 			}
 			wg.Done()
