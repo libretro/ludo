@@ -41,6 +41,8 @@ type Video struct {
 	rboID                uint32 // depth/stencil renderbuffer for hw-render cores
 	identityMat          mgl32.Mat4
 	orthoMat             mgl32.Mat4
+	texWidth             int32
+	texHeight            int32
 
 	pitch         int32  // pitch set by the refresh callback
 	pixFmt        uint32 // format set by the environment callback
@@ -97,7 +99,15 @@ func (video *Video) CreateSharedHWContext() error {
 	glfw.WindowHint(glfw.Visible, glfw.False)
 	glfw.WindowHint(glfw.Focused, glfw.False)
 
-	hwWindow, err := glfw.CreateWindow(1, 1, "", nil, video.Window)
+	width, height := video.Window.GetSize()
+	if width < 1 {
+		width = 1
+	}
+	if height < 1 {
+		height = 1
+	}
+
+	hwWindow, err := glfw.CreateWindow(width, height, "", nil, video.Window)
 	if err != nil {
 		return err
 	}
@@ -345,15 +355,15 @@ func (video *Video) Configure(fullscreen bool) {
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	texWidth := int32(video.Geom.MaxWidth)
-	texHeight := int32(video.Geom.MaxHeight)
-	if texWidth == 0 {
-		texWidth = 1
+	video.texWidth = int32(video.Geom.MaxWidth)
+	video.texHeight = int32(video.Geom.MaxHeight)
+	if video.texWidth < 1 {
+		video.texWidth = 1
 	}
-	if texHeight == 0 {
-		texHeight = 1
+	if video.texHeight < 1 {
+		video.texHeight = 1
 	}
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, texWidth, texHeight, 0, video.pixType, video.pixFmt, nil)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, video.texWidth, video.texHeight, 0, video.pixType, video.pixFmt, nil)
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
@@ -403,7 +413,7 @@ func (video *Video) UpdateFilter(filter string) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.UseProgram(video.program)
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.Geom.MaxWidth), float32(video.Geom.MaxHeight))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.texWidth), float32(video.texHeight))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
 	gl.UseProgram(0)
 }
@@ -479,17 +489,15 @@ func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight i
 
 	va := video.vertexArray(x, y, w, h, 1.0)
 
-	maxWidth := video.Geom.MaxWidth
-	if maxWidth == 0 {
-		maxWidth = clipWidth
+	if clipWidth == 0 {
+		clipWidth = int(video.texWidth)
 	}
-	maxHeight := video.Geom.MaxHeight
-	if maxHeight == 0 {
-		maxHeight = clipHeight
+	if clipHeight == 0 {
+		clipHeight = int(video.texHeight)
 	}
 
-	va[3] = float32(clipHeight) / float32(maxHeight)
-	va[10] = float32(clipWidth) / float32(maxWidth)
+	va[3] = float32(clipHeight) / float32(video.texHeight)
+	va[10] = float32(clipWidth) / float32(video.texWidth)
 	va[11] = va[3]
 	va[14] = va[10]
 
@@ -612,28 +620,28 @@ func (video *Video) uploadTexture() {
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	texWidth := video.Geom.MaxWidth
-	if texWidth == 0 {
-		texWidth = int(video.width)
-	}
-	texHeight := video.Geom.MaxHeight
-	if texHeight == 0 {
-		texHeight = int(video.height)
-	}
-	if texWidth == 0 {
-		texWidth = 1
-	}
-	if texHeight == 0 {
-		texHeight = 1
-	}
 
 	if video.data != libretro.HWFrameBufferValid {
+		video.texWidth = int32(video.Geom.MaxWidth)
+		video.texHeight = int32(video.Geom.MaxHeight)
+		if video.texWidth == 0 {
+			video.texWidth = video.width
+		}
+		if video.texHeight == 0 {
+			video.texHeight = video.height
+		}
+		if video.texWidth < 1 {
+			video.texWidth = 1
+		}
+		if video.texHeight < 1 {
+			video.texHeight = 1
+		}
 		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
-		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(texWidth), int32(texHeight), 0, video.pixType, video.pixFmt, video.data)
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, video.texWidth, video.texHeight, 0, video.pixType, video.pixFmt, video.data)
 	}
 
 	gl.UseProgram(video.program)
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(texWidth), float32(texHeight))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.texWidth), float32(video.texHeight))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
 	gl.UseProgram(0)
 	video.needUpload = false

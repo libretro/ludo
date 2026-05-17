@@ -17,6 +17,8 @@ import (
 func (video *Video) InitFramebuffer() {
 	width := int32(video.Geom.MaxWidth)
 	height := int32(video.Geom.MaxHeight)
+	video.texWidth = width
+	video.texHeight = height
 
 	log.Printf("[Video]: Initializing HW render (%v x %v).\n", width, height)
 
