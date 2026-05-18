@@ -57,17 +57,22 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 					state.Core.AudioCallback.Callback()
 				}
 			}
+			coreGLState := vid.SaveCoreGLState()
 			vid.Render()
+			m.RenderNotifications()
+			vid.RestoreCoreGLState(coreGLState)
 			frame++
 			if frame%600 == 0 { // save sram about every 10 sec
 				savefiles.SaveSRAM()
 			}
 		} else {
+			coreGLState := vid.SaveCoreGLState()
 			m.Update(dt)
 			vid.Render()
 			m.Render(dt)
+			m.RenderNotifications()
+			vid.RestoreCoreGLState(coreGLState)
 		}
-		m.RenderNotifications()
 		if state.FastForward {
 			glfw.SwapInterval(0)
 		} else {

@@ -61,6 +61,18 @@ type Video struct {
 	hwContextConfigured bool
 }
 
+type coreGLState struct {
+	program      int32
+	vertexArray  int32
+	arrayBuffer  int32
+	elementArray int32
+	activeTex    int32
+	texture2D    int32
+	textureCube  int32
+	framebuffer  int32
+	renderbuffer int32
+}
+
 // Init instanciates the video package
 func Init(fullscreen bool) *Video {
 	vid := &Video{title: "Ludo"}
@@ -561,9 +573,6 @@ func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight i
 // PrepareCoreContext resets frontend GL state so HW cores see a minimal context
 func (video *Video) PrepareCoreContext() {
 	gl.UseProgram(0)
-	bindVertexArray(0)
-	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 	gl.BindTexture(gl.TEXTURE_CUBE_MAP, 0)
@@ -579,6 +588,40 @@ func (video *Video) PrepareCoreContext() {
 	gl.PixelStorei(gl.PACK_ROW_LENGTH, 0)
 	gl.PixelStorei(gl.UNPACK_ALIGNMENT, 4)
 	gl.PixelStorei(gl.PACK_ALIGNMENT, 4)
+}
+
+func (video *Video) SaveCoreGLState() *coreGLState {
+	if state.Core == nil || state.Core.HWRenderCallback == nil || state.CoreSetSharedContext {
+		return nil
+	}
+
+	var s coreGLState
+	gl.GetIntegerv(gl.CURRENT_PROGRAM, &s.program)
+	gl.GetIntegerv(gl.VERTEX_ARRAY_BINDING, &s.vertexArray)
+	gl.GetIntegerv(gl.ARRAY_BUFFER_BINDING, &s.arrayBuffer)
+	gl.GetIntegerv(gl.ELEMENT_ARRAY_BUFFER_BINDING, &s.elementArray)
+	gl.GetIntegerv(gl.ACTIVE_TEXTURE, &s.activeTex)
+	gl.GetIntegerv(gl.TEXTURE_BINDING_2D, &s.texture2D)
+	gl.GetIntegerv(gl.TEXTURE_BINDING_CUBE_MAP, &s.textureCube)
+	gl.GetIntegerv(gl.FRAMEBUFFER_BINDING, &s.framebuffer)
+	gl.GetIntegerv(gl.RENDERBUFFER_BINDING, &s.renderbuffer)
+	return &s
+}
+
+func (video *Video) RestoreCoreGLState(s *coreGLState) {
+	if s == nil {
+		return
+	}
+
+	gl.UseProgram(uint32(s.program))
+	bindVertexArray(uint32(s.vertexArray))
+	gl.BindBuffer(gl.ARRAY_BUFFER, uint32(s.arrayBuffer))
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, uint32(s.elementArray))
+	gl.ActiveTexture(uint32(s.activeTex))
+	gl.BindTexture(gl.TEXTURE_2D, uint32(s.texture2D))
+	gl.BindTexture(gl.TEXTURE_CUBE_MAP, uint32(s.textureCube))
+	gl.BindFramebuffer(gl.FRAMEBUFFER, uint32(s.framebuffer))
+	gl.BindRenderbuffer(gl.RENDERBUFFER, uint32(s.renderbuffer))
 }
 
 // ResizeViewport resizes the GL viewport to the framebuffer size
