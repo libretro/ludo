@@ -71,6 +71,8 @@ type coreGLState struct {
 	textureCube  int32
 	framebuffer  int32
 	renderbuffer int32
+	viewport     [4]int32
+	scissorBox   [4]int32
 }
 
 // Init instanciates the video package
@@ -605,6 +607,8 @@ func (video *Video) SaveCoreGLState() *coreGLState {
 	gl.GetIntegerv(gl.TEXTURE_BINDING_CUBE_MAP, &s.textureCube)
 	gl.GetIntegerv(gl.FRAMEBUFFER_BINDING, &s.framebuffer)
 	gl.GetIntegerv(gl.RENDERBUFFER_BINDING, &s.renderbuffer)
+	gl.GetIntegerv(gl.VIEWPORT, &s.viewport[0])
+	gl.GetIntegerv(gl.SCISSOR_BOX, &s.scissorBox[0])
 	return &s
 }
 
@@ -622,6 +626,8 @@ func (video *Video) RestoreCoreGLState(s *coreGLState) {
 	gl.BindTexture(gl.TEXTURE_CUBE_MAP, uint32(s.textureCube))
 	gl.BindFramebuffer(gl.FRAMEBUFFER, uint32(s.framebuffer))
 	gl.BindRenderbuffer(gl.RENDERBUFFER, uint32(s.renderbuffer))
+	gl.Viewport(s.viewport[0], s.viewport[1], s.viewport[2], s.viewport[3])
+	gl.Scissor(s.scissorBox[0], s.scissorBox[1], s.scissorBox[2], s.scissorBox[3])
 }
 
 // ResizeViewport resizes the GL viewport to the framebuffer size
@@ -649,6 +655,7 @@ func (video *Video) Render() {
 	gl.Disable(gl.DEPTH_TEST)
 	gl.Disable(gl.CULL_FACE)
 	gl.Disable(gl.DITHER)
+	gl.Disable(gl.SCISSOR_TEST)
 	gl.Disable(gl.STENCIL_TEST)
 	gl.Disable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)

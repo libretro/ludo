@@ -39,7 +39,6 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		glfw.PollEvents()
 		m.ProcessHotkeys()
 		ntf.Process(dt)
-		vid.ResizeViewport()
 		m.UpdatePalette()
 		input.Poll()
 		if !state.MenuActive {
