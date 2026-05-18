@@ -67,6 +67,8 @@ type coreGLState struct {
 	arrayBuffer  int32
 	elementArray int32
 	activeTex    int32
+	sampler0     int32
+	sampler1     int32
 	texture2D    int32
 	textureCube  int32
 	framebuffer  int32
@@ -603,6 +605,11 @@ func (video *Video) SaveCoreGLState() *coreGLState {
 	gl.GetIntegerv(gl.ARRAY_BUFFER_BINDING, &s.arrayBuffer)
 	gl.GetIntegerv(gl.ELEMENT_ARRAY_BUFFER_BINDING, &s.elementArray)
 	gl.GetIntegerv(gl.ACTIVE_TEXTURE, &s.activeTex)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.GetIntegerv(gl.SAMPLER_BINDING, &s.sampler0)
+	gl.ActiveTexture(gl.TEXTURE1)
+	gl.GetIntegerv(gl.SAMPLER_BINDING, &s.sampler1)
+	gl.ActiveTexture(uint32(s.activeTex))
 	gl.GetIntegerv(gl.TEXTURE_BINDING_2D, &s.texture2D)
 	gl.GetIntegerv(gl.TEXTURE_BINDING_CUBE_MAP, &s.textureCube)
 	gl.GetIntegerv(gl.FRAMEBUFFER_BINDING, &s.framebuffer)
@@ -622,6 +629,8 @@ func (video *Video) RestoreCoreGLState(s *coreGLState) {
 	gl.BindBuffer(gl.ARRAY_BUFFER, uint32(s.arrayBuffer))
 	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, uint32(s.elementArray))
 	gl.ActiveTexture(uint32(s.activeTex))
+	gl.BindSampler(0, uint32(s.sampler0))
+	gl.BindSampler(1, uint32(s.sampler1))
 	gl.BindTexture(gl.TEXTURE_2D, uint32(s.texture2D))
 	gl.BindTexture(gl.TEXTURE_CUBE_MAP, uint32(s.textureCube))
 	gl.BindFramebuffer(gl.FRAMEBUFFER, uint32(s.framebuffer))
@@ -661,6 +670,7 @@ func (video *Video) Render() {
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BlendEquation(gl.FUNC_ADD)
 	gl.Enable(gl.TEXTURE_2D)
+	gl.BindSampler(0, 0)
 
 	video.ResizeViewport()
 
