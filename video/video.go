@@ -639,6 +639,46 @@ func (video *Video) RestoreCoreGLState(s *coreGLState) {
 	gl.Scissor(s.scissorBox[0], s.scissorBox[1], s.scissorBox[2], s.scissorBox[3])
 }
 
+// BeginFrontendFrame switches to the frontend context when needed, saves any
+// non-shared core GL state we must restore later, and resets the frontend GL
+// state to a known baseline before Ludo draws its own content.
+func (video *Video) BeginFrontendFrame() *coreGLState {
+	coreGLState := video.SaveCoreGLState()
+
+	if video.HWWindow != nil {
+		video.MakeFrontendContextCurrent()
+	}
+
+	// Render directly to the screen.
+	bindBackbuffer()
+
+	// Frontend rendering should not inherit sampler state from cores such as
+	// PCSX2, where sampler objects override the filter/wrap configured on Ludo's
+	// own textures.
+	gl.BindSampler(0, 0)
+	gl.BindSampler(1, 0)
+
+	// Establish a frontend-owned GL baseline before drawing the game quad/menu.
+	gl.Disable(gl.DEPTH_TEST)
+	gl.Disable(gl.CULL_FACE)
+	gl.Disable(gl.DITHER)
+	gl.Disable(gl.SCISSOR_TEST)
+	gl.Disable(gl.STENCIL_TEST)
+	gl.Disable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BlendEquation(gl.FUNC_ADD)
+	gl.Enable(gl.TEXTURE_2D)
+
+	video.ResizeViewport()
+	return coreGLState
+}
+
+// EndFrontendFrame restores any non-shared core GL state after Ludo has drawn
+// its own content on the visible/frontend context.
+func (video *Video) EndFrontendFrame(coreGLState *coreGLState) {
+	video.RestoreCoreGLState(coreGLState)
+}
+
 // ResizeViewport resizes the GL viewport to the framebuffer size
 func (video *Video) ResizeViewport() {
 	fbw, fbh := video.Window.GetFramebufferSize()
@@ -654,26 +694,8 @@ func (video *Video) ResizeViewport() {
 	}
 }
 
-// Render the current frame
+// Render draws the current game frame using the frontend context/state.
 func (video *Video) Render() {
-	// Render directly to the screen
-	bindBackbuffer()
-
-	// We can't trust the core to leave the OpenGL in the same state as
-	// before retro_run() was called so we restore some state manually.
-	gl.Disable(gl.DEPTH_TEST)
-	gl.Disable(gl.CULL_FACE)
-	gl.Disable(gl.DITHER)
-	gl.Disable(gl.SCISSOR_TEST)
-	gl.Disable(gl.STENCIL_TEST)
-	gl.Disable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.BlendEquation(gl.FUNC_ADD)
-	gl.Enable(gl.TEXTURE_2D)
-	gl.BindSampler(0, 0)
-
-	video.ResizeViewport()
-
 	if !state.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
