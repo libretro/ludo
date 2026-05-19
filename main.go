@@ -30,6 +30,23 @@ func init() {
 
 var frame = 0
 
+func fulfillPendingScreenshot(vid *video.Video) bool {
+	if state.PendingScreenshotName == "" {
+		return false
+	}
+
+	name := state.PendingScreenshotName
+	done := state.PendingScreenshotDone
+	state.PendingScreenshotName = ""
+	state.PendingScreenshotDone = nil
+
+	err := vid.TakeScreenshotInFrontendFrame(name)
+	if done != nil {
+		done(err)
+	}
+	return true
+}
+
 func runLoop(vid *video.Video, m *menu.Menu) {
 	var currTime time.Time
 	prevTime := time.Now()
@@ -58,6 +75,7 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 			}
 			coreGLState := vid.BeginFrontendFrame()
 			vid.Render()
+			vid.CachePresentedFrame()
 			m.RenderNotifications()
 			vid.EndFrontendFrame(coreGLState)
 			frame++
@@ -67,7 +85,11 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		} else {
 			coreGLState := vid.BeginFrontendFrame()
 			m.Update(dt)
-			vid.Render()
+			vid.RenderPresentedFrame()
+			if fulfillPendingScreenshot(vid) {
+				vid.PrepareFrontendFrame()
+				vid.RenderPresentedFrame()
+			}
 			m.Render(dt)
 			m.RenderNotifications()
 			vid.EndFrontendFrame(coreGLState)

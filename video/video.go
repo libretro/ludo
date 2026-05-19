@@ -43,6 +43,14 @@ type Video struct {
 	orthoMat             mgl32.Mat4
 	texWidth             int32
 	texHeight            int32
+	presentX             int32
+	presentY             int32
+	presentW             int32
+	presentH             int32
+	cachedFrameTexID     uint32
+	cachedFrameW         int32
+	cachedFrameH         int32
+	cachedFrameValid     bool
 
 	pitch         int32  // pitch set by the refresh callback
 	pixFmt        uint32 // format set by the environment callback
@@ -527,6 +535,13 @@ func (video *Video) ResetCoreState() {
 	video.resetGameTexture(1, 1)
 	video.texWidth = 0
 	video.texHeight = 0
+	if video.cachedFrameTexID != 0 {
+		gl.DeleteTextures(1, &video.cachedFrameTexID)
+		video.cachedFrameTexID = 0
+	}
+	video.cachedFrameW = 0
+	video.cachedFrameH = 0
+	video.cachedFrameValid = false
 }
 
 // coreRatioViewport configures the vertex array to display the game at the center of the window
@@ -553,7 +568,7 @@ func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight i
 	x = (fbw - w) / 2
 	y = (fbh - h) / 2
 
-	va := video.vertexArray(x, y, w, h, 1.0)
+	va := vertexArrayForFramebuffer(x, y, w, h, 1.0, fbw, fbh)
 
 	if clipWidth == 0 {
 		clipWidth = int(video.texWidth)
@@ -649,8 +664,22 @@ func (video *Video) BeginFrontendFrame() *coreGLState {
 		video.MakeFrontendContextCurrent()
 	}
 
+	video.prepareFrontendFrame()
+	return coreGLState
+}
+
+// PrepareFrontendFrame re-establishes the visible/frontend GL baseline after
+// code paths such as serialize/screenshot callbacks temporarily dirty the
+// current context during an already-open frontend frame.
+func (video *Video) PrepareFrontendFrame() {
+	video.prepareFrontendFrame()
+}
+
+func (video *Video) prepareFrontendFrame() {
 	// Render directly to the screen.
 	bindBackbuffer()
+	gl.DrawBuffer(gl.BACK)
+	gl.ReadBuffer(gl.BACK)
 
 	// Frontend rendering should not inherit sampler state from cores such as
 	// PCSX2, where sampler objects override the filter/wrap configured on Ludo's
@@ -667,10 +696,11 @@ func (video *Video) BeginFrontendFrame() *coreGLState {
 	gl.Disable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.BlendEquation(gl.FUNC_ADD)
+	gl.ColorMask(true, true, true, true)
+	gl.DepthMask(true)
 	gl.Enable(gl.TEXTURE_2D)
 
 	video.ResizeViewport()
-	return coreGLState
 }
 
 // EndFrontendFrame restores any non-shared core GL state after Ludo has drawn
@@ -714,9 +744,16 @@ func (video *Video) Render() {
 	video.uploadTexture()
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	_, _, w, h := video.coreRatioViewport(fbw, fbh, int(video.width), int(video.height))
+	x, y, w, h := video.coreRatioViewport(fbw, fbh, int(video.width), int(video.height))
+	video.presentX = int32(x)
+	video.presentY = int32(y)
+	video.presentW = int32(w)
+	video.presentH = int32(h)
 
 	gl.UseProgram(video.program)
+	if loc := gl.GetUniformLocation(video.program, gl.Str("color\x00")); loc >= 0 {
+		gl.Uniform4f(loc, 1, 1, 1, 1)
+	}
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
 	if state.Core.HWRenderCallback != nil {
@@ -734,6 +771,93 @@ func (video *Video) Render() {
 	// Reset MVP to identity to avoid menu issues
 	gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.identityMat[0])
 	gl.UseProgram(0)
+}
+
+func (video *Video) ensureCachedFrameTexture(width, height int32) {
+	if width < 1 || height < 1 {
+		return
+	}
+
+	if video.cachedFrameTexID == 0 {
+		gl.GenTextures(1, &video.cachedFrameTexID)
+	}
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.cachedFrameTexID)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+	if video.cachedFrameW != width || video.cachedFrameH != height {
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, nil)
+		video.cachedFrameW = width
+		video.cachedFrameH = height
+	}
+}
+
+// CachePresentedFrame copies the just-rendered frontend backbuffer so menu-mode
+// rendering does not depend on the core keeping its paused framebuffer alive.
+func (video *Video) CachePresentedFrame() {
+	if !state.CoreRunning {
+		video.cachedFrameValid = false
+		return
+	}
+
+	fbw, fbh := video.Window.GetFramebufferSize()
+	if fbw < 1 || fbh < 1 {
+		video.cachedFrameValid = false
+		return
+	}
+
+	video.ensureCachedFrameTexture(int32(fbw), int32(fbh))
+	if video.cachedFrameTexID == 0 {
+		video.cachedFrameValid = false
+		return
+	}
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.cachedFrameTexID)
+	gl.CopyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, int32(fbw), int32(fbh))
+	video.cachedFrameValid = true
+}
+
+// RenderCachedFrame draws the last cached frontend-presented game frame.
+func (video *Video) RenderCachedFrame() bool {
+	if !video.cachedFrameValid || video.cachedFrameTexID == 0 || video.cachedFrameW < 1 || video.cachedFrameH < 1 {
+		return false
+	}
+
+	gl.ClearColor(0, 0, 0, 1)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+
+	fbw, fbh := video.Window.GetFramebufferSize()
+	va := vertexArrayForFramebuffer(0, 0, float32(fbw), float32(fbh), 1.0, float32(fbw), float32(fbh))
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+
+	gl.UseProgram(video.defaultProgram)
+	gl.Uniform4f(gl.GetUniformLocation(video.defaultProgram, gl.Str("color\x00")), 1, 1, 1, 1)
+	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("OutputSize\x00")), float32(fbw), float32(fbh))
+	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("TextureSize\x00")), float32(video.cachedFrameW), float32(video.cachedFrameH))
+	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("InputSize\x00")), float32(video.cachedFrameW), float32(video.cachedFrameH))
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.cachedFrameTexID)
+	bindVertexArray(video.vao)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	bindVertexArray(0)
+	gl.UseProgram(0)
+	return true
+}
+
+// RenderPresentedFrame redraws the current game image for menu-mode frontend
+// rendering, preferring the cached last-good frame when available.
+func (video *Video) RenderPresentedFrame() {
+	if !video.RenderCachedFrame() {
+		video.Render()
+		video.CachePresentedFrame()
+	}
 }
 
 // Refresh the texture framebuffer

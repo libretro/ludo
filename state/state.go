@@ -36,3 +36,9 @@ var FastForward bool
 
 // CoreSetSharedContext is whether the current core requested a shared HW context.
 var CoreSetSharedContext bool
+
+// PendingScreenshotName is the next screenshot capture requested by the UI.
+var PendingScreenshotName string
+
+// PendingScreenshotDone is called after the deferred screenshot capture completes.
+var PendingScreenshotDone func(error)
