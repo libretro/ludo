@@ -85,6 +85,13 @@ type coreGLState struct {
 	scissorBox   [4]int32
 }
 
+type frontendFrameState struct {
+	coreState        *coreGLState
+	core             *libretro.Core
+	coreRunning      bool
+	setSharedContext bool
+}
+
 // Init instanciates the video package
 func Init(fullscreen bool) *Video {
 	vid := &Video{title: "Ludo"}
@@ -169,6 +176,12 @@ func (video *Video) runContextDestroy() {
 	}
 	hw.ContextDestroy()
 	video.Window.MakeContextCurrent()
+}
+
+// RunContextDestroy notifies the active HW-render core that its current GL
+// context is about to go away.
+func (video *Video) RunContextDestroy() {
+	video.runContextDestroy()
 }
 
 // BeginCoreFrame makes the hardware context current before the core issues GL calls.
@@ -657,15 +670,20 @@ func (video *Video) RestoreCoreGLState(s *coreGLState) {
 // BeginFrontendFrame switches to the frontend context when needed, saves any
 // non-shared core GL state we must restore later, and resets the frontend GL
 // state to a known baseline before Ludo draws its own content.
-func (video *Video) BeginFrontendFrame() *coreGLState {
-	coreGLState := video.SaveCoreGLState()
+func (video *Video) BeginFrontendFrame() *frontendFrameState {
+	frameState := &frontendFrameState{
+		coreState:        video.SaveCoreGLState(),
+		core:             state.Core,
+		coreRunning:      state.CoreRunning,
+		setSharedContext: state.CoreSetSharedContext,
+	}
 
 	if video.HWWindow != nil {
 		video.MakeFrontendContextCurrent()
 	}
 
 	video.prepareFrontendFrame()
-	return coreGLState
+	return frameState
 }
 
 // PrepareFrontendFrame re-establishes the visible/frontend GL baseline after
@@ -705,8 +723,18 @@ func (video *Video) prepareFrontendFrame() {
 
 // EndFrontendFrame restores any non-shared core GL state after Ludo has drawn
 // its own content on the visible/frontend context.
-func (video *Video) EndFrontendFrame(coreGLState *coreGLState) {
-	video.RestoreCoreGLState(coreGLState)
+func (video *Video) EndFrontendFrame(frameState *frontendFrameState) {
+	if frameState == nil {
+		return
+	}
+
+	if frameState.core != state.Core ||
+		frameState.coreRunning != state.CoreRunning ||
+		frameState.setSharedContext != state.CoreSetSharedContext {
+		return
+	}
+
+	video.RestoreCoreGLState(frameState.coreState)
 }
 
 // ResizeViewport resizes the GL viewport to the framebuffer size
