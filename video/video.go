@@ -833,6 +833,12 @@ func (video *Video) RenderCachedFrame() bool {
 
 	fbw, fbh := video.Window.GetFramebufferSize()
 	va := vertexArrayForFramebuffer(0, 0, float32(fbw), float32(fbh), 1.0, float32(fbw), float32(fbh))
+	if state.Core != nil && state.Core.HWRenderCallback != nil && state.Core.HWRenderCallback.BottomLeftOrigin {
+		va[3] = 0
+		va[7] = 1
+		va[11] = 0
+		va[15] = 1
+	}
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
