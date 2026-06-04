@@ -53,6 +53,10 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 	for !vid.Window.ShouldClose() {
 		currTime = time.Now()
 		dt := float32(currTime.Sub(prevTime)) / 1000000000
+		if state.MenuContextResetNeeded {
+			m.ContextReset()
+			state.MenuContextResetNeeded = false
+		}
 		glfw.PollEvents()
 		m.ProcessHotkeys()
 		ntf.Process(dt)
@@ -158,20 +162,30 @@ func main() {
 
 	input.Init(vid)
 
+	// Match the normal menu-driven load path more closely: by the time a core is
+	// loaded from the UI, GLFW has already pumped at least one event cycle on the
+	// visible window. Some HW-core context recreation paths behave differently if
+	// we load immediately from CLI before the first poll.
+	glfw.PollEvents()
+
 	if len(state.CorePath) > 0 {
-		err := core.Load(state.CorePath)
-		if err == nil {
-			if len(gamePath) > 0 {
-				err := core.LoadGame(gamePath)
-				if err != nil {
-					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-				} else {
-					m.WarpToQuickMenu()
-				}
+		corePath := state.CorePath
+		m.SetStartupAction(func() {
+			if err := core.Load(corePath); err != nil {
+				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+				return
 			}
-		} else {
-			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-		}
+			if len(gamePath) > 0 {
+				m.SetStartupAction(func() {
+					if err := core.LoadGame(gamePath); err != nil {
+						ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+						return
+					}
+					m.WarpToQuickMenu()
+					state.MenuActive = false
+				})
+			}
+		})
 	}
 
 	// No game running? display the menu

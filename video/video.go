@@ -113,6 +113,31 @@ func (video *Video) Reconfigure(fullscreen bool) {
 	video.Configure(fullscreen)
 }
 
+// ReconfigureHWContext recreates the visible window using the currently stored
+// HW context hints while preserving the current window size when windowed.
+func (video *Video) ReconfigureHWContext(fullscreen bool) {
+	width := 384 * 2
+	height := 240 * 2
+	if video.Window != nil && !fullscreen {
+		width, height = video.Window.GetSize()
+		if width < 1 {
+			width = 384 * 2
+		}
+		if height < 1 {
+			height = 240 * 2
+		}
+	}
+	if video.Window != nil {
+		video.runContextDestroy()
+		if video.HWWindow != nil {
+			video.HWWindow.Destroy()
+			video.HWWindow = nil
+		}
+		video.Window.Destroy()
+	}
+	video.configureWithSize(width, height, fullscreen)
+}
+
 // CreateSharedHWContext creates a hidden context shared with the visible frontend context.
 func (video *Video) CreateSharedHWContext() error {
 	if video.HWWindow != nil || video.Window == nil || !state.CoreSetSharedContext {
@@ -250,6 +275,7 @@ func (video *Video) configureWindowHints() {
 			glfw.WindowHint(glfw.ContextVersionMinor, minor)
 			if major > 3 || (major == 3 && minor >= 2) {
 				glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+				glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 			}
 		}
 	case libretro.HWContextOpenGL:
@@ -259,6 +285,7 @@ func (video *Video) configureWindowHints() {
 			glfw.WindowHint(glfw.ContextVersionMinor, video.hwContextMinor)
 			if video.hwContextMajor > 3 || (video.hwContextMajor == 3 && video.hwContextMinor >= 2) {
 				glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCompatProfile)
+				glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 			}
 		}
 	case libretro.HWContextOpenGLES2:
@@ -332,7 +359,10 @@ func (video *Video) resetGameTexture(width, height int32) {
 
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
-	var width, height int
+	video.configureWithSize(384*2, 240*2, fullscreen)
+}
+
+func (video *Video) configureWithSize(width, height int, fullscreen bool) {
 	var m *glfw.Monitor
 
 	if fullscreen {
@@ -341,9 +371,6 @@ func (video *Video) Configure(fullscreen bool) {
 		vm := vms[len(vms)-1]
 		width = vm.Width
 		height = vm.Height
-	} else {
-		width = 384 * 2
-		height = 240 * 2
 	}
 
 	video.configureWindowHints()
@@ -392,7 +419,7 @@ func (video *Video) Configure(fullscreen bool) {
 	video.borderProgram = panicOnErr(newProgram(vertexShader, borderFragmentShader))
 	video.circleProgram = panicOnErr(newProgram(vertexShader, circleFragmentShader))
 
-	video.UpdateFilter(settings.Current.VideoFilter)
+	video.program = video.defaultProgram
 
 	gl.UseProgram(video.program)
 	textureUniform := gl.GetUniformLocation(video.program, gl.Str("Texture\x00"))
@@ -609,7 +636,16 @@ func (video *Video) PrepareCoreContext() {
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 	gl.BindTexture(gl.TEXTURE_CUBE_MAP, 0)
 	gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
-	bindBackbuffer()
+	if state.Core != nil && state.Core.HWRenderCallback != nil && video.fboID != 0 {
+		gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, video.fboID)
+		gl.BindFramebuffer(gl.READ_FRAMEBUFFER, video.fboID)
+		gl.DrawBuffer(gl.COLOR_ATTACHMENT0)
+		gl.ReadBuffer(gl.COLOR_ATTACHMENT0)
+	} else {
+		bindBackbuffer()
+		gl.DrawBuffer(gl.BACK)
+		gl.ReadBuffer(gl.BACK)
+	}
 	gl.Disable(gl.BLEND)
 	gl.Disable(gl.CULL_FACE)
 	gl.Disable(gl.DEPTH_TEST)

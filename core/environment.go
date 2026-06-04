@@ -150,6 +150,10 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 			vid.ProcAddress)
 		vid.SetHWRenderContext(state.Core.HWRenderCallback)
 		log.Println("[Env]: HWContextType:", state.Core.HWRenderCallback.HWContextType)
+		if vid != nil && vid.Window != nil && !state.CoreRunning {
+			vid.ReconfigureHWContext(settings.Current.VideoFullscreen)
+			state.MenuContextResetNeeded = true
+		}
 		return true
 	case libretro.EnvironmentSetHWSharedContext:
 		state.CoreSetSharedContext = true
@@ -163,7 +167,6 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentGetSaveDirectory:
 		return environmentGetSaveDirectory(data)
 	case libretro.EnvironmentGetPrefferedHWRender:
-		log.Println("[Env]: EnvironmentGetPrefferedHWRenderer: 1")
 		libretro.SetUint(data, uint(libretro.HWContextOpenGL))
 	case libretro.EnvironmentShutdown:
 		vid.SetShouldClose(true)
