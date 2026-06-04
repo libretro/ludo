@@ -318,6 +318,7 @@ func Unload() {
 func UnloadGame() {
 	if state.CoreRunning {
 		savefiles.SaveSRAM()
+		vid.RunContextDestroy()
 		state.Core.UnloadGame()
 		state.GamePath = ""
 		state.CoreRunning = false

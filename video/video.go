@@ -43,6 +43,14 @@ type Video struct {
 	orthoMat             mgl32.Mat4
 	texWidth             int32
 	texHeight            int32
+	presentX             int32
+	presentY             int32
+	presentW             int32
+	presentH             int32
+	cachedFrameTexID     uint32
+	cachedFrameW         int32
+	cachedFrameH         int32
+	cachedFrameValid     bool
 
 	pitch         int32  // pitch set by the refresh callback
 	pixFmt        uint32 // format set by the environment callback
@@ -59,6 +67,29 @@ type Video struct {
 	hwContextMinor      int
 	hwDebugContext      bool
 	hwContextConfigured bool
+}
+
+type coreGLState struct {
+	program      int32
+	vertexArray  int32
+	arrayBuffer  int32
+	elementArray int32
+	activeTex    int32
+	sampler0     int32
+	sampler1     int32
+	texture2D    int32
+	textureCube  int32
+	framebuffer  int32
+	renderbuffer int32
+	viewport     [4]int32
+	scissorBox   [4]int32
+}
+
+type frontendFrameState struct {
+	coreState        *coreGLState
+	core             *libretro.Core
+	coreRunning      bool
+	setSharedContext bool
 }
 
 // Init instanciates the video package
@@ -80,6 +111,31 @@ func (video *Video) Reconfigure(fullscreen bool) {
 		video.Window.Destroy()
 	}
 	video.Configure(fullscreen)
+}
+
+// ReconfigureHWContext recreates the visible window using the currently stored
+// HW context hints while preserving the current window size when windowed.
+func (video *Video) ReconfigureHWContext(fullscreen bool) {
+	width := 384 * 2
+	height := 240 * 2
+	if video.Window != nil && !fullscreen {
+		width, height = video.Window.GetSize()
+		if width < 1 {
+			width = 384 * 2
+		}
+		if height < 1 {
+			height = 240 * 2
+		}
+	}
+	if video.Window != nil {
+		video.runContextDestroy()
+		if video.HWWindow != nil {
+			video.HWWindow.Destroy()
+			video.HWWindow = nil
+		}
+		video.Window.Destroy()
+	}
+	video.configureWithSize(width, height, fullscreen)
 }
 
 // CreateSharedHWContext creates a hidden context shared with the visible frontend context.
@@ -145,6 +201,12 @@ func (video *Video) runContextDestroy() {
 	}
 	hw.ContextDestroy()
 	video.Window.MakeContextCurrent()
+}
+
+// RunContextDestroy notifies the active HW-render core that its current GL
+// context is about to go away.
+func (video *Video) RunContextDestroy() {
+	video.runContextDestroy()
 }
 
 // BeginCoreFrame makes the hardware context current before the core issues GL calls.
@@ -213,6 +275,7 @@ func (video *Video) configureWindowHints() {
 			glfw.WindowHint(glfw.ContextVersionMinor, minor)
 			if major > 3 || (major == 3 && minor >= 2) {
 				glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+				glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 			}
 		}
 	case libretro.HWContextOpenGL:
@@ -222,6 +285,7 @@ func (video *Video) configureWindowHints() {
 			glfw.WindowHint(glfw.ContextVersionMinor, video.hwContextMinor)
 			if video.hwContextMajor > 3 || (video.hwContextMajor == 3 && video.hwContextMinor >= 2) {
 				glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCompatProfile)
+				glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.False)
 			}
 		}
 	case libretro.HWContextOpenGLES2:
@@ -295,7 +359,10 @@ func (video *Video) resetGameTexture(width, height int32) {
 
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
-	var width, height int
+	video.configureWithSize(384*2, 240*2, fullscreen)
+}
+
+func (video *Video) configureWithSize(width, height int, fullscreen bool) {
 	var m *glfw.Monitor
 
 	if fullscreen {
@@ -304,9 +371,6 @@ func (video *Video) Configure(fullscreen bool) {
 		vm := vms[len(vms)-1]
 		width = vm.Width
 		height = vm.Height
-	} else {
-		width = 384 * 2
-		height = 240 * 2
 	}
 
 	video.configureWindowHints()
@@ -355,7 +419,7 @@ func (video *Video) Configure(fullscreen bool) {
 	video.borderProgram = panicOnErr(newProgram(vertexShader, borderFragmentShader))
 	video.circleProgram = panicOnErr(newProgram(vertexShader, circleFragmentShader))
 
-	video.UpdateFilter(settings.Current.VideoFilter)
+	video.program = video.defaultProgram
 
 	gl.UseProgram(video.program)
 	textureUniform := gl.GetUniformLocation(video.program, gl.Str("Texture\x00"))
@@ -511,6 +575,13 @@ func (video *Video) ResetCoreState() {
 	video.resetGameTexture(1, 1)
 	video.texWidth = 0
 	video.texHeight = 0
+	if video.cachedFrameTexID != 0 {
+		gl.DeleteTextures(1, &video.cachedFrameTexID)
+		video.cachedFrameTexID = 0
+	}
+	video.cachedFrameW = 0
+	video.cachedFrameH = 0
+	video.cachedFrameValid = false
 }
 
 // coreRatioViewport configures the vertex array to display the game at the center of the window
@@ -537,7 +608,7 @@ func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight i
 	x = (fbw - w) / 2
 	y = (fbh - h) / 2
 
-	va := video.vertexArray(x, y, w, h, 1.0)
+	va := vertexArrayForFramebuffer(x, y, w, h, 1.0, fbw, fbh)
 
 	if clipWidth == 0 {
 		clipWidth = int(video.texWidth)
@@ -561,14 +632,20 @@ func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight i
 // PrepareCoreContext resets frontend GL state so HW cores see a minimal context
 func (video *Video) PrepareCoreContext() {
 	gl.UseProgram(0)
-	bindVertexArray(0)
-	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 	gl.BindTexture(gl.TEXTURE_CUBE_MAP, 0)
 	gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
-	bindBackbuffer()
+	if state.Core != nil && state.Core.HWRenderCallback != nil && video.fboID != 0 {
+		gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, video.fboID)
+		gl.BindFramebuffer(gl.READ_FRAMEBUFFER, video.fboID)
+		gl.DrawBuffer(gl.COLOR_ATTACHMENT0)
+		gl.ReadBuffer(gl.COLOR_ATTACHMENT0)
+	} else {
+		bindBackbuffer()
+		gl.DrawBuffer(gl.BACK)
+		gl.ReadBuffer(gl.BACK)
+	}
 	gl.Disable(gl.BLEND)
 	gl.Disable(gl.CULL_FACE)
 	gl.Disable(gl.DEPTH_TEST)
@@ -579,6 +656,121 @@ func (video *Video) PrepareCoreContext() {
 	gl.PixelStorei(gl.PACK_ROW_LENGTH, 0)
 	gl.PixelStorei(gl.UNPACK_ALIGNMENT, 4)
 	gl.PixelStorei(gl.PACK_ALIGNMENT, 4)
+}
+
+func (video *Video) SaveCoreGLState() *coreGLState {
+	if state.Core == nil || state.Core.HWRenderCallback == nil || state.CoreSetSharedContext {
+		return nil
+	}
+
+	var s coreGLState
+	gl.GetIntegerv(gl.CURRENT_PROGRAM, &s.program)
+	gl.GetIntegerv(gl.VERTEX_ARRAY_BINDING, &s.vertexArray)
+	gl.GetIntegerv(gl.ARRAY_BUFFER_BINDING, &s.arrayBuffer)
+	gl.GetIntegerv(gl.ELEMENT_ARRAY_BUFFER_BINDING, &s.elementArray)
+	gl.GetIntegerv(gl.ACTIVE_TEXTURE, &s.activeTex)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.GetIntegerv(gl.SAMPLER_BINDING, &s.sampler0)
+	gl.ActiveTexture(gl.TEXTURE1)
+	gl.GetIntegerv(gl.SAMPLER_BINDING, &s.sampler1)
+	gl.ActiveTexture(uint32(s.activeTex))
+	gl.GetIntegerv(gl.TEXTURE_BINDING_2D, &s.texture2D)
+	gl.GetIntegerv(gl.TEXTURE_BINDING_CUBE_MAP, &s.textureCube)
+	gl.GetIntegerv(gl.FRAMEBUFFER_BINDING, &s.framebuffer)
+	gl.GetIntegerv(gl.RENDERBUFFER_BINDING, &s.renderbuffer)
+	gl.GetIntegerv(gl.VIEWPORT, &s.viewport[0])
+	gl.GetIntegerv(gl.SCISSOR_BOX, &s.scissorBox[0])
+	return &s
+}
+
+func (video *Video) RestoreCoreGLState(s *coreGLState) {
+	if s == nil {
+		return
+	}
+
+	gl.UseProgram(uint32(s.program))
+	bindVertexArray(uint32(s.vertexArray))
+	gl.BindBuffer(gl.ARRAY_BUFFER, uint32(s.arrayBuffer))
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, uint32(s.elementArray))
+	gl.ActiveTexture(uint32(s.activeTex))
+	gl.BindSampler(0, uint32(s.sampler0))
+	gl.BindSampler(1, uint32(s.sampler1))
+	gl.BindTexture(gl.TEXTURE_2D, uint32(s.texture2D))
+	gl.BindTexture(gl.TEXTURE_CUBE_MAP, uint32(s.textureCube))
+	gl.BindFramebuffer(gl.FRAMEBUFFER, uint32(s.framebuffer))
+	gl.BindRenderbuffer(gl.RENDERBUFFER, uint32(s.renderbuffer))
+	gl.Viewport(s.viewport[0], s.viewport[1], s.viewport[2], s.viewport[3])
+	gl.Scissor(s.scissorBox[0], s.scissorBox[1], s.scissorBox[2], s.scissorBox[3])
+}
+
+// BeginFrontendFrame switches to the frontend context when needed, saves any
+// non-shared core GL state we must restore later, and resets the frontend GL
+// state to a known baseline before Ludo draws its own content.
+func (video *Video) BeginFrontendFrame() *frontendFrameState {
+	frameState := &frontendFrameState{
+		coreState:        video.SaveCoreGLState(),
+		core:             state.Core,
+		coreRunning:      state.CoreRunning,
+		setSharedContext: state.CoreSetSharedContext,
+	}
+
+	if video.HWWindow != nil {
+		video.MakeFrontendContextCurrent()
+	}
+
+	video.prepareFrontendFrame()
+	return frameState
+}
+
+// PrepareFrontendFrame re-establishes the visible/frontend GL baseline after
+// code paths such as serialize/screenshot callbacks temporarily dirty the
+// current context during an already-open frontend frame.
+func (video *Video) PrepareFrontendFrame() {
+	video.prepareFrontendFrame()
+}
+
+func (video *Video) prepareFrontendFrame() {
+	// Render directly to the screen.
+	bindBackbuffer()
+	gl.DrawBuffer(gl.BACK)
+	gl.ReadBuffer(gl.BACK)
+
+	// Frontend rendering should not inherit sampler state from cores such as
+	// PCSX2, where sampler objects override the filter/wrap configured on Ludo's
+	// own textures.
+	gl.BindSampler(0, 0)
+	gl.BindSampler(1, 0)
+
+	// Establish a frontend-owned GL baseline before drawing the game quad/menu.
+	gl.Disable(gl.DEPTH_TEST)
+	gl.Disable(gl.CULL_FACE)
+	gl.Disable(gl.DITHER)
+	gl.Disable(gl.SCISSOR_TEST)
+	gl.Disable(gl.STENCIL_TEST)
+	gl.Disable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BlendEquation(gl.FUNC_ADD)
+	gl.ColorMask(true, true, true, true)
+	gl.DepthMask(true)
+	gl.Enable(gl.TEXTURE_2D)
+
+	video.ResizeViewport()
+}
+
+// EndFrontendFrame restores any non-shared core GL state after Ludo has drawn
+// its own content on the visible/frontend context.
+func (video *Video) EndFrontendFrame(frameState *frontendFrameState) {
+	if frameState == nil {
+		return
+	}
+
+	if frameState.core != state.Core ||
+		frameState.coreRunning != state.CoreRunning ||
+		frameState.setSharedContext != state.CoreSetSharedContext {
+		return
+	}
+
+	video.RestoreCoreGLState(frameState.coreState)
 }
 
 // ResizeViewport resizes the GL viewport to the framebuffer size
@@ -596,24 +788,8 @@ func (video *Video) ResizeViewport() {
 	}
 }
 
-// Render the current frame
+// Render draws the current game frame using the frontend context/state.
 func (video *Video) Render() {
-	// Render directly to the screen
-	bindBackbuffer()
-
-	// We can't trust the core to leave the OpenGL in the same state as
-	// before retro_run() was called so we restore some state manually.
-	gl.Disable(gl.DEPTH_TEST)
-	gl.Disable(gl.CULL_FACE)
-	gl.Disable(gl.DITHER)
-	gl.Disable(gl.STENCIL_TEST)
-	gl.Disable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.BlendEquation(gl.FUNC_ADD)
-	gl.Enable(gl.TEXTURE_2D)
-
-	video.ResizeViewport()
-
 	if !state.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
@@ -632,9 +808,16 @@ func (video *Video) Render() {
 	video.uploadTexture()
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	_, _, w, h := video.coreRatioViewport(fbw, fbh, int(video.width), int(video.height))
+	x, y, w, h := video.coreRatioViewport(fbw, fbh, int(video.width), int(video.height))
+	video.presentX = int32(x)
+	video.presentY = int32(y)
+	video.presentW = int32(w)
+	video.presentH = int32(h)
 
 	gl.UseProgram(video.program)
+	if loc := gl.GetUniformLocation(video.program, gl.Str("color\x00")); loc >= 0 {
+		gl.Uniform4f(loc, 1, 1, 1, 1)
+	}
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
 	if state.Core.HWRenderCallback != nil {
@@ -652,6 +835,99 @@ func (video *Video) Render() {
 	// Reset MVP to identity to avoid menu issues
 	gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.identityMat[0])
 	gl.UseProgram(0)
+}
+
+func (video *Video) ensureCachedFrameTexture(width, height int32) {
+	if width < 1 || height < 1 {
+		return
+	}
+
+	if video.cachedFrameTexID == 0 {
+		gl.GenTextures(1, &video.cachedFrameTexID)
+	}
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.cachedFrameTexID)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+	if video.cachedFrameW != width || video.cachedFrameH != height {
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, nil)
+		video.cachedFrameW = width
+		video.cachedFrameH = height
+	}
+}
+
+// CachePresentedFrame copies the just-rendered frontend backbuffer so menu-mode
+// rendering does not depend on the core keeping its paused framebuffer alive.
+func (video *Video) CachePresentedFrame() {
+	if !state.CoreRunning {
+		video.cachedFrameValid = false
+		return
+	}
+
+	fbw, fbh := video.Window.GetFramebufferSize()
+	if fbw < 1 || fbh < 1 {
+		video.cachedFrameValid = false
+		return
+	}
+
+	video.ensureCachedFrameTexture(int32(fbw), int32(fbh))
+	if video.cachedFrameTexID == 0 {
+		video.cachedFrameValid = false
+		return
+	}
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.cachedFrameTexID)
+	gl.CopyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, int32(fbw), int32(fbh))
+	video.cachedFrameValid = true
+}
+
+// RenderCachedFrame draws the last cached frontend-presented game frame.
+func (video *Video) RenderCachedFrame() bool {
+	if !video.cachedFrameValid || video.cachedFrameTexID == 0 || video.cachedFrameW < 1 || video.cachedFrameH < 1 {
+		return false
+	}
+
+	gl.ClearColor(0, 0, 0, 1)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+
+	fbw, fbh := video.Window.GetFramebufferSize()
+	va := vertexArrayForFramebuffer(0, 0, float32(fbw), float32(fbh), 1.0, float32(fbw), float32(fbh))
+	if state.Core != nil && state.Core.HWRenderCallback != nil && state.Core.HWRenderCallback.BottomLeftOrigin {
+		va[3] = 0
+		va[7] = 1
+		va[11] = 0
+		va[15] = 1
+	}
+	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+
+	gl.UseProgram(video.defaultProgram)
+	gl.Uniform4f(gl.GetUniformLocation(video.defaultProgram, gl.Str("color\x00")), 1, 1, 1, 1)
+	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("OutputSize\x00")), float32(fbw), float32(fbh))
+	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("TextureSize\x00")), float32(video.cachedFrameW), float32(video.cachedFrameH))
+	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("InputSize\x00")), float32(video.cachedFrameW), float32(video.cachedFrameH))
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.cachedFrameTexID)
+	bindVertexArray(video.vao)
+	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	bindVertexArray(0)
+	gl.UseProgram(0)
+	return true
+}
+
+// RenderPresentedFrame redraws the current game image for menu-mode frontend
+// rendering, preferring the cached last-good frame when available.
+func (video *Video) RenderPresentedFrame() {
+	if !video.RenderCachedFrame() {
+		video.Render()
+		video.CachePresentedFrame()
+	}
 }
 
 // Refresh the texture framebuffer

@@ -26,17 +26,20 @@ func buildSavestates() Scene {
 		icon:  "savestate",
 		callbackOK: func() {
 			name := utils.DatedName(state.GamePath)
-			err := menu.TakeScreenshot(name)
-			if err != nil {
-				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-			}
-			err = savestates.Save(name)
-			if err != nil {
-				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-			} else {
-				menu.stack[len(menu.stack)-1] = buildSavestates()
-				menu.tweens.FastForward()
-				ntf.DisplayAndLog(ntf.Success, "Menu", "State saved.")
+			state.PendingScreenshotName = name
+			state.PendingScreenshotDone = func(err error) {
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+					return
+				}
+				err = savestates.Save(name)
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+				} else {
+					menu.stack[len(menu.stack)-1] = buildSavestates()
+					menu.tweens.FastForward()
+					ntf.DisplayAndLog(ntf.Success, "Menu", "State saved.")
+				}
 			}
 		},
 	})

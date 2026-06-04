@@ -17,12 +17,13 @@ var menu *Menu
 
 // Menu is a type holding the menu state, the stack of scenes, tweens, etc
 type Menu struct {
-	stack  []Scene
-	icons  map[string]uint32
-	tweens Tweens
-	scroll float32
-	ratio  float32
-	t      float64
+	stack         []Scene
+	icons         map[string]uint32
+	tweens        Tweens
+	scroll        float32
+	ratio         float32
+	t             float64
+	startupAction func()
 
 	*video.Video // we embbed video here to have direct access to drawing functions
 }
@@ -51,6 +52,13 @@ func Init(v *video.Video) *Menu {
 // OK on a menu entry.
 func (m *Menu) Push(s Scene) {
 	m.stack = append(m.stack, s)
+}
+
+// SetStartupAction schedules a one-shot action to run from inside Menu.Update.
+// This lets CLI startup follow the same control-flow shape as real menu
+// callbacks that load cores and games.
+func (m *Menu) SetStartupAction(action func()) {
+	m.startupAction = action
 }
 
 // Render takes care of rendering the menu

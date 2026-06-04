@@ -20,6 +20,12 @@ var (
 // Update takes care of calling the update method of the current scene.
 // Each scene has it's own input logic to allow a variety of navigation systems.
 func (m *Menu) Update(dt float32) {
+	if m.startupAction != nil {
+		action := m.startupAction
+		m.startupAction = nil
+		action()
+		return
+	}
 	currentScene := m.stack[len(m.stack)-1]
 	currentScene.update(dt)
 }
