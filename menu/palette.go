@@ -493,6 +493,106 @@ func applyRosePineDawnTheme() {
 	}
 }
 
+func applyMatrixTheme() {
+	var matrix = map[string]video.Color{
+		"background": video.ColorFromHex("#0d110d"),
+		"foreground": video.ColorFromHex("#00ff41"),
+		"selection":  video.ColorFromHex("#153215"),
+		"comment":    video.ColorFromHex("#008f11"),
+		"red":        video.ColorFromHex("#ff0033"),
+		"orange":     video.ColorFromHex("#ff8000"),
+		"yellow":     video.ColorFromHex("#ccff00"),
+		"green":      video.ColorFromHex("#00ff00"),
+		"purple":     video.ColorFromHex("#8f00ff"),
+		"cyan":       video.ColorFromHex("#00ffff"),
+		"pink":       video.ColorFromHex("#ff007f"),
+	}
+
+	bgColor = matrix["background"]
+	cursorBgColor = matrix["selection"]
+	textColor = matrix["foreground"]
+	mutedTextColor = matrix["comment"]
+	textShadowColor = matrix["selection"]
+	sepColor = matrix["selection"]
+	hintTextColor = matrix["foreground"]
+	hintBgColor = matrix["background"]
+	titleTextColor = matrix["green"]
+	dialogTextColor = matrix["foreground"]
+
+	infoBgColor = matrix["selection"]
+	infoTextColor = matrix["cyan"]
+	successBgColor = matrix["selection"]
+	successTextColor = matrix["green"]
+	dangerBgColor = matrix["selection"]
+	dangerTextColor = matrix["red"]
+	warningBgColor = matrix["selection"]
+	warningTextColor = matrix["yellow"]
+
+	tabHexaColors = func(i int) video.Color {
+		return []video.Color{
+			matrix["green"],
+			matrix["cyan"],
+			matrix["comment"],
+			matrix["foreground"],
+			matrix["yellow"],
+		}[i%5]
+	}
+
+	tabIconColors = func(_ int) video.Color {
+		return matrix["selection"]
+	}
+}
+
+func applyMatrixConstructTheme() {
+	var construct = map[string]video.Color{
+		"background": video.ColorFromHex("#ffffff"),
+		"foreground": video.ColorFromHex("#000000"),
+		"selection":  video.ColorFromHex("#e0e0e0"),
+		"comment":    video.ColorFromHex("#666666"),
+		"red":        video.ColorFromHex("#990000"),
+		"orange":     video.ColorFromHex("#cc6600"),
+		"yellow":     video.ColorFromHex("#888800"),
+		"green":      video.ColorFromHex("#006600"),
+		"purple":     video.ColorFromHex("#550099"),
+		"cyan":       video.ColorFromHex("#005599"),
+		"pink":       video.ColorFromHex("#990055"),
+	}
+
+	bgColor = construct["background"]
+	cursorBgColor = construct["selection"]
+	textColor = construct["foreground"]
+	mutedTextColor = construct["comment"]
+	textShadowColor = construct["selection"]
+	sepColor = construct["selection"]
+	hintTextColor = construct["foreground"]
+	hintBgColor = construct["background"]
+	titleTextColor = construct["green"]
+	dialogTextColor = construct["foreground"]
+
+	infoBgColor = construct["selection"]
+	infoTextColor = construct["cyan"]
+	successBgColor = construct["selection"]
+	successTextColor = construct["green"]
+	dangerBgColor = construct["selection"]
+	dangerTextColor = construct["red"]
+	warningBgColor = construct["selection"]
+	warningTextColor = construct["yellow"]
+
+	tabHexaColors = func(i int) video.Color {
+		return []video.Color{
+			construct["green"],
+			construct["cyan"],
+			construct["comment"],
+			construct["foreground"],
+			construct["purple"],
+		}[i%5]
+	}
+
+	tabIconColors = func(_ int) video.Color {
+		return construct["selection"]
+	}
+}
+
 // UpdatePalette updates the color palette to honor the dark theme
 func (m *Menu) UpdatePalette() {
 	if state.CoreRunning || settings.Current.VideoDarkMode {
@@ -500,6 +600,7 @@ func (m *Menu) UpdatePalette() {
 			case "Rose Pine": applyRosePineTheme()
 			case "Dracula": applyDraculaTheme()
 			case "Catppuccin": applyCatpuccinMochaTheme()
+			case "Matrix": applyMatrixTheme()
 			default: applyDefaultDarkTheme()
 		}
 	} else {
@@ -507,6 +608,7 @@ func (m *Menu) UpdatePalette() {
 			case "Rose Pine": applyRosePineDawnTheme()
 			case "Dracula": applyAlucardTheme() // Alucard is a light variant of Dracula
 			case "Catppuccin": applyCatpuccinLatteTheme()
+			case "Matrix": applyMatrixTheme()
 			default: applyDefaultLightTheme()
 		}
 	}
