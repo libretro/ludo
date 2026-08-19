@@ -33,3 +33,6 @@ var LudOS bool
 
 // FastForward will run the core as fast as possible
 var FastForward bool
+
+// CoreFPS is the current emulated video rate declared by the core.
+var CoreFPS float64

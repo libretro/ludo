@@ -171,8 +171,7 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 	case libretro.EnvironmentSetGeometry:
 		vid.Geom = libretro.GetGeometry(data)
 	case libretro.EnvironmentSetSystemAVInfo:
-		avi := libretro.GetSystemAVInfo(data)
-		vid.Geom = avi.Geometry
+		applySystemAVInfo(libretro.GetSystemAVInfo(data))
 	case libretro.EnvironmentGetFastforwarding:
 		libretro.SetBool(data, state.FastForward)
 	case libretro.EnvironmentGetLanguage:
