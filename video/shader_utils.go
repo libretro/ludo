@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
@@ -38,6 +39,17 @@ func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error)
 
 	gl.DeleteShader(vertexShader)
 	gl.DeleteShader(fragmentShader)
+
+	// Only the core rendering code uses MVPs so we set it to identity
+	// to avoid issues with other parts of the program
+	gl.UseProgram(program)
+	mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+
+	if mvp != -1 {
+		IdentityMatrix := mgl32.Ident4()
+		gl.UniformMatrix4fv(mvp, 1, false, &IdentityMatrix[0])
+	}
+	gl.UseProgram(0)
 
 	return program, nil
 }

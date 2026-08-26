@@ -19,8 +19,10 @@ COMPAT_ATTRIBUTE vec2 vertTexCoord;
 
 COMPAT_VARYING vec2 fragTexCoord;
 
+uniform mat4 MVP;
+
 void main() {
   fragTexCoord = vertTexCoord;
-  gl_Position = vec4(vert, 0.0, 1.0);
+  gl_Position = vec4(vert, 0.0, 1.0) * MVP;
 }
 ` + "\x00"

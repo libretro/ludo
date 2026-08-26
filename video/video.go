@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.4/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
@@ -17,11 +18,13 @@ import (
 
 // Video holds the state of the video package
 type Video struct {
-	Window *glfw.Window
-	Geom   libretro.GameGeometry
-	Font   *Font
-	FontSm *Font
-	FontLg *Font
+	Window   *glfw.Window
+	HWWindow *glfw.Window // hidden shared context window for cores using SET_HW_SHARED_CONTEXT
+	Geom     libretro.GameGeometry
+	Font     *Font
+	FontSm   *Font
+	FontLg   *Font
+	title    string
 
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
@@ -34,6 +37,12 @@ type Video struct {
 	vao                  uint32 // vertex array object
 	vbo                  uint32 // vertex buffer object
 	texID                uint32 // texture id
+	fboID                uint32 // framebuffer id for hw-render cores
+	rboID                uint32 // depth/stencil renderbuffer for hw-render cores
+	identityMat          mgl32.Mat4
+	orthoMat             mgl32.Mat4
+	texWidth             int32
+	texHeight            int32
 
 	pitch         int32  // pitch set by the refresh callback
 	pixFmt        uint32 // format set by the environment callback
@@ -44,11 +53,18 @@ type Video struct {
 
 	needUpload bool // true when the texture needs to be uploaded to the GPU
 	data       unsafe.Pointer
+
+	hwContextType       uint32
+	hwContextMajor      int
+	hwContextMinor      int
+	hwDebugContext      bool
+	hwContextConfigured bool
 }
 
 // Init instanciates the video package
 func Init(fullscreen bool) *Video {
-	vid := &Video{}
+	vid := &Video{title: "Ludo"}
+	vid.identityMat = mgl32.Ident4()
 	vid.Configure(fullscreen)
 	return vid
 }
@@ -56,9 +72,92 @@ func Init(fullscreen bool) *Video {
 // Reconfigure destroys and recreates the window with new attributes
 func (video *Video) Reconfigure(fullscreen bool) {
 	if video.Window != nil {
+		video.runContextDestroy()
+		if video.HWWindow != nil {
+			video.HWWindow.Destroy()
+			video.HWWindow = nil
+		}
 		video.Window.Destroy()
 	}
 	video.Configure(fullscreen)
+}
+
+// CreateSharedHWContext creates a hidden context shared with the visible frontend context.
+func (video *Video) CreateSharedHWContext() error {
+	if video.HWWindow != nil || video.Window == nil || !state.CoreSetSharedContext {
+		return nil
+	}
+
+	video.configureWindowHints()
+	glfw.WindowHint(glfw.Visible, glfw.False)
+	glfw.WindowHint(glfw.Focused, glfw.False)
+
+	width, height := video.Window.GetSize()
+	if width < 1 {
+		width = 1
+	}
+	if height < 1 {
+		height = 1
+	}
+
+	hwWindow, err := glfw.CreateWindow(width, height, "", nil, video.Window)
+	if err != nil {
+		return err
+	}
+
+	video.HWWindow = hwWindow
+	video.MakeFrontendContextCurrent()
+	return nil
+}
+
+// DestroySharedHWContext destroys the hidden shared context if it exists.
+func (video *Video) DestroySharedHWContext() {
+	if video.HWWindow != nil {
+		video.HWWindow.Destroy()
+		video.HWWindow = nil
+	}
+}
+
+// MakeFrontendContextCurrent switches back to the visible frontend context.
+func (video *Video) MakeFrontendContextCurrent() {
+	if video.Window != nil {
+		video.Window.MakeContextCurrent()
+	}
+}
+
+// MakeHardwareContextCurrent switches to the shared HW context when available.
+func (video *Video) MakeHardwareContextCurrent() {
+	if video.HWWindow != nil {
+		video.HWWindow.MakeContextCurrent()
+	}
+}
+
+func (video *Video) runContextDestroy() {
+	hw := state.Core.HWRenderCallback
+	if !state.CoreRunning || hw == nil || hw.ContextDestroy == nil {
+		return
+	}
+
+	if video.HWWindow != nil {
+		video.HWWindow.MakeContextCurrent()
+	} else {
+		video.Window.MakeContextCurrent()
+	}
+	hw.ContextDestroy()
+	video.Window.MakeContextCurrent()
+}
+
+// BeginCoreFrame makes the hardware context current before the core issues GL calls.
+func (video *Video) BeginCoreFrame() {
+	video.MakeHardwareContextCurrent()
+}
+
+// EndCoreFrame flushes HW GL work and restores the visible frontend context.
+func (video *Video) EndCoreFrame() {
+	if video.HWWindow != nil {
+		gl.Flush()
+		video.MakeFrontendContextCurrent()
+	}
 }
 
 // GetFramebufferSize retrieves the size, in pixels, of the framebuffer of the specified window.
@@ -71,10 +170,79 @@ func (video *Video) GetFramebufferSize() (int, int) {
 
 // SetTitle sets the window title, encoded as UTF-8, of the window.
 func (video *Video) SetTitle(title string) {
+	video.title = title
 	if video.Window == nil {
 		return
 	}
 	video.Window.SetTitle(title)
+}
+
+// SetHWRenderContext stores the context requested by the current libretro core.
+func (video *Video) SetHWRenderContext(hw *libretro.HWRenderCallback) {
+	if hw == nil {
+		video.hwContextType = 0
+		video.hwContextMajor = 0
+		video.hwContextMinor = 0
+		video.hwDebugContext = false
+		video.hwContextConfigured = false
+		return
+	}
+
+	video.hwContextType = hw.HWContextType
+	video.hwContextMajor = int(hw.VersionMajor)
+	video.hwContextMinor = int(hw.VersionMinor)
+	video.hwDebugContext = hw.DebugContext
+	video.hwContextConfigured = true
+}
+
+func (video *Video) configureWindowHints() {
+	glfw.DefaultWindowHints()
+
+	if !video.hwContextConfigured {
+		return
+	}
+
+	switch video.hwContextType {
+	case libretro.HWContextOpenGLCore:
+		major := video.hwContextMajor
+		minor := video.hwContextMinor
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLAPI)
+		glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
+		if major > 0 && !(major == 3 && minor == 1) {
+			glfw.WindowHint(glfw.ContextVersionMajor, major)
+			glfw.WindowHint(glfw.ContextVersionMinor, minor)
+			if major > 3 || (major == 3 && minor >= 2) {
+				glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+			}
+		}
+	case libretro.HWContextOpenGL:
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLAPI)
+		if video.hwContextMajor > 0 {
+			glfw.WindowHint(glfw.ContextVersionMajor, video.hwContextMajor)
+			glfw.WindowHint(glfw.ContextVersionMinor, video.hwContextMinor)
+			if video.hwContextMajor > 3 || (video.hwContextMajor == 3 && video.hwContextMinor >= 2) {
+				glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCompatProfile)
+			}
+		}
+	case libretro.HWContextOpenGLES2:
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLESAPI)
+		glfw.WindowHint(glfw.ContextVersionMajor, 2)
+		glfw.WindowHint(glfw.ContextVersionMinor, 0)
+	case libretro.HWContextOpenGLES3:
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLESAPI)
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 0)
+	case libretro.HWContextOpenGLESVersion:
+		glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLESAPI)
+		if video.hwContextMajor > 0 {
+			glfw.WindowHint(glfw.ContextVersionMajor, video.hwContextMajor)
+			glfw.WindowHint(glfw.ContextVersionMinor, video.hwContextMinor)
+		}
+	}
+
+	if video.hwDebugContext {
+		glfw.WindowHint(glfw.OpenGLDebugContext, glfw.True)
+	}
 }
 
 // SetShouldClose sets the value of the close flag of the window.
@@ -90,6 +258,39 @@ func panicOnErr(v uint32, err error) uint32 {
 		panic(err)
 	}
 	return v
+}
+
+func (video *Video) ensurePixelFormatDefaults() {
+	if video.pixFmt == 0 {
+		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
+		video.pixType = gl.BGRA
+		video.bpp = 2
+	}
+}
+
+func (video *Video) resetGameTexture(width, height int32) {
+	if width < 1 {
+		width = 1
+	}
+	if height < 1 {
+		height = 1
+	}
+
+	if video.texID != 0 {
+		gl.DeleteTextures(1, &video.texID)
+		video.texID = 0
+	}
+
+	gl.GenTextures(1, &video.texID)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, video.pixType, video.pixFmt, nil)
+	video.texWidth = width
+	video.texHeight = height
 }
 
 // Configure instanciates the video package
@@ -108,8 +309,10 @@ func (video *Video) Configure(fullscreen bool) {
 		height = 240 * 2
 	}
 
+	video.configureWindowHints()
+
 	var err error
-	video.Window, err = glfw.CreateWindow(width, height, "Ludo", m, nil)
+	video.Window, err = glfw.CreateWindow(width, height, video.title, m, nil)
 	if err != nil {
 		panic("Window creation failed:" + err.Error())
 	}
@@ -154,6 +357,7 @@ func (video *Video) Configure(fullscreen bool) {
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
+	gl.UseProgram(video.program)
 	textureUniform := gl.GetUniformLocation(video.program, gl.Str("Texture\x00"))
 	gl.Uniform1i(textureUniform, 0)
 
@@ -174,26 +378,30 @@ func (video *Video) Configure(fullscreen bool) {
 	gl.VertexAttribPointerWithOffset(texCoordAttrib, 2, gl.FLOAT, false, 4*4, 2*4)
 
 	// Some cores won't call SetPixelFormat, provide default values
-	if video.pixFmt == 0 {
-		video.pixFmt = gl.UNSIGNED_SHORT_5_5_5_1
-		video.pixType = gl.BGRA
-		video.bpp = 2
+	video.ensurePixelFormatDefaults()
+
+	if video.Geom.MaxWidth == 0 || video.Geom.MaxHeight == 0 {
+		video.Geom.MaxWidth = video.Geom.BaseWidth
+		video.Geom.MaxHeight = video.Geom.BaseHeight
 	}
 
-	gl.GenTextures(1, &video.texID)
-
-	gl.ActiveTexture(gl.TEXTURE0)
-	if video.texID == 0 && state.Verbose {
-		log.Println("[Video]: Failed to create the vid texture")
+	video.texWidth = int32(video.Geom.MaxWidth)
+	video.texHeight = int32(video.Geom.MaxHeight)
+	if video.texWidth < 1 {
+		video.texWidth = 1
 	}
-
-	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	if video.texHeight < 1 {
+		video.texHeight = 1
+	}
+	video.resetGameTexture(video.texWidth, video.texHeight)
 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
-	video.coreRatioViewport(fbw, fbh)
+	video.coreRatioViewport(fbw, fbh, video.Geom.BaseWidth, video.Geom.BaseHeight)
 
-	if e := gl.GetError(); e != gl.NO_ERROR {
+	bindVertexArray(0)
+
+	for e := gl.GetError(); e != gl.NO_ERROR; e = gl.NO_ERROR {
 		log.Printf("[Video] OpenGL error: %d\n", e)
 	}
 }
@@ -206,6 +414,7 @@ func (video *Video) Configure(fullscreen bool) {
 // CRT: zfast-crt
 // LCD: zfast-lcd
 func (video *Video) UpdateFilter(filter string) {
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	switch filter {
 	case "Smooth":
@@ -234,8 +443,9 @@ func (video *Video) UpdateFilter(filter string) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.UseProgram(video.program)
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.width), float32(video.height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.texWidth), float32(video.texHeight))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
+	gl.UseProgram(0)
 }
 
 // SetPixelFormat is a callback passed to the libretro implementation.
@@ -283,9 +493,29 @@ func (video *Video) ResetRot() {
 	video.rot = 0
 }
 
+// ResetCoreState clears per-core video state when unloading a game.
+func (video *Video) ResetCoreState() {
+	video.MakeFrontendContextCurrent()
+	video.destroyFramebuffer()
+	libretro.SetCurrentFramebufferValue(0)
+	video.ResetPitch()
+	video.ResetRot()
+	video.needUpload = false
+	video.data = nil
+	video.width = 0
+	video.height = 0
+	video.pixFmt = 0
+	video.pixType = 0
+	video.bpp = 0
+	video.ensurePixelFormatDefaults()
+	video.resetGameTexture(1, 1)
+	video.texWidth = 0
+	video.texHeight = 0
+}
+
 // coreRatioViewport configures the vertex array to display the game at the center of the window
 // while preserving the original ascpect ratio of the game or core
-func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h float32) {
+func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight int) (x, y, w, h float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
@@ -308,11 +538,47 @@ func (video *Video) coreRatioViewport(fbWidth int, fbHeight int) (x, y, w, h flo
 	y = (fbh - h) / 2
 
 	va := video.vertexArray(x, y, w, h, 1.0)
+
+	if clipWidth == 0 {
+		clipWidth = int(video.texWidth)
+	}
+	if clipHeight == 0 {
+		clipHeight = int(video.texHeight)
+	}
+
+	va[3] = float32(clipHeight) / float32(video.texHeight)
+	va[10] = float32(clipWidth) / float32(video.texWidth)
+	va[11] = va[3]
+	va[14] = va[10]
+
 	va = rotateUV(va, video.rot)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
 
 	return
+}
+
+// PrepareCoreContext resets frontend GL state so HW cores see a minimal context
+func (video *Video) PrepareCoreContext() {
+	gl.UseProgram(0)
+	bindVertexArray(0)
+	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+	gl.BindTexture(gl.TEXTURE_CUBE_MAP, 0)
+	gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
+	bindBackbuffer()
+	gl.Disable(gl.BLEND)
+	gl.Disable(gl.CULL_FACE)
+	gl.Disable(gl.DEPTH_TEST)
+	gl.Disable(gl.DITHER)
+	gl.Disable(gl.SCISSOR_TEST)
+	gl.Disable(gl.STENCIL_TEST)
+	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, 0)
+	gl.PixelStorei(gl.PACK_ROW_LENGTH, 0)
+	gl.PixelStorei(gl.UNPACK_ALIGNMENT, 4)
+	gl.PixelStorei(gl.PACK_ALIGNMENT, 4)
 }
 
 // ResizeViewport resizes the GL viewport to the framebuffer size
@@ -332,34 +598,60 @@ func (video *Video) ResizeViewport() {
 
 // Render the current frame
 func (video *Video) Render() {
+	// Render directly to the screen
+	bindBackbuffer()
+
+	// We can't trust the core to leave the OpenGL in the same state as
+	// before retro_run() was called so we restore some state manually.
+	gl.Disable(gl.DEPTH_TEST)
+	gl.Disable(gl.CULL_FACE)
+	gl.Disable(gl.DITHER)
+	gl.Disable(gl.STENCIL_TEST)
+	gl.Disable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BlendEquation(gl.FUNC_ADD)
+	gl.Enable(gl.TEXTURE_2D)
+
+	video.ResizeViewport()
+
 	if !state.CoreRunning {
 		gl.ClearColor(1, 1, 1, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		return
 	}
+
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	// Early return to not render the first frame of a newly loaded game with the
 	// previous game pitch. A sane pitch must be set by video.Refresh first.
-	if video.pitch == 0 {
+	if state.Core.HWRenderCallback == nil && video.pitch == 0 {
 		return
 	}
 
 	video.uploadTexture()
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	_, _, w, h := video.coreRatioViewport(fbw, fbh)
+	_, _, w, h := video.coreRatioViewport(fbw, fbh, int(video.width), int(video.height))
 
 	gl.UseProgram(video.program)
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("OutputSize\x00")), w, h)
 
-	bindVertexArray(video.vao)
+	if state.Core.HWRenderCallback != nil {
+		gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.orthoMat[0])
+	}
 
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 
+	bindVertexArray(video.vao)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	bindVertexArray(0)
+
+	// Reset MVP to identity to avoid menu issues
+	gl.UniformMatrix4fv(gl.GetUniformLocation(video.program, gl.Str("MVP\x00")), 1, false, &video.identityMat[0])
+	gl.UseProgram(0)
 }
 
 // Refresh the texture framebuffer
@@ -368,7 +660,7 @@ func (video *Video) Refresh(data unsafe.Pointer, width int32, height int32, pitc
 	video.width = width
 	video.height = height
 	video.pitch = pitch
-	video.data = data // maybe need a full copy
+	video.data = data
 }
 
 func (video *Video) uploadTexture() {
@@ -378,13 +670,41 @@ func (video *Video) uploadTexture() {
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
+
+	if video.data != libretro.HWFrameBufferValid {
+		video.texWidth = int32(video.Geom.MaxWidth)
+		video.texHeight = int32(video.Geom.MaxHeight)
+		if video.texWidth == 0 {
+			video.texWidth = video.width
+		}
+		if video.texHeight == 0 {
+			video.texHeight = video.height
+		}
+		if video.texWidth < 1 {
+			video.texWidth = 1
+		}
+		if video.texHeight < 1 {
+			video.texHeight = 1
+		}
+		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, video.texWidth, video.texHeight, 0, video.pixType, video.pixFmt, video.data)
+	}
 
 	gl.UseProgram(video.program)
-	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.width), float32(video.height))
+	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("TextureSize\x00")), float32(video.texWidth), float32(video.texHeight))
 	gl.Uniform2f(gl.GetUniformLocation(video.program, gl.Str("InputSize\x00")), float32(video.width), float32(video.height))
+	gl.UseProgram(0)
+	video.needUpload = false
+}
 
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, video.width, video.height, 0, video.pixType, video.pixFmt, video.data)
+// CurrentFramebuffer returns the current FBO ID
+func (video *Video) CurrentFramebuffer() uintptr {
+	return uintptr(video.fboID)
+}
+
+// ProcAddress returns the address of the proc from GLFW
+func (video *Video) ProcAddress(procName string) uintptr {
+	return uintptr(glfw.GetProcAddress(procName))
 }
 
 // SetRotation rotates the game image as requested by the core
