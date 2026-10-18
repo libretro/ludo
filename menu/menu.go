@@ -4,9 +4,10 @@
 package menu
 
 import (
-	"log"
 	"path/filepath"
 
+	"github.com/libretro/ludo/core"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -17,13 +18,12 @@ var menu *Menu
 
 // Menu is a type holding the menu state, the stack of scenes, tweens, etc
 type Menu struct {
-	stack         []Scene
-	icons         map[string]uint32
-	tweens        Tweens
-	scroll        float32
-	ratio         float32
-	t             float64
-	startupAction func()
+	stack  []Scene
+	icons  map[string]uint32
+	tweens Tweens
+	scroll float32
+	ratio  float32
+	t      float64
 
 	*video.Video // we embbed video here to have direct access to drawing functions
 }
@@ -52,13 +52,6 @@ func Init(v *video.Video) *Menu {
 // OK on a menu entry.
 func (m *Menu) Push(s Scene) {
 	m.stack = append(m.stack, s)
-}
-
-// SetStartupAction schedules a one-shot action to run from inside Menu.Update.
-// This lets CLI startup follow the same control-flow shape as real menu
-// callbacks that load cores and games.
-func (m *Menu) SetStartupAction(action func()) {
-	m.startupAction = action
 }
 
 // Render takes care of rendering the menu
@@ -122,16 +115,11 @@ func (m *Menu) ContextReset() {
 func (m *Menu) ReconfigureVideo(fullscreen bool) {
 	m.Reconfigure(fullscreen)
 	if state.CoreRunning && state.Core.HWRenderCallback != nil {
-		if state.CoreSetSharedContext {
-			if err := m.CreateSharedHWContext(); err != nil {
-				log.Println("[Video]: Failed to create shared HW context:", err)
-			}
+		if err := m.ResetHWContext(); err != nil {
+			core.UnloadGame()
+			state.MenuActive = true
+			ntf.DisplayAndLog(ntf.Error, "Video", err.Error())
 		}
-		m.MakeHardwareContextCurrent()
-		m.InitFramebuffer()
-		m.PrepareCoreContext()
-		state.Core.HWRenderCallback.ContextReset()
-		m.MakeFrontendContextCurrent()
 	}
 	m.ContextReset()
 }

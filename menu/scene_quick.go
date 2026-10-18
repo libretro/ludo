@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"github.com/libretro/ludo/core"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -27,7 +28,7 @@ func buildQuickMenu() Scene {
 		label: "Reset",
 		icon:  "reset",
 		callbackOK: func() {
-			state.Core.Reset()
+			core.Reset()
 			state.MenuActive = false
 			state.FastForward = false
 		},

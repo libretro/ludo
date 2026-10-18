@@ -79,8 +79,7 @@ func (video *Video) captureBackbufferScreenshot(name string) error {
 
 // TakeScreenshot captures a screenshot without advancing the core.
 func (video *Video) TakeScreenshot(name string) error {
-	coreGLState := video.BeginFrontendFrame()
-	defer video.EndFrontendFrame(coreGLState)
+	video.BeginFrontendFrame()
 
 	video.Render()
 	return video.captureBackbufferScreenshot(name)

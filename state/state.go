@@ -34,9 +34,6 @@ var LudOS bool
 // FastForward will run the core as fast as possible
 var FastForward bool
 
-// CoreSetSharedContext is whether the current core requested a shared HW context.
-var CoreSetSharedContext bool
-
 // PendingScreenshotName is the next screenshot capture requested by the UI.
 var PendingScreenshotName string
 
