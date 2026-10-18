@@ -816,20 +816,8 @@ func (video *Video) uploadTexture() {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 
 	if video.data != libretro.HWFrameBufferValid {
-		video.texWidth = int32(video.Geom.MaxWidth)
-		video.texHeight = int32(video.Geom.MaxHeight)
-		if video.texWidth == 0 {
-			video.texWidth = video.width
-		}
-		if video.texHeight == 0 {
-			video.texHeight = video.height
-		}
-		if video.texWidth < 1 {
-			video.texWidth = 1
-		}
-		if video.texHeight < 1 {
-			video.texHeight = 1
-		}
+		video.texWidth = video.width
+		video.texHeight = video.height
 		gl.PixelStorei(gl.UNPACK_ROW_LENGTH, video.pitch/video.bpp)
 		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, video.texWidth, video.texHeight, 0, video.pixType, video.pixFmt, video.data)
 	}
