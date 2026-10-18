@@ -58,8 +58,6 @@ func (video *Video) InitFramebuffer() {
 		log.Fatalf("[Video] Framebuffer is not complete. Error: %v\n", st)
 	}
 
-	bindBackbuffer()
-
 	gl.ClearColor(0, 0, 0, 1)
 	if hw.Depth && hw.Stencil {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)

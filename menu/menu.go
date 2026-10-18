@@ -4,9 +4,10 @@
 package menu
 
 import (
-	"log"
 	"path/filepath"
 
+	"github.com/libretro/ludo/core"
+	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -114,16 +115,11 @@ func (m *Menu) ContextReset() {
 func (m *Menu) ReconfigureVideo(fullscreen bool) {
 	m.Reconfigure(fullscreen)
 	if state.CoreRunning && state.Core.HWRenderCallback != nil {
-		if state.CoreSetSharedContext {
-			if err := m.CreateSharedHWContext(); err != nil {
-				log.Println("[Video]: Failed to create shared HW context:", err)
-			}
+		if err := m.ResetHWContext(); err != nil {
+			core.UnloadGame()
+			state.MenuActive = true
+			ntf.DisplayAndLog(ntf.Error, "Video", err.Error())
 		}
-		m.MakeHardwareContextCurrent()
-		m.InitFramebuffer()
-		m.PrepareCoreContext()
-		state.Core.HWRenderCallback.ContextReset()
-		m.MakeFrontendContextCurrent()
 	}
 	m.ContextReset()
 }

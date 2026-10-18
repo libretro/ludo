@@ -24,7 +24,7 @@ func (video *Video) InitFramebuffer() {
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.TexStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, width, height)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, nil)
 
 	gl.GenFramebuffers(1, &video.fboID)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
@@ -58,8 +58,6 @@ func (video *Video) InitFramebuffer() {
 	if st := gl.CheckFramebufferStatus(gl.FRAMEBUFFER); st != gl.FRAMEBUFFER_COMPLETE {
 		log.Fatalf("[Video] Framebuffer is not complete. Error: %v\n", st)
 	}
-
-	bindBackbuffer()
 
 	gl.ClearColor(0, 0, 0, 1)
 	if hw.Depth && hw.Stencil {

@@ -51,7 +51,6 @@ func Load(sofile string) error {
 	if err != nil {
 		return err
 	}
-	state.CoreSetSharedContext = false
 	vid.SetHWRenderContext(nil)
 	state.Core.SetEnvironment(environment)
 	state.Core.Init()
@@ -286,16 +285,10 @@ func LoadGame(gamePath string) error {
 	savefiles.LoadSRAM()
 
 	if state.Core.HWRenderCallback != nil {
-		if state.CoreSetSharedContext {
-			if err := vid.CreateSharedHWContext(); err != nil {
-				log.Println("[Video]: Failed to create shared HW context:", err)
-			}
+		if err := vid.ResetHWContext(); err != nil {
+			UnloadGame()
+			return fmt.Errorf("create hardware context: %w", err)
 		}
-		vid.MakeHardwareContextCurrent()
-		vid.InitFramebuffer()
-		vid.PrepareCoreContext()
-		state.Core.HWRenderCallback.ContextReset()
-		vid.MakeFrontendContextCurrent()
 	}
 
 	return nil
@@ -308,7 +301,6 @@ func Unload() {
 		state.Core.Deinit()
 		state.CorePath = ""
 		state.Core = nil
-		state.CoreSetSharedContext = false
 		vid.SetHWRenderContext(nil)
 		Options = nil
 	}
@@ -318,15 +310,37 @@ func Unload() {
 func UnloadGame() {
 	if state.CoreRunning {
 		savefiles.SaveSRAM()
+		vid.RunContextDestroy()
+		vid.BeginCore()
 		state.Core.UnloadGame()
+		vid.EndCore()
 		state.GamePath = ""
 		state.CoreRunning = false
-		vid.DestroySharedHWContext()
 		vid.ResetCoreState()
 		state.Core.HWRenderCallback = nil
-		state.CoreSetSharedContext = false
 		vid.SetHWRenderContext(nil)
 	}
+}
+
+// Reset resets the game using its hardware context, if any.
+func Reset() {
+	vid.BeginCore()
+	defer vid.EndCore()
+	state.Core.Reset()
+}
+
+// Serialize captures core state with the core's GL context current.
+func Serialize() ([]byte, error) {
+	vid.BeginCore()
+	defer vid.EndCore()
+	return state.Core.Serialize(state.Core.SerializeSize())
+}
+
+// Unserialize restores core state with the core's GL context current.
+func Unserialize(data []byte) error {
+	vid.BeginCore()
+	defer vid.EndCore()
+	return state.Core.Unserialize(data, uint(len(data)))
 }
 
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it

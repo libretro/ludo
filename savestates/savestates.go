@@ -6,15 +6,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/libretro/ludo/core"
 	"github.com/libretro/ludo/settings"
-	"github.com/libretro/ludo/state"
 )
 
 // Save the current state to the filesystem. name is the name of the
 // savestate file to save to, without extension.
 func Save(name string) error {
-	s := state.Core.SerializeSize()
-	bytes, err := state.Core.Serialize(s)
+	bytes, err := core.Serialize()
 	if err != nil {
 		return err
 	}
@@ -28,11 +27,9 @@ func Save(name string) error {
 
 // Load the state from the filesystem
 func Load(path string) error {
-	s := state.Core.SerializeSize()
 	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	err = state.Core.Unserialize(bytes, s)
-	return err
+	return core.Unserialize(bytes)
 }

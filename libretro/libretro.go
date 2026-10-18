@@ -960,8 +960,12 @@ func SetHWRenderCallback(
 	c.get_current_framebuffer = (C.retro_hw_get_current_framebuffer_t)(C.coreGetCurrentFramebuffer_cgo)
 	c.get_proc_address = (C.retro_hw_get_proc_address_t)(C.coreGetProcAddress_cgo)
 
-	hwrc.ContextReset = func() {
-		C.bridge_retro_hw_context_reset((C.retro_hw_context_reset_t)(c.context_reset))
+	// The request may be stack-allocated by the core. Keep callback values, not c.
+	reset, destroy := c.context_reset, c.context_destroy
+	if reset != nil {
+		hwrc.ContextReset = func() {
+			C.bridge_retro_hw_context_reset(reset)
+		}
 	}
 
 	hwrc.Depth = bool(c.depth)
@@ -970,8 +974,10 @@ func SetHWRenderCallback(
 	hwrc.VersionMajor = uint(c.version_major)
 	hwrc.VersionMinor = uint(c.version_minor)
 	hwrc.CacheContext = bool(c.cache_context)
-	hwrc.ContextDestroy = func() {
-		C.bridge_retro_hw_context_destroy((C.retro_hw_context_reset_t)(c.context_destroy))
+	if destroy != nil {
+		hwrc.ContextDestroy = func() {
+			C.bridge_retro_hw_context_destroy(destroy)
+		}
 	}
 	hwrc.DebugContext = bool(c.debug_context)
 	return &hwrc
