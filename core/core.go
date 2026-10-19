@@ -35,6 +35,7 @@ var Options *options.Options
 // Call Init before calling other functions of this package.
 func Init(v *video.Video) {
 	vid = v
+	libretro.SetContextCallbacks(v.ContextCallbacks())
 }
 
 // Load loads a libretro core
@@ -298,7 +299,10 @@ func LoadGame(gamePath string) error {
 func Unload() {
 	if state.Core != nil {
 		UnloadGame()
+		vid.BeginCore()
 		state.Core.Deinit()
+		vid.EndCore()
+		vid.DestroySharedHWContext()
 		state.CorePath = ""
 		state.Core = nil
 		vid.SetHWRenderContext(nil)
@@ -316,7 +320,7 @@ func UnloadGame() {
 		vid.EndCore()
 		state.GamePath = ""
 		state.CoreRunning = false
-		vid.ResetCoreState()
+		vid.ResetGameState()
 		state.Core.HWRenderCallback = nil
 		vid.SetHWRenderContext(nil)
 	}
