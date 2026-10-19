@@ -32,7 +32,7 @@ func TestHardwareContextIsolation(t *testing.T) {
 	}
 	defer w.Destroy()
 	w.MakeContextCurrent()
-	if err := gl.Init(); err != nil {
+	if err := initGL(); err != nil {
 		t.Fatal(err)
 	}
 	t.Log("GL:", gl.GoStr(gl.GetString(gl.VERSION)))

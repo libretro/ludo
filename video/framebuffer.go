@@ -1,6 +1,3 @@
-//go:build !darwin
-// +build !darwin
-
 package video
 
 import (
@@ -26,26 +23,26 @@ func (video *Video) InitFramebuffer() {
 	gl.BindTexture(gl.TEXTURE_2D, video.texID)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, nil)
 
-	gl.GenFramebuffers(1, &video.fboID)
-	gl.BindFramebuffer(gl.FRAMEBUFFER, video.fboID)
+	genFramebuffers(1, &video.fboID)
+	bindFramebuffer(gl.FRAMEBUFFER, video.fboID)
 	libretro.SetCurrentFramebufferValue(uintptr(video.fboID))
-	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
+	framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
 
 	hw := state.Core.HWRenderCallback
 	if hw.Depth {
-		gl.GenRenderbuffers(1, &video.rboID)
-		gl.BindRenderbuffer(gl.RENDERBUFFER, video.rboID)
+		genRenderbuffers(1, &video.rboID)
+		bindRenderbuffer(gl.RENDERBUFFER, video.rboID)
 		format := gl.DEPTH_COMPONENT16
 		if hw.Stencil {
 			format = gl.DEPTH24_STENCIL8
 		}
-		gl.RenderbufferStorage(gl.RENDERBUFFER, uint32(format), width, height)
-		gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
+		renderbufferStorage(gl.RENDERBUFFER, uint32(format), width, height)
+		bindRenderbuffer(gl.RENDERBUFFER, 0)
 
+		// Separate attachment points work with both core and EXT framebuffers.
+		framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
 		if hw.Stencil {
-			gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
-		} else {
-			gl.FramebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
+			framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
 		}
 	}
 
@@ -55,7 +52,7 @@ func (video *Video) InitFramebuffer() {
 		video.orthoMat = mgl32.Ortho2D(-1, 1, 1, -1)
 	}
 
-	if st := gl.CheckFramebufferStatus(gl.FRAMEBUFFER); st != gl.FRAMEBUFFER_COMPLETE {
+	if st := checkFramebufferStatus(gl.FRAMEBUFFER); st != gl.FRAMEBUFFER_COMPLETE {
 		log.Fatalf("[Video] Framebuffer is not complete. Error: %v\n", st)
 	}
 
@@ -70,25 +67,17 @@ func (video *Video) InitFramebuffer() {
 }
 
 func bindBackbuffer() {
-	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+	bindFramebuffer(gl.FRAMEBUFFER, 0)
 }
 
 func (video *Video) destroyFramebuffer() {
 	bindBackbuffer()
 	if video.rboID != 0 {
-		gl.DeleteRenderbuffers(1, &video.rboID)
+		deleteRenderbuffers(1, &video.rboID)
 		video.rboID = 0
 	}
 	if video.fboID != 0 {
-		gl.DeleteFramebuffers(1, &video.fboID)
+		deleteFramebuffers(1, &video.fboID)
 		video.fboID = 0
 	}
-}
-
-func genVertexArrays(n int32, arrays *uint32) {
-	gl.GenVertexArrays(n, arrays)
-}
-
-func bindVertexArray(array uint32) {
-	gl.BindVertexArray(array)
 }

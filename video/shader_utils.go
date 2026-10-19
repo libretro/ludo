@@ -23,6 +23,9 @@ func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error)
 
 	gl.AttachShader(program, vertexShader)
 	gl.AttachShader(program, fragmentShader)
+	// Game and menu programs share a VAO, so their attribute locations must match.
+	gl.BindAttribLocation(program, 0, gl.Str("vert\x00"))
+	gl.BindAttribLocation(program, 1, gl.Str("vertTexCoord\x00"))
 	gl.LinkProgram(program)
 
 	var status int32
@@ -57,7 +60,7 @@ func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error)
 func compileShader(source string, shaderType uint32) (uint32, error) {
 	shader := gl.CreateShader(shaderType)
 
-	csources, free := gl.Strs(source)
+	csources, free := gl.Strs(glslVersion + source)
 	gl.ShaderSource(shader, 1, csources, nil)
 	free()
 	gl.CompileShader(shader)

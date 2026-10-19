@@ -402,8 +402,7 @@ func (video *Video) configureWithSize(width, height int, fullscreen bool) {
 
 	video.Window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
 
-	// Initialize Glow
-	if err := gl.Init(); err != nil {
+	if err := initGL(); err != nil {
 		panic(err)
 	}
 

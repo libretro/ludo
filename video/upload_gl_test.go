@@ -29,7 +29,7 @@ func TestSoftwareFrameUploadBounds(t *testing.T) {
 	}
 	defer w.Destroy()
 	w.MakeContextCurrent()
-	if err := gl.Init(); err != nil {
+	if err := initGL(); err != nil {
 		t.Fatal(err)
 	}
 
