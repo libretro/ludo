@@ -180,7 +180,7 @@ func gameExplorerCb(path string) {
 
 // Shutdown the operating system
 func cleanShutdown() {
-	core.UnloadGame()
+	core.Unload()
 	if err := exec.Command("/usr/sbin/shutdown", "-P", "now").Run(); err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}
@@ -188,7 +188,7 @@ func cleanShutdown() {
 
 // Reboots the operating system
 func cleanReboot() {
-	core.UnloadGame()
+	core.Unload()
 	if err := exec.Command("/usr/sbin/shutdown", "-r", "now").Run(); err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
 	}

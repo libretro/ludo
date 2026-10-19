@@ -220,14 +220,15 @@ func LoadGame(gamePath string) error {
 		return err
 	}
 
-	// If we're loading a new game on the same core, save the RAM of the previous
-	// game before closing it.
-	if state.GamePath != gamePath {
-		UnloadGame()
-	}
-
 	if state.Core == nil {
 		return errors.New("no core loaded")
+	}
+
+	// Reload the core to fully tear down the previous game and its GL context.
+	if state.CoreRunning {
+		if err := Load(state.CorePath); err != nil {
+			return err
+		}
 	}
 
 	si := state.Core.GetSystemInfo()
@@ -253,7 +254,7 @@ func LoadGame(gamePath string) error {
 
 	ok := state.Core.LoadGame(*gi)
 	if !ok {
-		state.CoreRunning = false
+		Unload()
 		return errors.New("failed to load the game")
 	}
 
@@ -287,7 +288,7 @@ func LoadGame(gamePath string) error {
 
 	if state.Core.HWRenderCallback != nil {
 		if err := vid.ResetHWContext(); err != nil {
-			UnloadGame()
+			Unload()
 			return fmt.Errorf("create hardware context: %w", err)
 		}
 	}
@@ -295,34 +296,24 @@ func LoadGame(gamePath string) error {
 	return nil
 }
 
-// Unload unloads a libretro core
+// Unload closes the game and core before destroying their GL context.
 func Unload() {
 	if state.Core != nil {
-		UnloadGame()
+		savefiles.SaveSRAM()
+		vid.RunContextDestroy()
 		vid.BeginCore()
+		if state.CoreRunning {
+			state.Core.UnloadGame()
+		}
 		state.Core.Deinit()
 		vid.EndCore()
-		vid.DestroySharedHWContext()
+		vid.ResetCoreState()
+		state.GamePath = ""
+		state.CoreRunning = false
 		state.CorePath = ""
 		state.Core = nil
 		vid.SetHWRenderContext(nil)
 		Options = nil
-	}
-}
-
-// UnloadGame unloads a game.
-func UnloadGame() {
-	if state.CoreRunning {
-		savefiles.SaveSRAM()
-		vid.RunContextDestroy()
-		vid.BeginCore()
-		state.Core.UnloadGame()
-		vid.EndCore()
-		state.GamePath = ""
-		state.CoreRunning = false
-		vid.ResetGameState()
-		state.Core.HWRenderCallback = nil
-		vid.SetHWRenderContext(nil)
 	}
 }
 
