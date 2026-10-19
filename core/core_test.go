@@ -1,10 +1,10 @@
 package core
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -14,6 +14,34 @@ import (
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 )
+
+var mainThread = make(chan func())
+
+func init() {
+	// GLFW initialization and input setup must run on the main OS thread.
+	runtime.LockOSThread()
+}
+
+func TestMain(m *testing.M) {
+	var code int
+	go func() {
+		code = m.Run()
+		close(mainThread)
+	}()
+	for f := range mainThread {
+		f()
+	}
+	os.Exit(code)
+}
+
+func onMainThread(f func()) {
+	done := make(chan struct{})
+	mainThread <- func() {
+		f()
+		close(done)
+	}
+	<-done
+}
 
 type WindowMock struct{}
 
@@ -201,17 +229,21 @@ func Test_coreLoadGame(t *testing.T) {
 
 	Init(&video.Video{})
 
-	if err := glfw.Init(); err != nil {
-		log.Fatalln("failed to initialize glfw")
+	var initErr error
+	onMainThread(func() { initErr = glfw.Init() })
+	if initErr != nil {
+		t.Fatalf("glfw.Init() error = %v", initErr)
 	}
-	t.Cleanup(glfw.Terminate)
+	t.Cleanup(func() { onMainThread(glfw.Terminate) })
 
 	if err := Load("testdata/vecx_libretro" + ext); err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
 
 	var loadGameErr error
-	got := utils.CaptureOutput(func() { loadGameErr = LoadGame("testdata/Polar Rescue (USA).vec") })
+	got := utils.CaptureOutput(func() {
+		onMainThread(func() { loadGameErr = LoadGame("testdata/Polar Rescue (USA).vec") })
+	})
 	if loadGameErr != nil {
 		t.Fatalf("LoadGame() error = %v", loadGameErr)
 	}
