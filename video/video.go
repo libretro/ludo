@@ -723,7 +723,10 @@ func (video *Video) Render() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
 
 	bindVertexArray(video.vao)
+	// Preserve opaque alpha even when the core leaves its alpha channel unset.
+	gl.ColorMask(true, true, true, false)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+	gl.ColorMask(true, true, true, true)
 	bindVertexArray(0)
 
 	// Reset MVP to identity to avoid menu issues

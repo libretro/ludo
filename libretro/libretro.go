@@ -467,20 +467,19 @@ type (
 )
 
 var (
-	environment           environmentFunc
-	videoRefresh          videoRefreshFunc
-	audioSample           audioSampleFunc
-	audioSampleBatch      audioSampleBatchFunc
-	inputPoll             inputPollFunc
-	inputState            inputStateFunc
-	log                   logFunc
-	getTimeUsec           getTimeUsecFunc
-	getCurrentFramebuffer getCurrentFramebufferFunc
-	getProcAddress        getProcAddressFunc
-	releaseContext        func()
-	acquireContext        func()
-	coreCalls             chan func()
-	frontendCalls         chan func()
+	environment      environmentFunc
+	videoRefresh     videoRefreshFunc
+	audioSample      audioSampleFunc
+	audioSampleBatch audioSampleBatchFunc
+	inputPoll        inputPollFunc
+	inputState       inputStateFunc
+	log              logFunc
+	getTimeUsec      getTimeUsecFunc
+	getProcAddress   getProcAddressFunc
+	releaseContext   func()
+	acquireContext   func()
+	coreCalls        chan func()
+	frontendCalls    chan func()
 )
 
 // SetContextCallbacks hands the current graphics context between the calling
@@ -623,7 +622,6 @@ func (core *Core) Deinit() {
 	inputState = nil
 	log = nil
 	getTimeUsec = nil
-	getCurrentFramebuffer = nil
 	getProcAddress = nil
 }
 
@@ -874,11 +872,6 @@ func coreGetTimeUsec() C.uint64_t {
 	return C.uint64_t(getTimeUsec())
 }
 
-//export coreGetCurrentFramebuffer
-func coreGetCurrentFramebuffer() C.uintptr_t {
-	return C.uintptr_t(getCurrentFramebuffer())
-}
-
 //export coreGetProcAddress
 func coreGetProcAddress(sym *C.char) C.uintptr_t {
 	return C.uintptr_t(getProcAddress(C.GoString(sym)))
@@ -1061,7 +1054,6 @@ func SetHWRenderCallback(
 	hwrc := HWRenderCallback{}
 	hwrc.HWContextType = uint32(c.context_type)
 
-	getCurrentFramebuffer = currentFramebuffer
 	getProcAddress = procAddress
 	SetCurrentFramebufferValue(currentFramebuffer())
 	c.get_current_framebuffer = (C.retro_hw_get_current_framebuffer_t)(C.coreGetCurrentFramebuffer_cgo)

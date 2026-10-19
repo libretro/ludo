@@ -57,14 +57,6 @@ func (video *Video) captureBackbufferScreenshot(name string) error {
 	return png.Encode(fd, flipped)
 }
 
-// TakeScreenshot captures a screenshot without advancing the core.
-func (video *Video) TakeScreenshot(name string) error {
-	video.BeginFrontendFrame()
-
-	video.Render()
-	return video.captureBackbufferScreenshot(name)
-}
-
 // TakeScreenshotInFrontendFrame captures a screenshot while the caller already
 // owns a frontend frame and has already rendered the current game frame.
 func (video *Video) TakeScreenshotInFrontendFrame(name string) error {
