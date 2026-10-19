@@ -116,7 +116,7 @@ func (m *Menu) ReconfigureVideo(fullscreen bool) {
 	m.Reconfigure(fullscreen)
 	if state.CoreRunning && state.Core.HWRenderCallback != nil {
 		if err := m.ResetHWContext(); err != nil {
-			core.UnloadGame()
+			core.Unload()
 			state.MenuActive = true
 			ntf.DisplayAndLog(ntf.Error, "Video", err.Error())
 		}

@@ -198,6 +198,33 @@ func (video *Video) EndCore() {
 	}
 }
 
+// ContextCallbacks returns paired release/acquire callbacks for synchronous
+// context handoffs between the frontend and native core threads.
+func (video *Video) ContextCallbacks() (release, acquire func()) {
+	var current *glfw.Window
+	release = func() {
+		current = nil
+		if video.Window == nil || state.Core == nil || state.Core.HWRenderCallback == nil {
+			return
+		}
+		current = glfw.GetCurrentContext()
+		// Before context_reset, HW negotiation may still use the visible context.
+		// Once the hidden context exists, leave the menu context on its own thread.
+		if video.HWWindow != nil && current != video.HWWindow {
+			current = nil
+		}
+		if current != nil {
+			glfw.DetachCurrentContext()
+		}
+	}
+	acquire = func() {
+		if current != nil {
+			current.MakeContextCurrent()
+		}
+	}
+	return
+}
+
 func (video *Video) switchContext(window *glfw.Window) {
 	if glfw.GetCurrentContext() == window {
 		return
@@ -544,7 +571,7 @@ func (video *Video) ResetRot() {
 	video.rot = 0
 }
 
-// ResetCoreState clears per-core video state when unloading a game.
+// ResetCoreState clears per-core video state and destroys its GL context.
 func (video *Video) ResetCoreState() {
 	video.DestroySharedHWContext()
 	video.MakeFrontendContextCurrent()
@@ -559,7 +586,9 @@ func (video *Video) ResetCoreState() {
 	video.pixType = 0
 	video.bpp = 0
 	video.ensurePixelFormatDefaults()
-	video.resetGameTexture(1, 1)
+	if video.texID != 0 {
+		video.resetGameTexture(1, 1)
+	}
 	video.texWidth = 0
 	video.texHeight = 0
 	if video.cachedFrameTexID != 0 {

@@ -14,7 +14,9 @@ package libretro
 #include <stdio.h>
 #include <string.h>
 
-void cothread_init();
+int cothread_init();
+void cothread_deinit();
+bool cothread_is_current();
 
 void bridge_retro_init(void *f);
 void bridge_retro_deinit(void *f);
@@ -63,6 +65,8 @@ uintptr_t coreGetProcAddress_cgo(const char *sym);
 import "C"
 import (
 	"errors"
+	"fmt"
+	"runtime"
 	"strings"
 	"unsafe"
 )
@@ -473,7 +477,82 @@ var (
 	getTimeUsec           getTimeUsecFunc
 	getCurrentFramebuffer getCurrentFramebufferFunc
 	getProcAddress        getProcAddressFunc
+	releaseContext        func()
+	acquireContext        func()
+	coreCalls             chan func()
+	frontendCalls         chan func()
 )
+
+// SetContextCallbacks hands the current graphics context between the calling
+// thread and the native core thread. Calls remain synchronous.
+func SetContextCallbacks(release, acquire func()) {
+	releaseContext, acquireContext = release, acquire
+}
+
+func coreReleaseContext() {
+	if releaseContext != nil {
+		releaseContext()
+	}
+}
+
+func coreAcquireContext() {
+	if acquireContext != nil {
+		acquireContext()
+	}
+}
+
+//export coreThreadLoop
+func coreThreadLoop() {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	for call := range coreCalls {
+		call()
+	}
+}
+
+// Calls are synchronous, but must service callbacks on the waiting thread.
+// Pumping both directions also permits a callback to make a nested core call.
+func threadCall(calls, callbacks chan func(), f func()) {
+	coreReleaseContext()
+	done := make(chan struct{})
+	calls <- func() {
+		coreAcquireContext()
+		f()
+		coreReleaseContext()
+		close(done)
+	}
+	for {
+		select {
+		case callback := <-callbacks:
+			callback()
+		case <-done:
+			coreAcquireContext()
+			return
+		}
+	}
+}
+
+// The frontend calls from its locked OS thread; core callbacks can reenter here.
+func coreCall(f func()) {
+	if coreCalls == nil || bool(C.cothread_is_current()) {
+		f()
+		return
+	}
+	threadCall(coreCalls, frontendCalls, f)
+}
+
+func coreResult[T any](f func() T) (result T) {
+	coreCall(func() { result = f() })
+	return
+}
+
+func frontendCall(f func()) {
+	if coreCalls == nil || !bool(C.cothread_is_current()) {
+		f()
+		return
+	}
+	threadCall(frontendCalls, coreCalls, f)
+}
 
 // Load dynamically loads a libretro core at the given path and returns a Core instance
 func Load(sofile string) (*Core, error) {
@@ -483,6 +562,13 @@ func Load(sofile string) (*Core, error) {
 	core.handle, err = DlOpen(sofile)
 	if err != nil {
 		return nil, err
+	}
+
+	coreCalls, frontendCalls = make(chan func()), make(chan func())
+	if err := C.cothread_init(); err != 0 {
+		coreCalls, frontendCalls = nil, nil
+		DlClose(core.handle)
+		return nil, fmt.Errorf("start core thread: %s", C.GoString(C.strerror(err)))
 	}
 
 	core.symRetroInit = DlSym(core.handle, "retro_init")
@@ -512,18 +598,21 @@ func Load(sofile string) (*Core, error) {
 
 // Init takes care of the library global initialization
 func (core *Core) Init() {
-	C.bridge_retro_init(core.symRetroInit)
+	coreCall(func() { C.bridge_retro_init(core.symRetroInit) })
 }
 
 // APIVersion returns the RETRO_API_VERSION.
 // Used to validate ABI compatibility when the API is revised.
 func (core *Core) APIVersion() uint {
-	return uint(C.bridge_retro_api_version(core.symRetroAPIVersion))
+	return coreResult(func() uint { return uint(C.bridge_retro_api_version(core.symRetroAPIVersion)) })
 }
 
 // Deinit takes care of the library global deinitialization
 func (core *Core) Deinit() {
-	C.bridge_retro_deinit(core.symRetroDeinit)
+	coreCall(func() { C.bridge_retro_deinit(core.symRetroDeinit) })
+	close(coreCalls)
+	C.cothread_deinit()
+	coreCalls, frontendCalls = nil, nil
 	DlClose(core.handle)
 	core.MemoryMap = nil
 	environment = nil
@@ -545,12 +634,12 @@ func (core *Core) Deinit() {
 // a frame if GET_CAN_DUPE returns true.
 // In this case, the video callback can take a NULL argument for data.
 func (core *Core) Run() {
-	C.bridge_retro_run(core.symRetroRun)
+	coreCall(func() { C.bridge_retro_run(core.symRetroRun) })
 }
 
 // Reset resets the current game.
 func (core *Core) Reset() {
-	C.bridge_retro_reset(core.symRetroReset)
+	coreCall(func() { C.bridge_retro_reset(core.symRetroReset) })
 }
 
 // GetSystemInfo returns statically known system info. Pointers provided in *info
@@ -558,7 +647,7 @@ func (core *Core) Reset() {
 // Can be called at any time, even before retro_init().
 func (core *Core) GetSystemInfo() SystemInfo {
 	rsi := C.struct_retro_system_info{}
-	C.bridge_retro_get_system_info(core.symRetroGetSystemInfo, &rsi)
+	coreCall(func() { C.bridge_retro_get_system_info(core.symRetroGetSystemInfo, &rsi) })
 	return SystemInfo{
 		LibraryName:     C.GoString(rsi.library_name),
 		LibraryVersion:  C.GoString(rsi.library_version),
@@ -576,7 +665,7 @@ func (core *Core) GetSystemInfo() SystemInfo {
 // desire a particular aspect ratio.
 func (core *Core) GetSystemAVInfo() SystemAVInfo {
 	avi := C.struct_retro_system_av_info{}
-	C.bridge_retro_get_system_av_info(core.symRetroGetSystemAVInfo, &avi)
+	coreCall(func() { C.bridge_retro_get_system_av_info(core.symRetroGetSystemAVInfo, &avi) })
 	return SystemAVInfo{
 		Geometry: GameGeometry{
 			AspectRatio: float64(avi.geometry.aspect_ratio),
@@ -598,7 +687,7 @@ func (core *Core) LoadGame(gi GameInfo) bool {
 	rgi.path = C.CString(gi.Path)
 	rgi.size = C.size_t(gi.Size)
 	rgi.data = gi.Data
-	return bool(C.bridge_retro_load_game(core.symRetroLoadGame, &rgi))
+	return coreResult(func() bool { return bool(C.bridge_retro_load_game(core.symRetroLoadGame, &rgi)) })
 }
 
 // SerializeSize returns the amount of data the implementation requires to serialize
@@ -607,18 +696,18 @@ func (core *Core) LoadGame(gi GameInfo) bool {
 // returned size is never allowed to be larger than a previous returned
 // value, to ensure that the frontend can allocate a save state buffer once.
 func (core *Core) SerializeSize() uint {
-	return uint(C.bridge_retro_serialize_size(core.symRetroSerializeSize))
+	return coreResult(func() uint { return uint(C.bridge_retro_serialize_size(core.symRetroSerializeSize)) })
 }
 
 // Serialize serializes internal state and returns the state as a byte slice.
 func (core *Core) Serialize(size uint) ([]byte, error) {
 	data := C.malloc(C.size_t(size))
-	ok := bool(C.bridge_retro_serialize(core.symRetroSerialize, data, C.size_t(size)))
+	defer C.free(data)
+	ok := coreResult(func() bool { return bool(C.bridge_retro_serialize(core.symRetroSerialize, data, C.size_t(size))) })
 	if !ok {
 		return nil, errors.New("retro_serialize failed")
 	}
 	bytes := C.GoBytes(data, C.int(size))
-	C.free(data)
 	return bytes, nil
 }
 
@@ -630,7 +719,9 @@ func (core *Core) Unserialize(bytes []byte, size uint) error {
 	if uint(len(bytes)) > size {
 		size = uint(len(bytes))
 	}
-	ok := bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
+	ok := coreResult(func() bool {
+		return bool(C.bridge_retro_unserialize(core.symRetroUnserialize, unsafe.Pointer(&bytes[0]), C.size_t(size)))
+	})
 	if !ok {
 		return errors.New("retro_unserialize failed")
 	}
@@ -639,49 +730,51 @@ func (core *Core) Unserialize(bytes []byte, size uint) error {
 
 // UnloadGame unloads a currently loaded game
 func (core *Core) UnloadGame() {
-	C.bridge_retro_unload_game(core.symRetroUnloadGame)
+	coreCall(func() { C.bridge_retro_unload_game(core.symRetroUnloadGame) })
 }
 
 // SetEnvironment sets the environment callback.
 // Must be called before Init
 func (core *Core) SetEnvironment(f environmentFunc) {
 	environment = f
-	C.bridge_retro_set_environment(core.symRetroSetEnvironment, C.coreEnvironment_cgo)
+	coreCall(func() { C.bridge_retro_set_environment(core.symRetroSetEnvironment, C.coreEnvironment_cgo) })
 }
 
 // SetVideoRefresh sets the video refresh callback.
 // Must be set before the first Run call
 func (core *Core) SetVideoRefresh(f videoRefreshFunc) {
 	videoRefresh = f
-	C.bridge_retro_set_video_refresh(core.symRetroSetVideoRefresh, C.coreVideoRefresh_cgo)
+	coreCall(func() { C.bridge_retro_set_video_refresh(core.symRetroSetVideoRefresh, C.coreVideoRefresh_cgo) })
 }
 
 // SetAudioSample sets the audio sample callback.
 // Must be set before the first Run call
 func (core *Core) SetAudioSample(f audioSampleFunc) {
 	audioSample = f
-	C.bridge_retro_set_audio_sample(core.symRetroSetAudioSample, C.coreAudioSample_cgo)
+	coreCall(func() { C.bridge_retro_set_audio_sample(core.symRetroSetAudioSample, C.coreAudioSample_cgo) })
 }
 
 // SetAudioSampleBatch sets the audio sample batch callback.
 // Must be set before the first Run call
 func (core *Core) SetAudioSampleBatch(f audioSampleBatchFunc) {
 	audioSampleBatch = f
-	C.bridge_retro_set_audio_sample_batch(core.symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
+	coreCall(func() {
+		C.bridge_retro_set_audio_sample_batch(core.symRetroSetAudioSampleBatch, C.coreAudioSampleBatch_cgo)
+	})
 }
 
 // SetInputPoll sets the input poll callback.
 // Must be set before the first Run call
 func (core *Core) SetInputPoll(f inputPollFunc) {
 	inputPoll = f
-	C.bridge_retro_set_input_poll(core.symRetroSetInputPoll, C.coreInputPoll_cgo)
+	coreCall(func() { C.bridge_retro_set_input_poll(core.symRetroSetInputPoll, C.coreInputPoll_cgo) })
 }
 
 // SetInputState sets the input state callback.
 // Must be set before the first Run call
 func (core *Core) SetInputState(f inputStateFunc) {
 	inputState = f
-	C.bridge_retro_set_input_state(core.symRetroSetInputState, C.coreInputState_cgo)
+	coreCall(func() { C.bridge_retro_set_input_state(core.symRetroSetInputState, C.coreInputState_cgo) })
 }
 
 // BindLogCallback binds f to the log callback
@@ -700,13 +793,21 @@ func (core *Core) BindPerfCallback(data unsafe.Pointer, f getTimeUsecFunc) {
 
 // SetControllerPortDevice sets the device type attached to a controller port
 func (core *Core) SetControllerPortDevice(port uint, device uint32) {
-	C.bridge_retro_set_controller_port_device(core.symRetroSetControllerPortDevice, C.unsigned(port), C.unsigned(device))
+	coreCall(func() {
+		C.bridge_retro_set_controller_port_device(core.symRetroSetControllerPortDevice, C.unsigned(port), C.unsigned(device))
+	})
 }
 
 //export coreEnvironment
 func coreEnvironment(cmd C.unsigned, data unsafe.Pointer) bool {
 	if environment == nil {
 		return false
+	}
+	// Only window operations need the frontend thread. Routine queries stay here.
+	if cmd == C.RETRO_ENVIRONMENT_SET_HW_RENDER || cmd == C.RETRO_ENVIRONMENT_SHUTDOWN {
+		var result bool
+		frontendCall(func() { result = environment(uint32(cmd), data) })
+		return result
 	}
 	return environment(uint32(cmd), data)
 }
@@ -731,6 +832,12 @@ func coreInputPoll() {
 func coreInputState(port C.unsigned, device C.unsigned, index C.unsigned, id C.unsigned) C.int16_t {
 	if inputState == nil {
 		return 0
+	}
+	// Mouse state is queried through GLFW rather than the polled input snapshot.
+	if device == C.RETRO_DEVICE_MOUSE {
+		var result C.int16_t
+		frontendCall(func() { result = C.int16_t(inputState(uint(port), uint32(device), uint(index), uint(id))) })
+		return result
 	}
 	return C.int16_t(inputState(uint(port), uint32(device), uint(index), uint(id)))
 }
@@ -939,7 +1046,7 @@ func (core *Core) SetFrameTimeCallback(data unsafe.Pointer) {
 	ftc := &FrameTimeCallback{}
 	ftc.Reference = int64(c.reference)
 	ftc.Callback = func(usec int64) {
-		C.bridge_retro_frame_time_callback(c.callback, C.retro_usec_t(usec))
+		coreCall(func() { C.bridge_retro_frame_time_callback(c.callback, C.retro_usec_t(usec)) })
 	}
 	core.FrameTimeCallback = ftc
 }
@@ -964,7 +1071,7 @@ func SetHWRenderCallback(
 	reset, destroy := c.context_reset, c.context_destroy
 	if reset != nil {
 		hwrc.ContextReset = func() {
-			C.bridge_retro_hw_context_reset(reset)
+			coreCall(func() { C.bridge_retro_hw_context_reset(reset) })
 		}
 	}
 
@@ -976,7 +1083,7 @@ func SetHWRenderCallback(
 	hwrc.CacheContext = bool(c.cache_context)
 	if destroy != nil {
 		hwrc.ContextDestroy = func() {
-			C.bridge_retro_hw_context_destroy(destroy)
+			coreCall(func() { C.bridge_retro_hw_context_destroy(destroy) })
 		}
 	}
 	hwrc.DebugContext = bool(c.debug_context)
@@ -988,10 +1095,10 @@ func (core *Core) SetAudioCallback(data unsafe.Pointer) {
 	c := *(*C.struct_retro_audio_callback)(data)
 	auc := &AudioCallback{}
 	auc.Callback = func() {
-		C.bridge_retro_audio_callback(c.callback)
+		coreCall(func() { C.bridge_retro_audio_callback(c.callback) })
 	}
 	auc.SetState = func(state bool) {
-		C.bridge_retro_audio_set_state(c.set_state, C.bool(state))
+		coreCall(func() { C.bridge_retro_audio_set_state(c.set_state, C.bool(state)) })
 	}
 	core.AudioCallback = auc
 }
@@ -999,13 +1106,15 @@ func (core *Core) SetAudioCallback(data unsafe.Pointer) {
 // GetMemorySize returns the size of a region of the memory.
 // See memory constants.
 func (core *Core) GetMemorySize(id uint32) uint {
-	return uint(C.bridge_retro_get_memory_size(core.symRetroGetMemorySize, C.unsigned(id)))
+	return coreResult(func() uint { return uint(C.bridge_retro_get_memory_size(core.symRetroGetMemorySize, C.unsigned(id))) })
 }
 
 // GetMemoryData returns the size of a region of the memory.
 // See memory constants.
 func (core *Core) GetMemoryData(id uint32) unsafe.Pointer {
-	return C.bridge_retro_get_memory_data(core.symRetroGetMemoryData, C.unsigned(id))
+	return coreResult(func() unsafe.Pointer {
+		return C.bridge_retro_get_memory_data(core.symRetroGetMemoryData, C.unsigned(id))
+	})
 }
 
 // DiskControlCallback is an interface which frontend can use to eject and insert disk images
@@ -1025,19 +1134,19 @@ func (core *Core) SetDiskControlCallback(data unsafe.Pointer) {
 	c := *(*C.struct_retro_disk_control_callback)(data)
 	dcc := &DiskControlCallback{}
 	dcc.SetEjectState = func(state bool) {
-		C.bridge_retro_set_eject_state(c.set_eject_state, C.bool(state))
+		coreCall(func() { C.bridge_retro_set_eject_state(c.set_eject_state, C.bool(state)) })
 	}
 	dcc.GetEjectState = func() bool {
-		return bool(C.bridge_retro_get_eject_state(c.get_eject_state))
+		return coreResult(func() bool { return bool(C.bridge_retro_get_eject_state(c.get_eject_state)) })
 	}
 	dcc.GetImageIndex = func() uint {
-		return uint(C.bridge_retro_get_image_index(c.get_image_index))
+		return coreResult(func() uint { return uint(C.bridge_retro_get_image_index(c.get_image_index)) })
 	}
 	dcc.SetImageIndex = func(index uint) {
-		C.bridge_retro_set_image_index(c.set_image_index, C.uint(index))
+		coreCall(func() { C.bridge_retro_set_image_index(c.set_image_index, C.uint(index)) })
 	}
 	dcc.GetNumImages = func() uint {
-		return uint(C.bridge_retro_get_num_images(c.get_num_images))
+		return coreResult(func() uint { return uint(C.bridge_retro_get_num_images(c.get_num_images)) })
 	}
 	core.DiskControlCallback = dcc
 }
