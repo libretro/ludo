@@ -1,6 +1,7 @@
 package video
 
 import (
+	"errors"
 	"image"
 	"image/png"
 	"os"
@@ -10,42 +11,21 @@ import (
 	"github.com/go-gl/gl/v2.1/gl"
 
 	"github.com/libretro/ludo/settings"
+	"github.com/libretro/ludo/state"
 )
 
-func (video *Video) screenshotOutputSize() (int32, int32) {
-	width := int32(video.Geom.BaseWidth)
-	height := int32(video.Geom.BaseHeight)
-	if width < 1 {
-		width = video.width
-	}
-	if height < 1 {
-		height = video.height
-	}
-	if width < 1 {
-		width = video.presentW
-	}
-	if height < 1 {
-		height = video.presentH
-	}
-	if width < 1 {
-		width = 1
-	}
-	if height < 1 {
-		height = 1
-	}
-	return width, height
-}
-
 func (video *Video) captureBackbufferScreenshot(name string) error {
-	outW, outH := video.screenshotOutputSize()
+	outW, outH := video.Geom.BaseWidth, video.Geom.BaseHeight
+	if outW < 1 || outH < 1 {
+		return errors.New("invalid screenshot output size")
+	}
 
 	x := video.presentX
 	y := video.presentY
 	w := video.presentW
 	h := video.presentH
-	if w < 1 || h < 1 {
-		fbw, fbh := video.Window.GetFramebufferSize()
-		x, y, w, h = int32(0), int32(0), int32(fbw), int32(fbh)
+	if !state.CoreRunning || video.width < 1 || video.height < 1 || w < 1 || h < 1 {
+		return errors.New("no game frame to capture")
 	}
 
 	var oldReadBuffer int32
@@ -58,8 +38,8 @@ func (video *Video) captureBackbufferScreenshot(name string) error {
 	gl.ReadBuffer(uint32(oldReadBuffer))
 
 	flipped := imaging.FlipV(img)
-	if int32(flipped.Bounds().Dx()) != outW || int32(flipped.Bounds().Dy()) != outH {
-		flipped = imaging.Resize(flipped, int(outW), int(outH), imaging.Linear)
+	if flipped.Bounds().Dx() != outW || flipped.Bounds().Dy() != outH {
+		flipped = imaging.Resize(flipped, outW, outH, imaging.Linear)
 	}
 
 	err := os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
