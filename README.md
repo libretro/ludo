@@ -4,7 +4,7 @@ Ludo is a work in progress libretro frontend written in go.
 
 <img src="https://raw.githubusercontent.com/kivutar/ludo-assets/master/illustration.png" />
 
-It is able to launch most non GL libretro cores.
+It supports software-rendered and desktop OpenGL libretro cores. Hardware-rendered cores may require a newer OpenGL version than the frontend itself.
 
 It works on OSX, Linux, Linux ARM and Windows. You can download releases [here](https://github.com/libretro/ludo/releases)
 
