@@ -30,7 +30,6 @@ func buildSavestates() Scene {
 			state.PendingScreenshotDone = func(err error) {
 				if err != nil {
 					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-					return
 				}
 				err = savestates.Save(name)
 				if err != nil {
