@@ -11,6 +11,7 @@ var severityBgColor map[ntf.Severity]video.Color
 // RenderNotifications draws the list of notification messages on the viewport
 func (m *Menu) RenderNotifications() {
 	fbw, fbh := m.GetFramebufferSize()
+	m.ratio = float32(fbw) / 1920
 	m.Font.UpdateResolution(fbw, fbh)
 	var h float32 = 75
 	stack := h
