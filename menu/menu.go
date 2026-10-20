@@ -6,8 +6,6 @@ package menu
 import (
 	"path/filepath"
 
-	"github.com/libretro/ludo/core"
-	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -109,19 +107,6 @@ func (m *Menu) ContextReset() {
 	for i := range curList.children {
 		curList.children[i].thumbnail = 0
 	}
-}
-
-// ReconfigureVideo recreates the window and restores any running HW-render core state.
-func (m *Menu) ReconfigureVideo(fullscreen bool) {
-	m.Reconfigure(fullscreen)
-	if state.CoreRunning && state.Core.HWRenderCallback != nil {
-		if err := m.ResetHWContext(); err != nil {
-			core.Unload()
-			state.MenuActive = true
-			ntf.DisplayAndLog(ntf.Error, "Video", err.Error())
-		}
-	}
-	m.ContextReset()
 }
 
 // WarpToQuickMenu loads the contextual menu for games that are launched from

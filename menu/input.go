@@ -196,7 +196,7 @@ func (m *Menu) ProcessHotkeys() {
 	// Toggle fullscreen if ActionFullscreenToggle is released
 	if input.Released[0][input.ActionFullscreenToggle] == 1 {
 		settings.Current.VideoFullscreen = !settings.Current.VideoFullscreen
-		m.ReconfigureVideo(settings.Current.VideoFullscreen)
+		m.SetFullscreen(settings.Current.VideoFullscreen)
 		err := settings.Save()
 		if err != nil {
 			ntf.DisplayAndLogf(ntf.Error, "Menu", "Error saving settings: %v", err)

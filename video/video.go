@@ -26,6 +26,9 @@ type Video struct {
 	FontLg   *Font
 	title    string
 
+	windowedX, windowedY          int
+	windowedWidth, windowedHeight int
+
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
 	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
@@ -78,14 +81,24 @@ func Init(fullscreen bool) *Video {
 	return vid
 }
 
-// Reconfigure destroys and recreates the window with new attributes
-func (video *Video) Reconfigure(fullscreen bool) {
-	if video.Window != nil {
-		video.RunContextDestroy()
-		video.DestroySharedHWContext()
-		video.Window.Destroy()
+// SetFullscreen changes the window mode or monitor without recreating GL contexts.
+func (video *Video) SetFullscreen(fullscreen bool) {
+	if fullscreen {
+		if video.Window.GetMonitor() == nil {
+			video.windowedWidth, video.windowedHeight = video.Window.GetSize()
+			// Wayland does not expose window positions.
+			if glfw.GetPlatform() != glfw.PlatformWayland {
+				video.windowedX, video.windowedY = video.Window.GetPos()
+			}
+		}
+		monitor := glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
+		modes := monitor.GetVideoModes()
+		mode := modes[len(modes)-1]
+		video.Window.SetMonitor(monitor, 0, 0, mode.Width, mode.Height, mode.RefreshRate)
+	} else if video.Window.GetMonitor() != nil {
+		video.Window.SetMonitor(nil, video.windowedX, video.windowedY,
+			video.windowedWidth, video.windowedHeight, glfw.DontCare)
 	}
-	video.Configure(fullscreen)
 }
 
 // ReconfigureHWContext recreates the visible window using the currently stored
@@ -369,6 +382,9 @@ func (video *Video) Configure(fullscreen bool) {
 }
 
 func (video *Video) configureWithSize(width, height int, fullscreen bool) {
+	if fullscreen && video.windowedWidth != 0 {
+		width, height = video.windowedWidth, video.windowedHeight
+	}
 	// Object names from the old share group must not be reused in this context.
 	video.texID = 0
 	video.cachedFrameTexID = 0
@@ -377,20 +393,10 @@ func (video *Video) configureWithSize(width, height int, fullscreen bool) {
 	video.width, video.height = 0, 0
 	video.data = nil
 	video.needUpload = false
-	var m *glfw.Monitor
-
-	if fullscreen {
-		m = glfw.GetMonitors()[settings.Current.VideoMonitorIndex]
-		vms := m.GetVideoModes()
-		vm := vms[len(vms)-1]
-		width = vm.Width
-		height = vm.Height
-	}
-
 	video.configureWindowHints()
 
 	var err error
-	video.Window, err = glfw.CreateWindow(width, height, video.title, m, nil)
+	video.Window, err = glfw.CreateWindow(width, height, video.title, nil, nil)
 	if err != nil {
 		panic("Window creation failed:" + err.Error())
 	}
@@ -399,6 +405,7 @@ func (video *Video) configureWithSize(width, height int, fullscreen bool) {
 
 	// Force a minimum size for the window.
 	video.Window.SetSizeLimits(160, 120, glfw.DontCare, glfw.DontCare)
+	video.SetFullscreen(fullscreen)
 
 	video.Window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
 
