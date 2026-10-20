@@ -606,9 +606,8 @@ func (video *Video) ResetCoreState() {
 	video.cachedFrameValid = false
 }
 
-// coreRatioViewport configures the vertex array to display the game at the center of the window
-// while preserving the original ascpect ratio of the game or core
-func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight int) (x, y, w, h float32) {
+// gameViewport fits the game to the framebuffer and records its screenshot bounds.
+func (video *Video) gameViewport(fbWidth, fbHeight int) (x, y, w, h float32) {
 	// Scale the content to fit in the viewport.
 	fbw := float32(fbWidth)
 	fbh := float32(fbHeight)
@@ -626,11 +625,23 @@ func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight i
 		w = fbw
 	}
 
-	// Place the content in the middle of the window.
-	x = (fbw - w) / 2
-	y = (fbh - h) / 2
+	// Keep centered, pixel-aligned bounds so the cached copy needs no resampling.
+	x = float32(int32((fbw - w) / 2))
+	y = float32(int32((fbh - h) / 2))
+	w = fbw - 2*x
+	h = fbh - 2*y
 
-	va := vertexArrayForFramebuffer(x, y, w, h, 1.0, fbw, fbh)
+	video.presentX = int32(x)
+	video.presentY = int32(y)
+	video.presentW = int32(w)
+	video.presentH = int32(h)
+	return
+}
+
+// coreRatioViewport configures the game quad's placement and core texture coordinates.
+func (video *Video) coreRatioViewport(fbWidth, fbHeight, clipWidth, clipHeight int) (x, y, w, h float32) {
+	x, y, w, h = video.gameViewport(fbWidth, fbHeight)
+	va := vertexArrayForFramebuffer(x, y, w, h, 1.0, float32(fbWidth), float32(fbHeight))
 
 	if clipWidth == 0 {
 		clipWidth = int(video.texWidth)
@@ -708,11 +719,7 @@ func (video *Video) Render() {
 	video.uploadTexture()
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	x, y, w, h := video.coreRatioViewport(fbw, fbh, int(video.width), int(video.height))
-	video.presentX = int32(x)
-	video.presentY = int32(y)
-	video.presentW = int32(w)
-	video.presentH = int32(h)
+	_, _, w, h := video.coreRatioViewport(fbw, fbh, int(video.width), int(video.height))
 
 	gl.UseProgram(video.program)
 	if loc := gl.GetUniformLocation(video.program, gl.Str("color\x00")); loc >= 0 {
@@ -763,7 +770,7 @@ func (video *Video) ensureCachedFrameTexture(width, height int32) {
 	}
 }
 
-// CachePresentedFrame copies the just-rendered frontend backbuffer so menu-mode
+// CachePresentedFrame copies the game rectangle, without borders or UI, so menu-mode
 // rendering does not depend on the core keeping its paused framebuffer alive.
 func (video *Video) CachePresentedFrame() {
 	if !state.CoreRunning || video.width == 0 || video.height == 0 {
@@ -771,13 +778,12 @@ func (video *Video) CachePresentedFrame() {
 		return
 	}
 
-	fbw, fbh := video.Window.GetFramebufferSize()
-	if fbw < 1 || fbh < 1 {
+	if video.presentW < 1 || video.presentH < 1 {
 		video.cachedFrameValid = false
 		return
 	}
 
-	video.ensureCachedFrameTexture(int32(fbw), int32(fbh))
+	video.ensureCachedFrameTexture(video.presentW, video.presentH)
 	if video.cachedFrameTexID == 0 {
 		video.cachedFrameValid = false
 		return
@@ -785,7 +791,7 @@ func (video *Video) CachePresentedFrame() {
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.cachedFrameTexID)
-	gl.CopyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, int32(fbw), int32(fbh))
+	gl.CopyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, video.presentX, video.presentY, video.presentW, video.presentH)
 	video.cachedFrameValid = true
 }
 
@@ -799,7 +805,8 @@ func (video *Video) RenderCachedFrame() bool {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	fbw, fbh := video.Window.GetFramebufferSize()
-	va := vertexArrayForFramebuffer(0, 0, float32(fbw), float32(fbh), 1.0, float32(fbw), float32(fbh))
+	x, y, w, h := video.gameViewport(fbw, fbh)
+	va := vertexArrayForFramebuffer(x, y, w, h, 1.0, float32(fbw), float32(fbh))
 	// A backbuffer copy always has bottom-left origin, regardless of the core.
 	va[3] = 0
 	va[7] = 1
@@ -810,7 +817,7 @@ func (video *Video) RenderCachedFrame() bool {
 
 	gl.UseProgram(video.defaultProgram)
 	gl.Uniform4f(gl.GetUniformLocation(video.defaultProgram, gl.Str("color\x00")), 1, 1, 1, 1)
-	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("OutputSize\x00")), float32(fbw), float32(fbh))
+	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("OutputSize\x00")), w, h)
 	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("TextureSize\x00")), float32(video.cachedFrameW), float32(video.cachedFrameH))
 	gl.Uniform2f(gl.GetUniformLocation(video.defaultProgram, gl.Str("InputSize\x00")), float32(video.cachedFrameW), float32(video.cachedFrameH))
 

@@ -138,6 +138,8 @@ func TestHardwareContextIsolation(t *testing.T) {
 		hw.BottomLeftOrigin = bottomLeft
 		v.BeginFrontendFrame()
 		fbw, fbh := w.GetFramebufferSize()
+		v.Geom.AspectRatio = float64(fbw) / float64(fbh)
+		v.presentW, v.presentH = int32(fbw), int32(fbh)
 		gl.ClearColor(1, 0, 0, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		gl.Enable(gl.SCISSOR_TEST)
