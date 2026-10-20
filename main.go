@@ -52,16 +52,20 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 	for !vid.Window.ShouldClose() {
 		currTime = time.Now()
 		dt := float32(currTime.Sub(prevTime)) / 1000000000
-		if state.MenuContextResetNeeded {
-			m.ContextReset()
-			state.MenuContextResetNeeded = false
-		}
 		glfw.PollEvents()
 		m.ProcessHotkeys()
 		ntf.Process(dt)
 		m.UpdatePalette()
 		input.Poll()
-		if !state.MenuActive {
+		menuActive := state.MenuActive
+		if menuActive {
+			m.Update(dt)
+		}
+		if state.MenuContextResetNeeded {
+			m.ContextReset()
+			state.MenuContextResetNeeded = false
+		}
+		if !menuActive {
 			if state.CoreRunning {
 				vid.BeginCore()
 				state.Core.Run()
@@ -82,7 +86,6 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 				savefiles.SaveSRAM()
 			}
 		} else {
-			m.Update(dt)
 			vid.BeginFrontendFrame()
 			vid.RenderPresentedFrame()
 			fulfillPendingScreenshot(vid)

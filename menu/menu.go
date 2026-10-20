@@ -102,10 +102,12 @@ func (m *Menu) ContextReset() {
 		m.icons[filename] = video.NewImage(path)
 	}
 
-	currentScreenIndex := len(m.stack) - 1
-	curList := m.stack[currentScreenIndex].Entry()
-	for i := range curList.children {
-		curList.children[i].thumbnail = 0
+	// Every retained scene's texture names belong to the old context.
+	for _, scene := range m.stack {
+		list := scene.Entry()
+		for i := range list.children {
+			list.children[i].thumbnail = 0
+		}
 	}
 }
 

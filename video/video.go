@@ -594,6 +594,7 @@ func (video *Video) ResetCoreState() {
 	video.ensurePixelFormatDefaults()
 	if video.texID != 0 {
 		video.resetGameTexture(1, 1)
+		video.UpdateFilter(settings.Current.VideoFilter)
 	}
 	video.texWidth = 0
 	video.texHeight = 0
