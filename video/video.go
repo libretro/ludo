@@ -4,6 +4,7 @@
 package video
 
 import (
+	"errors"
 	"log"
 	"path/filepath"
 	"unsafe"
@@ -103,7 +104,7 @@ func (video *Video) SetFullscreen(fullscreen bool) {
 
 // ReconfigureHWContext recreates the visible window using the currently stored
 // HW context hints while preserving the current window size when windowed.
-func (video *Video) ReconfigureHWContext(fullscreen bool) {
+func (video *Video) ReconfigureHWContext(fullscreen bool) error {
 	width := 384 * 2
 	height := 240 * 2
 	if video.Window != nil && !fullscreen {
@@ -115,12 +116,7 @@ func (video *Video) ReconfigureHWContext(fullscreen bool) {
 			height = 240 * 2
 		}
 	}
-	if video.Window != nil {
-		video.RunContextDestroy()
-		video.DestroySharedHWContext()
-		video.Window.Destroy()
-	}
-	video.configureWithSize(width, height, fullscreen)
+	return video.configureWithSize(width, height, fullscreen)
 }
 
 // CreateSharedHWContext creates a hidden context shared with the visible frontend context.
@@ -378,13 +374,33 @@ func (video *Video) resetGameTexture(width, height int32) {
 
 // Configure instanciates the video package
 func (video *Video) Configure(fullscreen bool) {
-	video.configureWithSize(384*2, 240*2, fullscreen)
+	if err := video.configureWithSize(384*2, 240*2, fullscreen); err != nil {
+		panic("Window creation failed:" + err.Error())
+	}
 }
 
-func (video *Video) configureWithSize(width, height int, fullscreen bool) {
+func (video *Video) configureWithSize(width, height int, fullscreen bool) error {
 	if fullscreen && video.windowedWidth != 0 {
 		width, height = video.windowedWidth, video.windowedHeight
 	}
+	video.configureWindowHints()
+	window, err := glfw.CreateWindow(width, height, video.title, nil, nil)
+	if err != nil {
+		return err
+	}
+	// GLFW may report a platform error without returning it through the Go binding.
+	if window == nil {
+		return errors.New("window creation failed")
+	}
+
+	// Keep the old context and its resources until the replacement exists.
+	if video.Window != nil {
+		video.RunContextDestroy()
+		video.DestroySharedHWContext()
+		video.Window.Destroy()
+	}
+	video.Window = window
+
 	// Object names from the old share group must not be reused in this context.
 	video.texID = 0
 	video.cachedFrameTexID = 0
@@ -393,14 +409,6 @@ func (video *Video) configureWithSize(width, height int, fullscreen bool) {
 	video.width, video.height = 0, 0
 	video.data = nil
 	video.needUpload = false
-	video.configureWindowHints()
-
-	var err error
-	video.Window, err = glfw.CreateWindow(width, height, video.title, nil, nil)
-	if err != nil {
-		panic("Window creation failed:" + err.Error())
-	}
-
 	video.Window.MakeContextCurrent()
 
 	// Force a minimum size for the window.
@@ -488,6 +496,7 @@ func (video *Video) configureWithSize(width, height int, fullscreen bool) {
 	for e := gl.GetError(); e != gl.NO_ERROR; e = gl.NO_ERROR {
 		log.Printf("[Video] OpenGL error: %d\n", e)
 	}
+	return nil
 }
 
 // UpdateFilter configures the game texture filter and shader. We currently

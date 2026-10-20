@@ -151,13 +151,18 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		if (hw.HWContextType != libretro.HWContextOpenGL && hw.HWContextType != libretro.HWContextOpenGLCore) || hw.ContextReset == nil {
 			return false
 		}
-		state.Core.HWRenderCallback = hw
 		vid.SetHWRenderContext(hw)
-		log.Println("[Env]: HWContextType:", hw.HWContextType)
 		if vid != nil && vid.Window != nil && !state.CoreRunning {
-			vid.ReconfigureHWContext(settings.Current.VideoFullscreen)
+			if err := vid.ReconfigureHWContext(settings.Current.VideoFullscreen); err != nil {
+				vid.SetHWRenderContext(state.Core.HWRenderCallback)
+				log.Printf("[Env]: Could not create HW context %d (%d.%d): %v",
+					hw.HWContextType, hw.VersionMajor, hw.VersionMinor, err)
+				return false
+			}
 			state.MenuContextResetNeeded = true
 		}
+		state.Core.HWRenderCallback = hw
+		log.Println("[Env]: HWContextType:", hw.HWContextType)
 		return true
 	case libretro.EnvironmentSetHWSharedContext:
 		// All HW cores already get an isolated context shared with the frontend.
