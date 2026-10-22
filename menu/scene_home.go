@@ -65,6 +65,9 @@ func buildHome() Scene {
 
 	for _, path := range keys {
 		path := path
+		if len(playlists.Playlists[path]) == 0 {
+			continue
+		}
 		filename := utils.FileName(path)
 
 		list.children = append(list.children, entry{
@@ -289,11 +292,11 @@ func (s sceneHome) render() {
 	for j, ve := range s.children {
 		ve := ve
 
-		menu.BoldFont.SetColor(titleColor.Alpha(ve.labelAlpha * s.alpha))
-		menu.BoldFont.Printf(
+		menu.BoldFont.SetColor(titleTextColor.Alpha(ve.labelAlpha * s.alpha))
+		menu.BoldFont.Print(
 			96*menu.ratio,
 			s.y*menu.ratio+230*menu.ratio+vst*menu.ratio-s.yscroll*menu.ratio,
-			0.5*menu.ratio, ve.label)
+			menu.ratio, ve.label)
 
 		y := s.y + 272 + vst - s.yscroll
 
@@ -342,23 +345,23 @@ func (s sceneHome) render() {
 				1, 0.07, white.Alpha(e.iconAlpha*s.alpha))
 
 			menu.BoldFont.SetColor(textColor.Alpha(e.labelAlpha * s.alpha))
-			menu.BoldFont.Printf(
+			menu.BoldFont.Print(
 				(x+672+32)*menu.ratio,
 				(y+360)*menu.ratio,
-				0.7*menu.ratio, e.label)
+				1.4*menu.ratio, e.label)
 
-			menu.BoldFont.SetColor(mediumGrey.Alpha(e.labelAlpha * s.alpha))
-			menu.BoldFont.Printf(
+			menu.BoldFont.SetColor(mutedTextColor.Alpha(e.labelAlpha * s.alpha))
+			menu.BoldFont.Print(
 				(x+672+32)*menu.ratio,
 				(y+430)*menu.ratio,
-				0.5*menu.ratio, e.subLabel)
+				menu.ratio, e.subLabel)
 
 			stack := (x + 672 + 32) * menu.ratio
 			for _, tag := range e.tags {
 				if _, ok := menu.icons[tag]; ok {
 					menu.DrawRect(stack-1*menu.ratio, (y+500-35)*menu.ratio-1*menu.ratio,
 						48*menu.ratio+2*menu.ratio, 35*menu.ratio+2*menu.ratio, 0.22,
-						mediumGrey.Alpha(e.labelAlpha*s.alpha))
+						mutedTextColor.Alpha(e.labelAlpha*s.alpha))
 					menu.DrawImage(
 						menu.icons[tag],
 						stack, (y+500-35)*menu.ratio,
@@ -373,13 +376,13 @@ func (s sceneHome) render() {
 
 	if len(s.children) == 0 {
 		w, h := menu.Window.GetFramebufferSize()
-		menu.BoldFont.SetColor(black)
+		menu.BoldFont.SetColor(textColor.Alpha(s.alpha))
 		msg := "Welcome to Ludo, please scan your collection."
-		msgw := menu.BoldFont.Width(0.5*menu.ratio, msg)
-		menu.BoldFont.Printf(
+		msgw := menu.BoldFont.Width(menu.ratio, msg)
+		menu.BoldFont.Print(
 			float32(w)/2-msgw/2,
 			float32(h)/2,
-			0.5*menu.ratio, msg)
+			menu.ratio, msg)
 	}
 }
 

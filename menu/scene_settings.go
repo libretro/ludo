@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/structs"
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/glfw/v3.4/glfw"
 
 	"github.com/libretro/ludo/audio"
 	"github.com/libretro/ludo/ludos"
@@ -60,7 +60,7 @@ func buildSettings() Scene {
 				icon:  "folder",
 				value: f.Value,
 				stringValue: func() string {
-					return "[" + utils.FileName(f.Value().(string)) + "]"
+					return "【" + utils.FileName(f.Value().(string)) + "】"
 				},
 				widget: widgets[f.Tag("widget")],
 				callbackOK: func() {
@@ -117,7 +117,7 @@ func dirExplorerCb(path string, f *structs.Field) {
 		return
 	}
 	f.Set(path)
-	ntf.DisplayAndLog(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
+	ntf.DisplayAndLogf(ntf.Success, "Settings", "%s set to %s", f.Tag("label"), f.Value().(string))
 	err = settings.Save()
 	if err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Settings", err.Error())
@@ -164,8 +164,7 @@ var incrCallbacks = map[string]callbackIncrement{
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
-		menu.Reconfigure(settings.Current.VideoFullscreen)
-		menu.ContextReset()
+		menu.SetFullscreen(settings.Current.VideoFullscreen)
 		settings.Save()
 	},
 	"VideoMonitorIndex": func(f *structs.Field, direction int) {
@@ -178,8 +177,7 @@ var incrCallbacks = map[string]callbackIncrement{
 			v = len(glfw.GetMonitors()) - 1
 		}
 		f.Set(v)
-		menu.Reconfigure(settings.Current.VideoFullscreen)
-		menu.ContextReset()
+		menu.SetFullscreen(settings.Current.VideoFullscreen)
 		settings.Save()
 	},
 	"VideoFilter": func(f *structs.Field, direction int) {
@@ -201,6 +199,21 @@ var incrCallbacks = map[string]callbackIncrement{
 		v := f.Value().(bool)
 		v = !v
 		f.Set(v)
+		settings.Save()
+	},
+	"VideoTheme": func(f *structs.Field, direction int) {
+		themes := []string{"Default", "Rose Pine", "Dracula", "Catppuccin"}
+		v := f.Value().(string)
+		i := utils.IndexOfString(v, themes)
+		i += direction
+		if i < 0 {
+			i = len(themes) - 1
+		}
+		if i > len(themes)-1 {
+			i = 0
+		}
+		f.Set(themes[i])
+		menu.UpdateFilter(themes[i])
 		settings.Save()
 	},
 	"MapAxisToDPad": func(f *structs.Field, direction int) {

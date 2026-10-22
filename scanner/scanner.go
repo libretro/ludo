@@ -41,7 +41,7 @@ func LoadDB(dir string) (dat.DB, error) {
 
 // ScanDir scans a full directory, report progress and generate playlists
 func ScanDir(dir string, doneCb func()) {
-	n := ntf.DisplayAndLog(ntf.Info, "Menu", "Scanning %s", dir)
+	n := ntf.DisplayAndLogf(ntf.Info, "Menu", "Scanning %s", dir)
 	roms, err := utils.AllFilesIn(dir)
 	if err != nil {
 		n.Update(ntf.Error, err.Error())
@@ -73,22 +73,23 @@ func ScanDir(dir string, doneCb func()) {
 		if doneCb != nil {
 			doneCb()
 		}
-		n.Update(ntf.Success, "Done scanning. %d new games found.", i)
+		n.Updatef(ntf.Success, "Done scanning. %d new games found.", i)
 	}()
 }
 
-// ScanFile scans a single file
+// ScanFile scans a single file and calls doneCb on the caller's thread.
 func ScanFile(path string, doneCb func(dat.Game)) {
 	dir := filepath.Dir(path)
 	roms := []string{path}
 	games := make(chan (dat.Game))
 	go Scan(dir, roms, games, nil)
-	go func() {
-		game := <-games
-		if doneCb != nil {
-			doneCb(game)
-		}
-	}()
+	game := <-games
+	// An archive may contain multiple matching games; let the scan finish.
+	for range games {
+	}
+	if doneCb != nil {
+		doneCb(game)
+	}
 }
 
 // Returns the checksum and headerless checksum of a ROM

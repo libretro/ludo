@@ -50,7 +50,7 @@ func buildTabs() Scene {
 	list.children = append(list.children, entry{
 		icon: "tab-scan",
 		callbackOK: func() {
-			//usr, _ := user.Current()
+			menu.stack = menu.stack[:len(menu.stack)-1]
 			menu.Push(buildExplorer(settings.Current.FileDirectory, nil,
 				func(path string) {
 					scanner.ScanDir(path, nil)
@@ -161,7 +161,7 @@ func (s *sceneTabs) update(dt float32) {
 		audio.PlayEffect(audio.Effects["ok"])
 		s.children[s.ptr].callbackOK()
 		menu.t = 0
-		menu.focus++
+		menu.focus = len(menu.stack)
 		s.animate()
 	}
 }
@@ -170,11 +170,11 @@ func (s sceneTabs) render() {
 	w, _ := menu.Window.GetFramebufferSize()
 
 	now := time.Now().Format("3:04PM")
-	nowWidth := menu.BoldFont.Width(0.5*menu.ratio, now)
+	nowWidth := menu.BoldFont.Width(menu.ratio, now)
 	menu.BoldFont.SetColor(textColor)
-	menu.BoldFont.Printf(
+	menu.BoldFont.Print(
 		float32(w)-96*menu.ratio-nowWidth,
-		90*menu.ratio, 0.5*menu.ratio, now)
+		90*menu.ratio, menu.ratio, now)
 
 	if menu.focus > 2 {
 		return
@@ -195,11 +195,11 @@ func (s sceneTabs) render() {
 		menu.DrawImage(menu.icons["circle"],
 			float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2,
 			32*menu.ratio,
-			96*menu.ratio, 96*menu.ratio, 1, 0, tabBgColor)
+			96*menu.ratio, 96*menu.ratio, 1, 0, cursorBgColor)
 		menu.DrawImage(menu.icons[e.icon],
 			float32(w)/2-totalWidth/2+float32(i)*spacing*menu.ratio+96*menu.ratio/2+24*menu.ratio,
 			56*menu.ratio,
-			48*menu.ratio, 48*menu.ratio, 1, 0, tabTextColor)
+			48*menu.ratio, 48*menu.ratio, 1, 0, titleTextColor)
 	}
 }
 

@@ -39,7 +39,7 @@ type entry struct {
 	children        []entry                   // children entries
 	ptr             int                       // index of the active child
 	indexes         []struct {
-		Char  byte
+		Char  rune
 		Index int
 	}
 }
@@ -55,6 +55,13 @@ type Scene interface {
 	render()
 	drawHintBar()
 	Entry() *entry
+}
+
+func firstRune(s string) rune {
+	for _, r := range s {
+		return r
+	}
+	return 0
 }
 
 // genericSegueMount is the smooth transition of the menu entries first appearance
@@ -158,7 +165,7 @@ func genericDrawCursor(list *entry, i int) {
 		y,
 		float32(w)-720*menu.ratio,
 		list.entryHeight*menu.ratio, 0.1,
-		cursorBg.Alpha(list.alpha))
+		cursorBgColor.Alpha(list.alpha))
 }
 
 // genericRender renders a vertical list of menu entries
@@ -166,11 +173,11 @@ func genericDrawCursor(list *entry, i int) {
 func genericRender(list *entry) {
 	w, h := menu.GetFramebufferSize()
 
-	menu.BoldFont.SetColor(titleColor.Alpha(list.alpha))
-	menu.BoldFont.Printf(
+	menu.BoldFont.SetColor(titleTextColor.Alpha(list.alpha))
+	menu.BoldFont.Print(
 		360*menu.ratio,
 		list.y*menu.ratio+230*menu.ratio,
-		0.5*menu.ratio, list.label)
+		menu.ratio, list.label)
 
 	menu.DrawRect(
 		360*menu.ratio,
@@ -218,19 +225,19 @@ func genericRender(list *entry) {
 
 		if e.labelAlpha > 0 {
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
-			menu.Font.Printf(
+			menu.Font.Print(
 				480*menu.ratio,
 				y+fontOffset,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 
 			if e.widget != nil {
 				e.widget(list, &e, i)
 			} else if e.stringValue != nil {
-				lw := menu.Font.Width(0.5*menu.ratio, e.stringValue())
-				menu.Font.Printf(
+				lw := menu.Font.Width(menu.ratio, e.stringValue())
+				menu.Font.Print(
 					float32(w)-lw-400*menu.ratio,
 					y+fontOffset,
-					0.5*menu.ratio, e.stringValue())
+					menu.ratio, e.stringValue())
 			}
 		}
 	}

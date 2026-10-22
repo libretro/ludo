@@ -1,0 +1,83 @@
+package video
+
+import (
+	"log"
+
+	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/mathgl/mgl32"
+	"github.com/libretro/ludo/libretro"
+	"github.com/libretro/ludo/state"
+)
+
+// InitFramebuffer initializes and configures the video frame buffer based on
+// informations from the HWRenderCallback of the libretro core.
+func (video *Video) InitFramebuffer() {
+	width := int32(video.Geom.MaxWidth)
+	height := int32(video.Geom.MaxHeight)
+	video.texWidth = width
+	video.texHeight = height
+
+	log.Printf("[Video]: Initializing HW render (%v x %v).\n", width, height)
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, video.texID)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, nil)
+
+	genFramebuffers(1, &video.fboID)
+	bindFramebuffer(gl.FRAMEBUFFER, video.fboID)
+	libretro.SetCurrentFramebufferValue(uintptr(video.fboID))
+	framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, video.texID, 0)
+
+	hw := state.Core.HWRenderCallback
+	if hw.Depth {
+		genRenderbuffers(1, &video.rboID)
+		bindRenderbuffer(gl.RENDERBUFFER, video.rboID)
+		format := gl.DEPTH_COMPONENT16
+		if hw.Stencil {
+			format = gl.DEPTH24_STENCIL8
+		}
+		renderbufferStorage(gl.RENDERBUFFER, uint32(format), width, height)
+		bindRenderbuffer(gl.RENDERBUFFER, 0)
+
+		// Separate attachment points work with both core and EXT framebuffers.
+		framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
+		if hw.Stencil {
+			framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, video.rboID)
+		}
+	}
+
+	// Default origin is top left
+	video.orthoMat = mgl32.Ortho2D(-1, 1, -1, 1)
+	if hw.BottomLeftOrigin {
+		video.orthoMat = mgl32.Ortho2D(-1, 1, 1, -1)
+	}
+
+	if st := checkFramebufferStatus(gl.FRAMEBUFFER); st != gl.FRAMEBUFFER_COMPLETE {
+		log.Fatalf("[Video] Framebuffer is not complete. Error: %v\n", st)
+	}
+
+	gl.ClearColor(0, 0, 0, 1)
+	if hw.Depth && hw.Stencil {
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
+	} else if hw.Depth {
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	} else {
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+	}
+}
+
+func bindBackbuffer() {
+	bindFramebuffer(gl.FRAMEBUFFER, 0)
+}
+
+func (video *Video) destroyFramebuffer() {
+	bindBackbuffer()
+	if video.rboID != 0 {
+		deleteRenderbuffers(1, &video.rboID)
+		video.rboID = 0
+	}
+	if video.fboID != 0 {
+		deleteFramebuffers(1, &video.fboID)
+		video.fboID = 0
+	}
+}

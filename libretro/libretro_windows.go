@@ -1,5 +1,13 @@
 package libretro
 
+/*
+#include <stdint.h>
+
+static void *symbol_from_addr(uintptr_t addr) {
+	return (void *)addr;
+}
+*/
+import "C"
 import (
 	"syscall"
 	"unsafe"
@@ -11,7 +19,7 @@ type DlHandle = *syscall.DLL
 // DlSym loads a symbol from a dynamic library
 func DlSym(handle DlHandle, name string) unsafe.Pointer {
 	proc := handle.MustFindProc(name)
-	return unsafe.Pointer(proc.Addr())
+	return C.symbol_from_addr(C.uintptr_t(proc.Addr()))
 }
 
 // DlOpen opens a dynamic library

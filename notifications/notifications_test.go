@@ -47,7 +47,7 @@ func Test_Display(t *testing.T) {
 func Test_DisplayAndLog(t *testing.T) {
 	Clear()
 	t.Run("Format message properly", func(t *testing.T) {
-		DisplayAndLog(Info, "Tests", "Joypad #%d loaded with name %s.", 3, "Foo")
+		DisplayAndLogf(Info, "Tests", "Joypad #%d loaded with name %s.", 3, "Foo")
 		got := notifications[0].Message
 		want := "Joypad #3 loaded with name Foo."
 		if got != want {
@@ -68,7 +68,7 @@ func Test_DisplayAndLog(t *testing.T) {
 	Clear()
 	t.Run("Logs to stdout if verbose", func(t *testing.T) {
 		state.Verbose = true
-		got := utils.CaptureOutput(func() { DisplayAndLog(Info, "Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
+		got := utils.CaptureOutput(func() { DisplayAndLogf(Info, "Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
 		want := "[Test]: Joypad #3 loaded with name Foo.\n"
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)
@@ -78,7 +78,7 @@ func Test_DisplayAndLog(t *testing.T) {
 	Clear()
 	t.Run("Logs nothing if not verbose", func(t *testing.T) {
 		state.Verbose = false
-		got := utils.CaptureOutput(func() { DisplayAndLog(Info, "Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
+		got := utils.CaptureOutput(func() { DisplayAndLogf(Info, "Test", "Joypad #%d loaded with name %s.", 3, "Foo") })
 		want := ""
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got = %v, want %v", got, want)

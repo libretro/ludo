@@ -5,22 +5,14 @@ import (
 	"github.com/libretro/ludo/video"
 )
 
-var severityFgColor = map[ntf.Severity]video.Color{
-	ntf.Error:   lightDanger,
-	ntf.Warning: lightWarning,
-	ntf.Success: lightSuccess,
-	ntf.Info:    lightInfo,
-}
-
-var severityBgColor = map[ntf.Severity]video.Color{
-	ntf.Error:   darkDanger,
-	ntf.Warning: darkWarning,
-	ntf.Success: darkSuccess,
-	ntf.Info:    darkInfo,
-}
+var severityFgColor map[ntf.Severity]video.Color
+var severityBgColor map[ntf.Severity]video.Color
 
 // RenderNotifications draws the list of notification messages on the viewport
 func (m *Menu) RenderNotifications() {
+	fbw, fbh := m.GetFramebufferSize()
+	m.ratio = float32(fbw) / 1920
+	m.Font.UpdateResolution(fbw, fbh)
 	var h float32 = 75
 	stack := h
 	for _, n := range ntf.List() {
@@ -29,7 +21,7 @@ func (m *Menu) RenderNotifications() {
 			fading = 1
 		}
 		offset := fading*h - h
-		lw := m.Font.Width(0.5*m.ratio, n.Message)
+		lw := m.Font.Width(m.ratio, n.Message)
 		fg := severityFgColor[n.Severity]
 		bg := severityBgColor[n.Severity]
 		m.DrawRect(
@@ -41,10 +33,10 @@ func (m *Menu) RenderNotifications() {
 			bg.Alpha(fading),
 		)
 		m.Font.SetColor(fg.Alpha(fading))
-		m.Font.Printf(
+		m.Font.Print(
 			45*m.ratio,
 			(stack+offset)*m.ratio,
-			0.5*m.ratio,
+			m.ratio,
 			n.Message,
 		)
 		stack += h + offset

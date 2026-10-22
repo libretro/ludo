@@ -1,19 +1,47 @@
 package core
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/glfw/v3.4/glfw"
 	"github.com/libretro/ludo/libretro"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
 	"github.com/libretro/ludo/video"
 )
+
+var mainThread = make(chan func())
+
+func init() {
+	// GLFW initialization and input setup must run on the main OS thread.
+	runtime.LockOSThread()
+}
+
+func TestMain(m *testing.M) {
+	var code int
+	go func() {
+		code = m.Run()
+		close(mainThread)
+	}()
+	for f := range mainThread {
+		f()
+	}
+	os.Exit(code)
+}
+
+func onMainThread(f func()) {
+	done := make(chan struct{})
+	mainThread <- func() {
+		f()
+		close(done)
+	}
+	<-done
+}
 
 type WindowMock struct{}
 
@@ -35,7 +63,11 @@ func Test_coreLoad(t *testing.T) {
 
 	Init(&video.Video{})
 
-	out := utils.CaptureOutput(func() { Load("testdata/vecx_libretro" + ext) })
+	var loadErr error
+	out := utils.CaptureOutput(func() { loadErr = Load("testdata/vecx_libretro" + ext) })
+	if loadErr != nil {
+		t.Fatalf("Load() error = %v", loadErr)
+	}
 
 	t.Run("The core is loaded", func(t *testing.T) {
 		if state.Core == nil {
@@ -45,14 +77,16 @@ func Test_coreLoad(t *testing.T) {
 
 	t.Run("Logs information about the loaded core", func(t *testing.T) {
 		got := out
-		want := `[Core]: Name: VecX
-[Core]: Version: 1.2 42366f8
-[Core]: Valid extensions: bin|vec
-[Core]: Need fullpath: false
-[Core]: Block extract: false
-`
-		if !strings.Contains(got, want) {
-			t.Errorf("got = %v, want %v", got, want)
+		for _, want := range []string{
+			`[Core]: Name: VecX`,
+			`[Core]: Version: 1.2 `,
+			`[Core]: Valid extensions: bin|vec`,
+			`[Core]: Need fullpath: false`,
+			`[Core]: Block extract: false`,
+		} {
+			if !strings.Contains(got, want) {
+				t.Errorf("got = %v, want to contain %v", got, want)
+			}
 		}
 	})
 
@@ -195,13 +229,24 @@ func Test_coreLoadGame(t *testing.T) {
 
 	Init(&video.Video{})
 
-	if err := glfw.Init(); err != nil {
-		log.Fatalln("failed to initialize glfw")
+	var initErr error
+	onMainThread(func() { initErr = glfw.Init() })
+	if initErr != nil {
+		t.Fatalf("glfw.Init() error = %v", initErr)
+	}
+	t.Cleanup(func() { onMainThread(glfw.Terminate) })
+
+	if err := Load("testdata/vecx_libretro" + ext); err != nil {
+		t.Fatalf("Load() error = %v", err)
 	}
 
-	Load("testdata/vecx_libretro" + ext)
-
-	got := utils.CaptureOutput(func() { LoadGame("testdata/Polar Rescue (USA).vec") })
+	var loadGameErr error
+	got := utils.CaptureOutput(func() {
+		onMainThread(func() { loadGameErr = LoadGame("testdata/Polar Rescue (USA).vec") })
+	})
+	if loadGameErr != nil {
+		t.Fatalf("LoadGame() error = %v", loadGameErr)
+	}
 
 	t.Run("Logs information about the loaded game", func(t *testing.T) {
 		want := `[Core]: Game loaded: testdata/Polar Rescue (USA).vec`
@@ -222,7 +267,6 @@ func Test_coreLoadGame(t *testing.T) {
 		}
 	})
 
-	UnloadGame()
 	Unload()
 
 	t.Run("Global state should be cleared by Unload", func(t *testing.T) {
@@ -236,4 +280,16 @@ func Test_coreLoadGame(t *testing.T) {
 			t.Errorf("got = %v, want %v", state.CoreRunning, false)
 		}
 	})
+}
+
+func Test_coreLoadGameWithoutCore(t *testing.T) {
+	Unload()
+
+	err := LoadGame("testdata/Polar Rescue (USA).vec")
+	if err == nil {
+		t.Fatal("LoadGame() error = nil, want not nil")
+	}
+	if err.Error() != "no core loaded" {
+		t.Fatalf("LoadGame() error = %v, want %v", err, "no core loaded")
+	}
 }

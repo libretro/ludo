@@ -28,17 +28,19 @@ func buildSavestates() Scene {
 		icon:  "savestate",
 		callbackOK: func() {
 			name := utils.DatedName(state.GamePath)
-			err := menu.TakeScreenshot(name)
-			if err != nil {
-				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-			}
-			err = savestates.Save(name)
-			if err != nil {
-				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-			} else {
-				menu.stack[len(menu.stack)-1] = buildSavestates()
-				menu.tweens.FastForward()
-				ntf.DisplayAndLog(ntf.Success, "Menu", "State saved.")
+			state.PendingScreenshotName = name
+			state.PendingScreenshotDone = func(err error) {
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+				}
+				err = savestates.Save(name)
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+				} else {
+					menu.stack[len(menu.stack)-1] = buildSavestates()
+					menu.tweens.FastForward()
+					ntf.DisplayAndLog(ntf.Success, "Menu", "State saved.")
+				}
 			}
 		},
 	})
@@ -108,7 +110,7 @@ func removeSavestateEntry(s []entry, path string) []entry {
 func deleteSavestateEntry(list *sceneSavestates, path string) {
 	err := os.Remove(path)
 	if err != nil {
-		ntf.DisplayAndLog(ntf.Error, "Menu", "Could not delete savestate: %s", err.Error())
+		ntf.DisplayAndLogf(ntf.Error, "Menu", "Could not delete savestate: %v", err)
 		return
 	}
 	list.children = removeSavestateEntry(list.children, path)
@@ -123,11 +125,11 @@ func (s *sceneSavestates) render() {
 	list := &s.entry
 	w, h := menu.GetFramebufferSize()
 
-	menu.BoldFont.SetColor(titleColor.Alpha(list.alpha))
-	menu.BoldFont.Printf(
+	menu.BoldFont.SetColor(titleTextColor.Alpha(list.alpha))
+	menu.BoldFont.Print(
 		360*menu.ratio,
 		list.y*menu.ratio+230*menu.ratio,
-		0.5*menu.ratio, list.label)
+		menu.ratio, list.label)
 
 	menu.DrawRect(
 		360*menu.ratio,
@@ -186,10 +188,10 @@ func (s *sceneSavestates) render() {
 			}
 
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
-			menu.Font.Printf(
+			menu.Font.Print(
 				600*menu.ratio,
 				y+fontOffset,
-				0.5*menu.ratio, e.label)
+				menu.ratio, e.label)
 		}
 	}
 

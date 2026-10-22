@@ -4,27 +4,29 @@ VERSION ?= dev
 BUNDLENAME = $(APP)-$(OS)-$(ARCH)-$(VERSION)
 DISPDRIVER ?= x11
 
+BUILDBOTURL_BASE ?= https://buildbot.libretro.com/nightly
+
 ifeq ($(OS), Linux)
 	TAGS = -tags=$(DISPDRIVER)
 	BUNDLENAME = $(APP)-$(OS)-$(DISPDRIVER)-$(ARCH)-$(VERSION)
 endif
 
-CORES = atari800 bluemsx swanstation fbneo fceumm gambatte gearsystem genesis_plus_gx handy lutro mednafen_ngp mednafen_pce mednafen_pce_fast mednafen_pcfx mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba melonds mupen64plus_next np2kai o2em pcsx_rearmed picodrive pokemini prosystem snes9x stella2014 vecx virtualjaguar
+CORES = ppsspp dolphin atari800 bluemsx citra swanstation fbneo fceumm flycast gambatte gearsystem genesis_plus_gx handy lutro mednafen_ngp mednafen_pce mednafen_pce_fast mednafen_pcfx mednafen_psx mednafen_saturn mednafen_supergrafx mednafen_vb mednafen_wswan mgba melonds mupen64plus_next np2kai o2em pcsx2 pcsx_rearmed picodrive pokemini prosystem snes9x stella2014 vecx virtualjaguar
 
 ifeq ($(ARCH), arm)
-	CORES := $(filter-out swanstation,$(CORES))
-	CORES := $(filter-out mupen64plus_next,$(CORES))
-	CORES := $(filter-out mednafen_pcfx,$(CORES))
-	CORES := $(filter-out mednafen_saturn,$(CORES))
-	CORES := $(filter-out melonds,$(CORES))
+	CORES := $(filter-out citra dolphin flycast mednafen_pcfx mednafen_saturn melonds mupen64plus_next pcsx2 ppsspp swanstation,$(CORES))
 endif
-
 ifeq ($(ARCH), arm64)
-	CORES := $(filter-out swanstation,$(CORES))
-	CORES := $(filter-out mupen64plus_next,$(CORES))
-	CORES := $(filter-out mednafen_wswan,$(CORES))
-	CORES := $(filter-out handy,$(CORES))
-	CORES := $(filter-out np2kai,$(CORES))
+	CORES := $(filter-out pcsx2,$(CORES))
+	ifeq ($(OS), Linux)
+		CORES := $(filter-out mupen64plus_next,$(CORES))
+	endif
+endif
+ifeq ($(OS), OSX)
+	CORES := $(filter-out pcsx2,$(CORES))
+	ifeq ($(ARCH), x86_64)
+		CORES := $(filter-out citra,$(CORES))
+	endif
 endif
 
 DYLIBS = $(addprefix cores/, $(addsuffix _libretro.dylib,$(CORES)))
@@ -32,17 +34,19 @@ DLLS = $(addprefix cores/, $(addsuffix _libretro.dll,$(CORES)))
 SOBJS = $(addprefix cores/, $(addsuffix _libretro.so,$(CORES)))
 
 ifeq ($(OS), OSX)
-	BUILDBOTURL=http://buildbot.libretro.com/nightly/apple/osx/$(ARCH)/latest
+	BUILDBOTURL=$(BUILDBOTURL_BASE)/apple/osx/$(ARCH)/latest
 endif
 ifeq ($(OS), Linux)
 	ifeq ($(ARCH), arm)
-		BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/armv7-neon-hf/latest
+		BUILDBOTURL=$(BUILDBOTURL_BASE)/linux/armv7-neon-hf/latest
+	else ifeq ($(ARCH), arm64)
+		BUILDBOTURL=$(BUILDBOTURL_BASE)/linux/aarch64/latest
 	else
-		BUILDBOTURL=http://buildbot.libretro.com/nightly/linux/$(ARCH)/latest
+		BUILDBOTURL=$(BUILDBOTURL_BASE)/linux/$(ARCH)/latest
 	endif
 endif
 ifeq ($(OS), Windows)
-	BUILDBOTURL=http://buildbot.libretro.com/nightly/windows/$(ARCH)/latest
+	BUILDBOTURL=$(BUILDBOTURL_BASE)/windows/$(ARCH)/latest
 endif
 
 ludo:
@@ -51,7 +55,13 @@ ludo:
 ludo.exe:
 	go build -ldflags '-H=windowsgui'
 
-cores/%_libretro.dylib cores/%_libretro.dll cores/%_libretro.so:
+cores/%_libretro.dylib cores/%_libretro.dll:
+	mkdir -p cores
+	wget -c $(BUILDBOTURL)/$(@F).zip -O $@.zip;\
+	unzip $@.zip -d cores
+	rm $@.zip
+
+cores/%_libretro.so:
 	mkdir -p cores
 	wget -c $(BUILDBOTURL)/$(@F).zip -O $@.zip;\
 	unzip $@.zip -d cores
@@ -67,7 +77,7 @@ $(APP).app: ludo $(DYLIBS)
 	cp -r database $(APP).app/Contents/Resources
 	cp -r assets $(APP).app/Contents/Resources
 	cp -r cores $(APP).app/Contents/Resources
-	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
+	codesign --force --options runtime --verbose --timestamp --sign "Developer ID Application: Jean-Andre Santoni (ZE9XE938Z2)" \
 		--entitlements pkg/entitlements.xml $(APP).app/Contents/Resources/cores/*.dylib
 	rm -rf $(APP).app/Contents/Resources/database/.git
 	rm -rf $(APP).app/Contents/Resources/assets/.git
@@ -81,29 +91,28 @@ $(APP).app: ludo $(DYLIBS)
 	sips -z 512 512 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_256x256@2x.png
 	sips -z 512 512 assets/icon.png --out $(APP).app/Contents/Resources/$(APP).iconset/icon_512x512.png
 	cp ludo $(APP).app/Contents/MacOS
-	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
+	codesign --force --options runtime --verbose --timestamp --sign "Developer ID Application: Jean-Andre Santoni (ZE9XE938Z2)" \
 		--entitlements pkg/entitlements.xml $(APP).app/Contents/MacOS/ludo
 	iconutil -c icns -o $(APP).app/Contents/Resources/$(APP).icns $(APP).app/Contents/Resources/$(APP).iconset
 	rm -rf $(APP).app/Contents/Resources/$(APP).iconset
-	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
+	codesign --force --options runtime --verbose --timestamp --sign "Developer ID Application: Jean-Andre Santoni (ZE9XE938Z2)" \
 		--entitlements pkg/entitlements.xml $(APP).app
 
-empty.dmg:
-	mkdir -p template
-	hdiutil create -fs HFSX -layout SPUD -size 200m empty.dmg -srcfolder template -format UDRW -volname $(BUNDLENAME) -quiet
-	rmdir template
+empty.sparseimage:
+	rm -rf empty.sparseimage
+	hdiutil create -fs HFSX -layout SPUD -size 300m empty.sparseimage -type SPARSE -volname $(BUNDLENAME)
 
 # For OSX
-dmg: empty.dmg $(APP).app
+dmg: empty.sparseimage $(APP).app
 	mkdir -p wc
-	hdiutil attach empty.dmg -noautoopen -quiet -mountpoint wc
+	hdiutil attach empty.sparseimage -noautoopen -quiet -mountpoint wc
 	rm -rf wc/$(APP).app
 	ditto -rsrc $(APP).app wc/$(APP).app
 	ln -sf /Applications wc/Applications
 	WC_DEV=`hdiutil info | grep wc | grep "Apple_HFS" | awk '{print $$1}'` && hdiutil detach $$WC_DEV -quiet -force
 	rm -f $(BUNDLENAME)-*.dmg
-	hdiutil convert empty.dmg -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
-	codesign --force --options runtime --verbose --timestamp --sign "7069CC8A4AE9AFF0493CC539BBA4FA345F0A668B" \
+	hdiutil convert empty.sparseimage -quiet -format UDZO -imagekey zlib-level=9 -o $(BUNDLENAME).dmg
+	codesign --force --options runtime --verbose --timestamp --sign "Developer ID Application: Jean-Andre Santoni (ZE9XE938Z2)" \
 		--entitlements pkg/entitlements.xml $(BUNDLENAME).dmg
 
 # For Windows
@@ -130,6 +139,9 @@ tar: ludo $(SOBJS)
 DEB_ARCH = amd64
 ifeq ($(ARCH), arm)
 	DEB_ARCH = armhf
+endif
+ifeq ($(ARCH), arm64)
+	DEB_ARCH = arm64
 endif
 DEB_ROOT = ludo-$(DISPDRIVER)_$(VERSION)-1_$(DEB_ARCH)
 
@@ -158,4 +170,4 @@ deb: ludo $(SOBJS)
 	dpkg-deb --build $(DEB_ROOT)
 
 clean:
-	rm -rf Ludo.app ludo wc *.dmg *.deb $(BUNDLENAME)-* cores/
+	rm -rf Ludo.app ludo wc *.dmg *.sparseimage *.deb $(BUNDLENAME)-* cores/

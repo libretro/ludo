@@ -70,7 +70,7 @@ func DownloadRelease(path, url string) {
 		return
 	}
 
-	n := ntf.DisplayAndLog(ntf.Info, "Menu", "Downloading update 0%%")
+	n := ntf.DisplayAndLog(ntf.Info, "Menu", "Downloading update 0%")
 	downloading = true
 	defer func() { downloading = false }()
 
@@ -89,7 +89,7 @@ Loop:
 	for {
 		select {
 		case <-t.C:
-			n.Update(ntf.Info, "Downloading update %.0f%%%% ", 100*resp.Progress())
+			n.Updatef(ntf.Info, "Downloading update %.0f%% ", 100*resp.Progress())
 			progress = resp.Progress()
 
 		case <-resp.Done:

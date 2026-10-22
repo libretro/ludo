@@ -1,7 +1,7 @@
 package menu
 
 import (
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/libretro/ludo/input"
 )
 
 // Used to easily compose different hint bars based on the context.
@@ -9,23 +9,23 @@ func stackHintLeft(stack *float32, icon uint32, label string, h int) {
 	menu.Font.SetColor(hintTextColor)
 	menu.DrawImage(icon, *stack, float32(h)-79*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, 0, hintTextColor)
 	*stack += 70 * menu.ratio
-	menu.Font.Printf(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
-	*stack += menu.Font.Width(0.5*menu.ratio, label)
+	menu.Font.Print(*stack, float32(h)-30*menu.ratio, menu.ratio, label)
+	*stack += menu.Font.Width(menu.ratio, label)
 	*stack += 32 * menu.ratio
 }
 
 // Used to easily compose different hint bars based on the context.
 func stackHintRight(stack *float32, icon uint32, label string, h int) {
-	*stack -= menu.Font.Width(0.5*menu.ratio, label)
+	*stack -= menu.Font.Width(menu.ratio, label)
 	menu.Font.SetColor(hintTextColor)
-	menu.Font.Printf(*stack, float32(h)-30*menu.ratio, 0.5*menu.ratio, label)
+	menu.Font.Print(*stack, float32(h)-30*menu.ratio, menu.ratio, label)
 	*stack -= 70 * menu.ratio
 	menu.DrawImage(icon, *stack, float32(h)-79*menu.ratio, 70*menu.ratio, 70*menu.ratio, 1.0, 0, hintTextColor)
 	*stack -= 32 * menu.ratio
 }
 
 func hintIcons() (arrows, upDown, leftRight, a, b, x, y, start, slct, guide uint32) {
-	if glfw.Joystick(0).IsGamepad() {
+	if input.JoypadPlugged() {
 		return menu.icons["pad-arrows"],
 			menu.icons["pad-up-down"],
 			menu.icons["pad-left-right"],

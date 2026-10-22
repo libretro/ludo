@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
@@ -22,6 +23,9 @@ func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error)
 
 	gl.AttachShader(program, vertexShader)
 	gl.AttachShader(program, fragmentShader)
+	// Game and menu programs share a VAO, so their attribute locations must match.
+	gl.BindAttribLocation(program, 0, gl.Str("vert\x00"))
+	gl.BindAttribLocation(program, 1, gl.Str("vertTexCoord\x00"))
 	gl.LinkProgram(program)
 
 	var status int32
@@ -39,13 +43,24 @@ func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error)
 	gl.DeleteShader(vertexShader)
 	gl.DeleteShader(fragmentShader)
 
+	// Only the core rendering code uses MVPs so we set it to identity
+	// to avoid issues with other parts of the program
+	gl.UseProgram(program)
+	mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+
+	if mvp != -1 {
+		IdentityMatrix := mgl32.Ident4()
+		gl.UniformMatrix4fv(mvp, 1, false, &IdentityMatrix[0])
+	}
+	gl.UseProgram(0)
+
 	return program, nil
 }
 
 func compileShader(source string, shaderType uint32) (uint32, error) {
 	shader := gl.CreateShader(shaderType)
 
-	csources, free := gl.Strs(source)
+	csources, free := gl.Strs(glslVersion + source)
 	gl.ShaderSource(shader, 1, csources, nil)
 	free()
 	gl.CompileShader(shader)

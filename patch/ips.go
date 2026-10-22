@@ -33,7 +33,6 @@ func ipsAllocTargetData(patch, source []byte) ([]byte, error) {
 				size |= int(patch[offset]) << 8
 				offset++
 				size |= int(patch[offset]) << 0
-				offset++
 				targetLength = size
 				prov := make([]byte, targetLength)
 				return prov, nil
@@ -117,15 +116,7 @@ func applyIPS(patch, source []byte) (*[]byte, error) {
 		offset++
 
 		if address == EOF {
-			if offset == len(patch) {
-				return &targetData, nil
-			} else if offset == len(patch)-3 {
-				size := int(patch[offset]) << 16
-				offset++
-				size |= int(patch[offset]) << 8
-				offset++
-				size |= int(patch[offset]) << 0
-				offset++
+			if offset == len(patch) || offset == len(patch)-3 {
 				return &targetData, nil
 			}
 		}

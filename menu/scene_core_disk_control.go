@@ -33,7 +33,7 @@ func buildCoreDiskControl() Scene {
 				state.Core.DiskControlCallback.SetEjectState(true)
 				state.Core.DiskControlCallback.SetImageIndex(index)
 				state.Core.DiskControlCallback.SetEjectState(false)
-				ntf.DisplayAndLog(ntf.Success, "Menu", "Switched to disk %d.", index+1)
+				ntf.DisplayAndLogf(ntf.Success, "Menu", "Switched to disk %d.", index+1)
 				state.MenuActive = false
 			},
 		})
@@ -77,6 +77,7 @@ func (s *sceneCoreDiskControl) render() {
 
 func (s *sceneCoreDiskControl) drawHintBar() {
 	w, h := menu.GetFramebufferSize()
+
 	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 88*menu.ratio, 0, hintBgColor)
 	menu.DrawRect(0, float32(h)-88*menu.ratio, float32(w), 2*menu.ratio, 0, sepColor)
 

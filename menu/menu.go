@@ -117,8 +117,9 @@ func (m *Menu) ContextReset() {
 		m.icons[filename] = video.NewImage(path)
 	}
 
-	for h := 0; h < len(m.stack); h++ {
-		list := m.stack[h].Entry()
+	// Every retained scene's texture names belong to the old context.
+	for _, scene := range m.stack {
+		list := scene.Entry()
 		for i := range list.children {
 			list.children[i].thumbnail = 0
 			for j := range list.children[i].children {
@@ -133,6 +134,7 @@ func (m *Menu) ContextReset() {
 func (m *Menu) WarpToQuickMenu() {
 	m.scroll = 0
 	m.stack = []Scene{}
+	m.focus = 0
 	m.Push(buildTabs())
 	m.stack[0].segueNext()
 	m.Push(buildHome())

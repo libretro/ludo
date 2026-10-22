@@ -82,7 +82,7 @@ func (s *sceneUpdater) segueBack() {
 func (s *sceneUpdater) update(dt float32) {
 	if ludos.IsDownloading() {
 		s.children[0].label = fmt.Sprintf(
-			"Downloading update %.0f%%%%", ludos.GetProgress()*100)
+			"Downloading update %.0f%%", ludos.GetProgress()*100)
 		s.children[0].icon = "reset"
 		s.children[0].callbackOK = nil
 	} else if ludos.IsDone() {
@@ -90,7 +90,7 @@ func (s *sceneUpdater) update(dt float32) {
 		s.children[0].icon = "reset"
 		s.children[0].callbackOK = func() {
 			cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
-			core.UnloadGame()
+			core.Unload()
 			err := cmd.Run()
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())

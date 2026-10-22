@@ -16,7 +16,7 @@ func buildCoreOptions() Scene {
 	var list sceneCoreOptions
 	list.label = "Core Options"
 
-	if core.Options == nil {
+	if core.Options == nil || len(core.Options.Vars) == 0 {
 		list.children = append(list.children, entry{
 			label: "No options",
 			icon:  "subsetting",
@@ -28,11 +28,11 @@ func buildCoreOptions() Scene {
 	for _, v := range core.Options.Vars {
 		v := v
 		list.children = append(list.children, entry{
-			label: strings.Replace(v.Desc, "%", "%%", -1),
+			label: strings.ReplaceAll(v.Desc, "%", "%%"),
 			icon:  "subsetting",
 			stringValue: func() string {
 				val := v.Choices[v.Choice]
-				return strings.Replace(val, "%", "%%", -1)
+				return "◀ " + strings.ReplaceAll(val, "%", "%%") + " ▶"
 			},
 			incr: func(direction int) {
 				v.Choice += direction
@@ -44,7 +44,7 @@ func buildCoreOptions() Scene {
 				core.Options.Updated = true
 				err := core.Options.Save()
 				if err != nil {
-					ntf.DisplayAndLog(ntf.Error, "Core", "Error saving core options: %v", err.Error())
+					ntf.DisplayAndLogf(ntf.Error, "Core", "Error saving core options: %v", err)
 				}
 			},
 		})

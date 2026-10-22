@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"github.com/libretro/ludo/core"
 	ntf "github.com/libretro/ludo/notifications"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -27,7 +28,7 @@ func buildQuickMenu() Scene {
 		label: "Reset",
 		icon:  "reset",
 		callbackOK: func() {
-			state.Core.Reset()
+			core.Reset()
 			state.MenuActive = false
 			state.FastForward = false
 		},
@@ -47,11 +48,13 @@ func buildQuickMenu() Scene {
 		icon:  "screenshot",
 		callbackOK: func() {
 			name := utils.DatedName(state.GamePath)
-			err := menu.TakeScreenshot(name)
-			if err != nil {
-				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-			} else {
-				ntf.DisplayAndLog(ntf.Success, "Menu", "Took a screenshot.")
+			state.PendingScreenshotName = name
+			state.PendingScreenshotDone = func(err error) {
+				if err != nil {
+					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+				} else {
+					ntf.DisplayAndLog(ntf.Success, "Menu", "Took a screenshot.")
+				}
 			}
 		},
 	})

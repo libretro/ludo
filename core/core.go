@@ -4,9 +4,13 @@
 package core
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"io"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -19,7 +23,7 @@ import (
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
 
-	"github.com/mholt/archiver/v3"
+	"github.com/mholt/archives"
 )
 
 var vid *video.Video
@@ -31,6 +35,7 @@ var Options *options.Options
 // Call Init before calling other functions of this package.
 func Init(v *video.Video) {
 	vid = v
+	libretro.SetContextCallbacks(v.ContextCallbacks())
 }
 
 // Load loads a libretro core
@@ -47,6 +52,7 @@ func Load(sofile string) error {
 	if err != nil {
 		return err
 	}
+	vid.SetHWRenderContext(nil)
 	state.Core.SetEnvironment(environment)
 	state.Core.Init()
 	state.Core.SetVideoRefresh(vid.Refresh)
@@ -78,60 +84,134 @@ func unarchiveGame(filename string) (string, int64, error) {
 	path := ""
 	size := int64(0)
 	dst := os.TempDir()
+	ctx := context.Background()
 
-	var err error
-	// What a wonderful API, all this boilerplate to set an option
-	switch filepath.Ext(filename) {
-	case ".zip":
-		un := archiver.Zip{
-			OverwriteExisting: true,
-		}
-		err = un.Unarchive(filename, dst)
-	case ".tar":
-		un := archiver.Tar{
-			OverwriteExisting: true,
-		}
-		err = un.Unarchive(filename, dst)
-	case ".rar":
-		un := archiver.Rar{
-			OverwriteExisting: true,
-		}
-		err = un.Unarchive(filename, dst)
-	default:
-		// Unarchive with default option
-		err = archiver.Unarchive(filename, dst)
+	file, err := os.Open(filename)
+	if err != nil {
+		return path, size, err
 	}
+	defer file.Close()
+
+	format, stream, err := archives.Identify(ctx, filepath.Base(filename), file)
 	if err != nil {
 		return path, size, err
 	}
 
-	extPriority := 0 // current priority
-	// Give priority of some extensions (use upper case to be case insensitive)
-	extPrefered := make(map[string]int)
-	extPrefered[".cue"] = 1
-	extPrefered[".m3u"] = 2
-	extPrefered[".pbp"] = 3
+	extPriority := 0
+	extPrefered := map[string]int{
+		".cue": 1,
+		".m3u": 2,
+		".pbp": 3,
+	}
 
-	err = archiver.Walk(filename, func(f archiver.File) error {
-		fname := f.Name()
-		ext := filepath.Ext(fname)
+	selectGame := func(gamePath string, fsize int64) {
+		ext := filepath.Ext(gamePath)
 		if size == 0 {
-			// By default select the first file of the archive
-			path = filepath.Join(dst, fname)
-			size = f.Size()
+			path = gamePath
+			size = fsize
 			log.Println("first file in archive:", path, size)
 		}
-		// Check if a file (based on extension) has a higher priority
 		priority, ok := extPrefered[strings.ToLower(ext)]
 		if ok && priority > extPriority {
 			extPriority = priority
-			path = filepath.Join(dst, fname)
-			size = f.Size()
+			path = gamePath
+			size = fsize
 			log.Println("find a better file in archive:", path, size)
 		}
-		return nil
-	})
-	return path, size, err
+	}
+
+	if ex, ok := format.(archives.Extractor); ok {
+		err = ex.Extract(ctx, stream, func(ctx context.Context, f archives.FileInfo) error {
+			fname, err := archiveOutputPath(dst, f.NameInArchive)
+			if err != nil {
+				return err
+			}
+			if f.IsDir() {
+				return os.MkdirAll(fname, os.ModePerm)
+			}
+			if err := os.MkdirAll(filepath.Dir(fname), os.ModePerm); err != nil {
+				return err
+			}
+
+			in, err := f.Open()
+			if err != nil {
+				return err
+			}
+			defer in.Close()
+
+			mode := f.Mode().Perm()
+			if mode == 0 {
+				mode = 0644
+			}
+			out, err := os.OpenFile(fname, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, mode)
+			if err != nil {
+				return err
+			}
+
+			_, copyErr := io.Copy(out, in)
+			closeErr := out.Close()
+			if copyErr != nil {
+				return copyErr
+			}
+			if closeErr != nil {
+				return closeErr
+			}
+
+			selectGame(fname, f.Size())
+			return nil
+		})
+		return path, size, err
+	}
+
+	decomp, ok := format.(archives.Decompressor)
+	if !ok {
+		return path, size, fmt.Errorf("unsupported archive format: %T", format)
+	}
+
+	rc, err := decomp.OpenReader(stream)
+	if err != nil {
+		return path, size, err
+	}
+	defer rc.Close()
+
+	fname := strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
+	if fname == "" {
+		return path, size, errors.New("could not determine extracted filename")
+	}
+	path = filepath.Join(dst, fname)
+	out, err := os.Create(path)
+	if err != nil {
+		return "", 0, err
+	}
+	size, err = io.Copy(out, rc)
+	closeErr := out.Close()
+	if err != nil {
+		return "", 0, err
+	}
+	if closeErr != nil {
+		return "", 0, closeErr
+	}
+
+	return path, size, nil
+}
+
+func archiveOutputPath(dst, name string) (string, error) {
+	clean := path.Clean(strings.TrimPrefix(name, "/"))
+	if clean == "." || clean == "" {
+		return "", errors.New("invalid archive path")
+	}
+	if clean == ".." || strings.HasPrefix(clean, "../") {
+		return "", fmt.Errorf("unsafe archive path: %s", name)
+	}
+	fname := filepath.Join(dst, filepath.FromSlash(clean))
+	rel, err := filepath.Rel(dst, fname)
+	if err != nil {
+		return "", err
+	}
+	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("unsafe archive path: %s", name)
+	}
+	return fname, nil
 }
 
 // LoadGame loads a game. A core has to be loaded first.
@@ -140,10 +220,15 @@ func LoadGame(gamePath string) error {
 		return err
 	}
 
-	// If we're loading a new game on the same core, save the RAM of the previous
-	// game before closing it.
-	if state.GamePath != gamePath {
-		UnloadGame()
+	if state.Core == nil {
+		return errors.New("no core loaded")
+	}
+
+	// Reload the core to fully tear down the previous game and its GL context.
+	if state.CoreRunning {
+		if err := Load(state.CorePath); err != nil {
+			return err
+		}
 	}
 
 	si := state.Core.GetSystemInfo()
@@ -169,7 +254,7 @@ func LoadGame(gamePath string) error {
 
 	ok := state.Core.LoadGame(*gi)
 	if !ok {
-		state.CoreRunning = false
+		Unload()
 		return errors.New("failed to load the game")
 	}
 
@@ -201,30 +286,56 @@ func LoadGame(gamePath string) error {
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
 
+	if state.Core.HWRenderCallback != nil {
+		if err := vid.ResetHWContext(); err != nil {
+			Unload()
+			return fmt.Errorf("create hardware context: %w", err)
+		}
+	}
+
 	return nil
 }
 
-// Unload unloads a libretro core
+// Unload closes the game and core before destroying their GL context.
 func Unload() {
 	if state.Core != nil {
-		UnloadGame()
+		savefiles.SaveSRAM()
+		vid.RunContextDestroy()
+		vid.BeginCore()
+		if state.CoreRunning {
+			state.Core.UnloadGame()
+		}
 		state.Core.Deinit()
+		vid.EndCore()
+		vid.ResetCoreState()
+		state.GamePath = ""
+		state.CoreRunning = false
 		state.CorePath = ""
 		state.Core = nil
+		vid.SetHWRenderContext(nil)
 		Options = nil
 	}
 }
 
-// UnloadGame unloads a game.
-func UnloadGame() {
-	if state.CoreRunning {
-		savefiles.SaveSRAM()
-		state.Core.UnloadGame()
-		state.GamePath = ""
-		state.CoreRunning = false
-		vid.ResetPitch()
-		vid.ResetRot()
-	}
+// Reset resets the game using its hardware context, if any.
+func Reset() {
+	vid.BeginCore()
+	defer vid.EndCore()
+	state.Core.Reset()
+}
+
+// Serialize captures core state with the core's GL context current.
+func Serialize() ([]byte, error) {
+	vid.BeginCore()
+	defer vid.EndCore()
+	return state.Core.Serialize(state.Core.SerializeSize())
+}
+
+// Unserialize restores core state with the core's GL context current.
+func Unserialize(data []byte) error {
+	vid.BeginCore()
+	defer vid.EndCore()
+	return state.Core.Unserialize(data, uint(len(data)))
 }
 
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it
