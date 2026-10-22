@@ -267,7 +267,6 @@ func Test_coreLoadGame(t *testing.T) {
 		}
 	})
 
-	UnloadGame()
 	Unload()
 
 	t.Run("Global state should be cleared by Unload", func(t *testing.T) {
@@ -284,7 +283,6 @@ func Test_coreLoadGame(t *testing.T) {
 }
 
 func Test_coreLoadGameWithoutCore(t *testing.T) {
-	UnloadGame()
 	Unload()
 
 	err := LoadGame("testdata/Polar Rescue (USA).vec")

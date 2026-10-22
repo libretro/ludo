@@ -28,8 +28,8 @@ func DlOpen(path string) (DlHandle, error) {
 	defer C.free(unsafe.Pointer(cpath))
 
 	h := C.dlopen(cpath, C.RTLD_LAZY|C.RTLD_GLOBAL)
-	cerr := C.dlerror()
-	if h == nil || cerr != nil {
+	if h == nil {
+		cerr := C.dlerror()
 		err := C.GoString(cerr)
 		return nil, errors.New(err)
 	}

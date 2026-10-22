@@ -1,6 +1,7 @@
 package video
 
 import (
+	"errors"
 	"image"
 	"image/png"
 	"os"
@@ -13,41 +14,33 @@ import (
 	"github.com/libretro/ludo/state"
 )
 
-// During the TakeScreenshot step, we need to render the current game frame at
-// the right resolution to later capture it using ReadPixels. renderScreenshot
-// taking care of this.
-func (video *Video) renderScreenshot() {
-	va := video.vertexArray(0, 0, float32(video.Geom.BaseWidth), float32(video.Geom.BaseHeight), 1.0)
-	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(va)*4, gl.Ptr(va), gl.STATIC_DRAW)
+func (video *Video) captureBackbufferScreenshot(name string) error {
+	outW, outH := video.Geom.BaseWidth, video.Geom.BaseHeight
+	if outW < 1 || outH < 1 {
+		return errors.New("invalid screenshot output size")
+	}
 
-	bindVertexArray(video.vao)
+	x := video.presentX
+	y := video.presentY
+	w := video.presentW
+	h := video.presentH
+	if !state.CoreRunning || video.width < 1 || video.height < 1 || w < 1 || h < 1 {
+		return errors.New("no game frame to capture")
+	}
 
-	gl.BindTexture(gl.TEXTURE_2D, video.texID)
-	gl.BindBuffer(gl.ARRAY_BUFFER, video.vbo)
+	var oldReadBuffer int32
+	gl.GetIntegerv(gl.READ_BUFFER, &oldReadBuffer)
+	gl.ReadBuffer(gl.BACK)
 
-	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
-}
+	img := image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
+	gl.Finish()
+	gl.ReadPixels(x, y, w, h, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+	gl.ReadBuffer(uint32(oldReadBuffer))
 
-// TakeScreenshot captures the ouput of video.Render and writes it to a file
-func (video *Video) TakeScreenshot(name string) error {
-	state.MenuActive = false
-	defer func() { state.MenuActive = true }()
-
-	gl.UseProgram(video.defaultProgram)
-
-	video.renderScreenshot()
-
-	img := image.NewRGBA(image.Rect(0, 0, video.Geom.BaseWidth, video.Geom.BaseHeight))
-
-	_, fbh := video.Window.GetFramebufferSize()
-
-	gl.ReadPixels(
-		0, int32(fbh-video.Geom.BaseHeight),
-		int32(video.Geom.BaseWidth), int32(video.Geom.BaseHeight),
-		gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
-
-	gl.UseProgram(video.program)
+	flipped := imaging.FlipV(img)
+	if flipped.Bounds().Dx() != outW || flipped.Bounds().Dy() != outH {
+		flipped = imaging.Resize(flipped, outW, outH, imaging.Linear)
+	}
 
 	err := os.MkdirAll(settings.Current.ScreenshotsDirectory, os.ModePerm)
 	if err != nil {
@@ -59,8 +52,13 @@ func (video *Video) TakeScreenshot(name string) error {
 	if err != nil {
 		return err
 	}
-
-	flipped := imaging.FlipV(img)
+	defer fd.Close()
 
 	return png.Encode(fd, flipped)
+}
+
+// TakeScreenshotInFrontendFrame captures a screenshot while the caller already
+// owns a frontend frame and has already rendered the current game frame.
+func (video *Video) TakeScreenshotInFrontendFrame(name string) error {
+	return video.captureBackbufferScreenshot(name)
 }

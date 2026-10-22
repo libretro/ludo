@@ -90,7 +90,7 @@ func (s *sceneUpdater) update(dt float32) {
 		s.children[0].icon = "reload"
 		s.children[0].callbackOK = func() {
 			cmd := exec.Command("/usr/sbin/shutdown", "-r", "now")
-			core.UnloadGame()
+			core.Unload()
 			err := cmd.Run()
 			if err != nil {
 				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())

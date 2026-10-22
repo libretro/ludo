@@ -50,13 +50,17 @@ func New(vars []VariableInterface) (*Options, error) {
 
 	// Cache core options
 	for _, v := range vars {
-		v := v
+		choices := v.Choices()
+		// A core may expose an empty selector, e.g. when no BIOS files are found.
+		if len(choices) == 0 {
+			continue
+		}
 		o.Vars = append(o.Vars, &Variable{
 			Key:     v.Key(),
 			Desc:    v.Desc(),
-			Choices: v.Choices(),
+			Choices: choices,
 			Default: v.DefaultValue(),
-			Choice:  utils.IndexOfString(v.DefaultValue(), v.Choices()),
+			Choice:  utils.IndexOfString(v.DefaultValue(), choices),
 		})
 	}
 	o.Updated = true

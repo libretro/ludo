@@ -124,11 +124,7 @@ func (video *Video) ScissorEnd() {
 	gl.Disable(gl.SCISSOR_TEST)
 }
 
-func (video *Video) vertexArray(x, y, w, h, scale float32) []float32 {
-	fbw, fbh := video.Window.GetFramebufferSize()
-	ffbw := float32(fbw)
-	ffbh := float32(fbh)
-
+func vertexArrayForFramebuffer(x, y, w, h, scale, ffbw, ffbh float32) []float32 {
 	w *= scale
 	h *= scale
 
@@ -141,6 +137,11 @@ func (video *Video) vertexArray(x, y, w, h, scale float32) []float32 {
 		x3/ffbw*2 - 1, y3/ffbh*2 - 1, 1, 1, // right-bottom
 		x4/ffbw*2 - 1, y4/ffbh*2 - 1, 1, 0, // right-top
 	}
+}
+
+func (video *Video) vertexArray(x, y, w, h, scale float32) []float32 {
+	fbw, fbh := video.Window.GetFramebufferSize()
+	return vertexArrayForFramebuffer(x, y, w, h, scale, float32(fbw), float32(fbh))
 }
 
 // DrawBorder draws a colored rectangle border

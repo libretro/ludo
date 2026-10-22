@@ -16,7 +16,7 @@ func buildCoreOptions() Scene {
 	var list sceneCoreOptions
 	list.label = "Core Options"
 
-	if core.Options == nil {
+	if core.Options == nil || len(core.Options.Vars) == 0 {
 		list.children = append(list.children, entry{
 			label: "No options",
 			icon:  "subsetting",

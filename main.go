@@ -30,6 +30,22 @@ func init() {
 
 var frame = 0
 
+func fulfillPendingScreenshot(vid *video.Video) {
+	if state.PendingScreenshotName == "" {
+		return
+	}
+
+	name := state.PendingScreenshotName
+	done := state.PendingScreenshotDone
+	state.PendingScreenshotName = ""
+	state.PendingScreenshotDone = nil
+
+	err := vid.TakeScreenshotInFrontendFrame(name)
+	if done != nil {
+		done(err)
+	}
+}
+
 func runLoop(vid *video.Video, m *menu.Menu) {
 	var currTime time.Time
 	prevTime := time.Now()
@@ -39,11 +55,19 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 		glfw.PollEvents()
 		m.ProcessHotkeys()
 		ntf.Process(dt)
-		vid.ResizeViewport()
 		m.UpdatePalette()
 		input.Poll()
-		if !state.MenuActive {
+		menuActive := state.MenuActive
+		if menuActive {
+			m.Update(dt)
+		}
+		if state.MenuContextResetNeeded {
+			m.ContextReset()
+			state.MenuContextResetNeeded = false
+		}
+		if !menuActive {
 			if state.CoreRunning {
+				vid.BeginCore()
 				state.Core.Run()
 				if state.Core.FrameTimeCallback != nil {
 					state.Core.FrameTimeCallback.Callback(state.Core.FrameTimeCallback.Reference)
@@ -51,18 +75,23 @@ func runLoop(vid *video.Video, m *menu.Menu) {
 				if state.Core.AudioCallback != nil {
 					state.Core.AudioCallback.Callback()
 				}
+				vid.EndCore()
 			}
+			vid.BeginFrontendFrame()
 			vid.Render()
+			vid.CachePresentedFrame()
+			m.RenderNotifications()
 			frame++
 			if frame%600 == 0 { // save sram about every 10 sec
 				savefiles.SaveSRAM()
 			}
 		} else {
-			m.Update(dt)
-			vid.Render()
+			vid.BeginFrontendFrame()
+			vid.RenderPresentedFrame()
+			fulfillPendingScreenshot(vid)
 			m.Render(dt)
+			m.RenderNotifications()
 		}
-		m.RenderNotifications()
 		if state.FastForward {
 			glfw.SwapInterval(0)
 		} else {
@@ -128,18 +157,14 @@ func main() {
 	input.Init(vid)
 
 	if len(state.CorePath) > 0 {
-		err := core.Load(state.CorePath)
-		if err == nil {
-			if len(gamePath) > 0 {
-				err := core.LoadGame(gamePath)
-				if err != nil {
-					ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
-				} else {
-					m.WarpToQuickMenu()
-				}
-			}
-		} else {
+		if err := core.Load(state.CorePath); err != nil {
 			ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+		} else if len(gamePath) > 0 {
+			if err := core.LoadGame(gamePath); err != nil {
+				ntf.DisplayAndLog(ntf.Error, "Menu", err.Error())
+			} else {
+				m.WarpToQuickMenu()
+			}
 		}
 	}
 

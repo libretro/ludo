@@ -143,6 +143,30 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		state.Core.SetFrameTimeCallback(data)
 	case libretro.EnvironmentSetAudioCallback:
 		state.Core.SetAudioCallback(data)
+	case libretro.EnvironmentSetHWRender:
+		hw := libretro.SetHWRenderCallback(
+			data,
+			vid.CurrentFramebuffer,
+			vid.ProcAddress)
+		if (hw.HWContextType != libretro.HWContextOpenGL && hw.HWContextType != libretro.HWContextOpenGLCore) || hw.ContextReset == nil {
+			return false
+		}
+		vid.SetHWRenderContext(hw)
+		if vid != nil && vid.Window != nil && !state.CoreRunning {
+			if err := vid.ReconfigureHWContext(settings.Current.VideoFullscreen); err != nil {
+				vid.SetHWRenderContext(state.Core.HWRenderCallback)
+				log.Printf("[Env]: Could not create HW context %d (%d.%d): %v",
+					hw.HWContextType, hw.VersionMajor, hw.VersionMinor, err)
+				return false
+			}
+			state.MenuContextResetNeeded = true
+		}
+		state.Core.HWRenderCallback = hw
+		log.Println("[Env]: HWContextType:", hw.HWContextType)
+		return true
+	case libretro.EnvironmentSetHWSharedContext:
+		// All HW cores already get an isolated context shared with the frontend.
+		return true
 	case libretro.EnvironmentGetCanDupe:
 		libretro.SetBool(data, true)
 	case libretro.EnvironmentSetPixelFormat:
@@ -151,6 +175,8 @@ func environment(cmd uint32, data unsafe.Pointer) bool {
 		return environmentGetSystemDirectory(data)
 	case libretro.EnvironmentGetSaveDirectory:
 		return environmentGetSaveDirectory(data)
+	case libretro.EnvironmentGetPrefferedHWRender:
+		libretro.SetUint(data, uint(libretro.HWContextOpenGL))
 	case libretro.EnvironmentShutdown:
 		vid.SetShouldClose(true)
 	case libretro.EnvironmentGetCoreOptionsVersion:

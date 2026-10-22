@@ -35,6 +35,7 @@ var Options *options.Options
 // Call Init before calling other functions of this package.
 func Init(v *video.Video) {
 	vid = v
+	libretro.SetContextCallbacks(v.ContextCallbacks())
 }
 
 // Load loads a libretro core
@@ -51,6 +52,7 @@ func Load(sofile string) error {
 	if err != nil {
 		return err
 	}
+	vid.SetHWRenderContext(nil)
 	state.Core.SetEnvironment(environment)
 	state.Core.Init()
 	state.Core.SetVideoRefresh(vid.Refresh)
@@ -218,14 +220,15 @@ func LoadGame(gamePath string) error {
 		return err
 	}
 
-	// If we're loading a new game on the same core, save the RAM of the previous
-	// game before closing it.
-	if state.GamePath != gamePath {
-		UnloadGame()
-	}
-
 	if state.Core == nil {
 		return errors.New("no core loaded")
+	}
+
+	// Reload the core to fully tear down the previous game and its GL context.
+	if state.CoreRunning {
+		if err := Load(state.CorePath); err != nil {
+			return err
+		}
 	}
 
 	si := state.Core.GetSystemInfo()
@@ -251,7 +254,7 @@ func LoadGame(gamePath string) error {
 
 	ok := state.Core.LoadGame(*gi)
 	if !ok {
-		state.CoreRunning = false
+		Unload()
 		return errors.New("failed to load the game")
 	}
 
@@ -283,30 +286,56 @@ func LoadGame(gamePath string) error {
 	log.Println("[Core]: Game loaded: " + gamePath)
 	savefiles.LoadSRAM()
 
+	if state.Core.HWRenderCallback != nil {
+		if err := vid.ResetHWContext(); err != nil {
+			Unload()
+			return fmt.Errorf("create hardware context: %w", err)
+		}
+	}
+
 	return nil
 }
 
-// Unload unloads a libretro core
+// Unload closes the game and core before destroying their GL context.
 func Unload() {
 	if state.Core != nil {
-		UnloadGame()
+		savefiles.SaveSRAM()
+		vid.RunContextDestroy()
+		vid.BeginCore()
+		if state.CoreRunning {
+			state.Core.UnloadGame()
+		}
 		state.Core.Deinit()
+		vid.EndCore()
+		vid.ResetCoreState()
+		state.GamePath = ""
+		state.CoreRunning = false
 		state.CorePath = ""
 		state.Core = nil
+		vid.SetHWRenderContext(nil)
 		Options = nil
 	}
 }
 
-// UnloadGame unloads a game.
-func UnloadGame() {
-	if state.CoreRunning {
-		savefiles.SaveSRAM()
-		state.Core.UnloadGame()
-		state.GamePath = ""
-		state.CoreRunning = false
-		vid.ResetPitch()
-		vid.ResetRot()
-	}
+// Reset resets the game using its hardware context, if any.
+func Reset() {
+	vid.BeginCore()
+	defer vid.EndCore()
+	state.Core.Reset()
+}
+
+// Serialize captures core state with the core's GL context current.
+func Serialize() ([]byte, error) {
+	vid.BeginCore()
+	defer vid.EndCore()
+	return state.Core.Serialize(state.Core.SerializeSize())
+}
+
+// Unserialize restores core state with the core's GL context current.
+func Unserialize(data []byte) error {
+	vid.BeginCore()
+	defer vid.EndCore()
+	return state.Core.Unserialize(data, uint(len(data)))
 }
 
 // getGameInfo opens a rom and return the libretro.GameInfo needed to launch it

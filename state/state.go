@@ -33,3 +33,13 @@ var LudOS bool
 
 // FastForward will run the core as fast as possible
 var FastForward bool
+
+// PendingScreenshotName is the next screenshot capture requested by the UI.
+var PendingScreenshotName string
+
+// PendingScreenshotDone is called after the deferred screenshot capture completes.
+var PendingScreenshotDone func(error)
+
+// MenuContextResetNeeded requests re-uploading menu GL assets after the
+// frontend window/context is recreated.
+var MenuContextResetNeeded bool
