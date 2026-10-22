@@ -20,7 +20,7 @@ var (
 // Update takes care of calling the update method of the current scene.
 // Each scene has it's own input logic to allow a variety of navigation systems.
 func (m *Menu) Update(dt float32) {
-	currentScene := m.stack[len(m.stack)-1]
+	currentScene := m.stack[m.focus-1]
 	currentScene.update(dt)
 }
 
@@ -67,22 +67,20 @@ func withRepeat() func(dt float32, pressed bool, f func()) {
 func genericInput(list *entry, dt float32) {
 	// Down
 	repeatDown(dt, input.NewState[0][libretro.DeviceIDJoypadDown] == 1, func() {
-		list.ptr++
-		if list.ptr >= len(list.children) {
-			list.ptr = 0
+		if list.ptr < len(list.children)-1 {
+			list.ptr++
+			audio.PlayEffect(audio.Effects["down"])
+			genericAnimate(list)
 		}
-		audio.PlayEffect(audio.Effects["down"])
-		genericAnimate(list)
 	})
 
 	// Up
 	repeatUp(dt, input.NewState[0][libretro.DeviceIDJoypadUp] == 1, func() {
-		list.ptr--
-		if list.ptr < 0 {
-			list.ptr = len(list.children) - 1
+		if list.ptr > 0 {
+			list.ptr--
+			audio.PlayEffect(audio.Effects["up"])
+			genericAnimate(list)
 		}
-		audio.PlayEffect(audio.Effects["up"])
-		genericAnimate(list)
 	})
 
 	// OK
@@ -122,7 +120,10 @@ func genericInput(list *entry, dt float32) {
 		if len(menu.stack) > 1 {
 			audio.PlayEffect(audio.Effects["cancel"])
 			menu.stack[len(menu.stack)-2].segueBack()
-			menu.stack = menu.stack[:len(menu.stack)-1]
+			if len(menu.stack) > 2 {
+				menu.stack = menu.stack[:len(menu.stack)-1]
+			}
+			menu.focus--
 		}
 	}
 

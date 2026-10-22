@@ -41,6 +41,7 @@ func (s *sceneDialog) update(dt float32) {
 		audio.PlayEffect(audio.Effects["ok"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
+		menu.focus = menu.oldFocus
 		s.callbackOK()
 	}
 
@@ -49,6 +50,7 @@ func (s *sceneDialog) update(dt float32) {
 		audio.PlayEffect(audio.Effects["cancel"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
+		menu.focus = menu.oldFocus
 	}
 }
 

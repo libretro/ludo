@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 
 	"github.com/libretro/ludo/core"
+	"github.com/libretro/ludo/dat"
 	"github.com/libretro/ludo/history"
 	ntf "github.com/libretro/ludo/notifications"
+	"github.com/libretro/ludo/scanner"
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/utils"
@@ -63,20 +65,9 @@ func prettifyCoreName(in string) string {
 
 func buildMainMenu() Scene {
 	var list sceneMain
-	list.label = "Main Menu"
+	list.label = "Manual Menu"
 
 	usr, _ := user.Current()
-
-	if state.CoreRunning {
-		list.children = append(list.children, entry{
-			label: "Quick Menu",
-			icon:  "subsetting",
-			callbackOK: func() {
-				list.segueNext()
-				menu.Push(buildQuickMenu())
-			},
-		})
-	}
 
 	list.children = append(list.children, entry{
 		label: "Load Core",
@@ -112,43 +103,6 @@ func buildMainMenu() Scene {
 		},
 	})
 
-	if state.LudOS {
-		list.children = append(list.children, entry{
-			label: "Updater",
-			icon:  "subsetting",
-			callbackOK: func() {
-				list.segueNext()
-				menu.Push(buildUpdater())
-			},
-		})
-
-		list.children = append(list.children, entry{
-			label: "Reboot",
-			icon:  "subsetting",
-			callbackOK: func() {
-				askQuitConfirmation(func() { cleanReboot() })
-			},
-		})
-
-		list.children = append(list.children, entry{
-			label: "Shutdown",
-			icon:  "subsetting",
-			callbackOK: func() {
-				askQuitConfirmation(func() { cleanShutdown() })
-			},
-		})
-	} else {
-		list.children = append(list.children, entry{
-			label: "Quit",
-			icon:  "subsetting",
-			callbackOK: func() {
-				askQuitConfirmation(func() {
-					menu.SetShouldClose(true)
-				})
-			},
-		})
-	}
-
 	list.segueMount()
 
 	return &list
@@ -167,15 +121,23 @@ func coreExplorerCb(path string) {
 func gameExplorerCb(path string) {
 	if err := core.LoadGame(path); err != nil {
 		ntf.DisplayAndLog(ntf.Error, "Core", err.Error())
-		return
+	} else {
+		scanner.ScanFile(path, func(game dat.Game) {
+			name := game.Name
+			if name == "" {
+				name = utils.FileName(path)
+			}
+			history.Push(history.Game{
+				Path:     path,
+				Name:     name,
+				System:   game.System,
+				CorePath: state.CorePath,
+			})
+			history.Load()
+			menu.WarpToQuickMenu()
+		})
+		state.MenuActive = false
 	}
-	history.Push(history.Game{
-		Path:     path,
-		Name:     utils.FileName(path),
-		CorePath: state.CorePath,
-	})
-	menu.WarpToQuickMenu()
-	state.MenuActive = false
 }
 
 // Shutdown the operating system

@@ -15,7 +15,7 @@ func buildWiFi() Scene {
 
 	list.children = append(list.children, entry{
 		label: "Looking for networks",
-		icon:  "reload",
+		icon:  "reset",
 	})
 
 	list.segueMount()
@@ -32,7 +32,7 @@ func buildWiFi() Scene {
 				network := network
 				list.children = append(list.children, entry{
 					label:       network.SSID,
-					icon:        "menu_network",
+					icon:        "wifi",
 					stringValue: func() string { return ludos.NetworkStatus(network) },
 					callbackOK: func() {
 						list.segueNext()

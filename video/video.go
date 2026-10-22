@@ -25,11 +25,13 @@ type Video struct {
 	Font     *Font
 	FontSm   *Font
 	FontLg   *Font
+	BoldFont *Font
 	title    string
 
 	windowedX, windowedY          int
 	windowedWidth, windowedHeight int
 
+	white                uint32 // white texture for sampler2D
 	program              uint32 // current program used for the game quad
 	defaultProgram       uint32 // default program used for the game quad
 	sharpBilinearProgram uint32 // sharp bilinear program used for the game quad
@@ -437,6 +439,11 @@ func (video *Video) configureWithSize(width, height int, fullscreen bool) error 
 	if err != nil {
 		panic(err)
 	}
+	boldFontPath := filepath.Join(settings.Current.AssetsDirectory, "boldfont.ttf")
+	video.BoldFont, err = LoadFont(boldFontPath, int32(36), fbw, fbh)
+	if err != nil {
+		panic(err)
+	}
 
 	// Configure the vertex and fragment shader
 	video.defaultProgram = panicOnErr(newProgram(vertexShader, defaultFragmentShader))
@@ -490,6 +497,8 @@ func (video *Video) configureWithSize(width, height int, fullscreen bool) error 
 	video.UpdateFilter(settings.Current.VideoFilter)
 
 	video.coreRatioViewport(fbw, fbh, video.Geom.BaseWidth, video.Geom.BaseHeight)
+
+	video.white = newWhite()
 
 	bindVertexArray(0)
 
@@ -707,6 +716,9 @@ func (video *Video) ResizeViewport() {
 	}
 	if video.FontLg != nil {
 		video.FontLg.UpdateResolution(fbw, fbh)
+	}
+	if video.BoldFont != nil {
+		video.BoldFont.UpdateResolution(fbw, fbh)
 	}
 }
 

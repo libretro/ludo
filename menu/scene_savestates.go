@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -20,6 +21,7 @@ type sceneSavestates struct {
 func buildSavestates() Scene {
 	var list sceneSavestates
 	list.label = "Savestates"
+	list.entryHeight = 160
 
 	list.children = append(list.children, entry{
 		label: "Save State",
@@ -121,53 +123,79 @@ func deleteSavestateEntry(list *sceneSavestates, path string) {
 // Override rendering
 func (s *sceneSavestates) render() {
 	list := &s.entry
+	w, h := menu.GetFramebufferSize()
 
-	_, h := menu.GetFramebufferSize()
+	menu.BoldFont.SetColor(titleTextColor.Alpha(list.alpha))
+	menu.BoldFont.Print(
+		360*menu.ratio,
+		list.y*menu.ratio+230*menu.ratio,
+		menu.ratio, list.label)
 
-	thumbnailDrawCursor(list)
+	menu.DrawRect(
+		360*menu.ratio,
+		list.y*menu.ratio+270*menu.ratio,
+		float32(w)-720*menu.ratio,
+		2*menu.ratio,
+		0, sepColor,
+	)
+
+	menu.ScissorStart(
+		int32(360*menu.ratio-8*menu.ratio), 0,
+		int32(float32(w)-720*menu.ratio+16*menu.ratio), int32(h)-int32(272*menu.ratio+list.y*menu.ratio))
+
+	fontOffset := 12 * menu.ratio
 
 	for i, e := range list.children {
-		if e.yp < -0.1 || e.yp > 1.1 {
+		// performance improvement
+		if math.Abs(float64(i-list.ptr)) > 8 {
+			freeThumbnail(list, i)
 			continue
 		}
 
-		fontOffset := 64 * 0.7 * menu.ratio * 0.3
+		y := list.y*menu.ratio +
+			(270+32)*menu.ratio +
+			list.scroll*menu.ratio +
+			list.entryHeight*float32(i)*menu.ratio +
+			list.entryHeight/2*menu.ratio
+
+		menu.DrawRect(
+			360*menu.ratio,
+			y-1*menu.ratio+list.entryHeight/2*menu.ratio,
+			float32(w)-720*menu.ratio,
+			2*menu.ratio,
+			0, sepColor,
+		)
+
+		if i == list.ptr {
+			genericDrawCursor(list, i)
+		}
 
 		if e.labelAlpha > 0 {
 			drawSavestateThumbnail(
 				list, i,
 				filepath.Join(settings.Current.ScreenshotsDirectory, utils.FileName(e.path)+".png"),
-				680*menu.ratio-85*e.scale*menu.ratio,
-				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
+				480*menu.ratio-85*1*menu.ratio,
+				y-64*menu.ratio,
 				170*menu.ratio, 128*menu.ratio,
-				e.scale, textColor.Alpha(e.iconAlpha),
+				1, white.Alpha(e.iconAlpha),
 			)
-			menu.DrawBorder(
-				680*menu.ratio-85*e.scale*menu.ratio,
-				float32(h)*e.yp-14*menu.ratio-64*e.scale*menu.ratio+fontOffset,
-				170*menu.ratio*e.scale, 128*menu.ratio*e.scale, 0.02/e.scale,
-				textColor.Alpha(e.iconAlpha))
 			if i == 0 {
 				menu.DrawImage(menu.icons["savestate"],
-					680*menu.ratio-25*e.scale*menu.ratio,
-					float32(h)*e.yp-14*menu.ratio-25*e.scale*menu.ratio+fontOffset,
+					480*menu.ratio-25*1*menu.ratio,
+					y-50/2*menu.ratio,
 					50*menu.ratio, 50*menu.ratio,
-					e.scale, 0, textColor.Alpha(e.iconAlpha))
+					1, 0, white.Alpha(e.iconAlpha))
 			}
-
-			menu.Font.SetColor(textShadowColor.Alpha(e.labelAlpha / 2))
-			menu.Font.Print(
-				(840+1)*menu.ratio,
-				float32(h)*e.yp+fontOffset+1*menu.ratio,
-				menu.ratio, e.label)
 
 			menu.Font.SetColor(textColor.Alpha(e.labelAlpha))
 			menu.Font.Print(
-				840*menu.ratio,
-				float32(h)*e.yp+fontOffset,
+				600*menu.ratio,
+				y+fontOffset,
 				menu.ratio, e.label)
 		}
 	}
+
+	menu.ScissorEnd()
 }
 
 func (s *sceneSavestates) drawHintBar() {

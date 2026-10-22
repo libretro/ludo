@@ -34,7 +34,7 @@ var layouts = [][]string{
 	},
 	{
 		"1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
-		"!", "\"", "#", "$", "%%", "&", "'", "*", "(", ")",
+		"!", "\"", "#", "$", "%", "&", "'", "*", "(", ")",
 		"+", ",", "-", "~", "/", ":", ";", "=", "<", ">",
 		"?", "@", "[", "\\", "]", "^", "_", "|", "{", "}",
 	},
@@ -137,6 +137,7 @@ func (s *sceneKeyboard) update(dt float32) {
 		audio.PlayEffect(audio.Effects["cancel"])
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
+		menu.focus--
 	}
 
 	// Done
@@ -145,6 +146,7 @@ func (s *sceneKeyboard) update(dt float32) {
 		s.callbackDone(s.value)
 		menu.stack[len(menu.stack)-2].segueBack()
 		menu.stack = menu.stack[:len(menu.stack)-1]
+		menu.focus--
 	}
 }
 
@@ -157,15 +159,14 @@ func (s *sceneKeyboard) render() {
 	ttw := 10 * ksp
 
 	// Background
-	menu.DrawRect(0, 0, float32(w), float32(h), 0,
-		white.Alpha(s.alpha))
+	menu.DrawRect(0, 0, float32(w), float32(h), 0, bgColor.Alpha(s.alpha))
 
 	// Label
 	menu.Font.SetColor(black)
 	menu.Font.Print(
 		float32(w)/2-ttw/2,
 		s.y+float32(h)*0.15-ksz/2+ksz*0.6,
-		ksz/260, s.label)
+		ksz/130, s.label)
 
 	// Value
 	menu.DrawRect(float32(w)/2-ttw/2, s.y+float32(h)*0.25-ksz/2, ttw, ksz, 0,
@@ -173,7 +174,7 @@ func (s *sceneKeyboard) render() {
 	menu.Font.Print(
 		float32(w)/2-ttw/2+ksz/4,
 		s.y+float32(h)*0.25-ksz/2+ksz*0.62,
-		ksz/200, s.value+"|")
+		ksz/100, s.value+"|")
 
 	// Keyboard
 
@@ -184,7 +185,7 @@ func (s *sceneKeyboard) render() {
 	for i, key := range layouts[s.layout] {
 		x := float32(i%10)*ksp - ttw/2 + float32(w)/2
 		y := s.y + float32(i/10)*ksp + ksp/2 + float32(h) - kbh
-		gw := menu.Font.Width(ksz/200, key)
+		gw := menu.Font.Width(ksz/100, key)
 
 		c1 := video.Color{R: 0.15, G: 0.15, B: 0.15, A: 1}
 		c2 := video.Color{R: 0.25, G: 0.25, B: 0.25, A: 1}
@@ -199,7 +200,7 @@ func (s *sceneKeyboard) render() {
 		menu.Font.Print(
 			x+ksz/2-gw/2,
 			y+ksz*0.6,
-			ksz/200, key)
+			ksz/100, key)
 	}
 }
 

@@ -9,13 +9,13 @@ require (
 	github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.1
 	github.com/go-gl/mathgl v1.0.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	github.com/lucasb-eyer/go-colorful v1.4.0
 	github.com/mholt/archives v0.1.5
 	github.com/pelletier/go-toml v1.9.5
 	github.com/tanema/gween v0.0.0-20250522035225-e874ee3ae01a
 	github.com/youpy/go-wav v0.3.2
 	golang.org/x/image v0.41.0
 	golang.org/x/mobile v0.0.0-20260410095206-2cfb76559b7b
+	golang.org/x/sys v0.43.0
 )
 
 require (
@@ -38,7 +38,6 @@ require (
 	github.com/youpy/go-riff v0.1.0 // indirect
 	github.com/zaf/g711 v1.4.0 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
-	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 )
 

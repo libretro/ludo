@@ -70,9 +70,26 @@ func ScanDir(dir string, doneCb func()) {
 			f.Close()
 			i++
 		}
-		doneCb()
+		if doneCb != nil {
+			doneCb()
+		}
 		n.Updatef(ntf.Success, "Done scanning. %d new games found.", i)
 	}()
+}
+
+// ScanFile scans a single file and calls doneCb on the caller's thread.
+func ScanFile(path string, doneCb func(dat.Game)) {
+	dir := filepath.Dir(path)
+	roms := []string{path}
+	games := make(chan (dat.Game))
+	go Scan(dir, roms, games, nil)
+	game := <-games
+	// An archive may contain multiple matching games; let the scan finish.
+	for range games {
+	}
+	if doneCb != nil {
+		doneCb(game)
+	}
 }
 
 // Returns the checksum and headerless checksum of a ROM
@@ -109,7 +126,9 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 			// Open the ZIP archive
 			z, err := zip.OpenReader(f)
 			if err != nil {
-				n.Update(ntf.Error, err.Error())
+				if n != nil {
+					n.Update(ntf.Error, err.Error())
+				}
 				continue
 			}
 			for _, rom := range z.File {
@@ -119,32 +138,44 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				if headerSize, ok := headerSizes[romExt]; ok {
 					crc, crcHeaderless, err := checksumHeaderless(rom, headerSize)
 					if err != nil {
-						n.Update(ntf.Error, err.Error())
+						if n != nil {
+							n.Update(ntf.Error, err.Error())
+						}
 						continue
 					}
 					state.DB.FindByCRC(f, rom.Name, crc, size, games)
 					state.DB.FindByCRC(f, rom.Name, crcHeaderless, size-int64(headerSize), games)
-					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					if n != nil {
+						n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					}
 				} else if rom.CRC32 > 0 {
 					// Look for a matching game entry in the database
 					state.DB.FindByCRC(f, rom.Name, rom.CRC32, size, games)
-					n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					if n != nil {
+						n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+					}
 				}
 			}
 			z.Close()
 		case ".cue", ".pbp", ".m3u":
 			// Look for a matching game entry in the database
 			state.DB.FindByROMName(f, filepath.Base(f), 0, games)
-			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			if n != nil {
+				n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			}
 		case ".32x", ".a26", "a52", ".a78", ".col", ".crt", ".d64", ".pce", ".fds", ".gb", ".gba", ".gbc", ".gen", ".gg", ".ipf", ".j64", ".jag", ".lnx", ".md", ".n64", ".nes", ".ngc", ".nds", ".rom", ".sfc", ".sg", ".smc", ".smd", ".sms", ".ws", ".wsc", ".z64":
 			bytes, err := os.ReadFile(f)
 			if err != nil {
-				n.Update(ntf.Error, err.Error())
+				if n != nil {
+					n.Update(ntf.Error, err.Error())
+				}
 				continue
 			}
 			s, err := os.Stat(f)
 			if err != nil {
-				n.Update(ntf.Error, err.Error())
+				if n != nil {
+					n.Update(ntf.Error, err.Error())
+				}
 				continue
 			}
 			crc := crc32.ChecksumIEEE(bytes)
@@ -153,7 +184,9 @@ func Scan(dir string, roms []string, games chan (dat.Game), n *ntf.Notification)
 				crcHeaderless := crc32.ChecksumIEEE(bytes[headerSize:])
 				state.DB.FindByCRC(f, utils.FileName(f), crcHeaderless, s.Size()-int64(headerSize), games)
 			}
-			n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			if n != nil {
+				n.Update(ntf.Info, strconv.Itoa(i)+"/"+strconv.Itoa(len(roms))+" "+f)
+			}
 		}
 	}
 	close(games)

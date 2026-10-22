@@ -5,8 +5,6 @@ import (
 	"github.com/libretro/ludo/settings"
 	"github.com/libretro/ludo/state"
 	"github.com/libretro/ludo/video"
-
-	colorful "github.com/lucasb-eyer/go-colorful"
 )
 
 // Global variables for the menu theme
@@ -17,7 +15,6 @@ var bgColor video.Color
 var cursorBgColor video.Color
 var textColor video.Color
 var mutedTextColor video.Color
-var textShadowColor video.Color
 var sepColor video.Color
 var hintTextColor video.Color
 var hintBgColor video.Color
@@ -32,9 +29,6 @@ var dangerBgColor video.Color
 var dangerTextColor video.Color
 var warningBgColor video.Color
 var warningTextColor video.Color
-
-var tabHexaColors func(int) video.Color
-var tabIconColors func(int) video.Color
 
 func applyDefaultLightTheme() {
 	var pal = map[string]video.Color{
@@ -60,7 +54,6 @@ func applyDefaultLightTheme() {
 	cursorBgColor = pal["selection"]
 	textColor = pal["foreground"]
 	mutedTextColor = pal["mediumgrey"]
-	textShadowColor = pal["lightgrey"]
 	sepColor = pal["lightgrey"]
 	hintTextColor = pal["darkergrey"]
 	hintBgColor = pal["background"]
@@ -75,15 +68,6 @@ func applyDefaultLightTheme() {
 	dangerTextColor = pal["dangertext"]
 	warningBgColor = pal["warningbg"]
 	warningTextColor = pal["warningtext"]
-
-	tabHexaColors = func(i int) video.Color {
-		cf := colorful.Hcl(float64(i)*20, 0.5, 0.5)
-		return video.Color{R: float32(cf.R), G: float32(cf.B), B: float32(cf.G), A: 1}
-	}
-
-	tabIconColors = func(i int) video.Color {
-		return pal["background"]
-	}
 }
 
 func applyDefaultDarkTheme() {
@@ -110,7 +94,6 @@ func applyDefaultDarkTheme() {
 	cursorBgColor = pal["darkergrey"]
 	textColor = pal["foreground"]
 	mutedTextColor = pal["mediumgrey"]
-	textShadowColor = pal["darkergrey"]
 	sepColor = pal["darkergrey"]
 	hintTextColor = pal["lightgrey"]
 	hintBgColor = pal["background"]
@@ -125,15 +108,6 @@ func applyDefaultDarkTheme() {
 	dangerTextColor = pal["dangertext"]
 	warningBgColor = pal["warningbg"]
 	warningTextColor = pal["warningtext"]
-
-	tabHexaColors = func(i int) video.Color {
-		cf := colorful.Hcl(float64(i)*20, 0.5, 0.5)
-		return video.Color{R: float32(cf.R), G: float32(cf.B), B: float32(cf.G), A: 1}
-	}
-
-	tabIconColors = func(_ int) video.Color {
-		return pal["darkergrey"]
-	}
 }
 
 func applyAlucardTheme() {
@@ -155,7 +129,6 @@ func applyAlucardTheme() {
 	cursorBgColor = dracula["selection"]
 	textColor = dracula["foreground"]
 	mutedTextColor = dracula["purple"]
-	textShadowColor = dracula["selection"]
 	sepColor = dracula["selection"]
 	hintTextColor = dracula["foreground"]
 	hintBgColor = dracula["background"]
@@ -170,21 +143,6 @@ func applyAlucardTheme() {
 	dangerTextColor = dracula["red"]
 	warningBgColor = dracula["selection"]
 	warningTextColor = dracula["orange"]
-
-	tabHexaColors = func(i int) video.Color {
-		return []video.Color{
-			dracula["purple"],
-			dracula["red"],
-			dracula["pink"],
-			dracula["orange"],
-			dracula["green"],
-			dracula["cyan"],
-		}[i%6]
-	}
-
-	tabIconColors = func(_ int) video.Color {
-		return dracula["selection"]
-	}
 }
 
 func applyDraculaTheme() {
@@ -206,7 +164,6 @@ func applyDraculaTheme() {
 	cursorBgColor = dracula["selection"]
 	textColor = dracula["foreground"]
 	mutedTextColor = dracula["purple"]
-	textShadowColor = dracula["selection"]
 	sepColor = dracula["selection"]
 	hintTextColor = dracula["foreground"]
 	hintBgColor = dracula["background"]
@@ -221,21 +178,6 @@ func applyDraculaTheme() {
 	dangerTextColor = dracula["red"]
 	warningBgColor = dracula["selection"]
 	warningTextColor = dracula["orange"]
-
-	tabHexaColors = func(i int) video.Color {
-		return []video.Color{
-			dracula["purple"],
-			dracula["red"],
-			dracula["pink"],
-			dracula["orange"],
-			dracula["green"],
-			dracula["cyan"],
-		}[i%6]
-	}
-
-	tabIconColors = func(_ int) video.Color {
-		return dracula["selection"]
-	}
 }
 
 // Catpuccin color palette
@@ -273,7 +215,6 @@ func applyCatpuccinMochaTheme() {
 	cursorBgColor = mocha["surface0"]
 	textColor = mocha["text"]
 	mutedTextColor = mocha["subtext0"]
-	textShadowColor = mocha["surface0"]
 	sepColor = mocha["surface1"]
 	hintTextColor = mocha["text"]
 	hintBgColor = mocha["base"]
@@ -288,29 +229,6 @@ func applyCatpuccinMochaTheme() {
 	dangerTextColor = mocha["base"]
 	warningBgColor = mocha["yellow"]
 	warningTextColor = mocha["base"]
-
-	tabHexaColors = func(i int) video.Color {
-		return []video.Color{
-			mocha["mauve"],
-			mocha["blue"],
-			mocha["lavender"],
-			mocha["sky"],
-			mocha["sapphire"],
-			mocha["teal"],
-			mocha["green"],
-			mocha["yellow"],
-			mocha["peach"],
-			mocha["red"],
-			mocha["maroon"],
-			mocha["flamingo"],
-			mocha["pink"],
-			mocha["rosewater"],
-		}[i%13]
-	}
-
-	tabIconColors = func(_ int) video.Color {
-		return mocha["surface0"]
-	}
 }
 
 // Catppuccin Latte color palette
@@ -348,7 +266,6 @@ func applyCatpuccinLatteTheme() {
 	cursorBgColor = latte["mantle"]
 	textColor = latte["text"]
 	mutedTextColor = latte["subtext0"]
-	textShadowColor = latte["surface0"]
 	sepColor = latte["surface0"]
 	hintTextColor = latte["text"]
 	hintBgColor = latte["base"]
@@ -362,29 +279,6 @@ func applyCatpuccinLatteTheme() {
 	dangerTextColor = latte["base"]
 	warningBgColor = latte["yellow"]
 	warningTextColor = latte["base"]
-
-	tabHexaColors = func(i int) video.Color {
-		return []video.Color{
-			latte["mauve"],
-			latte["blue"],
-			latte["lavender"],
-			latte["sky"],
-			latte["sapphire"],
-			latte["teal"],
-			latte["green"],
-			latte["yellow"],
-			latte["peach"],
-			latte["red"],
-			latte["maroon"],
-			latte["flamingo"],
-			latte["pink"],
-			latte["rosewater"],
-		}[i%13]
-	}
-
-	tabIconColors = func(_ int) video.Color {
-		return latte["base"]
-	}
 }
 
 // rosePine color palette
@@ -408,7 +302,6 @@ func applyRosePineTheme() {
 	cursorBgColor = rosePine["overlay"]
 	textColor = rosePine["text"]
 	mutedTextColor = rosePine["muted"]
-	textShadowColor = rosePine["overlay"]
 	sepColor = rosePine["highlightMed"]
 	hintTextColor = rosePine["text"]
 	hintBgColor = rosePine["base"]
@@ -423,21 +316,6 @@ func applyRosePineTheme() {
 	dangerTextColor = rosePine["base"]
 	warningBgColor = rosePine["gold"]
 	warningTextColor = rosePine["base"]
-
-	tabHexaColors = func(i int) video.Color {
-		return[]video.Color{
-			rosePine["iris"],
-			rosePine["love"],
-			rosePine["rose"],
-			rosePine["gold"],
-			rosePine["foam"],
-			rosePine["pine"],
-		}[i%6]
-	}
-
-	tabIconColors = func(_ int) video.Color {
-		return rosePine["overlay"]
-	}
 }
 
 // rosePineDawn color palette
@@ -461,7 +339,6 @@ func applyRosePineDawnTheme() {
 	cursorBgColor = rosePineDawn["overlay"]
 	textColor = rosePineDawn["text"]
 	mutedTextColor = rosePineDawn["muted"]
-	textShadowColor = rosePineDawn["overlay"]
 	sepColor = rosePineDawn["highlightMed"]
 	hintTextColor = rosePineDawn["text"]
 	hintBgColor = rosePineDawn["base"]
@@ -476,21 +353,6 @@ func applyRosePineDawnTheme() {
 	dangerTextColor = rosePineDawn["base"]
 	warningBgColor = rosePineDawn["gold"]
 	warningTextColor = rosePineDawn["base"]
-
-	tabHexaColors = func(i int) video.Color {
-		return []video.Color{
-			rosePineDawn["iris"],
-			rosePineDawn["love"],
-			rosePineDawn["rose"],
-			rosePineDawn["gold"],
-			rosePineDawn["foam"],
-			rosePineDawn["pine"],
-		}[i%6]
-	}
-
-	tabIconColors = func(_ int) video.Color {
-		return rosePineDawn["base"]
-	}
 }
 
 // UpdatePalette updates the color palette to honor the dark theme
